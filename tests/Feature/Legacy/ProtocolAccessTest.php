@@ -151,4 +151,15 @@ class ProtocolAccessTest extends FeatureTestCase
 
         $this->actingAs($this->writer())->get("/receipt/{$p->id}")->assertOk()->assertSee('Απόδειξη θέμα');
     }
+
+    public function test_main_pages_render_for_each_role(): void
+    {
+        Protocol::factory()->number(1)->create();
+        foreach (['reader', 'writer', 'assigner', 'admin'] as $role) {
+            $user = $this->$role();
+            foreach (['/home/list', '/find', '/print', '/about', '/keep'] as $url) {
+                $this->actingAs($user)->get($url)->assertSuccessful();
+            }
+        }
+    }
 }
