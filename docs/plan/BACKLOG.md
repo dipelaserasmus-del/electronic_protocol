@@ -65,6 +65,7 @@ Written as small reusable services so the rebuilt modules reuse them instead of 
 | A02 | Missing-number banner on the main list (owner: **important**). Settings "check from number" + "last N months". Gap service reused later by R2/A01 | AUTO | P1 | M | B08 |
 | S04 | 🔎 `.env` with `APP_KEY` committed. Remove from git, `.env.example`, rotation instructions 👤 | SEC | P1 | S | — |
 | B04 | Descriptive error pages instead of bare 500: friendly message + error ID; details for admins | BE | P1 | S | — |
+| B09 | 🔎 (from F02, confirmed by test) **All outgoing email crashes (HTTP 500)**: receipts, "send receipt" button, assignment notifications use the SwiftMailer API (`setBody`, `Mail::failures`) removed in Laravel 9. Protocol is saved, user sees an error. Port to Laravel Mail/Mailables | BUG | **P0** | S | F02 |
 | B07 | Diagnose random timeouts/500s: request IDs, structured logs, slow-query log; fix top causes that aren't solved by later modules 📧 | BUG | P1 | M | F03, B04 |
 
 ## Phase 2 — Platform
@@ -157,7 +158,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ## Execution order
 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
-2. **Batch 2:** F04 → F05 → S04 → B04 → B07
+2. **Batch 2:** B09 → F04 → F05 → S04 → B04 → B07
 3. **Batch 3:** N01 → N02 → N03 → N04
 4. **Batch 4:** D01 → D05 👤 → D02 👤 → D03 👤 → D04 👤
 5. **Batch 5:** R1a → R1b → R1c → R2 → R4a → R4b

@@ -21,6 +21,7 @@
         <!-- Tests always run against MySQL (production database engine), database "testing".
              DB_HOST / DB_PORT / credentials come from .env.testing or the CI environment. -->
         <env name="APP_ENV" value="testing" force="true"/>
+        <server name="APP_ENV" value="testing" force="true"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="CACHE_STORE" value="array"/>
