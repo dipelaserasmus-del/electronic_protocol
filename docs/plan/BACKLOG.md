@@ -161,6 +161,7 @@ P01…P11 → Q01 → Q03 → Q04a → Q04b → U01 → E02 → E01 → U03 → 
 - **Q-1** (B03): The number and date at the top of the form can be edited, but on save the date always becomes today and the number the next free one; the user has to re-enter both and save again. → Handled in B03 (+ B08).
 
 ## Context
+- Owner can supply real-world emails (.eml) that are safe to handle online → test fixtures in `tests/fixtures/emails/` (used by F03 mock IMAP, B02, B05, E03, E04).
 - App runs on the local network only (not internet-exposed), MySQL, multiple concurrent users. Symptoms today: random page timeouts, 500 errors, functional and UI bugs.
 
 ## Open questions
