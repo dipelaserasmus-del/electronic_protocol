@@ -76,6 +76,13 @@ class ProtocolPolicy
             return false;
         }
         if (in_array($role, [self::WRITER, self::ASSIGNER], true)) {
+            // same exceptions as the form (ProtocolController::index):
+            // - a protocol without subject is open to everyone who can write
+            // - the user assigned for διεκπεραίωση may save (the form unlocks only the outgoing fields; R1a
+            //   will enforce that field restriction on the server too)
+            if (!$protocol->thema || self::isAssigned($user, $protocol, 'd')) {
+                return true;
+            }
             $allow = (int) Config::getConfigValueOf('allowWriterUpdateProtocol');
             if ($allow === 0) {
                 return false;

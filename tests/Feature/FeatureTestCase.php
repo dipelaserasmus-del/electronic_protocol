@@ -27,12 +27,21 @@ abstract class FeatureTestCase extends TestCase
         // AppServiceProvider shares settings with all views at boot; on a brand-new test database the
         // tables didn't exist yet at that moment, so share them again now that they are seeded.
         (new \App\Providers\AppServiceProvider($this->app))->boot();
-        @unlink(storage_path('conf/.denyregister'));
+        // the dev stack's storage folder is shared with the tests: keep its registration marker
+        $marker = storage_path('conf/.denyregister');
+        $this->savedMarker = file_exists($marker) ? file_get_contents($marker) : null;
+        @unlink($marker);
     }
+
+    private ?string $savedMarker = null;
 
     protected function tearDown(): void
     {
-        @unlink(storage_path('conf/.denyregister'));
+        $marker = storage_path('conf/.denyregister');
+        @unlink($marker);
+        if ($this->savedMarker !== null) {
+            file_put_contents($marker, $this->savedMarker);
+        }
         parent::tearDown();
     }
 
