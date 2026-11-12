@@ -42,6 +42,8 @@ class DevSeeder extends Seeder
         Config::setConfigValueOf('daysToCheckEmailBack', 3650);
         Config::setConfigValueOf('ipiresiasName', 'Δημοτικό Σχολείο Δοκιμών');
 
+        $this->call(DemoDataSeeder::class);
+
         // Registration closed, as in a real installation after the first admin exists
         @file_put_contents(storage_path('conf/.denyregister'), 'dev');
     }

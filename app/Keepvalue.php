@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 /**
  * App\Keepvalue
  *
@@ -32,6 +34,8 @@ use App\Keepvalue;
 
 class Keepvalue extends Model
 {
+    use HasFactory;
+
 
     use Notifiable;
 
