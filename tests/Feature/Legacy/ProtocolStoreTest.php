@@ -45,19 +45,72 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertDatabaseHas('protocols', ['protocolnum' => 8, 'etos' => now()->year]);
     }
 
-    /**
-     * KNOWN BUG (task B03): with the default setting "safe new protocol number" ON,
-     * a manually typed number is ignored and replaced by the next free number.
-     */
-    public function test_known_bug_manual_number_is_replaced_when_safe_numbering_is_on(): void
+    /** B03 (was: known_bug_manual_number_is_replaced_when_safe_numbering_is_on) */
+    public function test_typed_number_and_date_are_kept_when_safe_numbering_is_on(): void
     {
         Protocol::factory()->number(10)->create();
         $this->setting('safeNewProtocolNum', 1);
 
-        $this->actingAs($this->writer())->post('/home', $this->protocolForm(['protocolnum' => 50]));
+        $this->actingAs($this->admin())->post('/home', $this->protocolForm([
+            'protocolnum' => 50, 'protocolnum_proposed' => 11, 'protocoldate' => '02/03/' . now()->year,
+        ]));
 
-        $this->assertDatabaseMissing('protocols', ['protocolnum' => 50]);
-        $this->assertDatabaseHas('protocols', ['protocolnum' => 11]);
+        $this->assertDatabaseHas('protocols', ['protocolnum' => 50, 'protocoldate' => now()->year . '0302']);
+        $this->assertDatabaseMissing('protocols', ['protocolnum' => 11]);
+    }
+
+    /** B03: safe mode still protects users who did not touch the proposed number */
+    public function test_untouched_proposed_number_is_replaced_by_next_free_when_taken_meanwhile(): void
+    {
+        Protocol::factory()->number(10)->create();
+        $this->setting('safeNewProtocolNum', 1);
+        Protocol::factory()->number(11)->create();   // another user saved 11 after our form was opened
+
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 11, 'protocolnum_proposed' => 11,
+        ]));
+
+        $this->assertDatabaseHas('protocols', ['protocolnum' => 12]);
+    }
+
+    /** B03: a typed number that is already used is refused with a clear message; nothing is lost */
+    public function test_typed_number_already_used_is_refused_with_message_and_input_kept(): void
+    {
+        Protocol::factory()->number(10)->create();
+        $this->setting('safeNewProtocolNum', 1);
+
+        $this->actingAs($this->admin())->from('/home')->post('/home', $this->protocolForm([
+            'protocolnum' => 10, 'protocolnum_proposed' => 11, 'thema' => 'Να μη χαθεί',
+        ]))
+            ->assertRedirect('/home')
+            ->assertSessionHasErrors(['protocolnum' => 'Ο Αρ. Πρωτοκόλλου 10 υπάρχει ήδη για το έτος ' . now()->year . '. Επιλέξτε άλλον αριθμό.'])
+            ->assertSessionHasInput('thema', 'Να μη χαθεί');
+
+        $this->assertSame(1, Protocol::count());
+    }
+
+    /** B03: attachment files carry the number that was actually stored */
+    public function test_attachment_file_name_uses_the_stored_number(): void
+    {
+        Protocol::factory()->number(10)->create();
+        $this->setting('safeNewProtocolNum', 1);
+        Protocol::factory()->number(11)->create();
+
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 11, 'protocolnum_proposed' => 11, 'fakelos' => 'Φ.1',
+            'att1' => \Illuminate\Http\UploadedFile::fake()->create('doc.pdf', 5, 'application/pdf'),
+        ]));
+
+        $p = Protocol::where('protocolnum', 12)->firstOrFail();
+        $this->assertStringStartsWith('arxeio/Φ.1/12-', $p->attachments()->firstOrFail()->savedPath);
+    }
+
+    public function test_new_protocol_form_sends_the_proposed_number(): void
+    {
+        Protocol::factory()->number(41)->create();
+
+        $this->actingAs($this->writer())->get('/home')
+            ->assertSee('name="protocolnum_proposed" value="42"', false);
     }
 
     public function test_manual_number_is_kept_when_safe_numbering_is_off(): void

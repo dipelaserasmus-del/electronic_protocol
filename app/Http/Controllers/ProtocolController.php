@@ -701,23 +701,22 @@ class ProtocolController extends Controller
         $safeNewProtocolNum = Config::getConfigValueOf('safeNewProtocolNum');
         $sendEmailOnDiekperaiosiChange = Config::getConfigValueOf('sendEmailOnDiekperaiosiChange');
 
-        // Αν η ρύθμιση λέι ΝΑΙ σε ασφαλή Αρ.Πρωτ δεν ελέγχω το νέο Αρ.Πρ που μόλις έφτιαξα
-        // γιατί θα δοθεί αυτόματα από το σύστημα ο πρώτος διαθέσιμος
-        if ($safeNewProtocolNum) {
-            $mustValidate = [
-                'etos' => 'required|integer|digits:4',
-                'protocoldate' => 'required',
-            ];
-        } else {
-            // αλλιώς ελέγχω ότι σε καθεστώς πολλών χρηστών δεν έχει ήδη ληφθεί από άλλο χρήστη
-            $mustValidate = [
-                'protocolnum' => "required|integer|unique:protocols,protocolnum,NULL,id,etos,$etos",
-                'etos' => 'required|integer|digits:4',
-                'protocoldate' => 'required',
-            ];
+        // B03: a number the user typed (different from the proposed one) is always respected,
+        // even with "safe new protocol number" ON. Safe mode only replaces numbers the user didn't touch.
+        $numbering = app(\App\Services\ProtocolNumbering::class);
+        $manualNumber = $numbering->isManual(request('protocolnum'), request('protocolnum_proposed'));
+        $mustValidate = [
+            'etos' => 'required|integer|digits:4',
+            'protocoldate' => 'required',
+        ];
+        if (!$safeNewProtocolNum || $manualNumber) {
+            // the exact number will be stored: it must be free for the year
+            $mustValidate['protocolnum'] = "required|integer|min:1|unique:protocols,protocolnum,NULL,id,etos,$etos";
         }
         // εφαρμογή του validation (αυτό γίνεται πάντα)
-        $this->validate(request(), $mustValidate);
+        $this->validate(request(), $mustValidate, [
+            'protocolnum.unique' => "Ο Αρ. Πρωτοκόλλου " . e(request('protocolnum')) . " υπάρχει ήδη για το έτος " . e($etos) . ". Επιλέξτε άλλον αριθμό.",
+        ]);
 
         // ελέγχεται η μορφή των ημερομηνιών
         $validator = Validator::make(request()->all(), [
@@ -789,29 +788,11 @@ class ProtocolController extends Controller
             $sxetiko = rtrim($data['sxetiko'], ',');
         }
 
-        // βρίσκω το νέο Αρ.Πρωτ στην εισαγωγή δεδομένων
-        $firstProtocolNum = Config::getConfigValueOf('firstProtocolNum');
-        if (Protocol::count()) {
-            if (Config::getConfigValueOf('yearInUse')) {
-                $newprotocolnum = Protocol::whereEtos($etos)->max('protocolnum') ? Protocol::whereEtos($etos)->max('protocolnum') + 1 : 1;
-            } else {
-                $newprotocolnum = Protocol::last()->protocolnum ? Protocol::last()->protocolnum + 1 : 1;
-            }
+        // Αρ.Πρωτ. που θα αποθηκευτεί
+        if ($safeNewProtocolNum && !$manualNumber) {
+            $protocolNewNum = $numbering->next((int) $etos);
         } else {
-            if ($firstProtocolNum) {
-                $newprotocolnum = $firstProtocolNum;
-            } else {
-                $newprotocolnum = 1;
-            }
-        }
-
-        // αν η ρύθμιση Ασφαλής νέος Αρ.Πρ είναι ΝΑΙ
-        if ($safeNewProtocolNum) {
-            // εισαγωγή της εγγραφής με το νέο Αρ.Πρ που μόλις έφτιαξα
-            $protocolNewNum = $newprotocolnum;
-        } else {
-            // εισαγωγή της εγγραφής με το Αρ.Πρ που έστειλε η φόρμα
-            $protocolNewNum = $data['protocolnum'];
+            $protocolNewNum = (int) $data['protocolnum'];
         }
 
         // δημιουργία του πρωτοκόλλου
@@ -883,7 +864,7 @@ class ProtocolController extends Controller
                     // τον τύπο mimeType του αρχείου
                     $mimeType = $file->getMimeType();
                     // φτιάχνω το όνομα Αρ.Πρ + Ημνια.Πρ
-                    $filenameToStore = request()->protocolnum . '-' . Carbon::createFromFormat('d/m/Y', request()->protocoldate)->format('Ymd') . '_' . $filename;
+                    $filenameToStore = $protocol->protocolnum . '-' . $protocol->protocoldate . '_' . $filename;
                     // τον φάκελο arxeio + Φ.
                     $dir = 'arxeio/' . request()->fakelos;
                     // αποθηκεύω το αρχείο και παίρνω το path αποθήκευσης
