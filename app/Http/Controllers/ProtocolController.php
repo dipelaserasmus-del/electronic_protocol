@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use DB;
+use Illuminate\Support\Facades\Gate;
 use URL;
 use Auth;
 use Active;
@@ -98,7 +99,7 @@ class ProtocolController extends Controller
         $this->middleware('web');
         $this->middleware('writer:home/list', ['except' => ['index', 'indexList', 'getFileInputs', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about', 'setDiekpDate']]);
         $this->middleware('email', ['only' => ['viewEmails', 'setEmailRead', 'storeFromEmail']]);
-        $this->middleware('limitList', ['only' => ['printprotocols', 'printAttachments']]);
+        $this->middleware('limitList', ['only' => ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']]);
     }
 
     private function diekperaiosiConcatRawStr()
@@ -110,6 +111,10 @@ class ProtocolController extends Controller
 
     public function index(Protocol $protocol, $copyAsNew = null)
     {
+        // S02: access check before "copy as new" clears the id (the copy used to bypass it)
+        if ($protocol->exists && Gate::denies('view', $protocol)) {
+            abort(404);
+        }
 
         if ($copyAsNew) {
             $protocol->id = null;
@@ -118,14 +123,6 @@ class ProtocolController extends Controller
             $protocol->protocoldate = null;
         }
 
-
-        // αν δεν είναι νέο πρωτόκολλο και οι συγγραφείς περιορίζονται στη λίστα διεκπεραιωσης
-        if ($this->limitProtocolAccessList()) {
-            // αν δεν είναι νέο πρωτόκολλο και οι συγγραφείς περιορίζονται στη λίστα διεκπεραιωσης και δεν έχει καταχωριστεί από το χρήστη
-            if ($protocol->id && strpos($protocol->diekperaiosi  . ',', 'd' . Auth::user()->id . ',') === false && strpos($protocol->diekperaiosi . ',', 'e' . Auth::user()->id . ',') === false && $protocol->user_id !== Auth::user()->id) {
-                return abort(404);
-            }
-        }
         // βρίσκω τους Συγγραφείς, Αναθέτοντες και Διαχειριστές
         $writers_admins = User::get_writers_and_admins();
         // παίρνω τους Φακέλους με συγκεκριμμένη ταξινόμηση
@@ -964,6 +961,7 @@ class ProtocolController extends Controller
 
     public function update(Protocol $protocol)
     {
+        $this->authorize('update', $protocol);   // S02
         // παίρνω τα δεδομένα
         $data = request()->all();
         // και κάποιες μεταβλητές που χρειάζομαι
@@ -1278,6 +1276,7 @@ class ProtocolController extends Controller
 
     public function delprotocol(Protocol $protocol)
     {
+        $this->authorize('delete', $protocol);   // S02: administrators only
         $protocolnum = $protocol->protocolnum;
         $etos = $protocol->etos;
         // αν υπάρχουν συνημμένα δεν διαγράφω και ενημερώνω
@@ -1305,6 +1304,7 @@ class ProtocolController extends Controller
 
     public function attachDelete(Attachment $attachment)
     {
+        abort_unless($attachment->protocol && Gate::allows('update', $attachment->protocol), 403);   // S02
         // διαβάζω τα δεδομένα
         $protocol = $attachment->protocol;
         $savedPath = $attachment->savedPath;
@@ -1411,6 +1411,10 @@ class ProtocolController extends Controller
 
     public function download(Attachment $attachment)
     {
+        // S02: same visibility as the protocol (orphan attachments: administrators only)
+        $protocol = $attachment->protocol;
+        $allowed = $protocol ? Gate::allows('view', $protocol) : Auth::user()->role->role === 'Διαχειριστής';
+        abort_unless($allowed, 404);
         if (Storage::exists($attachment->savedPath)) {
             $content = Storage::get($attachment->savedPath);
             ob_end_clean();
@@ -1702,6 +1706,7 @@ class ProtocolController extends Controller
 
     public function receipt(Protocol $protocol)
     {
+        abort_if(Gate::denies('view', $protocol), 404);   // S02
         if ($protocol->protocoldate) {
             $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
         }
@@ -1712,7 +1717,8 @@ class ProtocolController extends Controller
 
     public function receiptToEmail(Request $request)
     {
-        $protocol = Protocol::where('id', $request->id)->first();
+        $protocol = Protocol::findOrFail($request->id);
+        abort_if(Gate::denies('view', $protocol), 404);   // S02
         $emaildate = Carbon::now()->format('d/m/Y H:i:s');
         $protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
         $sendReplyTo = $request->email;
@@ -1738,6 +1744,7 @@ class ProtocolController extends Controller
 
     public function setDiekpDate(Request $request)
     {
+        $this->authorize('complete', Protocol::findOrFail($request->id));   // S02
         $diekp_date = Carbon::createFromFormat('d/m/Y', $request->diekp_date)->format('Ymd');
         $now = Carbon::now()->format('d/m/Y H:i:s');
         $paratiriseis = Protocol::whereId($request->id)->first()->paratiriseis;
@@ -2376,14 +2383,34 @@ class ProtocolController extends Controller
     }
 
     // βρίσκει τις καταχωρίσεις που ταιριάζουν με αυτά που πληκτρολογεί ο χρήστης και επιστρέφει λίστα
+    /** Fields that the protocol / email forms autocomplete from previous entries */
+    private const AUTOCOMPLETE_FIELDS = ['thema', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis', 'sxetiko', 'out_to', 'keywords', 'fakelos', 'in_num', 'out_perilipsi', 'in_perilipsi'];
+
+    /** Autocomplete as called by the forms: /getValues/{field}/{id}/{divId}/{multi}?term=... */
+    public function getValuesQuery($field, $id, $divId, $multi)
+    {
+        return $this->getValues((string) request('term', ''), $field, $id, $divId, $multi);
+    }
+
     public function getValues($term, $field, $id, $divId, $multi)
     {
-        $protocols = Protocol::latest()->take(Config::getConfigValueOf('rowsToSearchGiaSimplirosi') ?? 1000)->pluck($field)->countBy()->sortDesc()->keys();
+        // S02: only the fields the forms autocomplete, and only from protocols the user may see
+        abort_unless(in_array($field, self::AUTOCOMPLETE_FIELDS, true), 404);
+        $source = Protocol::latest();
+        if (\App\Policies\ProtocolPolicy::isLimited(Auth::user())) {
+            $uid = Auth::user()->id;
+            $source->where(function ($q) use ($uid) {
+                $q->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%d$uid,%")
+                    ->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%e$uid,%")
+                    ->orWhere('user_id', $uid);
+            });
+        }
+        $protocols = $source->take(Config::getConfigValueOf('rowsToSearchGiaSimplirosi') ?? 1000)->pluck($field)->countBy()->sortDesc()->keys();
         $protocols = $protocols->filter(function ($item) use ($term) {
             return mb_stripos($item, $term) !== false;
         })->take(Config::getConfigValueOf('rowsToShowGiaSimplirosi') ?? 10)->sort();
         if (!$protocols) {
-            return;
+            return response('');
         }
         $output = '';
         if ($multi) {
@@ -2406,7 +2433,7 @@ class ProtocolController extends Controller
             ';
             }
         }
-        echo $output;
+        return response($output);
     }
 
 
@@ -2500,7 +2527,8 @@ class ProtocolController extends Controller
     public function anathesiSe(Request $request)
     {
         $sendEmailTo = $request->diekperaiosi;
-        $protocol = Protocol::whereId($request->id)->first();
+        $protocol = Protocol::findOrFail($request->id);
+        $this->authorize('assign', $protocol);   // S02: administrators and assigners
         $protocol->diekperaiosi = $sendEmailTo;
         $protocol->diekp_eos = $request->diekp_eos ? Carbon::createFromFormat('d/m/Y', $request->diekp_eos)->format('Ymd') : null;
         $protocol->diekp_date = null;

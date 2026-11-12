@@ -101,31 +101,23 @@ class ProtocolAccessTest extends FeatureTestCase
         $this->assertNotEquals(url("home/{$p->id}"), $response->headers->get('Location'));
     }
 
-    /**
-     * KNOWN VULNERABILITY (task S02): attachment download has no access check. With the
-     * limit setting ON a writer can still download an attachment of a protocol they can't open.
-     */
-    public function test_known_vulnerability_download_ignores_access_limits(): void
+    /** S02 (was: known_vulnerability_download_ignores_access_limits) */
+    public function test_download_respects_access_limits(): void
     {
         $this->setting('limitProtocolAccessList', 1);
         $a = Attachment::factory()->withFile('secret-content')->create();
 
-        ob_start();   // the controller calls ob_end_clean()
-        $this->actingAs($this->writer())->get("/download/{$a->id}")
-            ->assertOk()->assertSee('secret-content', false);
+        $this->actingAs($this->writer())->get("/download/{$a->id}")->assertNotFound();
     }
 
-    /**
-     * KNOWN VULNERABILITY (tasks S02/S03): any writer can delete any protocol, including ones
-     * created by others, with a plain GET link.
-     */
-    public function test_known_vulnerability_writer_deletes_others_protocol_via_get(): void
+    /** S02 (was: known_vulnerability_writer_deletes_others_protocol_via_get) */
+    public function test_writer_cannot_delete_protocols(): void
     {
         $p = Protocol::factory()->number(1)->create();
 
-        $this->actingAs($this->writer())->get("/delprotocol/{$p->id}");
+        $this->actingAs($this->writer())->get("/delprotocol/{$p->id}")->assertForbidden();
 
-        $this->assertNull(Protocol::find($p->id));
+        $this->assertNotNull(Protocol::find($p->id));
     }
 
     public function test_reader_cannot_delete(): void
