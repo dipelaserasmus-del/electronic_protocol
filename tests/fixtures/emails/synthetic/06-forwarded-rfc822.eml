@@ -1,0 +1,47 @@
+Return-Path: <dnsh@dipe.example.test>
+Message-ID: <syn6@synthetic.test>
+Date: Mon, 02 Nov 2026 12:15:00 +0000
+From: =?UTF-8?B?zpTOuc61z43OuM+Fzr3Pg863IM6gLg==?=
+ =?UTF-8?B?zpUuIM6Uzr/Ous65zrzOrs+C?= <dnsh@dipe.example.test>
+To: Γραμματεία Σχολείου <protocol@school.test>
+Subject: =?UTF-8?B?RndkOiDOkc+Bz4fOuc66z4wg?=
+ =?UTF-8?B?zrzOrs69z4XOvM6xOiDPgM+Bzr/Osw==?=
+ =?UTF-8?B?z4HOsc68zrzOsc+EzrnPg868z4zPgiA=?=
+ =?UTF-8?B?zrzOtc+EzrHPhs6/z4HOrM+CIM68zrE=?=
+ =?UTF-8?B?zrjOt8+Ez47OvQ==?=
+MIME-Version: 1.0
+X-Synthetic-Case: forwarded-rfc822
+Content-Type: multipart/mixed; boundary="b_4414e3f237dec04d17e7fd5863f79fa1"
+
+This is a multi-part message in MIME format.
+--b_4414e3f237dec04d17e7fd5863f79fa1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+Σας προωθούμε το παρακάτω μήνυμα για ενέργειες.
+
+--b_4414e3f237dec04d17e7fd5863f79fa1
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="=?UTF-8?B?z4DPgc6/z4nOuM63zrzOrc69zr8uZQ==?=
+ =?UTF-8?B?bWw=?="
+
+Return-Path: <perifereia@example.test>
+Message-ID: <inner6@synthetic.test>
+Date: Fri, 30 Oct 2026 07:15:00 +0000
+From: =?UTF-8?B?zqDOtc+BzrnPhs6tz4HOtc65zrEgzpQ=?=
+ =?UTF-8?B?zr/Ous65zrzOrs+C?= <perifereia@example.test>
+To: dnsh@dipe.example.test
+Subject: =?UTF-8?B?zpHPgc+HzrnOus+MIM68zq7Ovc+Fzrw=?=
+ =?UTF-8?B?zrE6IM+Az4HOv86zz4HOsc68zrzOsQ==?=
+ =?UTF-8?B?z4TOuc+DzrzPjM+CIM68zrXPhM6xz4Y=?=
+ =?UTF-8?B?zr/Pgc6sz4IgzrzOsc64zrfPhM+Ozr0=?=
+MIME-Version: 1.0
+X-Synthetic-Case: inner
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+Αρχικό κείμενο του προωθημένου μηνύματος.
+
+
+--b_4414e3f237dec04d17e7fd5863f79fa1--

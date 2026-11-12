@@ -48,11 +48,10 @@ https://drive.google.com/file/d/0B2ACFOVDi2ORWmZjUGNmQTNpVlk/view?usp=sharing
 - Κλωνοποίηση του repo (```git clone https://github.com/g-theodoroy/electronic_protocol.git``` και είσοδος στο folder ```electronic_protocol```)
 - Δημιουργία αρχείου ```.env``` (από πρότυπο ```.env-docker```)
 - Τρέξιμο των παρακάτω εντολών:
-- ```docker run --rm -v $(pwd):/app composer install --no-dev --ignore-platform-req=ext-gd```
-(για εγκατάσταση των εξαρτήσεων του composer)
-- ```docker compose up -d``` (για να τρέξει το σύστημα στο background (daemon))
+- ```docker compose up -d --build``` (για να τρέξει το σύστημα στο background (daemon))
+- ```docker compose exec app composer install --no-dev``` (για εγκατάσταση των εξαρτήσεων του composer)
 - ```docker compose exec app php artisan key:generate``` (για δημιουργία νέου κλειδιού στο laravel)
-- ```docker compose exec app php artisan migrate:refresh --seed``` (για δημιουργία πινάκων στη βάση)
+- ```docker compose exec app php artisan migrate --seed``` (για δημιουργία πινάκων στη βάση — **μόνο την πρώτη φορά**)
 - ```docker compose exec app php artisan config:cache``` (για ανανέωση cache)
 
 Αυτό ήταν!
@@ -67,7 +66,8 @@ https://drive.google.com/file/d/0B2ACFOVDi2ORWmZjUGNmQTNpVlk/view?usp=sharing
 - Αν χρησιμοποιούμε παλιότερη έκδοση του docker, αντικαθιστούμε το ```docker compose``` με ```docker-compose``` παντού.
 - Λόγω της φύσης του docker, ενδείκνυται εγκατάσταση με τη μέθοδο αυτή *σε σύστημα με λειτουργικό Linux*.
 Φυσικά παίζει και σε Windows με *Docker desktop* (βλ. παραπάνω), αλλά θέλει γερό μηχάνημα και πολύ γερά νεύρα γιατί το docker desktop είναι βαρύ και ασήκωτο!
-- H MySQL είναι η default βάση δεδομένων. Αν επιθυμείτε SQLite, ορίστε ```DB_CONNECTION=sqlite``` μέσα στο ```.env-docker``` προτού ξεκινήσετε την εγκατάσταση
+- Η βάση δεδομένων είναι η MySQL 8.4 (η SQLite δεν υποστηρίζεται πλέον).
+- Για περιβάλλον ανάπτυξης/δοκιμών με δοκιμαστικά δεδομένα και δοκιμαστικό email δείτε το [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 - Μπορεί να χρειαστεί να ρυθμίσετε permissions στον υπολογιστή σας ```chmod -R 0777 <dirname>``` ώστε να είναι εγγράψιμοι οι φάκελοι ```storage```, ```public```.
 - Αν αλλάξετε ρυθμίσεις σε κάποιο αρχείο ρυθμίσεων στον φάκελο ```config``` μετά την εγκατάσταση, πχ ```imap.php```, θα πρέπει για να έφαρμοστούν οι αλλαγές που κάνατε να ανανεώσετε την cache του config με την εντολή ```docker compose exec app php artisan config:cache```
 

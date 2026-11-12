@@ -66,6 +66,23 @@ return [
     ],
 
     /*
+    | Header decoding. ext-imap is not installed (removed from PHP core, unmaintained), so a
+    | custom decoder handles RFC 2047 words and Greek legacy charsets (see App\Support\Imap\HeaderDecoder).
+    */
+    'decoding' => [
+        'options' => [
+            'header' => 'utf-8',
+            'message' => 'utf-8',
+            'attachment' => 'utf-8',
+        ],
+        'decoder' => [
+            'header' => \App\Support\Imap\HeaderDecoder::class,
+            'message' => \Webklex\PHPIMAP\Decoder\MessageDecoder::class,
+            'attachment' => \Webklex\PHPIMAP\Decoder\AttachmentDecoder::class,
+        ],
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Available IMAP options
     |--------------------------------------------------------------------------
