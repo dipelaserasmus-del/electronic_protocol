@@ -131,6 +131,7 @@ Modernize **before** features, but only after a safety net of tests exists:
 | U03 | Whole-window drag-and-drop for attachments | UI | P2 | M | P06 |
 | U04 | File-type icons next to attachments | UI | P3 | S | W05 |
 | U05 | Attachment file size (stored in DB at upload + backfill command → no runtime cost) | DATA/UI | P3 | S | D01 |
+| T01 | Attachment trash with retention (owner request). 🔎 Already partly there: deleting moves the file to `trash/` + soft-deletes the DB row; admin can only empty it all at once. Add: setting "keep deleted attachments for N days" + daily auto-purge (scheduler), trash page listing file, original protocol (number/year/subject, link), deleted by/when, **restore** and delete-now actions; handle attachments of deleted protocols too | DATA/BE | P1 | M | F02, S03 |
 | E01 | Inbox left sidebar with message list; click scrolls to message | UI | P2 | M | W06 |
 | E02 | Collapsible plain/HTML sections, remembered per browser | UI | P2 | S | W06 |
 | E03 | Local EML cache (mailbox + UIDVALIDITY + UID), headers-only on revisit, locking for concurrent users, expiry | EMAIL | P1 | L | M02 |
@@ -142,8 +143,9 @@ Modernize **before** features, but only after a safety net of tests exists:
 
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
-| A01 | Check engine + "Έλεγχοι" page + banner at top of protocol list | AUTO | P2 | M | F02 |
-| A02 | Missing numbers (gaps) on list refresh; last-30-days report | AUTO | P2 | S | A01 |
+| A01 | Check engine + "Έλεγχοι" page + banner at top of protocol list (absorbs A02) | AUTO | P2 | M | F02, A02 |
+| A07 | Optional: when deleting a protocol, offer "mark as ΕΛΕΥΘΕΡΟ" instead of deleting, so no gap is created (see Q-2) | AUTO | P2 | S | A02 |
+| A02 | Missing-number banner (owner request, **high importance**): on the main protocol list, show at the top every number missing between the configurable **"check gaps from number"** setting and the current max of the active year (e.g. 999 and 1001 exist, 1000 doesn't). Each gap links to create/fill it. Built standalone early; A01 later reuses it. Plus last-30-days report | AUTO | **P1** | M | F02, B08 |
 | A03 | Dates must not go backwards as numbers increase | AUTO | P2 | S | A01 |
 | A04 | Contains "εκκρεμότητα" (accent/case-insensitive) | AUTO | P3 | S | A01 |
 | A05 | Duplicates: identical / partially identical (subject, in_num, sender, attachment hash) without `sxetiko` | AUTO | P2 | M | A01, U05 |
@@ -152,17 +154,18 @@ Modernize **before** features, but only after a safety net of tests exists:
 ---
 
 ## Execution order
-F01 → F03 → F02 → **S00** → B03 → B08 → S02 → F04 → F05 → S03 → S04 → S05 → S06 → S07 →
-M01 → M02 → D01 → B01 → B07 → Q02 → B04 → B05 → B02 → B06 → M03 → M04 →
+F01 → F03 → F02 → **S00** → B03 → B08 → S02 → A02 → F04 → F05 → S03 → S04 → S05 → S06 → S07 →
+M01 → M02 → D01 → T01 → B01 → B07 → Q02 → B04 → B05 → B02 → B06 → M03 → M04 →
 W01 → W02 → W03 → W04 → W05 → W06 → W07 →
-P01…P11 → Q01 → Q03 → Q04a → Q04b → U01 → E02 → E01 → U03 → U04 → U05 → E06 → A01…A06 → E03 → E04 → E05
+P01…P11 → Q01 → Q03 → Q04a → Q04b → U01 → E02 → E01 → U03 → U04 → U05 → E06 → A01, A03…A07 → E03 → E04 → E05
 
 ## Answered questions
 - **Q-1** (B03): The number and date at the top of the form can be edited, but on save the date always becomes today and the number the next free one; the user has to re-enter both and save again. → Handled in B03 (+ B08).
 
 ## Context
-- Owner can supply real-world emails (.eml) that are safe to handle online → test fixtures in `tests/fixtures/emails/` (used by F03 mock IMAP, B02, B05, E03, E04).
+- Owner can supply some real-world emails (not every case, due to sensitivity; the rest synthetic) (.eml) that are safe to handle online → test fixtures in `tests/fixtures/emails/` (used by F03 mock IMAP, B02, B05, E03, E04).
 - App runs on the local network only (not internet-exposed), MySQL, multiple concurrent users. Symptoms today: random page timeouts, 500 errors, functional and UI bugs.
 
 ## Open questions
-- none
+- **Q-2** (A07): Is deleting a protocol ever legitimate, or should deletion always leave a ΕΛΕΥΘΕΡΟ placeholder?
+- **Q-3** (A02): With yearly numbering, should the check run per year (current year only, or all years)?
