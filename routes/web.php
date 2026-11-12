@@ -68,6 +68,8 @@ Route::get('/download/{attachment}', 'ProtocolController@download');
 
 Route::get('/find', 'ProtocolController@find');
 Route::get('/getFindData', 'ProtocolController@getFindData');
+// autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
+Route::get('/getValues/{field}/{id}/{divId}/{multi}', 'ProtocolController@getValuesQuery');
 Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', 'ProtocolController@getValues');
 
 Route::get('/print', 'ProtocolController@printprotocols');
