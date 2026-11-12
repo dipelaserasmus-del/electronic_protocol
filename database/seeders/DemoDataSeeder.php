@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Synthetic protocol book for the dev/preview stack: ~120 entries of the current year,
  * incoming/outgoing mix, folders, assignments, attachments, a few ΕΛΕΥΘΕΡΟ placeholders and
- * two deliberate gaps in the numbering (for the missing-number check, task A02).
+ * two deliberate gaps in the numbering, 37 and 88 (for the missing-number check, task A02).
+ * Dates run from 8 January to today.
  * All content is invented.
  */
 class DemoDataSeeder extends Seeder
@@ -31,10 +32,11 @@ class DemoDataSeeder extends Seeder
         $folders = Keepvalue::inRandomOrder()->limit(12)->pluck('fakelos')->all();
         $gaps = [37, 88];
 
-        $day = new \DateTime("$year-01-08");
-        $today = new \DateTime();
+        $start = new \DateTime("$year-01-08");
+        $span = max(0, (int) $start->diff(new \DateTime())->days);
         for ($n = 1; $n <= 120; $n++) {
-            if ($day > $today) $day = clone $today;
+            // dates spread evenly from 8 January to today, never decreasing
+            $day = (clone $start)->modify('+' . intdiv(($n - 1) * $span, 119) . ' days');
             if (in_array($n, $gaps, true)) continue;
 
             $factory = Protocol::factory()->number($n, $year)->onDate($day->format('Ymd'))
@@ -51,7 +53,6 @@ class DemoDataSeeder extends Seeder
                 Storage::put($path, "%PDF-1.4\n% synthetic attachment for protocol $n\n");
                 Attachment::create(['protocol_id' => $p->id, 'name' => $name, 'mimeType' => 'application/pdf', 'savedPath' => $path]);
             }
-            if ($n % 2 === 0) $day->modify('+' . fake()->numberBetween(1, 3) . ' days');
         }
     }
 }

@@ -35,6 +35,15 @@ class ProtocolNumbering
         return $submitted !== '' && $proposed !== null && $submitted !== trim($proposed);
     }
 
+    /**
+     * The number field is editable only for administrators while "Έλεγχοι καταχώρισης" (protocolValidate)
+     * is OFF (see ProtocolController::index). The server applies the same rule.
+     */
+    public function userMayChooseNumber(\App\User $user): bool
+    {
+        return $user->role?->role === 'Διαχειριστής' && !Config::getConfigValueOf('protocolValidate');
+    }
+
     public function exists(int $num, int $etos): bool
     {
         return Protocol::whereEtos($etos)->where('protocolnum', $num)->exists();

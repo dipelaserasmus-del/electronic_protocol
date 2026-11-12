@@ -24,6 +24,33 @@
                     <div class="panel-body">
                         <div class="panel panel-default col-md-12 col-sm-12 col-xs-12  ">
 
+                            {{-- A02: υπενθύμιση κενών αριθμών πρωτοκόλλου --}}
+                            @if (!empty($numberGaps))
+                                <div class="row">
+                                    <div class="alert alert-warning col-md-12 col-sm-12 col-xs-12" id="numberGaps" role="alert"
+                                        style="margin: 10px 0">
+                                        <strong>Κενά στην αρίθμηση:</strong>
+                                        @foreach ($numberGaps as $gapYear => $gapNumbers)
+                                            <span style="margin-right: 1.5em">
+                                                έτος {{ $gapYear }} →
+                                                @foreach (array_slice($gapNumbers, 0, 30) as $gapNum)
+                                                    @if ($canCreateProtocol && $gapYear == date('Y'))
+                                                        <a href="{{ URL::to('/home') }}?num={{ $gapNum }}"
+                                                            title="Νέο πρωτόκολλο με αριθμό {{ $gapNum }}">{{ $gapNum }}</a>@if (!$loop->last), @endif
+                                                    @else
+                                                        {{ $gapNum }}@if (!$loop->last), @endif
+                                                    @endif
+                                                @endforeach
+                                                @if (count($gapNumbers) > 30)
+                                                    … (σύνολο {{ count($gapNumbers) }}: {{ \App\Services\NumberGaps::compact($gapNumbers) }})
+                                                @endif
+                                            </span>
+                                        @endforeach
+                                        <small class="text-muted">(έλεγχος τελευταίων {{ $gapMonths }} μηνών)</small>
+                                    </div>
+                                </div>
+                            @endif
+
 
 
 

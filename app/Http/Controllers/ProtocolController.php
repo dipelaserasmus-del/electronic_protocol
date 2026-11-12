@@ -144,6 +144,9 @@ class ProtocolController extends Controller
 
         // βρίσκω το νέο αριθμό πρωτοκόλλου (ίδιος κανόνας με την αποθήκευση)
         $newprotocolnum = app(\App\Services\ProtocolNumbering::class)->next((int) $newetos);
+        // A02: "fill a gap" link from the protocol list pre-fills the chosen number (treated as a manual number on save)
+        $prefillNum = (!$protocol->exists && ctype_digit((string) request('num'))
+            && app(\App\Services\ProtocolNumbering::class)->userMayChooseNumber(Auth::user())) ? (int) request('num') : null;
 
         // βρίσκω τους όλους ενεργούς χρήστες
         $activeusers = User::activeOnline()->get(); 
@@ -427,7 +430,7 @@ class ProtocolController extends Controller
         $years = Keepvalue::whereNotNull('keep')->select('keep')->distinct()->orderby('keep', 'asc')->get();
         $words = Keepvalue::whereNotNull('keep_alt')->select('keep_alt')->distinct()->orderby('keep_alt', 'asc')->get();
 
-        return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly'));
+        return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'prefillNum', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly'));
     }
 
     public function chkForUpdates()
@@ -644,7 +647,13 @@ class ProtocolController extends Controller
                 }
             }
         }
-        return view('protocolList', compact('protocols', 'refreshInterval', 'needsUpdate', 'diavgeiaUrl', 'activeusers2show', 'writers_admins', 'protocoltitle'));
+        // A02: missing protocol numbers (shown to users who register protocols)
+        $canCreateProtocol = app(\App\Services\ProtocolNumbering::class)->userMayChooseNumber(Auth::user());
+        $seesGaps = in_array(Auth::user()->role->role, ['Διαχειριστής', 'Αναθέτων', 'Συγγραφέας'], true);
+        $numberGaps = $seesGaps ? app(\App\Services\NumberGaps::class)->find() : [];
+        $gapMonths = (int) (Config::getConfigValueOf('gapCheckMonths') ?: \App\Services\NumberGaps::DEFAULT_MONTHS);
+
+        return view('protocolList', compact('protocols', 'refreshInterval', 'needsUpdate', 'diavgeiaUrl', 'activeusers2show', 'writers_admins', 'protocoltitle', 'numberGaps', 'gapMonths', 'canCreateProtocol'));
     }
 
 
@@ -689,7 +698,9 @@ class ProtocolController extends Controller
         // B03: a number the user typed (different from the proposed one) is always respected,
         // even with "safe new protocol number" ON. Safe mode only replaces numbers the user didn't touch.
         $numbering = app(\App\Services\ProtocolNumbering::class);
-        $manualNumber = $numbering->isManual(request('protocolnum'), request('protocolnum_proposed'));
+        // only users who can edit the number field (admin with "registration checks" OFF) may choose a number
+        $manualNumber = $numbering->userMayChooseNumber(Auth::user())
+            && $numbering->isManual(request('protocolnum'), request('protocolnum_proposed'));
         $mustValidate = [
             'etos' => 'required|integer|digits:4',
             'protocoldate' => 'required',
