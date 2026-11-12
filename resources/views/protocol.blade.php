@@ -95,7 +95,7 @@
                                                 <input id="protocolnum" type="text"
                                                     class="form-control input-lg text-center asd text-bold {{ $newprotocolnumvisible }}"
                                                     name="protocolnum" placeholder="num"
-                                                    value="{{ old('protocolnum') ? old('protocolnum') : $newprotocolnum }}"
+                                                    value="{{ old('protocolnum') ?: ($prefillNum ?? $newprotocolnum) }}"
                                                     title='1. Αύξων αριθμός' required tabindex=-1 {{ $readonly }}>
                                             </div>
                                             @unless ($protocol->id)

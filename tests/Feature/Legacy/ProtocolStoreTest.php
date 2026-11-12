@@ -50,6 +50,7 @@ class ProtocolStoreTest extends FeatureTestCase
     {
         Protocol::factory()->number(10)->create();
         $this->setting('safeNewProtocolNum', 1);
+        $this->setting('protocolValidate', 0);   // number field editable (admin, checks OFF)
 
         $this->actingAs($this->admin())->post('/home', $this->protocolForm([
             'protocolnum' => 50, 'protocolnum_proposed' => 11, 'protocoldate' => '02/03/' . now()->year,
@@ -57,6 +58,21 @@ class ProtocolStoreTest extends FeatureTestCase
 
         $this->assertDatabaseHas('protocols', ['protocolnum' => 50, 'protocoldate' => now()->year . '0302']);
         $this->assertDatabaseMissing('protocols', ['protocolnum' => 11]);
+    }
+
+    /** B03/A02: only users who can edit the number field may choose a number (no crafted requests) */
+    public function test_writer_cannot_choose_a_number_with_a_crafted_request(): void
+    {
+        Protocol::factory()->number(10)->create();
+        $this->setting('safeNewProtocolNum', 1);
+        $this->setting('protocolValidate', 0);
+
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 50, 'protocolnum_proposed' => 11,
+        ]));
+
+        $this->assertDatabaseMissing('protocols', ['protocolnum' => 50]);
+        $this->assertDatabaseHas('protocols', ['protocolnum' => 11]);
     }
 
     /** B03: safe mode still protects users who did not touch the proposed number */
@@ -78,6 +94,7 @@ class ProtocolStoreTest extends FeatureTestCase
     {
         Protocol::factory()->number(10)->create();
         $this->setting('safeNewProtocolNum', 1);
+        $this->setting('protocolValidate', 0);   // number field editable (admin, checks OFF)
 
         $this->actingAs($this->admin())->from('/home')->post('/home', $this->protocolForm([
             'protocolnum' => 10, 'protocolnum_proposed' => 11, 'thema' => 'Να μη χαθεί',

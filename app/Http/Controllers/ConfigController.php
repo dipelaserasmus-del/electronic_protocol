@@ -61,6 +61,11 @@ class ConfigController extends Controller
             'maxRowsInFindPage' => 'nullable|integer',
             'maxRowsInXlsExport' => 'nullable|integer',
             'minutesRefreshInterval' => 'required|numeric',
+            'gapCheckFromNumber' => 'nullable|integer|min:1',
+            'gapCheckMonths' => 'nullable|integer|min:1|max:24',
+        ], [
+            'gapCheckFromNumber.*' => 'Ο αριθμός έναρξης ελέγχου κενών πρέπει να είναι θετικός ακέραιος.',
+            'gapCheckMonths.*' => 'Οι μήνες ελέγχου κενών πρέπει να είναι από 1 έως 24.',
         ]);
 
 

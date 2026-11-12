@@ -58,6 +58,29 @@
                                             title=''>
                                     </div>
                                 </div>
+                                {{-- A02: έλεγχος κενών στην αρίθμηση --}}
+                                <div class="row">
+                                    <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
+                                        Έλεγχος κενών αριθμών: από Αρ.Πρωτοκόλλου (τρέχον έτος, κενό = από την αρχή)
+                                    </div>
+                                    <div class="col-md-2 col-sm-2  " id="gapCheckFromNumberdiv">
+                                        <input id="gapCheckFromNumber" type="text" class="form-control text-center"
+                                            name="gapCheckFromNumber" placeholder="π.χ. 1000"
+                                            value="{{ $settings['gapCheckFromNumber'] ?? App\Config::getConfigValueOf('gapCheckFromNumber') }}"
+                                            title='Αριθμοί κάτω από αυτόν δεν ελέγχονται για κενά'>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
+                                        Έλεγχος κενών αριθμών: τελευταίοι μήνες
+                                    </div>
+                                    <div class="col-md-2 col-sm-2  " id="gapCheckMonthsdiv">
+                                        <input id="gapCheckMonths" type="text" class="form-control text-center"
+                                            name="gapCheckMonths" placeholder="6"
+                                            value="{{ $settings['gapCheckMonths'] ?? (App\Config::getConfigValueOf('gapCheckMonths') ?: 6) }}"
+                                            title='Ελέγχονται πρωτόκολλα με ημερομηνία στο διάστημα αυτό'>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="panel panel-default col-md-12 col-sm-12  ">
