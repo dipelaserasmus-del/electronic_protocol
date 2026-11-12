@@ -43,6 +43,9 @@ class NumberGaps
                 $lower = $from;
             }
             $upper = end($numbers);
+            if ($lower >= $upper) {
+                continue;   // start number at/after the last entry: nothing between existing numbers
+            }
             $missing = array_values(array_diff(range($lower, $upper), $numbers));
             if ($missing) {
                 $result[$year] = $missing;

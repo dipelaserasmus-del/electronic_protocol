@@ -34,7 +34,7 @@
                                             <span style="margin-right: 1.5em">
                                                 έτος {{ $gapYear }} →
                                                 @foreach (array_slice($gapNumbers, 0, 30) as $gapNum)
-                                                    @if ($canCreateProtocol && $gapYear == date('Y'))
+                                                    @if ($canCreateProtocol && $gapYear == $formYear)
                                                         <a href="{{ URL::to('/home') }}?num={{ $gapNum }}"
                                                             title="Νέο πρωτόκολλο με αριθμό {{ $gapNum }}">{{ $gapNum }}</a>@if (!$loop->last), @endif
                                                     @else

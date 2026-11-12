@@ -60,6 +60,30 @@ class NumberGapsTest extends FeatureTestCase
         $this->assertSame([2025 => [501], 2026 => [2]], $this->gaps('2026-02-01'));
     }
 
+    /** Review finding: start number above the last entry must not produce descending "gaps" */
+    public function test_start_number_above_last_entry_gives_no_gaps(): void
+    {
+        $this->setting('gapCheckFromNumber', 10);
+        $this->book(2026, [1, 2, 3], '1001');
+
+        $this->assertSame([], $this->gaps());
+    }
+
+    /** Review finding: links must open the form in the same year as the gap */
+    public function test_gap_links_only_for_the_active_protocol_year(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $year = now()->year;
+        $this->book($year, [1, 2, 4], now()->format('md'));
+        $admin = $this->admin();
+
+        $this->setting('yearInUse', $year - 1);   // form would save into last year's book
+        $this->actingAs($admin)->get('/home/list')->assertSee('Κενά στην αρίθμηση')->assertDontSee('/home?num=3', false);
+
+        $this->setting('yearInUse', $year);
+        $this->actingAs($admin)->get('/home/list')->assertSee('/home?num=3', false);
+    }
+
     public function test_compact_formatting(): void
     {
         $this->assertSame('37, 88, 100–105', NumberGaps::compact([37, 88, 100, 101, 102, 103, 104, 105]));

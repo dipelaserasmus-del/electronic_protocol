@@ -652,8 +652,10 @@ class ProtocolController extends Controller
         $seesGaps = in_array(Auth::user()->role->role, ['Διαχειριστής', 'Αναθέτων', 'Συγγραφέας'], true);
         $numberGaps = $seesGaps ? app(\App\Services\NumberGaps::class)->find() : [];
         $gapMonths = (int) (Config::getConfigValueOf('gapCheckMonths') ?: \App\Services\NumberGaps::DEFAULT_MONTHS);
+        // gap links open the new-protocol form, which uses the active year: link only that year's gaps
+        $formYear = (int) (Config::getConfigValueOf('yearInUse') ?: Carbon::now()->year);
 
-        return view('protocolList', compact('protocols', 'refreshInterval', 'needsUpdate', 'diavgeiaUrl', 'activeusers2show', 'writers_admins', 'protocoltitle', 'numberGaps', 'gapMonths', 'canCreateProtocol'));
+        return view('protocolList', compact('protocols', 'refreshInterval', 'needsUpdate', 'diavgeiaUrl', 'activeusers2show', 'writers_admins', 'protocoltitle', 'numberGaps', 'gapMonths', 'canCreateProtocol', 'formYear'));
     }
 
 
