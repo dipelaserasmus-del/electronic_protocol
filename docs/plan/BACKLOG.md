@@ -83,6 +83,7 @@ Written as small reusable services so the rebuilt modules reuse them instead of 
 | D01 | `thema`, `in_perilipsi`, `out_perilipsi` VARCHAR(255) → TEXT | DATA | P1 | S | F02 |
 | D02 | 🔎 Assignments stored as text `"d14,e10,"` searched with `LIKE` → proper `protocol_assignments` table (user, type d/e, done date); backfill; enables E06 and fast, correct filtering | DATA | P1 | M | F04 |
 | D03 | Attachment metadata: size, SHA-256 hash, `deleted_by`; backfill command (for U05, A05, T01) | DATA | P2 | S | F04 |
+| D05 | 🔎 (from F03) Convert tables from `utf8` (3-byte) to `utf8mb4` so emoji/symbols can be stored without errors 👤 | DATA | P1 | S | F04 |
 | D04 | 🔎 Dates stored as integers `Ymd` → real DATE columns; backfill | DATA | P2 | M | F04 |
 
 ## Phase 4 — Module rebuilds
@@ -158,7 +159,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
 2. **Batch 2:** F04 → F05 → S04 → B04 → B07
 3. **Batch 3:** N01 → N02 → N03 → N04
-4. **Batch 4:** D01 → D02 👤 → D03 👤 → D04 👤
+4. **Batch 4:** D01 → D05 👤 → D02 👤 → D03 👤 → D04 👤
 5. **Batch 5:** R1a → R1b → R1c → R2 → R4a → R4b
 6. **Batch 6:** R3a → R3b → R3c
 7. **Batch 7:** R5a 📧 → R5c → R5d → R5b

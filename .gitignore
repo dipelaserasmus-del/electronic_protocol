@@ -8,3 +8,11 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/.env.development
+/local-data
+/docker/dev/mail-preload
+/.phpunit.cache
+/storage/conf/.denyregister
+/public/tmp/*
+!/public/tmp/.gitignore
+/storage/debugbar

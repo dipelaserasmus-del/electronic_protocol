@@ -1,0 +1,69 @@
+Return-Path: <kepa@example.test>
+Message-ID: <syn4@synthetic.test>
+Date: Mon, 02 Nov 2026 10:15:00 +0000
+From: =?UTF-8?B?zprOlc6gzpXOkSDOlM6/zrrOuc68zq4=?=
+ =?UTF-8?B?z4I=?= <kepa@example.test>
+To: Γραμματεία Σχολείου <protocol@school.test>
+Subject: =?UTF-8?B?zpHPgM6/z4PPhM6/zrvOriDPg8+Ezr8=?=
+ =?UTF-8?B?zrnPh861zq/Pic69IOKAlCDPgM6vzr0=?=
+ =?UTF-8?B?zrHOus61z4IgzrrOsc65IM+DzrHPgQ==?=
+ =?UTF-8?B?z4nOvM6tzr3OvyDOrc6zzrPPgc6xz4Y=?=
+ =?UTF-8?B?zr8=?=
+MIME-Version: 1.0
+X-Synthetic-Case: multiple-attachments
+Content-Type: multipart/mixed; boundary="b_e6a40a375c1045aefc290142e44d2ffb"
+
+This is a multi-part message in MIME format.
+--b_e6a40a375c1045aefc290142e44d2ffb
+Content-Type: multipart/alternative; boundary="alt_cb7524d792327e4c443d619de5c71a7a"
+
+--alt_cb7524d792327e4c443d619de5c71a7a
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+=CE=A3=CF=85=CE=BD=CE=B7=CE=BC=CE=BC=CE=AD=CE=BD=CE=B1 =CE=B8=CE=B1 =CE=
+=B2=CF=81=CE=B5=CE=AF=CF=84=CE=B5 3 =CE=B1=CF=81=CF=87=CE=B5=CE=AF=CE=B1.
+--alt_cb7524d792327e4c443d619de5c71a7a
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<p>=CE=A3=CF=85=CE=BD=CE=B7=CE=BC=CE=BC=CE=AD=CE=BD=CE=B1 =CE=B8=CE=B1 =
+=CE=B2=CF=81=CE=B5=CE=AF=CF=84=CE=B5 <b>3</b> =CE=B1=CF=81=CF=87=CE=B5=
+=CE=AF=CE=B1.</p>
+--alt_cb7524d792327e4c443d619de5c71a7a--
+--b_e6a40a375c1045aefc290142e44d2ffb
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=UTF-8''%CE%A0%CE%AF%CE%BD%CE%B1%CE%BA%CE%B1%CF%82%20%CE%91.pdf
+
+JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIg
+NzkyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4g
+Pj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0MCA+PgpzdHJlYW0KQlQgL0YxIDE4IFRm
+IDUwIDc1MCBUZCAoUGluYWthcyBBKSBUaiBFVAplbmRzdHJlYW0KZW5kb2JqCjUgMCBvYmoKPDwg
+L1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhID4+CmVuZG9i
+agp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAw
+MDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDEgMDAwMDAgbiAKMDAw
+MDAwMDMzMSAwMDAwMCBuIAp0cmFpbGVyIDw8IC9TaXplIDYgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4
+cmVmCjQwMQolJUVPRgo=
+--b_e6a40a375c1045aefc290142e44d2ffb
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=UTF-8''%CF%83%CE%AC%CF%81%CF%89%CF%83%CE%B7_001.png
+
+iVBORw0KGgoAAAANSUhEUgAAAHgAAAAoCAIAAAC6iKlyAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB
+HUlEQVRoge2aQRKCMAxFwfEcci9ZeDVZeDBv4sKR6UAa0JbfdnxvZ5uJ7WtIWdBfrvcOjudUegH/
+AqJFIFoEokUgWgSiRSBaBKJFIFoEokUgWgSiRSBaBKJFnP3p5+O2HhzGyZx6jy+mYsFh/J5/D4Nj
+4/PUItj5KWNDdOhuvT5zxebG/DwmMUGOuD0xpWi+dZhHOIyT+QwV5HDRuUopJU8N3jdah4/ZK+dd
+JSrOlacSkkTHFIQXYGIlfpXHKdv3sRU8syTRPua9dGie2JtJDeTv0bl2mN1U2U7d/FtHbZUbI9tl
+2H2e3EXh/Nw3YnlS8hcs6p4PaDQ03zpaAdEiEC0C0SIQLQLRIhAtAtEiEC0C0SIQLQLRIhAtAtEi
+XrOLjuoQop8+AAAAAElFTkSuQmCC
+--b_e6a40a375c1045aefc290142e44d2ffb
+Content-Type: text/csv
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=UTF-8''%CE%BA%CE%B1%CF%84%CE%AC%CF%83%CF%84%CE%B1%CF%83%CE%B7.csv
+
+zpEvzpE7zpXPgM+Ozr3Phc68zr87zozOvc6/zrzOsQoxO86Uzr/Ous65zrzOrjvOoM+Bz47PhM6/
+z4IKMjvOlM6/zrrOuc68zq47zpTOtc+Nz4TOtc+Bzr/Pggo=
+--b_e6a40a375c1045aefc290142e44d2ffb--

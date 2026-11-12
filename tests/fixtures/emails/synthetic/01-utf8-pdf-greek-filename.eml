@@ -1,0 +1,56 @@
+Return-Path: <dnsh@dipe.example.test>
+Message-ID: <syn1@synthetic.test>
+Date: Mon, 02 Nov 2026 07:15:00 +0000
+From: =?UTF-8?B?zpTOuc61z43OuM+Fzr3Pg863IM6gLg==?=
+ =?UTF-8?B?zpUuIM6Uzr/Ous65zrzOrs+C?= <dnsh@dipe.example.test>
+To: Γραμματεία Σχολείου <protocol@school.test>
+Subject: =?UTF-8?B?zqDPgc+Mz4POus67zrfPg863IM+DzrU=?=
+ =?UTF-8?B?IM61z4DOuc68zr/Pgc+Gz4nPhM65zro=?=
+ =?UTF-8?B?zq4gzrfOvM61z4HOr860zrEgzrXOug==?=
+ =?UTF-8?B?z4DOsc65zrTOtc+Fz4TOuc66z47OvQ==?=
+MIME-Version: 1.0
+X-Synthetic-Case: utf8-pdf-greek-filename
+Content-Type: multipart/mixed; boundary="b_4eabd5b4f115642ead051a5d193498ad"
+
+This is a multi-part message in MIME format.
+--b_4eabd5b4f115642ead051a5d193498ad
+Content-Type: multipart/alternative; boundary="alt_a9f7e97965d6cf799a529102a973b8b9"
+
+--alt_a9f7e97965d6cf799a529102a973b8b9
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+=CE=A3=CE=B1=CF=82 =CE=B1=CF=80=CE=BF=CF=83=CF=84=CE=AD=CE=BB=CE=BB=CE=
+=BF=CF=85=CE=BC=CE=B5 =CF=83=CF=85=CE=BD=CE=B7=CE=BC=CE=BC=CE=AD=CE=BD=
+=CE=B1 =CF=84=CE=B7=CE=BD =CF=80=CF=81=CF=8C=CF=83=CE=BA=CE=BB=CE=B7=CF=
+=83=CE=B7.=0A=0A=CE=9C=CE=B5 =CE=B5=CE=BA=CF=84=CE=AF=CE=BC=CE=B7=CF=83=
+=CE=B7,=0A=CE=97 =CE=94=CE=B9=CE=B5=CF=85=CE=B8=CF=8D=CE=BD=CF=84=CF=81=
+=CE=B9=CE=B1
+--alt_a9f7e97965d6cf799a529102a973b8b9
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<p>=CE=A3=CE=B1=CF=82 =CE=B1=CF=80=CE=BF=CF=83=CF=84=CE=AD=CE=BB=CE=BB=
+=CE=BF=CF=85=CE=BC=CE=B5 <b>=CF=83=CF=85=CE=BD=CE=B7=CE=BC=CE=BC=CE=AD=
+=CE=BD=CE=B1</b> =CF=84=CE=B7=CE=BD =CF=80=CF=81=CF=8C=CF=83=CE=BA=CE=BB=
+=CE=B7=CF=83=CE=B7.</p><p>=CE=9C=CE=B5 =CE=B5=CE=BA=CF=84=CE=AF=CE=BC=CE=
+=B7=CF=83=CE=B7,<br>=CE=97 =CE=94=CE=B9=CE=B5=CF=85=CE=B8=CF=8D=CE=BD=CF=
+=84=CF=81=CE=B9=CE=B1</p>
+--alt_a9f7e97965d6cf799a529102a973b8b9--
+--b_4eabd5b4f115642ead051a5d193498ad
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=UTF-8''%CE%A0%CF%81%CF%8C%CF%83%CE%BA%CE%BB%CE%B7%CF%83%CE%B7%20%CE%B7%CE%BC%CE%B5%CF%81%CE%AF%CE%B4%CE%B1%CF%82%202026.pdf
+
+JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIg
+NzkyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4g
+Pj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0OCA+PgpzdHJlYW0KQlQgL0YxIDE4IFRm
+IDUwIDc1MCBUZCAoUHJvc2tsaXNpIGltZXJpZGEpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAw
+IG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2Eg
+Pj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBu
+IAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MSAwMDAw
+MCBuIAowMDAwMDAwMzM5IDAwMDAwIG4gCnRyYWlsZXIgPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+
+PgpzdGFydHhyZWYKNDA5CiUlRU9GCg==
+--b_4eabd5b4f115642ead051a5d193498ad--
