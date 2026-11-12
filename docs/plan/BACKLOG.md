@@ -165,6 +165,7 @@ P01…P11 → Q01 → Q03 → Q04a → Q04b → U01 → E02 → E01 → U03 → 
 
 ## Context
 - Owner can supply some real-world emails (not every case, due to sensitivity; the rest synthetic) (.eml) that are safe to handle online → test fixtures in `tests/fixtures/emails/` (used by F03 mock IMAP, B02, B05, E03, E04).
+- 📧 **Remind owner to provide emails before starting F03, B02, B05, B07, E03, E04.** Repo is a public fork (cannot be made private): commit only public-safe emails; sensitive ones stay in owner's git-ignored `local-data/emails/`.
 - App runs on the local network only (not internet-exposed), MySQL, multiple concurrent users. Symptoms today: random page timeouts, 500 errors, functional and UI bugs.
 
 ## Open questions
