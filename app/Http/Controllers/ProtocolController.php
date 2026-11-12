@@ -145,20 +145,8 @@ class ProtocolController extends Controller
         $allowUserChangeKeepSelect = $settings['allowUserChangeKeepSelect'] ?? Config::getConfigValueOf('allowUserChangeKeepSelect');
         $allowListValuesMatchingInput = $settings['allowListValuesMatchingInput'] ?? Config::getConfigValueOf('allowListValuesMatchingInput');
 
-        // βρίσκω το νέο αριθμό πρωτοκόλλου
-        if (Protocol::count()) {
-            if ($settings['yearInUse'] ?? Config::getConfigValueOf('yearInUse')) {
-                $newprotocolnum = Protocol::whereEtos($newetos)->max('protocolnum') ? Protocol::whereEtos($newetos)->max('protocolnum') + 1 : 1;
-            } else {
-                $newprotocolnum = Protocol::last()->protocolnum ? Protocol::last()->protocolnum + 1 : 1;
-            }
-        } else {
-            if ($firstProtocolNum) {
-                $newprotocolnum = $firstProtocolNum;
-            } else {
-                $newprotocolnum = 1;
-            }
-        }
+        // βρίσκω το νέο αριθμό πρωτοκόλλου (ίδιος κανόνας με την αποθήκευση)
+        $newprotocolnum = app(\App\Services\ProtocolNumbering::class)->next((int) $newetos);
 
         // βρίσκω τους όλους ενεργούς χρήστες
         $activeusers = User::activeOnline()->get(); 
@@ -788,18 +776,14 @@ class ProtocolController extends Controller
             $sxetiko = rtrim($data['sxetiko'], ',');
         }
 
-        // Αρ.Πρωτ. που θα αποθηκευτεί
-        if ($safeNewProtocolNum && !$manualNumber) {
-            $protocolNewNum = $numbering->next((int) $etos);
-        } else {
-            $protocolNewNum = (int) $data['protocolnum'];
-        }
+        // Αρ.Πρωτ. που θα αποθηκευτεί: null = ο επόμενος ελεύθερος (B03/B08)
+        $chosenNumber = ($safeNewProtocolNum && !$manualNumber) ? null : (int) $data['protocolnum'];
 
-        // δημιουργία του πρωτοκόλλου
+        // δημιουργία του πρωτοκόλλου (ατομικά, με κλείδωμα αρίθμησης - B08)
         try {
-            $protocol = Protocol::create([
+            $protocol = $numbering->create((int) $etos, $chosenNumber, fn (int $num) => Protocol::create([
                 'user_id' => Auth::user()->id,
-                'protocolnum' => $protocolNewNum,
+                'protocolnum' => $num,
                 'protocoldate' => Carbon::createFromFormat('d/m/Y', $data['protocoldate'])->format('Ymd'),
                 'etos' => $data['etos'],
                 'fakelos' => $data['fakelos'],
@@ -819,10 +803,16 @@ class ProtocolController extends Controller
                 'out_perilipsi' => $data['out_perilipsi'],
                 'keywords' => $keywords,
                 'paratiriseis' => $data['paratiriseis']
-            ]);
+            ]));
+            $protocolNewNum = $protocol->protocolnum;
 
             $saveCycleSxetiko = Config::getConfigValueOf('saveCycleSxetiko');
             if ($saveCycleSxetiko) $this->saveCycleSxetiko($protocolNewNum, $data['etos'], $sxetiko);
+        } catch (\App\Services\ProtocolNumberTaken $e) {
+            // ο αριθμός που επέλεξε ο χρήστης καταλήφθηκε στο μεταξύ: επιστροφή στη φόρμα χωρίς απώλεια δεδομένων
+            return back()->withInput()->withErrors([
+                'protocolnum' => "Ο Αρ. Πρωτοκόλλου {$e->number} υπάρχει ήδη για το έτος {$e->etos}. Επιλέξτε άλλον αριθμό.",
+            ]);
         } catch (\Throwable $e) {
             // αν υπάρξει σφάλμα το στέλνω στο log
             // στέλνω ειδοποίηση στη session
@@ -832,8 +822,8 @@ class ProtocolController extends Controller
                 'alert-type' => 'error'
             );
             session()->flash('notification', $notification);
-            // επιστρέφω πίσω
-            return redirect("home");
+            // επιστρέφω στη φόρμα κρατώντας ό,τι είχε συμπληρώσει ο χρήστης
+            return back()->withInput();
         }
         // δημιουργία στάμπας ΑΡ.Πρωτ.
         $putStamp = Config::getConfigValueOf('putStamp');
@@ -2138,25 +2128,9 @@ class ProtocolController extends Controller
         $diekp_eos = isset($data["diekp_eos"]) ? Carbon::createFromFormat('d/m/Y', $data["diekp_eos"])->format('Ymd') : null;
         $etos = Carbon::now()->format('Y');
 
-        // βρίσκω το νέο Αρ.Πρωτ στην εισαγωγή δεδομένων
-        $firstProtocolNum = Config::getConfigValueOf('firstProtocolNum');
-        if (Protocol::count()) {
-            if (Config::getConfigValueOf('yearInUse')) {
-                $newprotocolnum = Protocol::whereEtos($etos)->max('protocolnum') ? Protocol::whereEtos($etos)->max('protocolnum') + 1 : 1;
-            } else {
-                $newprotocolnum = Protocol::last()->protocolnum ? Protocol::last()->protocolnum + 1 : 1;
-            }
-        } else {
-            if ($firstProtocolNum) {
-                $newprotocolnum = $firstProtocolNum;
-            } else {
-                $newprotocolnum = 1;
-            }
-        }
-
-        // αποθηκεύω το Πρωτόκολλο
+        // αποθηκεύω το Πρωτόκολλο με τον επόμενο ελεύθερο αριθμό (ατομικά, με κλείδωμα - B08)
         try {
-            $protocolCreated = Protocol::create([
+            $protocolCreated = app(\App\Services\ProtocolNumbering::class)->create((int) $etos, null, fn (int $newprotocolnum) => Protocol::create([
                 'user_id' => Auth::user()->id,
                 'protocolnum' => $newprotocolnum,
                 'protocoldate' => Carbon::now()->format('Ymd'),
@@ -2178,7 +2152,7 @@ class ProtocolController extends Controller
                 'out_perilipsi' => null,
                 'keywords' => null,
                 'paratiriseis' => $paratiriseis
-            ]);
+            ]));
         } catch (\Throwable $e) {
             // σε λάθος γράφω στο log
             report($e);
