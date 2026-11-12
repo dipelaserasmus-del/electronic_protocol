@@ -24,6 +24,9 @@ abstract class FeatureTestCase extends TestCase
         Storage::fake('local');
         // the "check for updates" call goes to GitHub on page load; never in tests
         Config::setConfigValueOf('updatesAutoCheck', 0);
+        // AppServiceProvider shares settings with all views at boot; on a brand-new test database the
+        // tables didn't exist yet at that moment, so share them again now that they are seeded.
+        (new \App\Providers\AppServiceProvider($this->app))->boot();
         @unlink(storage_path('conf/.denyregister'));
     }
 
