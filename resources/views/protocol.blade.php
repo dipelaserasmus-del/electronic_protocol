@@ -100,7 +100,7 @@
                                             </div>
                                             @unless ($protocol->id)
                                                 {{-- B03: lets the server tell a typed number from the proposed one --}}
-                                                <input type="hidden" name="protocolnum_proposed" value="{{ $newprotocolnum }}">
+                                                <input type="hidden" name="protocolnum_proposed" value="{{ old('protocolnum_proposed') ?: $newprotocolnum }}">
                                             @endunless
                                             <div class="col-md-1 col-sm-1 small text-center">
                                                 <strong>Ημνια<br>παραλαβής</strong>

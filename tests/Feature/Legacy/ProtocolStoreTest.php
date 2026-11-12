@@ -105,6 +105,17 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertStringStartsWith('arxeio/Φ.1/12-', $p->attachments()->firstOrFail()->savedPath);
     }
 
+    /** Review finding on B03: after a validation error the form must keep the ORIGINAL proposed number */
+    public function test_proposed_number_survives_a_validation_redirect(): void
+    {
+        Protocol::factory()->number(10)->create();
+        Protocol::factory()->number(11)->create();   // someone took 11 meanwhile; we were proposed 11
+
+        $this->withSession(['_old_input' => ['protocolnum' => '11', 'protocolnum_proposed' => '11']])
+            ->actingAs($this->writer())->get('/home')
+            ->assertSee('name="protocolnum_proposed" value="11"', false);
+    }
+
     public function test_new_protocol_form_sends_the_proposed_number(): void
     {
         Protocol::factory()->number(41)->create();

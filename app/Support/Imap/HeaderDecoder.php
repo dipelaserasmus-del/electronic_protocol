@@ -60,7 +60,15 @@ class HeaderDecoder extends BaseHeaderDecoder
                 }
                 $out = @iconv($charset, 'UTF-8//IGNORE', $bytes);
                 if ($out === false || $out === '') {
-                    $out = @mb_convert_encoding($bytes, 'UTF-8', $charset) ?: $bytes;
+                    try {
+                        $out = mb_convert_encoding($bytes, 'UTF-8', $charset);
+                    } catch (\ValueError) {
+                        $out = false;   // charset unknown to both converters
+                    }
+                }
+                if ($out === false || $out === '') {
+                    // keep it readable: valid UTF-8 as is, otherwise treat as legacy Greek
+                    $out = mb_check_encoding($bytes, 'UTF-8') ? $bytes : (string) @iconv(self::LEGACY_CHARSET, 'UTF-8//IGNORE', $bytes);
                 }
                 return $out;
             },
