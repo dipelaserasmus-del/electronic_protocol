@@ -75,7 +75,9 @@ Modernize **before** features, but only after a safety net of tests exists:
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
 | B01 | Input sanitation: `--` in summary breaks registration; fuzz all fields with special chars (`-- ' " ; % _ \ < > &`, emoji, Greek), fix root cause | BUG | P0 | M | F02 |
-| B03 | Manually entered protocol number changes on save — keep it, or reject clearly if taken (see Q-1) | BUG | P0 | S | F02 |
+| B03 | Manually edited protocol **number and date** are overwritten on save (always next number + today). 🔎 Cause found: setting *Ασφαλής νέος Αρ.Πρ* (`safeNewProtocolNum`) ignores the submitted number. Fix: respect manual edits (form flag), keep the auto number only when the user didn't touch it; if a manual number is taken → inline error, nothing lost. Find why the date resets too | BUG | P0 | M | F02 |
+| B08 | 🔎 Numbering race: next number = `MAX()+1` with no lock/transaction. Two users saving at once → unique-key collision → **likely source of random 500s**. Allocate numbers inside a locked transaction + retry; concurrency test | BUG | P0 | M | F02 |
+| B07 | Random page timeouts / 500s: structured error logging with request IDs, slow-query log and timing in the local stack, then find and fix the top causes (IMAP fetch on page load is a suspect, see E03) | BUG | P1 | M | F03, B04 |
 | B02 | Letters replaced by `??` in email form fields: charset decoding (ISO-8859-7, Windows-1253, RFC 2047) | BUG/EMAIL | P1 | M | F03, M02 |
 | B04 | Descriptive errors instead of bare 500: friendly message + error ID for all, details for admins | BE | P1 | S | — |
 | B05 | Email that fails to register: specific inline error (AJAX), no list reload, email visibly not registered | EMAIL | P1 | M | F03 |
@@ -150,10 +152,16 @@ Modernize **before** features, but only after a safety net of tests exists:
 ---
 
 ## Execution order
-F01 → F03 → F02 → **S00** → S02 → F04 → F05 → S03 → S04 → S05 → S06 → S07 →
-M01 → M02 → D01 → B01 → B03 → Q02 → B04 → B05 → B02 → B06 → M03 → M04 →
+F01 → F03 → F02 → **S00** → B03 → B08 → S02 → F04 → F05 → S03 → S04 → S05 → S06 → S07 →
+M01 → M02 → D01 → B01 → B07 → Q02 → B04 → B05 → B02 → B06 → M03 → M04 →
 W01 → W02 → W03 → W04 → W05 → W06 → W07 →
 P01…P11 → Q01 → Q03 → Q04a → Q04b → U01 → E02 → E01 → U03 → U04 → U05 → E06 → A01…A06 → E03 → E04 → E05
 
+## Answered questions
+- **Q-1** (B03): The number and date at the top of the form can be edited, but on save the date always becomes today and the number the next free one; the user has to re-enter both and save again. → Handled in B03 (+ B08).
+
+## Context
+- App runs on the local network only (not internet-exposed), MySQL, multiple concurrent users. Symptoms today: random page timeouts, 500 errors, functional and UI bugs.
+
 ## Open questions
-- **Q-1** (B03): When does a manually typed number change on save — always, or only when another user registered in the meantime? If the number is taken at save time: reject with message, or offer next free number? (Claude will reproduce first.)
+- none
