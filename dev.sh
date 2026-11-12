@@ -43,7 +43,10 @@ case "${1:-help}" in
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
     ;;
   mail) load_mail ;;
-  test) shift; in_app php vendor/bin/phpunit "$@" ;;
+  test) shift
+    # always start from an empty test database, like CI does (only the "testing" database is wiped)
+    in_app php artisan db:wipe --env=testing --force >/dev/null
+    in_app php vendor/bin/phpunit "$@" ;;
   reset) in_app php artisan migrate:fresh --force --seed && in_app php artisan db:seed --force --class=DevSeeder ;;
   artisan) shift; in_app php artisan "$@" ;;
   shell) compose exec app bash ;;

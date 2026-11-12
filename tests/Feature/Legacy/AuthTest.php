@@ -51,28 +51,71 @@ class AuthTest extends FeatureTestCase
         file_put_contents(storage_path('conf/.denyregister'), 'x');
         $this->refreshApplication();   // routes are decided when the app boots
 
-        $this->get('/register')->assertOk()->assertDontSee('password_confirmation', false);
+        $this->get('/register')->assertRedirect('login');
     }
 
-    /**
-     * KNOWN VULNERABILITY (task S00): POST /register stays open after registration is closed,
-     * and new users get role_id 1 = Διαχειριστής. This test documents the current behaviour;
-     * S00 replaces it with a test asserting the request is refused.
-     */
-    public function test_known_vulnerability_anonymous_post_register_creates_admin_when_closed(): void
+    private function registerPayload(string $username = 'intruder'): array
+    {
+        return [
+            'name' => 'Εισβολέας', 'username' => $username, 'email' => "$username@example.test",
+            'password' => 'secret123', 'password_confirmation' => 'secret123',
+        ];
+    }
+
+    /** S00 (was: known_vulnerability_anonymous_post_register_creates_admin_when_closed) */
+    public function test_anonymous_post_register_is_refused_when_registration_is_closed(): void
     {
         $this->admin();
         file_put_contents(storage_path('conf/.denyregister'), 'x');
         $this->refreshApplication();
 
-        $this->post('/register', [
-            'name' => 'Εισβολέας', 'username' => 'intruder', 'email' => 'intruder@example.test',
-            'password' => 'secret123', 'password_confirmation' => 'secret123',
-        ]);
+        $this->post('/register', $this->registerPayload())->assertForbidden();
 
-        $intruder = User::whereUsername('intruder')->first();
-        $this->assertNotNull($intruder, 'registration was refused (fixed?)');
-        $this->assertSame('Διαχειριστής', $intruder->role->role);
+        $this->assertNull(User::whereUsername('intruder')->first());
     }
 
+    /** S00: deleting the marker file is not enough while an administrator exists */
+    public function test_post_register_is_refused_while_an_admin_exists_even_without_marker_file(): void
+    {
+        $this->admin();
+
+        $this->post('/register', $this->registerPayload())->assertForbidden();
+
+        $this->assertNull(User::whereUsername('intruder')->first());
+    }
+
+    public function test_register_form_redirects_to_login_while_an_admin_exists(): void
+    {
+        $this->admin();
+
+        $this->get('/register')->assertRedirect('login');
+    }
+
+    public function test_inactive_admins_do_not_block_first_registration(): void
+    {
+        User::factory()->admin()->inactive()->create();
+
+        $this->post('/register', $this->registerPayload('newadmin'))->assertRedirect();
+
+        $this->assertSame('Διαχειριστής', User::whereUsername('newadmin')->first()->role->role);
+    }
+
+    public function test_registration_is_rate_limited(): void
+    {
+        $this->admin();
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/register', $this->registerPayload("u$i"));
+        }
+        $this->post('/register', $this->registerPayload('u6'))->assertStatus(429);
+    }
+
+    /** S00: a user row created without an explicit role is no longer an administrator */
+    public function test_default_role_is_reader(): void
+    {
+        $id = \DB::table('users')->insertGetId([
+            'name' => 'Χωρίς ρόλο', 'username' => 'norole', 'email' => 'n@example.test', 'password' => 'x',
+        ]);
+
+        $this->assertSame('Αναγνώστης', User::find($id)->role->role);
+    }
 }
