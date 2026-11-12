@@ -19,6 +19,8 @@ class ImapHeaderDecoderTest extends TestCase
             'raw windows-1253 bytes (non-standard)' => [iconv('UTF-8', 'WINDOWS-1253', 'Βεβαίωση φοίτησης'), 'Βεβαίωση φοίτησης'],
             'plain ascii' => ['Fwd: report -- 50% & "quotes"', 'Fwd: report -- 50% & "quotes"'],
             'mixed text and encoded word' => ['Fwd: =?UTF-8?B?zpHOr8+Ezrfgz4POtw==?= (2)', null],
+            'unknown charset does not throw (review finding)' => ['=?X-UNKNOWN?B?SGVsbG8=?=', 'Hello'],
+            'unknown charset, legacy greek bytes' => ['=?x-unknown?Q?=C1=E8=DE=ED=E1?=', 'Αθήνα'],
         ];
     }
 

@@ -61,6 +61,35 @@ class AccessControlTest extends FeatureTestCase
         $this->actingAs($this->writer)->post("/home/{$this->foreign->id}", $form($this->foreign))->assertRedirect();
     }
 
+    /** Review finding on S02: the form lets the assignee save the outgoing reply on someone else's protocol */
+    public function test_writer_assigned_for_diekperaiosi_can_save_even_when_not_the_creator(): void
+    {
+        $this->setting('allowWriterUpdateProtocol', 1);   // ΕΝΑΣ (default): normally only own entries
+        $p = $this->mine;                                  // created by someone else, assigned d to $this->writer
+
+        $this->actingAs($this->writer)->post("/home/{$p->id}", $this->protocolForm([
+            'protocolnum' => $p->protocolnum, 'etos' => $p->etos,
+            'protocoldate' => \Carbon\Carbon::createFromFormat('Ymd', $p->protocoldate)->format('d/m/Y'),
+            'thema' => $p->thema, 'out_date' => now()->format('d/m/Y'), 'out_to' => 'Διεύθυνση', 'out_perilipsi' => 'Απάντηση',
+        ]))->assertRedirect();
+
+        $this->assertSame('Απάντηση', $p->fresh()->out_perilipsi);
+    }
+
+    public function test_protocol_without_subject_is_editable_by_writers(): void
+    {
+        $this->setting('limitProtocolAccessList', 0);
+        $this->setting('allowWriterUpdateProtocol', 1);
+        $blank = Protocol::factory()->number(9)->create(['thema' => null]);
+
+        $this->actingAs($this->writer)->post("/home/{$blank->id}", $this->protocolForm([
+            'protocolnum' => 9, 'etos' => $blank->etos,
+            'protocoldate' => \Carbon\Carbon::createFromFormat('Ymd', $blank->protocoldate)->format('d/m/Y'), 'thema' => 'Συμπληρώθηκε',
+        ]))->assertRedirect();
+
+        $this->assertSame('Συμπληρώθηκε', $blank->fresh()->thema);
+    }
+
     public function test_attachment_delete_requires_update_permission(): void
     {
         $a = Attachment::factory()->withFile()->create(['protocol_id' => $this->foreign->id]);

@@ -17,7 +17,8 @@ cd "$(dirname "$0")"
 ENV_FILE=.env.development
 [ -f "$ENV_FILE" ] || cp .env.development.example "$ENV_FILE"
 
-compose() { docker compose --env-file "$ENV_FILE" -f docker-compose.yml -f docker-compose.dev.yml "$@"; }
+# own project name => own containers, network and database volume (never the normal installation's)
+compose() { docker compose -p electronic-protocol-dev --env-file "$ENV_FILE" -f docker-compose.yml -f docker-compose.dev.yml "$@"; }
 in_app() { compose exec -T app "$@"; }
 
 load_mail() {
