@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-	$allowregister = True;
-	$file = storage_path('conf/.denyregister');
-	if (file_exists($file)) $allowregister = False;
+	$allowregister = \App\Support\Registration::isOpen();
 	return view('welcome', compact('allowregister'));
 });
 
@@ -26,14 +24,9 @@ Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
 Route::post('login', 'Auth\LoginController@login');
 Route::post('logout', 'Auth\LoginController@logout')->name('logout');
 
-// Registration Routes...
-$file = storage_path('conf/.denyregister');
-if (file_exists($file)) {
-	Route::get('register', 'Auth\LoginController@showLoginForm')->name('login');
-} else {
-	Route::get('register', 'Auth\RegisterController@showRegistrationForm')->name('register');
-}
-Route::post('register', 'Auth\RegisterController@register');
+// Registration Routes... (open only until the first administrator exists, see App\Support\Registration)
+Route::get('register', 'Auth\RegisterController@showRegistrationForm')->name('register');
+Route::post('register', 'Auth\RegisterController@register')->middleware('throttle:5,1');
 
 // Password Reset Routes...
 Route::get('password/resetForm', 'Auth\ForgotPasswordController@showLinkRequestForm');

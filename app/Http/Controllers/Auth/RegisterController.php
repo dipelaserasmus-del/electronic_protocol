@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use App\Support\Registration;
+use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -21,7 +23,9 @@ class RegisterController extends Controller
     |
     */
 
-    use RegistersUsers;
+    use RegistersUsers {
+        register as traitRegister;
+    }
 
     /**
      * Where to redirect users after registration.
@@ -56,40 +60,37 @@ class RegisterController extends Controller
         ]);
     }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\User
-     */
+    /** Registration form: only while the installation has no administrator yet. */
+    public function showRegistrationForm()
+    {
+        if (!Registration::isOpen()) {
+            return redirect('login');
+        }
+        $allowregister = true;
+        return view('auth.register', compact('allowregister'));
+    }
+
+    /** Refuse registration once an administrator exists (security fix S00). */
+    public function register(Request $request)
+    {
+        abort_unless(Registration::isOpen(), 403, 'Η εγγραφή νέων χρηστών είναι κλειστή. Νέους χρήστες δημιουργεί ο Διαχειριστής.');
+
+        return $this->traitRegister($request);
+    }
+
+    /** The only self-registered user is the first administrator; registration then closes. */
     protected function create(array $data)
     {
-        $file = storage_path('conf/.denyregister');
-        file_put_contents($file,"Η ύπαρξη του αρχείου .denyregister ελέγχει
-τη δυνατότητα να γίνεται register νέων χρηστών.
-
-Με την εγγραφή του πρώτου Διαχειριστή δημιουργείται το αρχείο από τον
-app/Http/Controllers/Auth/RegisterController.php.
-
-Αν διαγραφούν όλοι οι Διαχειριστές το παρόν αρχείο διαγράφεται και
-απελευθερώνεται από το app/Http/Controllers/UsersController.php.
-
-Αν δεν μπορείτε να κάνετε register διαγράψτε το αρχείο.");
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'username' => $data['username'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'active' => 1
+            'role_id' => Registration::adminRoleId(),
+            'active' => 1,
         ]);
-    }
+        Registration::close();
 
-    protected function showRegistrationForm()
-    {
-        $allowregister = True;
-        $file = storage_path('conf/.denyregister');
-        if (file_exists($file ))$allowregister = False;
-        return view('auth.register', compact('allowregister'));
+        return $user;
     }
-
 }

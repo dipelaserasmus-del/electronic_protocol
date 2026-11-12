@@ -32,9 +32,7 @@ class ForgotPasswordController extends Controller
 
     protected function showLinkRequestForm()
     {
-        $allowregister = True;
-        $file = storage_path('conf/.denyregister');
-        if (file_exists($file ))$allowregister = False;
+        $allowregister = \App\Support\Registration::isOpen();
 
         return view('auth.passwords.email', compact('allowregister'));
     }
