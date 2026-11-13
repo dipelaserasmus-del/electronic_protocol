@@ -2,6 +2,7 @@
 # Local development / preview helper.
 #
 #   ./dev.sh up            build + start the stack, install deps, migrate + seed on first run
+#   ./dev.sh cloud-up      same as up, inside a Claude Code cloud sandbox (see docker/dev/cloud-setup.sh)
 #   ./dev.sh mail          (re)generate test emails and reload the mock IMAP mailbox
 #   ./dev.sh test [args]   run the PHPUnit test suite inside the app container (MySQL "testing" DB)
 #   ./dev.sh reset         wipe the dev database and re-seed it
@@ -34,6 +35,26 @@ case "${1:-help}" in
     in_app composer install --no-interaction --no-progress
     in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
+    if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1)" != "1" ]; then
+      in_app php artisan migrate --force --seed
+      in_app php artisan db:seed --force --class=DevSeeder
+    else
+      in_app php artisan migrate --force
+    fi
+    load_mail
+    echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
+    ;;
+  cloud-up)
+    # Claude Code cloud sandbox: start Docker if needed, start the stack WITHOUT rebuilding
+    # (images come from docker/dev/cloud-setup.sh), then migrate/seed on first run
+    docker info >/dev/null 2>&1 || { (dockerd > /tmp/dockerd.log 2>&1 &); for _ in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 1; done; }
+    bash docker/dev/cloud-setup.sh >/dev/null
+    mkdir -p docker/dev/mail-preload
+    compose up -d
+    in_app php artisan package:discover >/dev/null
+    in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
+    grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
+    for _ in $(seq 1 30); do in_app php artisan migrate:status >/dev/null 2>&1 && break; sleep 2; done
     if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1)" != "1" ]; then
       in_app php artisan migrate --force --seed
       in_app php artisan db:seed --force --class=DevSeeder
