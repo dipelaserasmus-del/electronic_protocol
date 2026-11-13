@@ -35,7 +35,7 @@ case "${1:-help}" in
     in_app composer install --no-interaction --no-progress
     in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
-    if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1)" != "1" ]; then
+    if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1 | tr -d "[:space:]")" != "1" ]; then
       in_app php artisan migrate --force --seed
       in_app php artisan db:seed --force --class=DevSeeder
     else
@@ -55,7 +55,7 @@ case "${1:-help}" in
     in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
     for _ in $(seq 1 30); do in_app php artisan migrate:status >/dev/null 2>&1 && break; sleep 2; done
-    if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1)" != "1" ]; then
+    if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1 | tr -d "[:space:]")" != "1" ]; then
       in_app php artisan migrate --force --seed
       in_app php artisan db:seed --force --class=DevSeeder
     else

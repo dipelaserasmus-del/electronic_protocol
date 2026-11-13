@@ -41,7 +41,7 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 10),   // seconds; a slow SMTP server must not hang a save (B09/B07)
             'auth_mode' => null,
         ],
 
@@ -52,7 +52,7 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 10),   // seconds; a slow SMTP server must not hang a save (B09/B07)
             'auth_mode' => null,
         ],
 
