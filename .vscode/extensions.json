@@ -1,0 +1,10 @@
+{
+  // VS Code suggests these when the folder is opened. All work inside the Flatpak.
+  "recommendations": [
+    "bmewburn.vscode-intelephense-client",
+    "shufo.vscode-blade-formatter",
+    "EditorConfig.EditorConfig",
+    "mikestead.dotenv",
+    "bierner.markdown-mermaid"
+  ]
+}
