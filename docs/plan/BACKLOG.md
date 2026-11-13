@@ -52,6 +52,7 @@ Legend
 | F03 | Local Docker dev stack: fix Dockerfile (🔎 PHP 8.4 no longer bundles `ext-imap`; current build very likely fails), MySQL, mock IMAP/SMTP server with synthetic emails. 📧 | INFRA | P0 | M | — |
 | F02 | Test foundation: factories, synthetic Greek seeders, **characterization tests** of current behavior (login, register, create/edit/copy, list, search, download, roles, settings). These become the spec of legacy rules | INFRA | P0 | L | F01 |
 | F04 | Real-data loader for owner: import production MySQL dump + attachments from `local-data/` into the local stack 👤 | INFRA | P0 | S | F03 |
+| L01 | 👤 Owner's computer: VS Code + Docker, `./dev.sh up`, load the real DB/attachments with the F04 loader, open the app locally. Claude prepares `.vscode/` tasks + a step-by-step guide; the owner runs it (real data never leaves the owner's machine). Ask the owner's OS at start | INFRA | P1 | S | F04 |
 | F05 | Evidence tooling: Playwright E2E + screenshots against Docker stack, report template | INFRA | P0 | M | F02, F03 |
 
 ## Phase 1 — Urgent patches (current code)
@@ -160,7 +161,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ## Execution order
 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
-2. **Batch 2:** B09 → F04 → F05 → S04 → B04 → B07
+2. **Batch 2:** B09 → F04 → L01 👤 → F05 → S04 → B04 → B07
 3. **Batch 3:** N01 → N02 → N03 → N04
 4. **Batch 4:** D01 → D05 👤 → D02 👤 → D03 👤 → D04 👤
 5. **Batch 5:** R1a → R1b → R1c → R2 → R4a → R4b

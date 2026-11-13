@@ -4,7 +4,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 
 ## Current state — 2026-11-13
 - **Batch 1 complete** and merged (PRs #2–#10), `master` CI green. 94 tests / 260 assertions.
-- **Next:** Batch 2 → `B09` (all outgoing email crashes) → `F04` → `F05` → `S04` → `B04` → `B07`.
+- **Next:** Batch 2 → `B09` (all outgoing email crashes) → `F04` → `L01` (owner VS Code set-up) → `F05` → `S04` → `B04` → `B07`.
   Status of everything: [PROGRESS.md](PROGRESS.md).
 - Owner said "run batch N" to start a batch; Claude merges each PR itself when CI is green.
 
@@ -13,6 +13,8 @@ Read this first when (re)starting work. Update it at the end of every task.
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
 | Real emails for tests | Owner will provide some public-safe `.eml` files; remind before email tasks (R5a–R5d, B02 part in R5a). |
+| `L01` owner's VS Code set-up | **Pinned, scheduled right after F04 in Batch 2.** Prepare `.vscode/` tasks + guide; ask owner's OS (Windows / macOS / Linux) first. Remind owner that AI extensions in VS Code must not be given the `local-data/` folder. |
+| Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
 | After deploying Batch 1 | Owner: run `php artisan migrate`; check `users` for unknown admin accounts. |
 
 ## Decisions log (short)
