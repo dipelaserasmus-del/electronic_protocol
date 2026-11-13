@@ -43,7 +43,13 @@ test.describe('@smoke', () => {
   test('inbox shows the mock mailbox with Greek subjects decoded', async ({ page }) => {
     await login(page, 'admin');
     await page.goto('/viewEmails');
-    await expect(page.locator('body')).toContainText('Πρόσκληση σε επιμορφωτική ημερίδα');
-    await expect(page.locator('body')).not.toContainText('=?UTF-8?');
+    const body = page.locator('body');
+    await expect(body).toContainText(/από \d+ εισερχόμενα/);
+    // the order of the mock e-mails differs between machines: check whichever ones are on page 1
+    const subjects = ['Πρόσκληση σε επιμορφωτική ημερίδα', 'Εγκύκλιος για την έναρξη', 'Διαβιβαστικό εγγράφων μαθητή',
+      'Αποστολή στοιχείων', 'Αίτηση γονέα', 'Ενημέρωση για τη διαδικασία', 'Μεγάλο σαρωμένο', 'αρχικό μήνυμα', 'εισαγωγικά'];
+    const text = await body.innerText();
+    expect(subjects.filter((s) => text.includes(s)).length).toBeGreaterThanOrEqual(3);
+    expect(text).not.toMatch(/=\?(UTF-8|ISO-8859-7|Windows-1253)\?/i);   // every header decoded
   });
 });
