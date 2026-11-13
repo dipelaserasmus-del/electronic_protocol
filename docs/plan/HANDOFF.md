@@ -15,6 +15,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Real emails for tests | Owner will provide some public-safe `.eml` files; remind before email tasks (R5a–R5d, B02 part in R5a). |
 | `L01` owner's VS Code set-up | **Prepared (PR #16), waiting for owner** to follow `docs/VSCODE-FEDORA.md` on Fedora (GNOME, SELinux, Docker, VS Code Flatpak). Owner replies "L01 works" or the error message → then mark done in tasks.toml. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
+| **S04 on production** | Before the next `git pull` on the server: back up `.env`; if the server's APP_KEY is one of the two public keys, run `key:generate` (see `docs/reports/S04.md`). |
 | After deploying Batch 1 | Owner: run `php artisan migrate`; check `users` for unknown admin accounts. |
 
 ## Decisions log (short)

@@ -20,3 +20,8 @@ yarn-error.log
 /e2e/node_modules
 /e2e/test-results
 /e2e/playwright-report
+
+# real configuration: never commit (S04)
+/.env
+/.env-old
+/.env.backup
