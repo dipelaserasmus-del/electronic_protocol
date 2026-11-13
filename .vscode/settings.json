@@ -1,0 +1,23 @@
+{
+  // Integrated terminal on the HOST (needed when VS Code is a Flatpak: Docker is not visible inside the sandbox).
+  // Outside Flatpak, pick "bash" from the terminal drop-down instead.
+  "terminal.integrated.profiles.linux": {
+    "Host bash (Flatpak)": {
+      "path": "/usr/bin/flatpak-spawn",
+      "args": ["--host", "--env=TERM=xterm-256color", "bash", "-l"],
+      "icon": "terminal-linux"
+    }
+  },
+  "terminal.integrated.defaultProfile.linux": "Host bash (Flatpak)",
+
+  // Keep real data and generated folders out of the editor, search and file watching.
+  // This also keeps them out of what AI extensions are likely to read — but don't rely on it alone.
+  "files.exclude": { "local-data": true, ".env.real": true },
+  "search.exclude": { "local-data": true, "vendor": true, "storage/app": true, "node_modules": true, "public/tmp": true },
+  "files.watcherExclude": { "**/local-data/**": true, "**/vendor/**": true, "**/storage/**": true, "**/node_modules/**": true },
+
+  "files.associations": { "*.blade.php": "blade" },
+  "editor.renderWhitespace": "boundary",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}

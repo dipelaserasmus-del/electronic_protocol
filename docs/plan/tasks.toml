@@ -26,7 +26,7 @@ tasks = [
   { id = "B09", title = "Fix all outgoing email (500s)", phase = "U", batch = 2, size = "S", deps = ["F02"], status = "done", pr = 14 },
   { id = "F04", title = "Real-data loader (owner runs it)", phase = "F", batch = 2, size = "S", deps = ["F03"], status = "done", pr = 15 },
   # Owner-side: VS Code + Docker on the owner's computer, real data loaded locally with F04 (pinned 2026-11-13)
-  { id = "L01", title = "Owner's VS Code + local stack with real data", phase = "F", batch = 2, size = "S", deps = ["F04"], status = "todo" },
+  { id = "L01", title = "Owner's VS Code + local stack with real data", phase = "F", batch = 2, size = "S", deps = ["F04"], status = "in-progress", pr = 16 },
   { id = "F05", title = "Playwright evidence tooling", phase = "F", batch = 2, size = "M", deps = ["F02", "F03"], status = "todo" },
   { id = "S04", title = "Remove committed .env / APP_KEY", phase = "U", batch = 2, size = "S", deps = [], status = "todo" },
   { id = "B04", title = "Descriptive error pages", phase = "U", batch = 2, size = "S", deps = [], status = "done", pr = 19 },
