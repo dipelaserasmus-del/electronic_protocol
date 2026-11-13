@@ -95,6 +95,36 @@ jobs:
           if [ -n "$bad" ]; then echo "::error::user data must not be committed:"; echo "$bad"; exit 1; fi
           echo "OK: no stored files or local data tracked"
 
+  e2e:
+    name: Browser tests (full Docker stack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Start the dev stack (build, composer install, migrate, demo data, mock mailbox)
+        run: ./dev.sh up
+      - name: Install Playwright + Chromium
+        working-directory: e2e
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: ./dev.sh e2e
+      - name: Upload report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "--- error lines in the app log"; grep -E '[.](ERROR|CRITICAL)' storage/logs/laravel.log | cut -c1-300 | tail -n 30 || true
+          echo "--- mock mailbox"; docker logs --tail 60 ep-dev-imap 2>&1 || true
+          echo "--- containers"; docker ps -a
+
   docker-build:
     name: Docker image builds
     runs-on: ubuntu-latest

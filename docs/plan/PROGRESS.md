@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **12 / 52** `███████░░░░░░░░░░░░░░░░░░░░░░░` 23% |
-| Effort done (PERT) | **5.8 / 26.6 h** `███████░░░░░░░░░░░░░░░░░░░░░░░` 22% |
-| Remaining effort, one agent in sequence | **20.8 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **13 / 52** `████████░░░░░░░░░░░░░░░░░░░░░░` 25% |
+| Effort done (PERT) | **6.3 / 26.6 h** `███████░░░░░░░░░░░░░░░░░░░░░░░` 24% |
+| Remaining effort, one agent in sequence | **20.3 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 5.3 h ± 0.4 |
 | In progress | L01 |
-| Next task | **F05** — Playwright evidence tooling |
+| Next task | **B07** — Diagnose timeouts / 500s |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** N01 → N02 → N03 → N04 → R3a → R3b → R3c → Z01 → Z02 → Z03
@@ -22,7 +22,7 @@
 | Batch | Tasks | Done | Progress |
 |---|---|---|---|
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
-| 2 | ✅B09 ✅F04 🔄L01 ⬜F05 ✅S04 ✅B04 ⬜B07 | 4/7 | `██████░░░░` |
+| 2 | ✅B09 ✅F04 🔄L01 ✅F05 ✅S04 ✅B04 ⬜B07 | 5/7 | `███████░░░` |
 | 3 | ⬜N01 ⬜N02 ⬜N03 ⬜N04 | 0/4 | `░░░░░░░░░░` |
 | 4 | ⬜D01 ⬜D05 ⬜D02 ⬜D03 ⬜D04 | 0/5 | `░░░░░░░░░░` |
 | 5 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
@@ -181,9 +181,9 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,S04,B04 done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,F05,S04,B04 done
   class L01 inprogress
-  class F05,B07,N01,N02,N03,N04,D01,D05,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5a,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class B07,N01,N02,N03,N04,D01,D05,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5a,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class N01,N02,N03,N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
@@ -210,7 +210,7 @@ gantt
   B09 Fix all outgoing email (500s) :done, b09, 2026-11-12 13:29, 19m
   F04 Real-data loader (owner runs it) :done, f04, 2026-11-12 13:48, 19m
   L01 Owner's VS Code + local stack with real data :active, l01, 2026-11-12 14:07, 19m
-  F05 Playwright evidence tooling :f05, 2026-11-12 14:26, 33m
+  F05 Playwright evidence tooling :done, f05, 2026-11-12 14:26, 33m
   S04 Remove committed .env / APP_KEY :done, s04, 2026-11-12 14:59, 19m
   B04 Descriptive error pages :done, b04, 2026-11-12 15:18, 19m
   B07 Diagnose timeouts / 500s :b07, 2026-11-12 15:37, 33m
@@ -277,7 +277,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 6.4 | 6.7 | 4.9 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
 | 🔄 | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 | #16 |
-| ⬜ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 |  |
+| ✅ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 | #17 |
 | ✅ | **S04** | Remove committed .env / APP_KEY | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #18 |
 | ✅ | **B04** | Descriptive error pages | — | 0.3 | 0.1 | 0.0 | 0.3 | 5.8 | 6.1 | 5.8 | #19 |
 | ⬜ | **B07** | Diagnose timeouts / 500s | F03, B04 | 0.5 | 0.1 | 0.5 | 1.1 | 6.1 | 6.7 | 5.6 |  |
