@@ -33,7 +33,8 @@ class MessageMover
     /** The folder, created if it does not exist yet. */
     public static function ensureFolder(Client $client, string $folder): Folder
     {
-        return self::folder($client, $folder) ?? $client->createFolder($folder);
+        // expunge=false: createFolder() would otherwise EXPUNGE with no mailbox selected → "Command not valid in this state"
+        return self::folder($client, $folder) ?? $client->createFolder($folder, false);
     }
 
     public static function move(Client $client, string $sourceFolder, int|string $uid, string $targetFolder): void

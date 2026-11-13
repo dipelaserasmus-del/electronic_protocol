@@ -59,12 +59,20 @@ class RobustnessTest extends FeatureTestCase
             ->assertSuccessful();
     }
 
+    public function test_login_lands_on_the_protocol_list(): void
+    {
+        $user = $this->writer();
+        $this->followingRedirects()->post('/login', ['username' => $user->username, 'password' => 'password'])
+            ->assertOk()->assertSee('Θέμα');
+    }
+
     public function test_update_check_makes_no_network_call(): void
     {
         $this->setting('updatesAutoCheck', 1);
         $start = microtime(true);
 
-        $this->actingAs($this->admin())->withHeader('referer', url('/login'))->get('/chkForUpdates')->assertNoContent();
+        // still forwards to the role's landing page (the login redirects through this route)
+        $this->actingAs($this->admin())->withHeader('referer', url('/login'))->get('/chkForUpdates')->assertRedirect();
 
         $this->assertLessThan(1.0, microtime(true) - $start);
     }

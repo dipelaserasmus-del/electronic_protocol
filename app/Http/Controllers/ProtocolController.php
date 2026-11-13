@@ -437,10 +437,11 @@ class ProtocolController extends Controller
      * B07: disabled. It asked the ORIGINAL author's GitHub repository (g-theodoroy) for new commits on login:
      * a network call that waits for a timeout on servers without internet, and — since this fork has its own
      * history — advice to apply someone else's changes. Updates of this fork come through its own repository.
+     * The route stays: the login redirects here, and it forwards each role to its landing page as before.
      */
     public function chkForUpdates()
     {
-        return response()->noContent();
+        return redirect(config('landing-page.page.' . auth()->user()->role_id));
     }
 
     public function indexList($filter = null, $userId = null)

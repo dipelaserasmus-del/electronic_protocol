@@ -30,7 +30,7 @@ tasks = [
   { id = "F05", title = "Playwright evidence tooling", phase = "F", batch = 2, size = "M", deps = ["F02", "F03"], status = "done", pr = 17 },
   { id = "S04", title = "Remove committed .env / APP_KEY", phase = "U", batch = 2, size = "S", deps = [], status = "todo" },
   { id = "B04", title = "Descriptive error pages", phase = "U", batch = 2, size = "S", deps = [], status = "todo" },
-  { id = "B07", title = "Diagnose timeouts / 500s", phase = "U", batch = 2, size = "M", deps = ["F03", "B04"], status = "todo" },
+  { id = "B07", title = "Diagnose timeouts / 500s", phase = "U", batch = 2, size = "M", deps = ["F03", "B04"], status = "done", pr = 20 },
 
   # ---------------- Batch 3 ----------------
   { id = "N01", title = "PHP + Composer upgrade, drop ext-imap", phase = "N", batch = 3, size = "M", deps = ["F01", "F02", "F03"], status = "todo" },
