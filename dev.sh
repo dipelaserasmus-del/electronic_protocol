@@ -47,6 +47,8 @@ real_cmd() {
       cp local-data/emails/*.eml "local-data/mail-preload/protocol@school.test/INBOX/" 2>/dev/null || true
       compose_real up -d
       compose_real up -d --force-recreate imap >/dev/null 2>&1   # reload the test mailbox
+      # fresh checkout: install PHP dependencies (as your user) before running artisan
+      [ -f vendor/autoload.php ] || compose_real exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
       in_real chmod -R a+rwX storage/app bootstrap/cache public/tmp
       grep -q '^APP_KEY=base64' "$REAL_ENV" || in_real php artisan key:generate --force
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
@@ -62,9 +64,16 @@ real_cmd() {
       echo "Importing $(basename "$dump") into database '$db' (replaces its current content)..."
       compose_real exec -T db mysql -uroot -p"$rootpw" -e "DROP DATABASE IF EXISTS \`$db\`; CREATE DATABASE \`$db\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON \`$db\`.* TO 'laravel'@'%';" 2>/dev/null
       # strip CREATE DATABASE / USE lines so a dump made with --databases still goes into this database
-      { case "$dump" in *.gz) gunzip -c "$dump" ;; *) cat "$dump" ;; esac; } \
-        | sed -E '/^(CREATE DATABASE|USE) /d' \
-        | compose_real exec -T db mysql -uroot -p"$rootpw" --default-character-set=utf8mb4 "$db" 2>&1 | grep -v "Using a password" || true
+      local importlog; importlog=$(mktemp)
+      if ! { case "$dump" in *.gz) gunzip -c "$dump" ;; *) cat "$dump" ;; esac; } \
+          | sed -E '/^(CREATE DATABASE|USE) /d' \
+          | compose_real exec -T db mysql -uroot -p"$rootpw" --default-character-set=utf8mb4 "$db" 2>"$importlog"; then
+        grep -v "Using a password" "$importlog" >&2 || true
+        rm -f "$importlog"
+        echo "IMPORT FAILED — the local copy is incomplete. Nothing else was done. Fix the backup file and run again." >&2
+        exit 1
+      fi
+      rm -f "$importlog"
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
