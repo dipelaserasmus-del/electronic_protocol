@@ -118,9 +118,12 @@ jobs:
           path: |
             e2e/playwright-report
             e2e/test-results
-      - name: App logs on failure
+      - name: Diagnostics on failure
         if: failure()
-        run: tail -n 100 storage/logs/laravel.log || true
+        run: |
+          echo "--- error lines in the app log"; grep -E '[.](ERROR|CRITICAL)' storage/logs/laravel.log | cut -c1-300 | tail -n 30 || true
+          echo "--- mock mailbox"; docker logs --tail 60 ep-dev-imap 2>&1 || true
+          echo "--- containers"; docker ps -a
 
   docker-build:
     name: Docker image builds

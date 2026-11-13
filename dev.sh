@@ -29,7 +29,14 @@ in_app() { compose exec -T app "$@"; }
 load_mail() {
   in_app php docker/dev/make-emails.php tests/fixtures/emails/synthetic docker/dev/mail-preload
   compose up -d --force-recreate imap >/dev/null
-  echo "Mock mailbox: protocol@school.test / secret (IMAP imap:3143)"
+  # wait until the mock mailbox answers (GreenMail is a JVM and loads the files on start)
+  local n=""
+  for _ in $(seq 1 60); do
+    n=$(compose exec -T app curl -s --max-time 3 --user 'protocol@school.test:secret' 'imap://imap:3143/INBOX' -X 'EXAMINE INBOX' 2>/dev/null | grep -o '[0-9]* EXISTS' || true)
+    [ -n "$n" ] && break; sleep 2
+  done
+  [ -n "$n" ] || { echo "Mock mailbox did not start:" >&2; compose logs --tail 40 imap >&2; return 1; }
+  echo "Mock mailbox: protocol@school.test / secret (IMAP imap:3143) - $n"
 }
 
 # ---- local copy of production data (owner's computer only; see docs/LOCAL-REAL-DATA.md) ----
