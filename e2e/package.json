@@ -1,0 +1,11 @@
+{
+  "name": "electronic-protocol-e2e",
+  "private": true,
+  "description": "Browser tests against the running dev stack (./dev.sh up). Run: ./dev.sh e2e",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

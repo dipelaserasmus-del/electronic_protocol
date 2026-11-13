@@ -30,6 +30,7 @@ Your normal `.env` is never used or changed by the dev stack: it reads `.env.dev
 | `./dev.sh up` | start (or update after `git pull`) |
 | `./dev.sh down` | stop |
 | `./dev.sh test` | run the automated tests (separate `testing` database) |
+| `./dev.sh e2e` | browser tests against the running app (Playwright; uses the Playwright container if Node isn't installed) |
 | `./dev.sh mail` | regenerate test emails and reload the mock mailbox |
 | `./dev.sh reset` | wipe the dev database and recreate demo data |
 | `./dev.sh artisan <cmd>` | run a Laravel artisan command |

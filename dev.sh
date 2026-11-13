@@ -5,6 +5,7 @@
 #   ./dev.sh cloud-up      same as up, inside a Claude Code cloud sandbox (see docker/dev/cloud-setup.sh)
 #   ./dev.sh mail          (re)generate test emails and reload the mock IMAP mailbox
 #   ./dev.sh test [args]   run the PHPUnit test suite inside the app container (MySQL "testing" DB)
+#   ./dev.sh e2e [args]    browser tests (Playwright) against the running stack; EVIDENCE=<ID> saves screenshots
 #   ./dev.sh reset         wipe the dev database and re-seed it
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
@@ -129,6 +130,16 @@ case "${1:-help}" in
     fi
     load_mail
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
+    ;;
+  e2e)
+    # browser tests against the running dev stack; host Node if available, otherwise the Playwright container
+    shift
+    if command -v npx >/dev/null 2>&1; then
+      (cd e2e && { [ -d node_modules ] || npm install --no-audit --no-fund; } && npx playwright test "$@")
+    else
+      docker run --rm --network host -v "$PWD:/work:z" -w /work/e2e -e EVIDENCE -e APP_URL \
+        mcr.microsoft.com/playwright:v1.63.0-noble sh -c 'npm install --no-audit --no-fund >/dev/null && npx playwright test "$@"' -- "$@"
+    fi
     ;;
   mail) load_mail ;;
   test) shift
