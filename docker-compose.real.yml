@@ -17,9 +17,13 @@ services:
     volumes:
       # the real attachments are used from local-data/, never copied into the project folder
       - ./local-data/storage/app:/var/www/html/storage/app:z
+      # own temporary e-mail folder: the demo stack uses public/tmp, the copy must not share it
+      - ./local-data/tmp:/var/www/html/public/tmp:z
 
   nginx:
     container_name: ep-real-nginx
+    volumes:
+      - ./local-data/tmp:/var/www/html/public/tmp:ro,z
 
   db:
     container_name: ep-real-db
