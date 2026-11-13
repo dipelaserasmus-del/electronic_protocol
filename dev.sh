@@ -38,7 +38,7 @@ in_real() { compose_real exec -T app "$@"; }
 
 real_cmd() {
   [ -f "$REAL_ENV" ] || cp .env.real.example "$REAL_ENV"
-  mkdir -p local-data/db local-data/storage/app local-data/mail-preload
+  mkdir -p local-data/db local-data/storage/app local-data/mail-preload local-data/tmp
   case "${1:-help}" in
     up)
       # optional private e-mails for the local test mailbox
@@ -49,7 +49,7 @@ real_cmd() {
       compose_real up -d --force-recreate imap >/dev/null 2>&1   # reload the test mailbox
       # fresh checkout: install PHP dependencies (as your user) before running artisan
       [ -f vendor/autoload.php ] || compose_real exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
-      in_real chmod -R a+rwX storage/app bootstrap/cache public/tmp
+      in_real chmod -R a+rwX storage bootstrap/cache public/tmp
       grep -q '^APP_KEY=base64' "$REAL_ENV" || in_real php artisan key:generate --force
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
       ;;
