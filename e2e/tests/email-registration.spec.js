@@ -5,8 +5,13 @@ const { login, evidence, toasts } = require('./helpers');
 
 test('register an e-mail from the inbox: protocol created and e-mail leaves the inbox', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('/viewEmails?imap_page=2');
-  const form = page.locator('form[action$="storeFromEmail"]', { hasText: 'Αίτηση γονέα' }).first();
+  // the order of the mock e-mails differs between machines: find the page that holds this e-mail
+  let form;
+  for (const p of [1, 2, 3]) {
+    await page.goto(`/viewEmails?imap_page=${p}`);
+    form = page.locator('form[action$="storeFromEmail"]', { hasText: 'Αίτηση γονέα' }).first();
+    if (await form.count()) break;
+  }
   await expect(form).toBeVisible();
   const count = async () => Number((await page.locator('body').innerText()).match(/από (\d+) εισερχόμενα/)[1]);
   const before = await count();
