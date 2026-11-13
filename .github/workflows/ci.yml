@@ -79,7 +79,7 @@ jobs:
         run: npm audit --package-lock-only --audit-level=high || echo "::warning::npm audit reported issues (expected until N03)"
 
   plan:
-    name: Progress tracker up to date
+    name: Progress tracker & data hygiene
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,6 +88,12 @@ jobs:
           python-version: '3.12'
       - name: PROGRESS.md matches tasks.toml
         run: python3 docs/plan/tools/pert.py --check
+      - name: No user data committed (stored files, local-data/, real .env files)
+        run: |
+          bad=$(git ls-files storage/app local-data .env.development .env.real \
+                | grep -vE '(^|/)(dummy|\.gitignore|protocol\.sqlite(\.example)?)$' || true)
+          if [ -n "$bad" ]; then echo "::error::user data must not be committed:"; echo "$bad"; exit 1; fi
+          echo "OK: no stored files or local data tracked"
 
   docker-build:
     name: Docker image builds

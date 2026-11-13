@@ -8,6 +8,7 @@
 #   ./dev.sh reset         wipe the dev database and re-seed it
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
+#   ./dev.sh real ...      local copy of production data (load|up|down|wipe) — see docs/LOCAL-REAL-DATA.md
 #
 # App: http://localhost:8080 (demo users admin / anathetis / writer / reader, password: password)
 # Outgoing mail (Mailpit): http://localhost:8025
@@ -28,7 +29,69 @@ load_mail() {
   echo "Mock mailbox: protocol@school.test / secret (IMAP imap:3143)"
 }
 
+# ---- local copy of production data (owner's computer only; see docs/LOCAL-REAL-DATA.md) ----
+REAL_ENV=.env.real
+compose_real() { docker compose -p electronic-protocol-real --env-file "$REAL_ENV" -f docker-compose.yml -f docker-compose.real.yml "$@"; }
+in_real() { compose_real exec -T app "$@"; }
+
+real_cmd() {
+  [ -f "$REAL_ENV" ] || cp .env.real.example "$REAL_ENV"
+  mkdir -p local-data/db local-data/storage/app local-data/mail-preload
+  case "${1:-help}" in
+    up)
+      # optional private e-mails for the local test mailbox
+      mkdir -p "local-data/mail-preload/protocol@school.test/INBOX"
+      find "local-data/mail-preload/protocol@school.test/INBOX" -name '*.eml' -delete
+      cp local-data/emails/*.eml "local-data/mail-preload/protocol@school.test/INBOX/" 2>/dev/null || true
+      compose_real up -d
+      compose_real up -d --force-recreate imap >/dev/null 2>&1   # reload the test mailbox
+      # fresh checkout: install PHP dependencies (as your user) before running artisan
+      [ -f vendor/autoload.php ] || compose_real exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
+      in_real chown -R www-data:www-data storage/app bootstrap/cache public/tmp
+      grep -q '^APP_KEY=base64' "$REAL_ENV" || in_real php artisan key:generate --force
+      echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
+      ;;
+    load)
+      # newest dump in local-data/db (or the file given), .sql or .sql.gz
+      local dump="${2:-$(ls -t local-data/db/*.sql local-data/db/*.sql.gz 2>/dev/null | head -1)}"
+      [ -n "$dump" ] && [ -f "$dump" ] || { echo "No dump found. Put the production backup (.sql or .sql.gz) in local-data/db/"; exit 1; }
+      real_cmd up >/dev/null
+      local db; db=$(grep '^DB_DATABASE=' "$REAL_ENV" | cut -d= -f2)
+      local rootpw; rootpw=$(grep '^DB_ROOT_PASSWORD=' "$REAL_ENV" | cut -d= -f2 || true); rootpw=${rootpw:-myStrongRootP@ss}
+      for _ in $(seq 1 60); do compose_real exec -T db mysqladmin ping -uroot -p"$rootpw" --silent >/dev/null 2>&1 && break; sleep 2; done
+      echo "Importing $(basename "$dump") into database '$db' (replaces its current content)..."
+      compose_real exec -T db mysql -uroot -p"$rootpw" -e "DROP DATABASE IF EXISTS \`$db\`; CREATE DATABASE \`$db\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON \`$db\`.* TO 'laravel'@'%';" 2>/dev/null
+      # strip CREATE DATABASE / USE lines so a dump made with --databases still goes into this database
+      local importlog; importlog=$(mktemp)
+      if ! { case "$dump" in *.gz) gunzip -c "$dump" ;; *) cat "$dump" ;; esac; } \
+          | sed -E '/^(CREATE DATABASE|USE) /d' \
+          | compose_real exec -T db mysql -uroot -p"$rootpw" --default-character-set=utf8mb4 "$db" 2>"$importlog"; then
+        grep -v "Using a password" "$importlog" >&2 || true
+        rm -f "$importlog"
+        echo "IMPORT FAILED — the local copy is incomplete. Nothing else was done. Fix the backup file and run again." >&2
+        exit 1
+      fi
+      rm -f "$importlog"
+      # bring the imported schema up to the current code (only new migrations run; data is kept)
+      in_real php artisan migrate --force
+      # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
+      in_real php artisan tinker --execute='\App\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
+      in_real chown -R www-data:www-data storage/app
+      # summary: counts only, no data is printed
+      in_real php artisan tinker --execute='
+        $files = 0; foreach (\App\Attachment::whereNotNull("savedPath")->pluck("savedPath") as $p) { if (\Storage::exists($p)) $files++; }
+        echo "Loaded: ", \App\Protocol::count(), " protocols, ", \App\User::count(), " users, ", \App\Attachment::count(), " attachments (", $files, " files found in local-data/storage/app)\n";'
+      ;;
+    down) compose_real down ;;
+    wipe) compose_real down -v; echo "Local copy removed (database volume deleted). Files in local-data/ are untouched." ;;
+    logs) compose_real logs -f ;;
+    artisan) shift; in_real php artisan "$@" ;;
+    *) echo "usage: ./dev.sh real up|load [dump]|down|wipe|logs|artisan ..."; ;;
+  esac
+}
+
 case "${1:-help}" in
+  real) shift; real_cmd "$@" ;;
   up)
     mkdir -p docker/dev/mail-preload
     compose up -d --build
@@ -74,5 +137,5 @@ case "${1:-help}" in
   shell) compose exec app bash ;;
   logs) compose logs -f ;;
   down) compose down ;;
-  *) sed -n '2,12p' "$0" ;;
+  *) sed -n '2,14p' "$0" ;;
 esac

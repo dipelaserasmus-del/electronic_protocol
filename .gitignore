@@ -16,3 +16,4 @@ yarn-error.log
 /public/tmp/*
 !/public/tmp/.gitignore
 /storage/debugbar
+/.env.real

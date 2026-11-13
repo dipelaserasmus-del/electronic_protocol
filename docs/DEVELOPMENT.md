@@ -49,8 +49,9 @@ To preview a task branch: `git fetch && git checkout task/<ID>-... && ./dev.sh u
 
 ## Your real data
 
-Real data stays on your machine only, in the git-ignored `local-data/` folder. A loader for a
-production database dump is added in task F04.
+Real data stays on your machine only, in the git-ignored `local-data/` folder. A separate local copy
+(http://localhost:8081) loads a production backup with `./dev.sh real load`: see
+[LOCAL-REAL-DATA.md](LOCAL-REAL-DATA.md).
 
 ## Why Ubuntu-based image
 

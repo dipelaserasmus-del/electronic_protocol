@@ -1,0 +1,53 @@
+# Local copy of PRODUCTION data, on the owner's computer only. Start it with ./dev.sh real ...
+# Own Compose project "electronic-protocol-real": own containers, network and DATABASE VOLUME,
+# separate from the demo stack (8080) and from any normal installation.
+#
+# Safety: outgoing mail goes to Mailpit, the mailbox connection goes to the mock IMAP server,
+# so a local copy can never e-mail real people or touch the real mailbox.
+services:
+  app:
+    container_name: ep-real-app
+    environment:
+      APP_ENV: real          # Laravel reads .env.real (created from .env.real.example)
+      APP_CONFIG_CACHE: /tmp/ep-real-config.php
+      APP_ROUTES_CACHE: /tmp/ep-real-routes.php
+      APP_SERVICES_CACHE: /tmp/ep-real-services.php
+      APP_PACKAGES_CACHE: /tmp/ep-real-packages.php
+      APP_EVENTS_CACHE: /tmp/ep-real-events.php
+    volumes:
+      # the real attachments are used from local-data/, never copied into the project folder
+      - ./local-data/storage/app:/var/www/html/storage/app:z
+
+  nginx:
+    container_name: ep-real-nginx
+
+  db:
+    container_name: ep-real-db
+    volumes:
+      - realdbdata:/var/lib/mysql
+    ports:
+      - ${DB_FORWARD_PORT:-33061}:3306
+
+  imap:
+    image: greenmail/standalone:2.1.3
+    container_name: ep-real-imap
+    environment:
+      GREENMAIL_OPTS: >-
+        -Dgreenmail.setup.test.imap -Dgreenmail.setup.test.smtp
+        -Dgreenmail.users=protocol:secret@school.test -Dgreenmail.users.login=email
+        -Dgreenmail.preload.dir=/preload -Dgreenmail.hostname=0.0.0.0
+    volumes:
+      - ./local-data/mail-preload:/preload:ro,z
+    networks:
+      - app-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ep-real-mailpit
+    ports:
+      - ${MAILPIT_UI_PORT:-8026}:8025
+    networks:
+      - app-network
+
+volumes:
+  realdbdata:
