@@ -23,7 +23,7 @@ tasks = [
   { id = "B03d", title = "Date reset on save (pinned, awaiting steps)", phase = "U", batch = 0, size = "S", deps = [], status = "on-hold" },
 
   # ---------------- Batch 2 ----------------
-  { id = "B09", title = "Fix all outgoing email (500s)", phase = "U", batch = 2, size = "S", deps = ["F02"], status = "todo" },
+  { id = "B09", title = "Fix all outgoing email (500s)", phase = "U", batch = 2, size = "S", deps = ["F02"], status = "done", pr = 14 },
   { id = "F04", title = "Real-data loader (owner runs it)", phase = "F", batch = 2, size = "S", deps = ["F03"], status = "done", pr = 15 },
   # Owner-side: VS Code + Docker on the owner's computer, real data loaded locally with F04 (pinned 2026-11-13)
   { id = "L01", title = "Owner's VS Code + local stack with real data", phase = "F", batch = 2, size = "S", deps = ["F04"], status = "todo" },

@@ -22,6 +22,8 @@ abstract class FeatureTestCase extends TestCase
     {
         parent::setUp();
         Storage::fake('local');
+        // all mailers write to memory (the internal-notification mailer is SMTP in real use)
+        config(['mail.default' => 'array', 'mail.mailers.intra-mail' => ['transport' => 'array']]);
         // the "check for updates" call goes to GitHub on page load; never in tests
         Config::setConfigValueOf('updatesAutoCheck', 0);
         // AppServiceProvider shares settings with all views at boot; on a brand-new test database the
@@ -43,6 +45,12 @@ abstract class FeatureTestCase extends TestCase
             file_put_contents($marker, $this->savedMarker);
         }
         parent::tearDown();
+    }
+
+    /** Messages "sent" through a mailer configured with the array transport */
+    protected function sentMails(?string $mailer = null): \Illuminate\Support\Collection
+    {
+        return app('mail.manager')->mailer($mailer)->getSymfonyTransport()->messages();
     }
 
     protected function admin(): User { return User::factory()->admin()->create(); }
