@@ -17,3 +17,8 @@ yarn-error.log
 !/public/tmp/.gitignore
 /storage/debugbar
 /.env.real
+
+# real configuration: never commit (S04)
+/.env
+/.env-old
+/.env.backup

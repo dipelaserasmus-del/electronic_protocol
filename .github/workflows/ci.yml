@@ -90,7 +90,7 @@ jobs:
         run: python3 docs/plan/tools/pert.py --check
       - name: No user data committed (stored files, local-data/, real .env files)
         run: |
-          bad=$(git ls-files storage/app local-data .env.development .env.real \
+          bad=$(git ls-files storage/app local-data .env .env.development .env.real \
                 | grep -vE '(^|/)(dummy|\.gitignore|protocol\.sqlite(\.example)?)$' || true)
           if [ -n "$bad" ]; then echo "::error::user data must not be committed:"; echo "$bad"; exit 1; fi
           echo "OK: no stored files or local data tracked"
