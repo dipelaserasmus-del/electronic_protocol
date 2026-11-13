@@ -13,7 +13,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
 | Real emails for tests | Owner will provide some public-safe `.eml` files; remind before email tasks (R5a–R5d, B02 part in R5a). |
-| `L01` owner's VS Code set-up | Scheduled right after F04. **Owner's system: Fedora (GNOME), SELinux, Docker installed and running, VS Code as Flatpak.** Needs: `.vscode/tasks.json` + terminal profile through `flatpak-spawn --host` (Flatpak sandbox can't see Docker), `:z` on bind mounts (SELinux), file ownership of files written by containers. Remind owner that AI extensions must not read `local-data/`. |
+| `L01` owner's VS Code set-up | **Prepared (PR #16), waiting for owner** to follow `docs/VSCODE-FEDORA.md` on Fedora (GNOME, SELinux, Docker, VS Code Flatpak). Owner replies "L01 works" or the error message → then mark done in tasks.toml. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
 | After deploying Batch 1 | Owner: run `php artisan migrate`; check `users` for unknown admin accounts. |
 
@@ -44,6 +44,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 | 2026-11-12 | F03, F01, F02, S00, B03, B08, S02, A02 | #2–#9 | see `docs/reports/BATCH-1.md` |
 | 2026-11-12 | Review fixes | #10 | 9 Codex findings verified + fixed |
 | 2026-11-13 | Tracker | #11 | `tasks.toml` + PERT/CPM `PROGRESS.md`, `CLAUDE.md`, this file |
+| 2026-11-13 | L01 | #16 | `.vscode/` tasks via `flatpak-spawn --host`, `:z` mounts, shared perms, `docs/VSCODE-FEDORA.md`; waiting owner |
 | 2026-11-13 | F04 | #15 | `./dev.sh real load` (port 8081, mail/IMAP sandboxed); storage/app now git-ignored + CI hygiene check (464 demo PDFs untracked) |
 | 2026-11-13 | B09 | #14 | mail via `OutgoingMail`; found: emoji breaks e-mail registration (D05), IMAP move EXPUNGE error (→B07) |
 | 2026-11-13 | Cloud setup | #12 | `docker/dev/cloud-setup.sh` + `./dev.sh cloud-up`; dedicated cloud environment proposed |

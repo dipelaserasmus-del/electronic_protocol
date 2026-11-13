@@ -22,7 +22,7 @@ services:
     container_name: ep-dev-db
     volumes:
       - devdbdata:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro,z
     ports:
       - ${DB_FORWARD_PORT:-33060}:3306
 
@@ -41,7 +41,7 @@ services:
         -Dgreenmail.auth.disabled=false
         -Dgreenmail.verbose
     volumes:
-      - ./docker/dev/mail-preload:/preload:ro
+      - ./docker/dev/mail-preload:/preload:ro,z
     ports:
       - ${IMAP_FORWARD_PORT:-3143}:3143
     networks:
