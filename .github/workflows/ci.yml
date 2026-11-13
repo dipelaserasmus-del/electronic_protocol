@@ -78,6 +78,17 @@ jobs:
       - name: npm audit (report only until frontend modernization, task N03)
         run: npm audit --package-lock-only --audit-level=high || echo "::warning::npm audit reported issues (expected until N03)"
 
+  plan:
+    name: Progress tracker up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: PROGRESS.md matches tasks.toml
+        run: python3 docs/plan/tools/pert.py --check
+
   docker-build:
     name: Docker image builds
     runs-on: ubuntu-latest
