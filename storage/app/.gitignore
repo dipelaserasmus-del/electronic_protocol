@@ -1,1 +1,4 @@
+# Everything the app stores (attachments, trash, backups, cached e-mails) is user data: never commit it.
+# Already-tracked placeholders (dummy files, protocol.sqlite*) stay tracked.
+*
 !.gitignore
