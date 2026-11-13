@@ -22,32 +22,16 @@ Read this first when (re)starting work. Update it at the end of every task.
 - Number may be chosen only by admin with `protocolValidate` OFF (same rule as the form).
 - Deleting protocols: admins only. Assign: admin + Αναθέτων. Mark done: admin, Αναθέτων, d-assignee, creator.
 
-## Resuming in a fresh Claude Code cloud session (sandbox recipe)
-The cloud sandbox has quirks that do not exist on the owner's machine:
+## Resuming in a fresh Claude Code cloud session
+The cloud sandbox can't use Docker Hub, Debian mirrors or GitHub downloads inside containers, so it needs
+a one-time preparation (`docker/dev/cloud-setup.sh`: images from the Google mirror, app image built with host
+networking, Composer on the host). If the session runs in the **"electronic_protocol"** cloud environment, its
+setup script already did this before Claude started. Then:
 ```bash
-# 1. Docker daemon is not running by default
-(dockerd > /tmp/dockerd.log 2>&1 &) ; sleep 8
-# 2. Docker Hub is rate-limited: pull from the Google mirror and re-tag
-for i in library/mysql:8.4 library/nginx:stable library/ubuntu:26.04 greenmail/standalone:2.1.3 axllent/mailpit:latest; do
-  docker pull -q mirror.gcr.io/$i; done
-docker tag mirror.gcr.io/library/mysql:8.4 mysql:8.4
-docker tag mirror.gcr.io/library/nginx:stable nginx:stable
-docker tag mirror.gcr.io/library/ubuntu:26.04 ubuntu:26.04
-docker tag mirror.gcr.io/greenmail/standalone:2.1.3 greenmail/standalone:2.1.3
-docker tag mirror.gcr.io/axllent/mailpit:latest axllent/mailpit:latest
-# 3. apt inside builds only works with host networking (Ubuntu mirrors reachable, Debian not)
-docker build --network host -t electronic-protocol-app .
-# 4. Composer can't download from GitHub inside containers: install on the host (PHP 8.3 there)
-COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction --no-scripts --ignore-platform-req=php
-# 5. Start without rebuilding (./dev.sh up would rebuild without host networking)
-cp -n .env.development.example .env.development
-C="docker compose -p electronic-protocol-dev --env-file .env.development -f docker-compose.yml -f docker-compose.dev.yml"
-$C up -d && $C exec -T app php artisan package:discover
-$C exec -T app chown -R www-data:www-data storage bootstrap/cache public/tmp
-$C exec -T app php artisan key:generate --force
-$C exec -T app php artisan migrate --force --seed && $C exec -T app php artisan db:seed --force --class=DevSeeder
-./dev.sh mail && ./dev.sh test
+./dev.sh cloud-up     # starts Docker + the stack, migrates/seeds on first run (~2 min)
+./dev.sh test
 ```
+Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a cold container).
 - Playwright: `NODE_PATH=$(npm root -g) node script.js` (Chromium preinstalled).
 - Git tags can't be pushed through the sandbox proxy; milestones are recorded in `MILESTONES.md`.
 - Never run `artisan db:wipe` without `--env=testing` (it would wipe the dev demo DB).
@@ -57,4 +41,5 @@ $C exec -T app php artisan migrate --force --seed && $C exec -T app php artisan 
 |---|---|---|---|
 | 2026-11-12 | F03, F01, F02, S00, B03, B08, S02, A02 | #2–#9 | see `docs/reports/BATCH-1.md` |
 | 2026-11-12 | Review fixes | #10 | 9 Codex findings verified + fixed |
-| 2026-11-13 | Tracker | — | `tasks.toml` + PERT/CPM `PROGRESS.md`, `CLAUDE.md`, this file |
+| 2026-11-13 | Tracker | #11 | `tasks.toml` + PERT/CPM `PROGRESS.md`, `CLAUDE.md`, this file |
+| 2026-11-13 | Cloud setup | #12 | `docker/dev/cloud-setup.sh` + `./dev.sh cloud-up`; dedicated cloud environment proposed |

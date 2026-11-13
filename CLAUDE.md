@@ -29,6 +29,7 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 ## Commands
 ```bash
 ./dev.sh up        # dev stack: http://localhost:8080 (admin/password), Mailpit :8025
+./dev.sh cloud-up  # same, inside a Claude Code cloud sandbox (see HANDOFF.md)
 ./dev.sh test      # PHPUnit on MySQL (fresh `testing` DB)
 python3 docs/plan/tools/pert.py   # regenerate PROGRESS.md
 ```
