@@ -1,0 +1,25 @@
+{
+  // Run with: Terminal → Run Task…  (or Ctrl+Shift+P → "Tasks: Run Task")
+  // Every task goes through docker/dev/host-run.sh, so it also works with VS Code installed as a Flatpak.
+  "version": "2.0.0",
+  "options": { "cwd": "${workspaceFolder}" },
+  "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+  "tasks": [
+    { "label": "Demo: start (http://localhost:8080)", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "up"], "problemMatcher": [] },
+    { "label": "Demo: stop", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "down"], "problemMatcher": [] },
+    { "label": "Demo: reset demo data", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "reset"], "problemMatcher": [] },
+    { "label": "Tests: run all", "type": "process", "group": { "kind": "test", "isDefault": true },
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "test"], "problemMatcher": [] },
+    { "label": "Real data: load newest backup from local-data/db", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "load"], "problemMatcher": [] },
+    { "label": "Real data: start (http://localhost:8081)", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "up"], "problemMatcher": [] },
+    { "label": "Real data: stop", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "down"], "problemMatcher": [] },
+    { "label": "Update: get latest version from GitHub", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["git", "pull", "--ff-only"], "problemMatcher": [] }
+  ]
+}

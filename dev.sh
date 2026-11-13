@@ -20,6 +20,8 @@ ENV_FILE=.env.development
 [ -f "$ENV_FILE" ] || cp .env.development.example "$ENV_FILE"
 
 # own project name => own containers, network and database volume (never the normal installation's)
+# Folders the web server writes to are made writable for everyone (a+rwX) instead of being handed to
+# the container's www-data user: files then stay manageable by you on the host (VS Code, git, rm).
 compose() { docker compose -p electronic-protocol-dev --env-file "$ENV_FILE" -f docker-compose.yml -f docker-compose.dev.yml "$@"; }
 in_app() { compose exec -T app "$@"; }
 
@@ -45,7 +47,7 @@ real_cmd() {
       cp local-data/emails/*.eml "local-data/mail-preload/protocol@school.test/INBOX/" 2>/dev/null || true
       compose_real up -d
       compose_real up -d --force-recreate imap >/dev/null 2>&1   # reload the test mailbox
-      in_real chown -R www-data:www-data storage/app bootstrap/cache public/tmp
+      in_real chmod -R a+rwX storage/app bootstrap/cache public/tmp
       grep -q '^APP_KEY=base64' "$REAL_ENV" || in_real php artisan key:generate --force
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
       ;;
@@ -67,7 +69,7 @@ real_cmd() {
       in_real php artisan migrate --force
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
       in_real php artisan tinker --execute='\App\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
-      in_real chown -R www-data:www-data storage/app
+      in_real chmod -R a+rwX storage/app
       # summary: counts only, no data is printed
       in_real php artisan tinker --execute='
         $files = 0; foreach (\App\Attachment::whereNotNull("savedPath")->pluck("savedPath") as $p) { if (\Storage::exists($p)) $files++; }
@@ -86,8 +88,9 @@ case "${1:-help}" in
   up)
     mkdir -p docker/dev/mail-preload
     compose up -d --build
-    in_app composer install --no-interaction --no-progress
-    in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
+    # as your own user, so vendor/ stays yours (not root's) on the host
+    compose exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
+    in_app chmod -R a+rwX storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
     if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1 | tr -d "[:space:]")" != "1" ]; then
       in_app php artisan migrate --force --seed
@@ -106,7 +109,7 @@ case "${1:-help}" in
     mkdir -p docker/dev/mail-preload
     compose up -d
     in_app php artisan package:discover >/dev/null
-    in_app chown -R www-data:www-data storage bootstrap/cache public/tmp
+    in_app chmod -R a+rwX storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
     for _ in $(seq 1 30); do in_app php artisan migrate:status >/dev/null 2>&1 && break; sleep 2; done
     if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1 | tr -d "[:space:]")" != "1" ]; then
