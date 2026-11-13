@@ -15,6 +15,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Real emails for tests | Owner will provide some public-safe `.eml` files; remind before email tasks (R5a–R5d, B02 part in R5a). |
 | `L01` owner's VS Code set-up | Scheduled right after F04. **Owner's system: Fedora (GNOME), SELinux, Docker installed and running, VS Code as Flatpak.** Needs: `.vscode/tasks.json` + terminal profile through `flatpak-spawn --host` (Flatpak sandbox can't see Docker), `:z` on bind mounts (SELinux), file ownership of files written by containers. Remind owner that AI extensions must not read `local-data/`. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
+| **S04 on production** | Before the next `git pull` on the server: back up `.env`; if the server's APP_KEY is one of the two public keys, run `key:generate` (see `docs/reports/S04.md`). |
 | After deploying Batch 1 | Owner: run `php artisan migrate`; check `users` for unknown admin accounts. |
 
 ## Decisions log (short)
