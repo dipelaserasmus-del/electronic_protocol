@@ -105,9 +105,7 @@ class AccessControlTest extends FeatureTestCase
 
         $this->actingAs($this->writer)->post('/anathesiSe', $payload)->assertForbidden();
         $this->actingAs($this->reader())->post('/anathesiSe', $payload)->assertRedirect();   // readers never reach it (writer middleware)
-        // allowed for an assigner; the response itself is still a 500 because the notification email
-        // crashes (known bug B09, fixed separately) — the assignment is saved before that.
-        $this->assertNotSame(403, $this->actingAs($this->assigner())->post('/anathesiSe', $payload)->status());
+        $this->actingAs($this->assigner())->post('/anathesiSe', $payload)->assertSuccessful();
 
         $this->assertSame('d' . $this->writer->id, $this->foreign->fresh()->diekperaiosi);
     }

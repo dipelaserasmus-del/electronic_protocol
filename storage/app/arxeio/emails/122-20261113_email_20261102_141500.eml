@@ -1,0 +1,11 @@
+Return-Path: <oldsystem@example.test>
+Message-ID: <syn8@synthetic.test>
+Date: Mon, 02 Nov 2026 14:15:00 +0000
+From: Παλαιό Σύστημα <oldsystem@example.test>
+To: Γραμματεία Σχολείου <protocol@school.test>
+Subject: Αίτηση γονέα για βεβαίωση φοίτησης
+MIME-Version: 1.0
+X-Synthetic-Case: raw-8bit-headers
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Παρακαλώ για τη χορήγηση βεβαίωσης φοίτησης.

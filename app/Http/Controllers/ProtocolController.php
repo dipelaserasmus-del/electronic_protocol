@@ -936,29 +936,19 @@ class ProtocolController extends Controller
             $protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
             $sendReplyTo = $reply_to_email;
             $html = view('receiptProtocol', compact('protocol', 'protocoldate'))->render();
-            // στέλνω το email
-            Mail::send([], [], function ($message) use ($sendReplyTo, $html) {
-                $message->from(config('mail.from.address'));
-                $message->to($sendReplyTo);
-                $message->subject("Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.");
-                $message->setBody($html, 'text/html');
-            });
-            // αν η αποστολή γίνει κανονικά
-            if (!count(Mail::failures())) {
+            // στέλνω το email (B09)
+            $mailer = app(\App\Services\OutgoingMail::class);
+            if ($mailer->sendHtml($sendReplyTo, "Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.", $html)) {
                 // προσθέτω στις παρατηρήσεις ότι στάλθηκε απόδειξη παραλαβής με email
                 $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
                 $parMessage .= "$emaildate απόδειξη παραλαβής σε $sendReplyTo";
                 //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
                 $protocol->paratiriseis = $parMessage;
                 $protocol->update();
-                $message .= "<li>" . $parMessage . "</li";
+                $message .= "<li>" . e($parMessage) . "</li>";
             } else {
-                // αν υπάρχουν λάθη ενημερώνω
-                $notification = array(
-                    'message' => 'Μη δυνατή αποστολή βεβαίωσης καταχώρισης Ηλ. Πρωτοκόλλου με Email',
-                    'alert-type' => 'warning'
-                );
-                session()->flash('notification', $notification);
+                // το πρωτόκολλο αποθηκεύτηκε· ενημερώνω μόνο ότι το email δεν στάλθηκε
+                $message .= "<li><strong>Μη δυνατή αποστολή βεβαίωσης καταχώρισης με email</strong> σε " . e($sendReplyTo) . ".</li>";
             }
         }
         // ενημέρωση για την επιτυχία της καταχώρισης
@@ -1238,12 +1228,9 @@ class ProtocolController extends Controller
         $html = view('diekperaiosiMail', compact('protocol', 'diekperaiotis', 'date', 'diekp_eos'))->render();
         $thema = $protocol->thema;
         // χρήση του 2ο (εναλλακτικό) mailer
-        Mail::mailer('intra-mail')->send([], [], function ($message) use ($emailTo, $html, $thema) {
-            $message->subject("Ανάθεση Πρωτοκόλλου για Διεκπεραίωση" . " με θέμα \"" . $thema . "\"");
-            $message->setBody($html, 'text/html');
-            $message->to($emailTo);
-        });
-        if (!count(Mail::failures())) {
+        $message = '';
+        $mailer = app(\App\Services\OutgoingMail::class);
+        if ($mailer->sendHtml($emailTo, "Ανάθεση Πρωτοκόλλου για Διεκπεραίωση" . " με θέμα \"" . $thema . "\"", $html, 'intra-mail')) {
             // προσθέτω στις παρατηρήσεις ότι στάλθηκε email στον διεκπεραιωτή
             $emaildate = Carbon::now()->format('d/m/Y H:i:s');
             $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
@@ -1253,6 +1240,8 @@ class ProtocolController extends Controller
             $protocol->update();
             // ενημερώνω το χρήστη
             $message = "<li>Στάλθηκε email ανάθεσης στον $diekperaiotis.</li>";
+        } else {
+            $message = "<li>Δεν ήταν δυνατή η αποστολή email ανάθεσης στον " . e($diekperaiotis) . ".</li>";
         }
         return $message;
     }
@@ -1267,12 +1256,9 @@ class ProtocolController extends Controller
         $html = view('diekpInformMail', compact('protocol', 'diekperaiotis', 'date'))->render();
         $thema = $protocol->thema;
         // χρήση του 2ο (εναλλακτικό) mailer
-        Mail::mailer('intra-mail')->send([], [], function ($message) use ($emailTo, $html, $thema) {
-            $message->subject("Ενημέρωση για Πρωτόκολλο" . " με θέμα \"" . $thema . "\"");
-            $message->setBody($html, 'text/html');
-            $message->to($emailTo);
-        });
-        if (!count(Mail::failures())) {
+        $message = '';
+        $mailer = app(\App\Services\OutgoingMail::class);
+        if ($mailer->sendHtml($emailTo, "Ενημέρωση για Πρωτόκολλο" . " με θέμα \"" . $thema . "\"", $html, 'intra-mail')) {
             // προσθέτω στις παρατηρήσεις ότι στάλθηκε email στον διεκπεραιωτή
             $emaildate = Carbon::now()->format('d/m/Y H:i:s');
             $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
@@ -1282,6 +1268,8 @@ class ProtocolController extends Controller
             $protocol->update();
             // ενημερώνω το χρήστη
             $message = "<li>Στάλθηκε email ενημέρωσης στον $diekperaiotis.</li>";
+        } else {
+            $message = "<li>Δεν ήταν δυνατή η αποστολή email ενημέρωσης στον " . e($diekperaiotis) . ".</li>";
         }
         return $message;
     }
@@ -1737,13 +1725,8 @@ class ProtocolController extends Controller
         $sendReplyTo = $request->email;
         $html = view('receiptProtocol', compact('protocol', 'protocoldate'))->render();
 
-        Mail::send([], [], function ($message) use ($sendReplyTo, $html) {
-            $message->from(config('mail.from.address'));
-            $message->to($sendReplyTo);
-            $message->subject("Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.");
-            $message->setBody($html, 'text/html');
-        });
-        if (!count(Mail::failures())) {
+        $mailer = app(\App\Services\OutgoingMail::class);
+        if ($mailer->sendHtml($sendReplyTo, "Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.", $html)) {
             $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
             $parMessage .= "$emaildate απόδειξη παραλαβής σε $sendReplyTo";
             //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
@@ -1751,7 +1734,7 @@ class ProtocolController extends Controller
             $protocol->update();
             return response()->json($parMessage);
         } else {
-            return response()->json(Mail::failures());
+            return response()->json(['error' => 'Αποτυχία αποστολής email. Η αιτία καταγράφηκε στο αρχείο καταγραφής.'], 502);
         }
     }
 
@@ -2330,13 +2313,8 @@ class ProtocolController extends Controller
                 }
             }
             $html = view('receiptEmail', compact('protocol', 'emaildate'))->render();
-            Mail::send([], [], function ($message) use ($sendReplyTo, $html) {
-                $message->from(config('mail.from.address'));
-                $message->to($sendReplyTo);
-                $message->subject("Καταχώριση email στο Ηλεκτρονικό Πρωτόκολλο.");
-                $message->setBody($html, 'text/html');
-            });
-            if (!count(Mail::failures())) {
+            $mailer = app(\App\Services\OutgoingMail::class);
+            if ($mailer->sendHtml($sendReplyTo, "Καταχώριση email στο Ηλεκτρονικό Πρωτόκολλο.", $html)) {
                 // προσθέτω στις παρατηρήσεις ότι στάλθηκε απόδειξη παραλαβής με email
                 $emaildate = Carbon::now()->format('d/m/Y H:i:s');
                 $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
@@ -2345,6 +2323,8 @@ class ProtocolController extends Controller
                 $protocol->paratiriseis = $parMessage;
                 $protocol->update();
                 $message .= "<li>Στάλθηκε με email αποδεικτικό καταχώρισης.</li>";
+            } else {
+                $message .= "<li><strong>Μη δυνατή αποστολή αποδεικτικού καταχώρισης με email</strong> σε " . e($sendReplyTo) . ".</li>";
             }
         }
 
