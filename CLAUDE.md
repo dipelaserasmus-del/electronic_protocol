@@ -11,8 +11,8 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 1. One branch per task: `task/<ID>-<slug>` from up-to-date `master`.
 2. Write/adjust tests first where possible. Characterization tests named `known_bug_*` / `known_vulnerability_*`
    document current bugs; the fixing task replaces them with tests asserting correct behaviour.
-3. Verify in the running app (`./dev.sh up`, Playwright) for anything user-visible; save screenshots under
-   `docs/reports/img/<ID>/`.
+3. Verify in the running app for anything user-visible: add/extend a spec in `e2e/tests/` and run
+   `EVIDENCE=<ID> ./dev.sh e2e` (screenshots go to `docs/reports/img/<ID>/`; CI runs the same suite).
 4. Evidence report `docs/reports/<ID>.md`: what was wrong, what changed, how verified (tests + browser), owner actions.
 5. Update `docs/plan/tasks.toml` (status, `pr`) and run `python3 docs/plan/tools/pert.py`; update `HANDOFF.md`.
 6. Open a PR to `master`, wait for **all CI jobs green**, read automated review comments (Codex bot): verify each,
@@ -31,5 +31,6 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 ./dev.sh up        # dev stack: http://localhost:8080 (admin/password), Mailpit :8025
 ./dev.sh cloud-up  # same, inside a Claude Code cloud sandbox (see HANDOFF.md)
 ./dev.sh test      # PHPUnit on MySQL (fresh `testing` DB)
+./dev.sh e2e       # Playwright browser tests (EVIDENCE=<ID> saves screenshots to docs/reports/img/<ID>/)
 python3 docs/plan/tools/pert.py   # regenerate PROGRESS.md
 ```

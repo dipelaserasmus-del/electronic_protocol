@@ -5,6 +5,7 @@
 #   ./dev.sh cloud-up      same as up, inside a Claude Code cloud sandbox (see docker/dev/cloud-setup.sh)
 #   ./dev.sh mail          (re)generate test emails and reload the mock IMAP mailbox
 #   ./dev.sh test [args]   run the PHPUnit test suite inside the app container (MySQL "testing" DB)
+#   ./dev.sh e2e [args]    browser tests (Playwright) against the running stack; EVIDENCE=<ID> saves screenshots
 #   ./dev.sh reset         wipe the dev database and re-seed it
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
@@ -28,7 +29,14 @@ in_app() { compose exec -T app "$@"; }
 load_mail() {
   in_app php docker/dev/make-emails.php tests/fixtures/emails/synthetic docker/dev/mail-preload
   compose up -d --force-recreate imap >/dev/null
-  echo "Mock mailbox: protocol@school.test / secret (IMAP imap:3143)"
+  # wait until the mock mailbox answers (GreenMail is a JVM and loads the files on start)
+  local n=""
+  for _ in $(seq 1 60); do
+    n=$(compose exec -T app curl -s --max-time 3 --user 'protocol@school.test:secret' 'imap://imap:3143/INBOX' -X 'EXAMINE INBOX' 2>/dev/null | grep -o '[0-9]* EXISTS' || true)
+    [ -n "$n" ] && break; sleep 2
+  done
+  [ -n "$n" ] || { echo "Mock mailbox did not start:" >&2; compose logs --tail 40 imap >&2; return 1; }
+  echo "Mock mailbox: protocol@school.test / secret (IMAP imap:3143) - $n"
 }
 
 # ---- local copy of production data (owner's computer only; see docs/LOCAL-REAL-DATA.md) ----
@@ -129,6 +137,16 @@ case "${1:-help}" in
     fi
     load_mail
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
+    ;;
+  e2e)
+    # browser tests against the running dev stack; host Node if available, otherwise the Playwright container
+    shift
+    if command -v npx >/dev/null 2>&1; then
+      (cd e2e && { [ -d node_modules ] || npm install --no-audit --no-fund; } && npx playwright test "$@")
+    else
+      docker run --rm --network host -v "$PWD:/work:z" -w /work/e2e -e EVIDENCE -e APP_URL \
+        mcr.microsoft.com/playwright:v1.63.0-noble sh -c 'npm install --no-audit --no-fund >/dev/null && npx playwright test "$@"' -- "$@"
+    fi
     ;;
   mail) load_mail ;;
   test) shift
