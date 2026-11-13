@@ -1,0 +1,100 @@
+# Single source of truth for task STATUS, DEPENDENCIES and ESTIMATES.
+# Descriptions and acceptance details live in BACKLOG.md.
+#
+# After changing anything here run:   python3 docs/plan/tools/pert.py
+# (regenerates docs/plan/PROGRESS.md; CI fails if PROGRESS.md is out of date)
+#
+# status:  done | in-progress | todo | on-hold
+# size:    S | M | L   → default PERT estimates in agent working hours (optimistic, most likely, pessimistic)
+#          override with  est = [o, m, p]
+# batch:   execution batch (tasks run in the listed order inside a batch)
+
+tasks = [
+  { id = "F01", title = "CI on GitHub Actions", phase = "F", batch = 1, size = "S", deps = [], status = "done", pr = 3 },
+  { id = "F03", title = "Docker dev stack + mock mail", phase = "F", batch = 1, size = "M", deps = [], status = "done", pr = 2 },
+  { id = "F02", title = "Test foundation, characterization tests", phase = "F", batch = 1, size = "L", deps = ["F01"], status = "done", pr = 4 },
+  { id = "S00", title = "Close open admin registration", phase = "U", batch = 1, size = "S", deps = ["F02"], status = "done", pr = 5 },
+  { id = "B03", title = "Keep manually typed number", phase = "U", batch = 1, size = "M", deps = ["F02"], status = "done", pr = 6 },
+  { id = "B08", title = "Atomic numbering (concurrency)", phase = "U", batch = 1, size = "M", deps = ["F02"], status = "done", pr = 7 },
+  { id = "S02", title = "Central access-control policy", phase = "U", batch = 1, size = "M", deps = ["F02"], status = "done", pr = 8 },
+  { id = "A02", title = "Missing-number reminder", phase = "U", batch = 1, size = "M", deps = ["B08"], status = "done", pr = 9 },
+
+  # Pinned: owner could not reproduce yet (prod: protocolValidate = NO). Re-open when steps are known.
+  { id = "B03d", title = "Date reset on save (pinned, awaiting steps)", phase = "U", batch = 0, size = "S", deps = [], status = "on-hold" },
+
+  # ---------------- Batch 2 ----------------
+  { id = "B09", title = "Fix all outgoing email (500s)", phase = "U", batch = 2, size = "S", deps = ["F02"], status = "todo" },
+  { id = "F04", title = "Real-data loader (owner runs it)", phase = "F", batch = 2, size = "S", deps = ["F03"], status = "todo" },
+  { id = "F05", title = "Playwright evidence tooling", phase = "F", batch = 2, size = "M", deps = ["F02", "F03"], status = "todo" },
+  { id = "S04", title = "Remove committed .env / APP_KEY", phase = "U", batch = 2, size = "S", deps = [], status = "todo" },
+  { id = "B04", title = "Descriptive error pages", phase = "U", batch = 2, size = "S", deps = [], status = "todo" },
+  { id = "B07", title = "Diagnose timeouts / 500s", phase = "U", batch = 2, size = "M", deps = ["F03", "B04"], status = "todo" },
+
+  # ---------------- Batch 3 ----------------
+  { id = "N01", title = "PHP + Composer upgrade, drop ext-imap", phase = "N", batch = 3, size = "M", deps = ["F01", "F02", "F03"], status = "todo" },
+  { id = "N02", title = "Laravel structure modernization", phase = "N", batch = 3, size = "M", deps = ["N01"], status = "todo" },
+  { id = "N03", title = "Vite + Bootstrap 5 + Livewire, top nav layout", phase = "N", batch = 3, size = "M", deps = ["N02", "F05"], status = "todo" },
+  { id = "N04", title = "Shared UI components (pills, date input…)", phase = "N", batch = 3, size = "M", deps = ["N03"], status = "todo" },
+
+  # ---------------- Batch 4 ----------------
+  { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "todo" },
+  { id = "D05", title = "Tables → utf8mb4", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "todo" },
+  { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 4, size = "M", deps = ["F04"], status = "todo" },
+  { id = "D03", title = "Attachment size/hash/deleted_by", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "todo" },
+  { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 4, size = "M", deps = ["F04"], status = "todo" },
+
+  # ---------------- Batch 5 ----------------
+  { id = "R1a", title = "Protocol service (sanitation, copy date…)", phase = "R", batch = 5, size = "M", deps = ["D01", "D02"], status = "todo" },
+  { id = "R1b", title = "Protocol form screen", phase = "R", batch = 5, size = "M", deps = ["R1a", "N04"], status = "todo" },
+  { id = "R1c", title = "Attachments panel, drag & drop", phase = "R", batch = 5, size = "M", deps = ["R1b", "D03"], status = "todo" },
+  { id = "R2", title = "Protocol list rebuild", phase = "R", batch = 5, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R4a", title = "Secure file handling", phase = "R", batch = 5, size = "S", deps = ["S02"], status = "todo" },
+  { id = "R4b", title = "Attachment trash with retention", phase = "R", batch = 5, size = "M", deps = ["R4a", "D03"], status = "todo" },
+
+  # ---------------- Batch 6 ----------------
+  { id = "R3a", title = "Advanced search screen", phase = "R", batch = 6, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 6, size = "M", deps = ["R3a"], status = "todo" },
+  { id = "R3c", title = "Global search box + results page", phase = "R", batch = 6, size = "M", deps = ["R3b"], status = "todo" },
+
+  # ---------------- Batch 7 ----------------
+  { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 7, size = "L", deps = ["N01"], status = "todo" },
+  { id = "R5c", title = "Inbox screen (sidebar, collapsible)", phase = "R", batch = 7, size = "M", deps = ["R5a", "N04"], status = "todo" },
+  { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 7, size = "M", deps = ["R5c", "R1a"], status = "todo" },
+  { id = "R5b", title = "winmail.dat (TNEF)", phase = "R", batch = 7, size = "L", deps = ["R5a"], status = "todo" },
+
+  # ---------------- Batch 8 ----------------
+  { id = "R6a", title = "Users & roles screens", phase = "R", batch = 8, size = "M", deps = ["N04"], status = "todo" },
+  { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 8, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R1d", title = "Apply auto-assignment on save", phase = "R", batch = 8, size = "S", deps = ["R1a", "R6b"], status = "todo" },
+  { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 8, size = "M", deps = ["N04", "R4b"], status = "todo" },
+  { id = "R7", title = "Printing & exports", phase = "R", batch = 8, size = "M", deps = ["R2"], status = "todo" },
+
+  # ---------------- Batch 9 ----------------
+  { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 9, size = "M", deps = ["R2"], status = "todo" },
+  { id = "A03", title = "Rule: dates going backwards", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
+  { id = "A04", title = "Rule: εκκρεμότητα", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
+  { id = "A05", title = "Rule: (partial) duplicates", phase = "Z", batch = 9, size = "M", deps = ["A01", "D03"], status = "todo" },
+  { id = "A06", title = "Rule: missing attachment", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
+  { id = "X01", title = "Audit log — recording", phase = "Z", batch = 9, size = "M", deps = ["N02"], status = "todo" },
+  { id = "X02", title = "Audit log — viewing", phase = "Z", batch = 9, size = "M", deps = ["X01"], status = "todo" },
+  { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 9, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
+  { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 9, size = "S", deps = ["Z01"], status = "todo" },
+  { id = "Z03", title = "Final security review", phase = "Z", batch = 9, size = "M", deps = ["Z02"], status = "todo" },
+
+]
+
+[sizes]
+# calibrated on Batch 1 (8 tasks ≈ 3 h of agent time, incl. CI waits and review fixes)
+S = [0.15, 0.3, 0.6]
+M = [0.3, 0.5, 1.0]
+L = [0.6, 1.0, 2.0]
+
+[phases]
+F = "0 Foundation"
+U = "1 Urgent patches"
+N = "2 Platform"
+D = "3 Data model"
+R = "4 Module rebuilds"
+Z = "5 Finish"
+
+# ---------------- Batch 1 (done) ----------------

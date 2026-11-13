@@ -1,6 +1,8 @@
 # Backlog — electronic_protocol rebuild
 
 Status: **v3 — module-by-module rebuild plan, approved approach** (2026-11-12).
+
+📊 **Live progress (PERT/CPM, diagrams): [PROGRESS.md](PROGRESS.md)** · status/dependencies are kept in [tasks.toml](tasks.toml) · hand-off notes: [HANDOFF.md](HANDOFF.md)
 Source: owner's requirements document (Greek) + code-review findings (🔎). Every owner request is mapped in the **Traceability** table at the end.
 
 Legend
@@ -226,4 +228,4 @@ X01 can be moved earlier at any time (it is generic and doesn't depend on module
 - Owner can supply some real-world, public-safe emails; the rest synthetic.
 
 ## Open questions
-- none
+- **B03d (pinned):** date reset on save — not reproducible yet (production: *Έλεγχοι καταχώρισης* = NO). Owner will report the steps when it happens again.
