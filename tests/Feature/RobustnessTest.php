@@ -56,7 +56,27 @@ class RobustnessTest extends FeatureTestCase
     public function test_print_with_invalid_filters_does_not_crash(): void
     {
         $this->actingAs($this->writer())->post('/printed', ['aponum' => 'abc', 'apoProtocolDate' => 'x', 'etosForMany' => now()->year])
-            ->assertSuccessful();
+            ->assertSuccessful()
+            ->assertSee('id="ignoredFilters"', false)->assertSee('Από αριθμό «abc»')->assertSee('Από ημ/νία «x»');
+    }
+
+    public function test_attachment_print_reports_ignored_filters(): void
+    {
+        $this->actingAs($this->writer())->post('/printedAttachments', ['eosnum' => '12a', 'etosForMany' => now()->year])
+            ->assertSuccessful()
+            ->assertSee('id="ignoredFilters"', false)->assertSee('Έως αριθμό «12a»');
+    }
+
+    public function test_print_with_valid_filters_has_no_notice(): void
+    {
+        $this->actingAs($this->writer())->post('/printed', ['aponum' => '1', 'etosForMany' => now()->year])
+            ->assertSuccessful()->assertDontSee('id="ignoredFilters"', false);
+    }
+
+    public function test_ignored_filter_value_is_escaped_on_printout(): void
+    {
+        $this->actingAs($this->writer())->post('/printed', ['aponum' => '<b>x</b>', 'etosForMany' => now()->year])
+            ->assertSuccessful()->assertDontSee('<b>x</b>', false)->assertSee('&lt;b&gt;x&lt;/b&gt;', false);
     }
 
     public function test_login_lands_on_the_protocol_list(): void

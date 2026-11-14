@@ -1644,7 +1644,7 @@ class ProtocolController extends Controller
 
     public function printed()
     {
-        $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page
+        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
 
         $etos = Config::getConfigValueOf('yearInUse');
         $datetime = Carbon::now()->format('d/m/Y H:i:s');
@@ -1701,7 +1701,7 @@ class ProtocolController extends Controller
             ob_end_clean();
             return $response;
         }
-        return view('printed', compact('protocols', 'etos', 'datetime'));
+        return view('printed', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
     }
 
     public function receipt(Protocol $protocol)
@@ -1782,7 +1782,7 @@ class ProtocolController extends Controller
 
     public function printedAttachments()
     {
-        $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page
+        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
 
         $etos = Config::getConfigValueOf('yearInUse');
         $datetime = Carbon::now()->format('d/m/Y H:i:s');
@@ -1824,7 +1824,7 @@ class ProtocolController extends Controller
             }
         }
 
-        return view('printedAttachments', compact('protocols', 'etos', 'datetime'));
+        return view('printedAttachments', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
     }
 
     public function getEmailNum()

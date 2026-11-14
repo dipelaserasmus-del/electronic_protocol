@@ -56,6 +56,7 @@
 </head>
 
 <body>
+    @include('partials.ignoredFiltersNotice')
     <div class="col-md-12 ">
         <div class="table-responsive">
 
