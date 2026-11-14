@@ -27,6 +27,8 @@ tasks = [
   { id = "F04", title = "Real-data loader (owner runs it)", phase = "F", batch = 2, size = "S", deps = ["F03"], status = "done", pr = 15 },
   # Owner-side: VS Code + Docker on the owner's computer, real data loaded locally with F04 (pinned 2026-11-13)
   { id = "L01", title = "Owner's VS Code + local stack with real data", phase = "F", batch = 2, size = "S", deps = ["F04"], status = "in-progress", pr = 16 },
+  # Owner-side: second computer (macOS) + Fedora VS Code from RPM; switch between them at any time
+  { id = "L02", title = "Two computers: macOS guide, RPM VS Code, switching", phase = "F", batch = 2, size = "S", deps = ["L01"], status = "in-progress" },
   { id = "F05", title = "Playwright evidence tooling", phase = "F", batch = 2, size = "M", deps = ["F02", "F03"], status = "done", pr = 17 },
   { id = "S04", title = "Remove committed .env / APP_KEY", phase = "U", batch = 2, size = "S", deps = [], status = "done", pr = 18 },
   { id = "B04", title = "Descriptive error pages", phase = "U", batch = 2, size = "S", deps = [], status = "done", pr = 19 },

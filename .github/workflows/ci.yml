@@ -134,3 +134,27 @@ jobs:
         run: docker build -t electronic-protocol-app .
       - name: Smoke test image
         run: docker run --rm electronic-protocol-app sh -c 'php -v && php -m | grep -E "pdo_mysql|gd|zip|intl|mbstring" && php-fpm -t'
+
+  docker-arm64:
+    # Apple Silicon Macs run arm64 containers: the app image must build and work there too (L02)
+    name: Docker image builds (arm64, like Apple Silicon Macs)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build app image
+        run: docker build -t electronic-protocol-app .
+      - name: Smoke test image
+        run: docker run --rm electronic-protocol-app sh -c 'uname -m && php -v && php -m | grep -E "pdo_mysql|gd|zip|intl|mbstring" && php-fpm -t'
+
+  dev-sh:
+    # ./dev.sh must work with macOS's bash 3.2 + BSD tools as well as on Linux (L02)
+    name: dev.sh on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check dev.sh with a fake docker (macOS uses its own /bin/bash 3.2)
+        run: sh tests/shell/dev-sh.test.sh /bin/bash
