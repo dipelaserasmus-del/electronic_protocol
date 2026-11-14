@@ -433,53 +433,14 @@ class ProtocolController extends Controller
         return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'prefillNum', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly'));
     }
 
+    /**
+     * B07: disabled. It asked the ORIGINAL author's GitHub repository (g-theodoroy) for new commits on login:
+     * a network call that waits for a timeout on servers without internet, and — since this fork has its own
+     * history — advice to apply someone else's changes. Updates of this fork come through its own repository.
+     * The route stays: the login redirects here, and it forwards each role to its landing page as before.
+     */
     public function chkForUpdates()
     {
-        // και ενημέρωση του Χρήστη αν η ρύθμιση επιτρέπεται ο έλεγχος για ενημερώσεις updatesAutoCheck = 1
-        $updatesAutoCheck = Config::getConfigValueOf('updatesAutoCheck');
-        if ($updatesAutoCheck) {
-            // μόνο όταν γίνεται login
-            if (strpos(request()->headers->get('referer'), 'login')) {
-                try {
-                    // έλεγχος εάν έχουν γίνει αλλαγές στο github
-                    $url = 'https://api.github.com/repos/g-theodoroy/electronic_protocol/commits';
-                    $opts = ['http' => ['method' => 'GET', 'header' => ['User-Agent: PHP']]];
-                    $context = stream_context_create($opts);
-                    $json = file_get_contents($url, false, $context);
-                    $commits = json_decode($json, true);
-                } catch (\Throwable $e) {
-                    report($e);
-                    $commits = null;
-                }
-                // εάν υπάρχουν commits
-                if ($commits) {
-                    if (Auth::user()->role->role == "Διαχειριστής") {
-                        $message = 'Έγιναν τροποποιήσεις στον κώδικα του Ηλ.Πρωτοκόλλου στο Github.<br><br>Αν επιθυμείτε <a href=\"https://github.com/g-theodoroy/electronic_protocol/commits/master\" target=\"_blank\"><u> εξετάστε τον κώδικα</u></a> και ενημερώστε την εγκατάστασή σας.<br><br>Για να μην εμφανίζεται το παρόν μήνυμα καντε κλικ στο menu Διαχείριση->Ενημερώθηκε.';
-                    } else {
-                        $message = 'Έγιναν τροποποιήσεις στον κώδικα του Ηλ.Πρωτοκόλλου στο Github.<br><br>Ενημερώστε το Διαχειριστή.';
-                    }
-                    // διαβάζω από το αρχείο .updateCheck το id του τελευταίου αποθηκευμένου commit
-                    $file = storage_path('conf/.updateCheck');
-                    if (file_exists($file)) {
-                        // αν διαφέρει με το id του τελευταίου commit στο github
-                        // στέλνω ειδοποίηση για την υπάρχουσα ενημέρωση
-                        if ($commits[0]['sha'] != file_get_contents($file)) {
-                            $notification = array(
-                                'message' =>  $message,
-                                'alert-type' => 'info'
-                            );
-                            session()->flash('notification', $notification);
-                            // αλλάζω τη μετσβλητή needsUpdate σε true(1)
-                            Config::setConfigValueOf('needsUpdate', 1);
-                        }
-                    } else {
-                        // αν δεν υπάρχει το αρχείο .updateCheck το
-                        // δημιουργώ και γράφω το id του τελευταίου commit
-                        file_put_contents($file, $commits[0]['sha']);
-                    }
-                }
-            }
-        }
         return redirect(config('landing-page.page.' . auth()->user()->role_id));
     }
 
@@ -1445,8 +1406,38 @@ class ProtocolController extends Controller
         return view('find', compact('fields', 'attachmentfields', 'searchField1', 'searchField2', 'searchField3'));
     }
 
+
+    /**
+     * B07: search / print filters typed by users ("from number", dates…) crashed the page with a 500 when they
+     * were not numbers or dd/mm/yyyy dates. Invalid values are removed from the request and reported back.
+     * @return string[] labels of the ignored filters
+     */
+    private function dropInvalidFilters(): array
+    {
+        $numbers = ['aponum' => 'Από αριθμό', 'eosnum' => 'Έως αριθμό', 'etosForMany' => 'Έτος'];
+        $dates = ['apoProtocolDate' => 'Από ημ/νία', 'eosProtocolDate' => 'Έως ημ/νία', 'apoEiserxDate' => 'Από ημ/νία εισερχ.',
+                  'eosEiserxDate' => 'Έως ημ/νία εισερχ.', 'apoExerxDate' => 'Από ημ/νία εξερχ.', 'eosExerxDate' => 'Έως ημ/νία εξερχ.'];
+        $ignored = [];
+        foreach ($numbers as $field => $label) {
+            $v = trim((string) request($field));
+            if ($v !== '' && !ctype_digit($v)) {
+                $ignored[] = "$label «" . e($v) . "»";
+                request()->merge([$field => null]);
+            }
+        }
+        foreach ($dates as $field => $label) {
+            $v = trim((string) request($field));
+            if ($v !== '' && (!preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $v) || !Carbon::canBeCreatedFromFormat($v, 'd/m/Y'))) {
+                $ignored[] = "$label «" . e($v) . "»";
+                request()->merge([$field => null]);
+            }
+        }
+        return $ignored;
+    }
+
     public function getFindData()
     {
+        $ignoredFilters = $this->dropInvalidFilters();
         $sqlite = env('DB_CONNECTION') == 'sqlite';
 
         $maxRowsInFindPage = Config::getConfigValueOf('maxRowsInFindPage');
@@ -1501,7 +1492,7 @@ class ProtocolController extends Controller
                     $whereAttachmentvalues[] = [request('searchField1'), 'LIKE', '%' . request('searchData1') . '%'];
                 } else {
                     if (request('searchField1') == 'diekperaiosi') {
-                        $searchData = $diekpStr . User::where('name', 'LIKE', '%' . request('searchData1') . '%')->first('id')->id;
+                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData1') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
                         if ($searchData) {
                             $wherevalues[] = [request('searchField1'), $searchData];
                         }
@@ -1524,7 +1515,7 @@ class ProtocolController extends Controller
                     $whereAttachmentvalues[] = [request('searchField2'), 'LIKE', '%' . request('searchData2') . '%'];
                 } else {
                     if (request('searchField2') == 'diekperaiosi') {
-                        $searchData = $diekpStr . User::where('name', 'LIKE', '%' . request('searchData2') . '%')->first('id')->id;
+                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData2') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
                         if ($searchData) {
                             $wherevalues[] = [request('searchField2'), $searchData];
                         }
@@ -1547,7 +1538,7 @@ class ProtocolController extends Controller
                     $whereAttachmentvalues[] =  [request('searchField3'), 'LIKE', '%' . request('searchData3')  . '%'];
                 } else {
                     if (request('searchField3') == 'diekperaiosi') {
-                        $searchData = $diekpStr . User::where('name', 'LIKE', '%' . request('searchData3') . '%')->first('id')->id;
+                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData3') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
                         if ($searchData) {
                             $wherevalues[] = [request('searchField3'), $searchData];
                         }
@@ -1560,7 +1551,9 @@ class ProtocolController extends Controller
         }
 
         if (!$wherevalues and !$whereAttachmentvalues and !$whereNullFields and !$whereNullAttachmentvalues and !$filtervalues) {
-            return;
+            // no usable criteria: nothing to search (but say which typed values were not valid)
+            return response($ignoredFilters ? '<div class="alert alert-warning" id="ignoredFilters">Αγνοήθηκαν μη έγκυρα κριτήρια: '
+                . implode(', ', $ignoredFilters) . ' (αριθμοί: μόνο ψηφία · ημερομηνίες: ηη/μμ/εεεε).</div>' : '');
         }
 
         $foundProtocolsCount = null;
@@ -1636,7 +1629,12 @@ class ProtocolController extends Controller
         $searchData2 = request('searchData2');
         $searchData3 = request('searchData3');
 
-        return view('getFindData', compact('protocols', 'foundProtocolsCount', 'maxRowsInFindPage', 'fields', 'attachmentfields', 'searchField1', 'searchField2', 'searchField3', 'searchData1', 'searchData2', 'searchData3'));
+        $html = view('getFindData', compact('protocols', 'foundProtocolsCount', 'maxRowsInFindPage', 'fields', 'attachmentfields', 'searchField1', 'searchField2', 'searchField3', 'searchData1', 'searchData2', 'searchData3'))->render();
+        if ($ignoredFilters) {
+            $html = '<div class="alert alert-warning" id="ignoredFilters">Αγνοήθηκαν μη έγκυρα κριτήρια: '
+                . implode(', ', $ignoredFilters) . ' (αριθμοί: μόνο ψηφία · ημερομηνίες: ηη/μμ/εεεε).</div>' . $html;
+        }
+        return response($html);
     }
 
     public function printprotocols()
@@ -1646,6 +1644,7 @@ class ProtocolController extends Controller
 
     public function printed()
     {
+        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
 
         $etos = Config::getConfigValueOf('yearInUse');
         $datetime = Carbon::now()->format('d/m/Y H:i:s');
@@ -1702,7 +1701,7 @@ class ProtocolController extends Controller
             ob_end_clean();
             return $response;
         }
-        return view('printed', compact('protocols', 'etos', 'datetime'));
+        return view('printed', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
     }
 
     public function receipt(Protocol $protocol)
@@ -1783,6 +1782,7 @@ class ProtocolController extends Controller
 
     public function printedAttachments()
     {
+        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
 
         $etos = Config::getConfigValueOf('yearInUse');
         $datetime = Carbon::now()->format('d/m/Y H:i:s');
@@ -1824,7 +1824,7 @@ class ProtocolController extends Controller
             }
         }
 
-        return view('printedAttachments', compact('protocols', 'etos', 'datetime'));
+        return view('printedAttachments', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
     }
 
     public function getEmailNum()
@@ -1848,11 +1848,9 @@ class ProtocolController extends Controller
             report($e);
             return 0;
         }
-        if (!$oClient->getFolder(config('imapFolders.inbox'))) {
-            $oClient->createFolder(config('imapFolders.inbox'));
-        }
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // επιλέγω τον φάκελο INBOX
-        $oFolder = $oClient->getFolder(config('imapFolders.inbox'));
+        $oFolder = \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // αριθμός μηνυμάτων από $sinceDate και μετά
         $aMessageNum = $oFolder->query()->since($sinceDate)->count();
         return $aMessageNum;
@@ -1913,11 +1911,9 @@ class ProtocolController extends Controller
         $years = Keepvalue::whereNotNull('keep')->select('keep')->distinct()->orderby('keep', 'asc')->get();
         $words = Keepvalue::whereNotNull('keep_alt')->select('keep_alt')->distinct()->orderby('keep_alt', 'asc')->get();
         // σύνδεση στον φάκελο INBOX
-        if (!$oClient->getFolder(config('imapFolders.inbox'))) {
-            $oClient->createFolder(config('imapFolders.inbox'));
-        }
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // επιλέγω τον φάκελο INBOX
-        $oFolder = $oClient->getFolder(config('imapFolders.inbox'));
+        $oFolder = \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // σειρά ταξινόμησης μηνυμάτων στον imap server πριν τα κατεβάσω
         // παίρνω τον αριθμό των μηνυμάτων από sinceDate και μετά
         $aMessageNum = $oFolder->query()->since($sinceDate)->count();
@@ -2015,19 +2011,15 @@ class ProtocolController extends Controller
             return back();
         }
         // αν δεν υπάρχει ο φάκελος INBOX.beenRead τον φτιάχνω
-        if (!$oClient->getFolder(config('imapFolders.beenRead'))) {
-            $oClient->createFolder(config('imapFolders.beenRead'));
-        }
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.beenRead'));
 
-        if (!$oClient->getFolder(config('imapFolders.inbox'))) {
-            $oClient->createFolder(config('imapFolders.inbox'));
-        }
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // επιλέγω τον φάκελο INBOX
-        $oFolder = $oClient->getFolder(config('imapFolders.inbox'));
+        $oFolder = \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         $oMessage = $oFolder->query()->getMessageByUid($messageUid, null, null, false, false, false);
         if ($oMessage) {
-            // μεταφέρω το μήνυμα στα διαβασμένα
-            $oMessage->move(config('imapFolders.beenRead'), true);
+            // μεταφέρω το μήνυμα στα διαβασμένα (B07: αξιόπιστη μεταφορά)
+            \App\Support\Imap\MessageMover::move($oClient, config('imapFolders.inbox'), $messageUid, config('imapFolders.beenRead'));
             // ενημερώνω τον χρήστη
             $notification = array(
                 'message' => "Το μήνυμα μεταφέρθηκε στα Αναγνωσμένα",
@@ -2344,20 +2336,23 @@ class ProtocolController extends Controller
             return back();
         }
         // αν δεν υπάρχει ο φακελος INBOX.inProtocol τον φτιάχνω
-        if (!$oClient->getFolder(config('imapFolders.inProtocol'))) {
-            $oClient->createFolder(config('imapFolders.inProtocol'));
-        }
-        if (!$oClient->getFolder(config('imapFolders.inbox'))) {
-            $oClient->createFolder(config('imapFolders.inbox'));
-        }
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inProtocol'));
+        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
         // επιλέγω τον φάκελο INBOX
-        $oFolder = $oClient->getFolder(config('imapFolders.inbox'));
-        // το μήνυμα με το uid για αποθήκευση
-        $oMessage = $oFolder->query()->getMessageByUid($uid, null, null, true, true, false);
-        $oMessage->move(config('imapFolders.inProtocol'), true);
+        $oFolder = \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
+        // μεταφέρω το μήνυμα στα πρωτοκολλημένα (B07: αξιόπιστη μεταφορά· το πρωτόκολλο έχει ήδη αποθηκευτεί,
+        // οπότε ένα πρόβλημα εδώ εμφανίζεται ως προειδοποίηση και όχι ως σφάλμα 500)
+        try {
+            \App\Support\Imap\MessageMover::move($oClient, config('imapFolders.inbox'), $uid, config('imapFolders.inProtocol'));
+        } catch (\Throwable $e) {
+            report($e);
+            $message .= "<li><strong>Το email δεν μεταφέρθηκε στον φάκελο των πρωτοκολλημένων</strong> και παραμένει στα εισερχόμενα: "
+                . "το πρωτόκολλο <strong>έχει ήδη καταχωριστεί</strong> — μην το καταχωρίσετε ξανά.</li>";
+            $moveFailed = true;
+        }
 
         $alertType = 'success';
-        if ($numMissedAttachments) {
+        if ($numMissedAttachments || !empty($moveFailed)) {
             $alertType = 'warning';
         }
 
