@@ -1,6 +1,6 @@
 {
   // Run with: Terminal → Run Task…  (or Ctrl+Shift+P → "Tasks: Run Task")
-  // Every task goes through docker/dev/host-run.sh, so it also works with VS Code installed as a Flatpak.
+  // Same tasks on Fedora and macOS. Each goes through docker/dev/host-run.sh, which also handles a Flatpak VS Code.
   "version": "2.0.0",
   "options": { "cwd": "${workspaceFolder}" },
   "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
@@ -19,6 +19,10 @@
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "up"], "problemMatcher": [] },
     { "label": "Real data: stop", "type": "process",
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "down"], "problemMatcher": [] },
+    { "label": "Check: set-up status (safe to send, no data)", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "doctor"], "problemMatcher": [] },
+    { "label": "Tests: browser tests (demo app must be running)", "type": "process",
+      "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "e2e"], "problemMatcher": [] },
     { "label": "Update: get latest version from GitHub", "type": "process",
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["git", "pull", "--ff-only"], "problemMatcher": [] }
   ]

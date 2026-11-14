@@ -1,75 +1,75 @@
-# VS Code on Fedora (Flatpak) — run the app locally, with demo or real data
+# Fedora: VS Code + Docker
 
-Written for: **Fedora (GNOME), SELinux enforcing, Docker installed and running, VS Code installed as a Flatpak.**
-Everything runs on your computer; nothing here sends data anywhere.
+For: **Fedora (GNOME), SELinux enforcing, Docker installed.** Then continue with [LOCAL-SETUP.md](LOCAL-SETUP.md)
+(same steps as on the Mac). Nothing here sends your data anywhere.
 
-## 0. One-time checks (Terminal app, not VS Code)
+## Which VS Code: use Microsoft's RPM (recommended)
+You can switch between this computer and your Mac at any time. That works best with the **RPM version of VS Code**:
+
+| | RPM (Microsoft's repository) | Flatpak |
+|---|---|---|
+| Terminal and tasks see Docker | directly, as on the Mac | only through `flatpak-spawn --host` |
+| Extra permission override | none | needed (`--talk-name=org.freedesktop.Flatpak`) |
+| Same behaviour as on the Mac | yes | no (different terminal profile) |
+| Sandbox protection | — | none in practice: that override lets VS Code run any command on your computer |
+| Updates | with `dnf` / GNOME Software | with Flatpak |
+
+The repository still works with the Flatpak (tasks detect it), so nothing breaks if you keep it.
+
+## 1. Docker (one-time check, in the Terminal app)
 ```bash
 docker info --format '{{.ServerVersion}}'
 ```
-It must print a version. If it says "permission denied", add yourself to the `docker` group and log out/in:
+It must print a version. If it says "permission denied", add yourself to the `docker` group, then log out and in:
 ```bash
 sudo usermod -aG docker "$USER"
 ```
-VS Code's Flatpak must be allowed to run commands on the host. Check it:
+`docker compose version` must also work. If it doesn't, install the Compose plugin:
 ```bash
-flatpak info --show-permissions com.visualstudio.code | grep -i org.freedesktop.Flatpak
-```
-If that prints nothing, allow it:
-```bash
-flatpak override --user --talk-name=org.freedesktop.Flatpak com.visualstudio.code
+sudo dnf install docker-compose-plugin
 ```
 
-## 1. Get the code
+## 2. Install VS Code from Microsoft's repository
+These are Microsoft's official instructions for Fedora:
 ```bash
-git clone https://github.com/dipelaserasmus-del/electronic_protocol.git ~/electronic_protocol
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 ```
-Then in VS Code: **File → Open Folder… → `~/electronic_protocol`**, and click **"Trust"** when asked.
-Accept the recommended extensions it suggests (PHP, Blade, Mermaid preview…).
+```bash
+echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\nautorefresh=1\ntype=rpm-md\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/vscode.repo > /dev/null
+```
+```bash
+sudo dnf install code
+```
 
-## 2. Start the demo app
-**Terminal → Run Task… → "Demo: start (http://localhost:8080)"**.
-The first time takes a few minutes (it builds the image and installs PHP packages). Then open
-http://localhost:8080 and log in as `admin` / `password`. Caught e-mails: http://localhost:8025.
+### Moving from the Flatpak (keeps your settings and extensions)
+1. **In the Flatpak VS Code first:** Accounts icon (bottom left) → **Backup and Sync Settings…**
+   (older versions: *Turn on Settings Sync…*) → sign in with GitHub → keep everything ticked.
+2. Install the RPM (step 2 above), open it, Accounts icon → **Backup and Sync Settings…** → same GitHub account.
+   Your settings and extensions come back.
+3. Remove the Flatpak:
+   ```bash
+   flatpak uninstall com.visualstudio.code
+   ```
+   Also remove its permission override:
+   ```bash
+   flatpak override --user --reset com.visualstudio.code
+   ```
+Your clone `~/electronic_protocol` stays where it is: you don't need to clone again or download anything again.
 
-## 3. Your real data
-1. From the production server copy:
-   - the database backup (`.sql.gz` from *Ρυθμίσεις → Backup*, or a `mysqldump`) → `~/electronic_protocol/local-data/db/`
-   - the whole `storage/app` folder → `~/electronic_protocol/local-data/storage/app/`
-   - (optional) e-mails as `.eml` → `~/electronic_protocol/local-data/emails/`
-2. **Terminal → Run Task… → "Real data: load newest backup from local-data/db"**
-3. Open http://localhost:8081 and log in with your normal production account.
+Settings Sync stores only VS Code's own settings and the list of extensions on Microsoft's servers. It never
+stores the project, `local-data/` or anything from the app.
 
-Details and safety notes: [LOCAL-REAL-DATA.md](LOCAL-REAL-DATA.md). In short: e-mails are only caught locally
-(http://localhost:8026), your real mailbox is never contacted, and `local-data/` can't be committed.
+## 3. Continue
+→ [LOCAL-SETUP.md](LOCAL-SETUP.md) (get the code, start the demo, load your real data, switch computers).
 
-## 4. Everyday use
-| I want to… | Run Task… |
+## Fedora specifics (already handled by the repository)
+| Fedora | What the repository does |
 |---|---|
-| get the latest version | "Update: get latest version from GitHub", then "Demo: start" |
-| try a task branch with my data | in the terminal: `git checkout task/<ID>-…`, then "Real data: load…" |
-| run the tests | "Tests: run all" |
-| stop everything | "Demo: stop" and "Real data: stop" |
+| SELinux blocks containers from reading your home folder | every folder mount has the `:z` label |
+| files created by containers would belong to another user | `./dev.sh` uses shared write permissions and installs PHP packages as your user |
+| Flatpak VS Code can't see Docker | tasks go through `docker/dev/host-run.sh`. In the terminal, pick **Host bash (Flatpak)** from the **+ ⌄** menu. |
 
-The integrated terminal (**Terminal → New Terminal**) opens on your host ("Host bash (Flatpak)"), so `docker`
-and `./dev.sh` work there too.
-
-## Why the extra settings
-| Fedora specific | What the repository does |
-|---|---|
-| VS Code Flatpak can't see Docker | tasks and terminal run through `flatpak-spawn --host` (`docker/dev/host-run.sh`, `.vscode/settings.json`) |
-| SELinux blocks containers from reading your home folder | all folder mounts carry the `:z` label in the compose files |
-| files created by containers owned by another user | `./dev.sh` uses shared write permissions and installs PHP packages as your user |
-
-## AI extensions
-If you use Copilot, Claude or similar in VS Code: `local-data/` is hidden from the explorer and search, which
-keeps it out of most automatic context — but an extension could still read it if asked. Don't open those files
-with an AI chat active.
-
-## If something goes wrong
 | Symptom | Fix |
 |---|---|
-| Task says `flatpak-spawn: not found` / Docker not found | step 0, Flatpak permission |
-| `permission denied` on `/var/www/html/...` in the logs | SELinux: make sure you started with the repository's compose files (`./dev.sh …`), not your own |
-| Port 8080/8081 already in use | change `APP_PORT` in `.env.development` / `.env.real` |
-| Anything else | copy the **error message only** (no data) and send it to me |
+| `permission denied` on `/var/www/html/...` in the logs | SELinux: always start with `./dev.sh …` (the repository's compose files), not with your own compose command |
+| Terminal opens but `docker` is not found (Flatpak only) | pick **Host bash (Flatpak)**, or move to the RPM |

@@ -16,7 +16,8 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 4. Evidence report `docs/reports/<ID>.md`: what was wrong, what changed, how verified (tests + browser), owner actions.
 5. Update `docs/plan/tasks.toml` (status, `pr`) and run `python3 docs/plan/tools/pert.py`; update `HANDOFF.md`.
 6. Open a PR to `master`, wait for **all CI jobs green**, read automated review comments (Codex bot): verify each,
-   fix real ones (with tests), reply on the thread. Then merge (owner allowed Claude to merge on green CI).
+   fix real ones (with tests), reply on the thread. Then merge. The owner allowed Claude to run the **whole PR procedure
+   on its own** (commit, push, review replies, merge on green CI) without asking.
 7. Each batch ends with `docs/reports/BATCH-<n>.md`.
 
 ## Hard rules
@@ -32,5 +33,7 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 ./dev.sh cloud-up  # same, inside a Claude Code cloud sandbox (see HANDOFF.md)
 ./dev.sh test      # PHPUnit on MySQL (fresh `testing` DB)
 ./dev.sh e2e       # Playwright browser tests (EVIDENCE=<ID> saves screenshots to docs/reports/img/<ID>/)
+./dev.sh doctor    # set-up status, no data (owner can send it)
+sh tests/shell/dev-sh.test.sh   # dev.sh checks (fake docker; CI runs it on macOS bash 3.2 too)
 python3 docs/plan/tools/pert.py   # regenerate PROGRESS.md
 ```

@@ -10,6 +10,7 @@
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
 #   ./dev.sh real ...      local copy of production data (load|up|down|wipe) — see docs/LOCAL-REAL-DATA.md
+#   ./dev.sh doctor        check the set-up (versions and status only, no data) — safe to send
 #
 # App: http://localhost:8080 (demo users admin / anathetis / writer / reader, password: password)
 # Outgoing mail (Mailpit): http://localhost:8025
@@ -139,14 +140,40 @@ case "${1:-help}" in
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
     ;;
   e2e)
-    # browser tests against the running dev stack; host Node if available, otherwise the Playwright container
+    # browser tests against the running dev stack.
+    # CI and the Claude cloud sandbox have Node + browsers installed: use them. Your computer: the Playwright
+    # container (no Node needed), run as your user so e2e/node_modules is not owned by root.
     shift
-    if command -v npx >/dev/null 2>&1; then
+    # fresh mock mailbox every run: the e-mail registration test moves a message out of the inbox
+    [ -n "${APP_URL:-}" ] || load_mail
+    if [ -n "${CI:-}" ] || [ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" ] || [ -n "${E2E_HOST_NODE:-}" ]; then
       (cd e2e && { [ -d node_modules ] || npm install --no-audit --no-fund; } && npx playwright test "$@")
     else
-      docker run --rm --network host -v "$PWD:/work:z" -w /work/e2e -e EVIDENCE -e APP_URL \
+      port=$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2); port=${port:-8080}
+      if [ "$(uname -s)" = Darwin ]; then
+        # Docker Desktop for Mac: containers reach the Mac through host.docker.internal (no host network)
+        net="--add-host=host.docker.internal:host-gateway"; url=${APP_URL:-http://host.docker.internal:$port}
+      else
+        net="--network=host"; url=${APP_URL:-http://localhost:$port}
+      fi
+      docker run --rm "$net" -u "$(id -u):$(id -g)" -e HOME=/tmp -e EVIDENCE -e APP_URL="$url" \
+        -v "$PWD:/work:z" -w /work/e2e \
         mcr.microsoft.com/playwright:v1.63.0-noble sh -c 'npm install --no-audit --no-fund >/dev/null && npx playwright test "$@"' -- "$@"
     fi
+    ;;
+  doctor)
+    # set-up check: versions and status only (never data) — safe to copy and send
+    echo "Computer:   $(uname -s) $(uname -m)"
+    echo "Docker:     $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo 'NOT RUNNING or not installed')"
+    echo "Compose:    $(docker compose version --short 2>/dev/null || echo 'missing')"
+    echo "Git:        $(git --version 2>/dev/null) · branch $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
+    echo "Changes:    $(git status --porcelain 2>/dev/null | wc -l | tr -d ' ') uncommitted file(s)"
+    for svc in "Demo app|http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)/login" "Demo e-mails|http://localhost:8025" \
+               "Real copy|http://localhost:8081/login" "Real e-mails|http://localhost:8026"; do
+      code=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "${svc#*|}" 2>/dev/null || true)
+      printf '%-14s %s → %s\n' "${svc%%|*}:" "${svc#*|}" "$([ "$code" = 200 ] && echo OK || echo "not running (${code:-no answer})")"
+    done
+    echo "local-data: $(ls local-data/db 2>/dev/null | grep -cE '\.sql(\.gz)?$' || true) backup file(s), $(find local-data/storage/app -type f 2>/dev/null | wc -l | tr -d ' ') attachment file(s)"
     ;;
   mail) load_mail ;;
   test) shift
@@ -158,5 +185,5 @@ case "${1:-help}" in
   shell) compose exec app bash ;;
   logs) compose logs -f ;;
   down) compose down ;;
-  *) sed -n '2,14p' "$0" ;;
+  *) sed -n '2,15p' "$0" ;;
 esac

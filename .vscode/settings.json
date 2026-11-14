@@ -1,6 +1,7 @@
 {
-  // Integrated terminal on the HOST (needed when VS Code is a Flatpak: Docker is not visible inside the sandbox).
-  // Outside Flatpak, pick "bash" from the terminal drop-down instead.
+  // Terminal: VS Code from Microsoft's RPM (Fedora) or the Mac app uses your normal shell — nothing to set.
+  // Only if VS Code is the Flatpak: pick "Host bash (Flatpak)" from the terminal's + drop-down, because Docker
+  // is not visible inside the Flatpak sandbox. (Tasks handle this by themselves via docker/dev/host-run.sh.)
   "terminal.integrated.profiles.linux": {
     "Host bash (Flatpak)": {
       "path": "/usr/bin/flatpak-spawn",
@@ -8,7 +9,6 @@
       "icon": "terminal-linux"
     }
   },
-  "terminal.integrated.defaultProfile.linux": "Host bash (Flatpak)",
 
   // Keep real data and generated folders out of the editor, search and file watching.
   // This also keeps them out of what AI extensions are likely to read — but don't rely on it alone.
