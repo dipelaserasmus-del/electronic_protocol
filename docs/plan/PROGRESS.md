@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **14 / 53** `████████░░░░░░░░░░░░░░░░░░░░░░` 26% |
-| Effort done (PERT) | **6.9 / 27.0 h** `████████░░░░░░░░░░░░░░░░░░░░░░` 26% |
+| Tasks done | **15 / 54** `████████░░░░░░░░░░░░░░░░░░░░░░` 28% |
+| Effort done (PERT) | **7.2 / 27.3 h** `████████░░░░░░░░░░░░░░░░░░░░░░` 26% |
 | Remaining effort, one agent in sequence | **20.1 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 5.3 h ± 0.4 |
 | In progress | L01, L02 |
@@ -22,7 +22,7 @@
 | Batch | Tasks | Done | Progress |
 |---|---|---|---|
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
-| 2 | ✅B09 ✅F04 🔄L01 🔄L02 ✅F05 ✅S04 ✅B04 ✅B07 | 6/8 | `████████░░` |
+| 2 | ✅B09 ✅F04 🔄L01 🔄L02 ✅F05 ✅F06 ✅S04 ✅B04 ✅B07 | 7/9 | `████████░░` |
 | 3 | ⬜N01 ⬜N02 ⬜N03 ⬜N04 | 0/4 | `░░░░░░░░░░` |
 | 4 | ⬜D05 ⬜R5a | 0/2 | `░░░░░░░░░░` |
 | 5 | ⬜D01 ⬜D02 ⬜D03 ⬜D04 | 0/4 | `░░░░░░░░░░` |
@@ -46,6 +46,7 @@ flowchart LR
     L01["L01<br/>Owner's VS Code + local stack with real data"]
     L02["L02<br/>Two computers: macOS guide, RPM VS Code, switching"]
     F05["F05<br/>Playwright evidence tooling"]
+    F06["F06<br/>nginx finds a recreated app container (no 502)"]
   end
   subgraph U["1 Urgent patches"]
     S00["S00<br/>Close open admin registration"]
@@ -116,6 +117,7 @@ flowchart LR
   L01 --> L02
   F02 --> F05
   F03 --> F05
+  F03 --> F06
   F03 --> B07
   B04 --> B07
   F01 --> N01
@@ -184,7 +186,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,F05,S04,B04,B07 done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,F05,F06,S04,B04,B07 done
   class L01,L02 inprogress
   class N01,N02,N03,N04,D05,R5a,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
@@ -215,54 +217,55 @@ gantt
   L01 Owner's VS Code + local stack with real data :active, l01, 2026-11-12 14:07, 19m
   L02 Two computers  macOS guide, RPM VS Code, switching :active, l02, 2026-11-12 14:26, 19m
   F05 Playwright evidence tooling :done, f05, 2026-11-12 14:45, 33m
-  S04 Remove committed .env / APP_KEY :done, s04, 2026-11-12 15:18, 19m
-  B04 Descriptive error pages :done, b04, 2026-11-12 15:37, 19m
-  B07 Diagnose timeouts / 500s :done, b07, 2026-11-12 15:56, 33m
+  F06 nginx finds a recreated app container (no 502) :done, f06, 2026-11-12 15:18, 19m
+  S04 Remove committed .env / APP_KEY :done, s04, 2026-11-12 15:37, 19m
+  B04 Descriptive error pages :done, b04, 2026-11-12 15:56, 19m
+  B07 Diagnose timeouts / 500s :done, b07, 2026-11-12 16:15, 33m
   section Batch 3
-  N01 PHP + Composer upgrade, drop ext-imap :crit, n01, 2026-11-12 16:29, 33m
-  N02 Laravel structure modernization :crit, n02, 2026-11-12 17:02, 33m
-  N03 Vite + Bootstrap 5 + Livewire, top nav layout :crit, n03, 2026-11-12 17:35, 33m
-  N04 Shared UI components (pills, date input…) :crit, n04, 2026-11-12 18:08, 33m
+  N01 PHP + Composer upgrade, drop ext-imap :crit, n01, 2026-11-12 16:48, 33m
+  N02 Laravel structure modernization :crit, n02, 2026-11-12 17:21, 33m
+  N03 Vite + Bootstrap 5 + Livewire, top nav layout :crit, n03, 2026-11-12 17:54, 33m
+  N04 Shared UI components (pills, date input…) :crit, n04, 2026-11-12 18:27, 33m
   section Batch 4
-  D05 Tables → utf8mb4 :d05, 2026-11-12 18:41, 19m
-  R5a Email service, EML cache, charsets :r5a, 2026-11-12 19:00, 66m
+  D05 Tables → utf8mb4 :d05, 2026-11-12 19:00, 19m
+  R5a Email service, EML cache, charsets :r5a, 2026-11-12 19:19, 66m
   section Batch 5
-  D01 Subject/summary → TEXT :d01, 2026-11-12 20:06, 19m
-  D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 20:25, 33m
-  D03 Attachment size/hash/deleted_by :d03, 2026-11-12 20:58, 19m
-  D04 Integer dates → DATE columns :d04, 2026-11-12 21:17, 33m
+  D01 Subject/summary → TEXT :d01, 2026-11-12 20:25, 19m
+  D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 20:44, 33m
+  D03 Attachment size/hash/deleted_by :d03, 2026-11-12 21:17, 19m
+  D04 Integer dates → DATE columns :d04, 2026-11-12 21:36, 33m
   section Batch 6
-  R1a Protocol service (sanitation, copy date…) :r1a, 2026-11-12 21:50, 33m
-  R1b Protocol form screen :r1b, 2026-11-12 22:23, 33m
-  R1c Attachments panel, drag & drop :r1c, 2026-11-12 22:56, 33m
-  R2 Protocol list rebuild :r2, 2026-11-12 23:29, 33m
-  R4a Secure file handling :r4a, 2026-11-13 00:02, 19m
-  R4b Attachment trash with retention :r4b, 2026-11-13 00:21, 33m
+  R1a Protocol service (sanitation, copy date…) :r1a, 2026-11-12 22:09, 33m
+  R1b Protocol form screen :r1b, 2026-11-12 22:42, 33m
+  R1c Attachments panel, drag & drop :r1c, 2026-11-12 23:15, 33m
+  R2 Protocol list rebuild :r2, 2026-11-12 23:48, 33m
+  R4a Secure file handling :r4a, 2026-11-13 00:21, 19m
+  R4b Attachment trash with retention :r4b, 2026-11-13 00:40, 33m
   section Batch 7
-  R3a Advanced search screen :crit, r3a, 2026-11-13 00:54, 33m
-  R3b Gmail-style query parser :crit, r3b, 2026-11-13 01:27, 33m
-  R3c Global search box + results page :crit, r3c, 2026-11-13 02:00, 33m
+  R3a Advanced search screen :crit, r3a, 2026-11-13 01:13, 33m
+  R3b Gmail-style query parser :crit, r3b, 2026-11-13 01:46, 33m
+  R3c Global search box + results page :crit, r3c, 2026-11-13 02:19, 33m
   section Batch 8
-  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 02:33, 33m
-  R5d Register-from-email flow, keywords :r5d, 2026-11-13 03:06, 33m
-  R5b winmail.dat (TNEF) :r5b, 2026-11-13 03:39, 66m
+  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 02:52, 33m
+  R5d Register-from-email flow, keywords :r5d, 2026-11-13 03:25, 33m
+  R5b winmail.dat (TNEF) :r5b, 2026-11-13 03:58, 66m
   section Batch 9
-  R6a Users & roles screens :r6a, 2026-11-13 04:45, 33m
-  R6b Folders + auto-assignment rules :r6b, 2026-11-13 05:18, 33m
-  R1d Apply auto-assignment on save :r1d, 2026-11-13 05:51, 19m
-  R6c Settings, backups, archive screens :r6c, 2026-11-13 06:10, 33m
-  R7 Printing & exports :r7, 2026-11-13 06:43, 33m
+  R6a Users & roles screens :r6a, 2026-11-13 05:04, 33m
+  R6b Folders + auto-assignment rules :r6b, 2026-11-13 05:37, 33m
+  R1d Apply auto-assignment on save :r1d, 2026-11-13 06:10, 19m
+  R6c Settings, backups, archive screens :r6c, 2026-11-13 06:29, 33m
+  R7 Printing & exports :r7, 2026-11-13 07:02, 33m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 07:16, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 07:49, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 08:08, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 08:27, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 09:00, 19m
-  X01 Audit log — recording :x01, 2026-11-13 09:19, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 09:52, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 10:25, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 10:58, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 11:17, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 07:35, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 08:08, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 08:27, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 08:46, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 09:19, 19m
+  X01 Audit log — recording :x01, 2026-11-13 09:38, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 10:11, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 10:44, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 11:17, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 11:36, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -284,6 +287,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | 🔄 | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.0 | 6.4 | 5.2 | #16 |
 | 🔄 | **L02** | Two computers: macOS guide, RPM VS Code, switching | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 |  |
 | ✅ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 | #17 |
+| ✅ | **F06** | nginx finds a recreated app container (no 502) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 6.4 | 6.7 | 5.8 | #23 |
 | ✅ | **S04** | Remove committed .env / APP_KEY | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #18 |
 | ✅ | **B04** | Descriptive error pages | — | 0.3 | 0.1 | 0.0 | 0.3 | 5.8 | 6.1 | 5.8 | #19 |
 | ✅ | **B07** | Diagnose timeouts / 500s | F03, B04 | 0.5 | 0.1 | 0.5 | 1.1 | 6.1 | 6.7 | 5.6 | #20 |

@@ -19,7 +19,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
 | Real emails for tests | Owner will provide some public-safe `.eml` files; **needed before Batch 4 (R5a)**, also R5b/R5c/R5d. Ask public (commit) vs private (`local-data/emails/`, owner runs checks). |
-| `L01` + `L02` owner's computers | **Prepared, waiting for owner.** Fedora (GNOME, SELinux, Docker) moving from Flatpak to the **RPM VS Code**, plus a **Mac**. Guides: `docs/VSCODE-FEDORA.md`, `docs/VSCODE-MACOS.md`, then `docs/LOCAL-SETUP.md`. Owner replies "L01/L02 works" or the output of `./dev.sh doctor` → mark both done in tasks.toml. |
+| `L01` + `L02` owner's computers | **Mac: demo app works (2026-11-15)**; still to do: real data on the Mac, Fedora. **Prepared, waiting for owner.** Fedora (GNOME, SELinux, Docker) moving from Flatpak to the **RPM VS Code**, plus a **Mac**. Guides: `docs/VSCODE-FEDORA.md`, `docs/VSCODE-MACOS.md`, then `docs/LOCAL-SETUP.md`. Owner replies "L01/L02 works" or the output of `./dev.sh doctor` → mark both done in tasks.toml. |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
 | Production server facts | Asked 2026-11-15 (OWNER-TODO): OS, PHP, php-imap, MySQL, web server, update method, what is deployed. Needed before N01. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
@@ -49,6 +49,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-15 | F06 | #23 | nginx re-resolves `app` (Docker DNS, 5 s): 502 after Docker Desktop restart on the Mac; `tests/shell/nginx-reconnect.test.sh` in CI e2e job |
 | 2026-11-15 | Plan change + owner list | #22 | D05, R5a → new Batch 4 (later batches +1); `OWNER-TODO.md` |
 | 2026-11-12 | F03, F01, F02, S00, B03, B08, S02, A02 | #2–#9 | see `docs/reports/BATCH-1.md` |
 | 2026-11-12 | Review fixes | #10 | 9 Codex findings verified + fixed |

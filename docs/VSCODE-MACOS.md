@@ -55,4 +55,5 @@ System Settings → General → Time Machine → Options → **+** → `~/electr
 |---|---|
 | `Cannot connect to the Docker daemon` | open Docker Desktop and wait until it says "running" |
 | First start takes 5–10 minutes | normal: the app image is built for your chip once |
+| `Cannot connect` / `500 Internal Server Error` from Docker, "Docker: NOT RUNNING" in "Check: set-up status" | Docker Desktop's engine is stuck: whale icon → **Restart**, wait for "Engine running" |
 | Pages slower than on Fedora | normal for Docker on a Mac (files are shared through a virtual machine) |
