@@ -40,50 +40,52 @@ tasks = [
   { id = "N03", title = "Vite + Bootstrap 5 + Livewire, top nav layout", phase = "N", batch = 3, size = "M", deps = ["N02", "F05"], status = "todo" },
   { id = "N04", title = "Shared UI components (pills, date input…)", phase = "N", batch = 3, size = "M", deps = ["N03"], status = "todo" },
 
-  # ---------------- Batch 4 ----------------
-  { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "todo" },
+  # ---------------- Batch 4 ---------------- (moved earlier by the owner, 2026-11-15: emoji e-mails; inbox timeouts)
   { id = "D05", title = "Tables → utf8mb4", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "todo" },
-  { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 4, size = "M", deps = ["F04"], status = "todo" },
-  { id = "D03", title = "Attachment size/hash/deleted_by", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "todo" },
-  { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 4, size = "M", deps = ["F04"], status = "todo" },
+  { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 4, size = "L", deps = ["N01"], status = "todo" },
 
   # ---------------- Batch 5 ----------------
-  { id = "R1a", title = "Protocol service (sanitation, copy date…)", phase = "R", batch = 5, size = "M", deps = ["D01", "D02"], status = "todo" },
-  { id = "R1b", title = "Protocol form screen", phase = "R", batch = 5, size = "M", deps = ["R1a", "N04"], status = "todo" },
-  { id = "R1c", title = "Attachments panel, drag & drop", phase = "R", batch = 5, size = "M", deps = ["R1b", "D03"], status = "todo" },
-  { id = "R2", title = "Protocol list rebuild", phase = "R", batch = 5, size = "M", deps = ["N04", "D02"], status = "todo" },
-  { id = "R4a", title = "Secure file handling", phase = "R", batch = 5, size = "S", deps = ["S02"], status = "todo" },
-  { id = "R4b", title = "Attachment trash with retention", phase = "R", batch = 5, size = "M", deps = ["R4a", "D03"], status = "todo" },
+  { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 5, size = "S", deps = ["F02"], status = "todo" },
+  { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },
+  { id = "D03", title = "Attachment size/hash/deleted_by", phase = "D", batch = 5, size = "S", deps = ["F04"], status = "todo" },
+  { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },
 
   # ---------------- Batch 6 ----------------
-  { id = "R3a", title = "Advanced search screen", phase = "R", batch = 6, size = "M", deps = ["N04", "D02"], status = "todo" },
-  { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 6, size = "M", deps = ["R3a"], status = "todo" },
-  { id = "R3c", title = "Global search box + results page", phase = "R", batch = 6, size = "M", deps = ["R3b"], status = "todo" },
+  { id = "R1a", title = "Protocol service (sanitation, copy date…)", phase = "R", batch = 6, size = "M", deps = ["D01", "D02"], status = "todo" },
+  { id = "R1b", title = "Protocol form screen", phase = "R", batch = 6, size = "M", deps = ["R1a", "N04"], status = "todo" },
+  { id = "R1c", title = "Attachments panel, drag & drop", phase = "R", batch = 6, size = "M", deps = ["R1b", "D03"], status = "todo" },
+  { id = "R2", title = "Protocol list rebuild", phase = "R", batch = 6, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R4a", title = "Secure file handling", phase = "R", batch = 6, size = "S", deps = ["S02"], status = "todo" },
+  { id = "R4b", title = "Attachment trash with retention", phase = "R", batch = 6, size = "M", deps = ["R4a", "D03"], status = "todo" },
 
   # ---------------- Batch 7 ----------------
-  { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 7, size = "L", deps = ["N01"], status = "todo" },
-  { id = "R5c", title = "Inbox screen (sidebar, collapsible)", phase = "R", batch = 7, size = "M", deps = ["R5a", "N04"], status = "todo" },
-  { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 7, size = "M", deps = ["R5c", "R1a"], status = "todo" },
-  { id = "R5b", title = "winmail.dat (TNEF)", phase = "R", batch = 7, size = "L", deps = ["R5a"], status = "todo" },
+  { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "todo" },
+  { id = "R3c", title = "Global search box + results page", phase = "R", batch = 7, size = "M", deps = ["R3b"], status = "todo" },
 
   # ---------------- Batch 8 ----------------
-  { id = "R6a", title = "Users & roles screens", phase = "R", batch = 8, size = "M", deps = ["N04"], status = "todo" },
-  { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 8, size = "M", deps = ["N04", "D02"], status = "todo" },
-  { id = "R1d", title = "Apply auto-assignment on save", phase = "R", batch = 8, size = "S", deps = ["R1a", "R6b"], status = "todo" },
-  { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 8, size = "M", deps = ["N04", "R4b"], status = "todo" },
-  { id = "R7", title = "Printing & exports", phase = "R", batch = 8, size = "M", deps = ["R2"], status = "todo" },
+  { id = "R5c", title = "Inbox screen (sidebar, collapsible)", phase = "R", batch = 8, size = "M", deps = ["R5a", "N04"], status = "todo" },
+  { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 8, size = "M", deps = ["R5c", "R1a"], status = "todo" },
+  { id = "R5b", title = "winmail.dat (TNEF)", phase = "R", batch = 8, size = "L", deps = ["R5a"], status = "todo" },
 
   # ---------------- Batch 9 ----------------
-  { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 9, size = "M", deps = ["R2"], status = "todo" },
-  { id = "A03", title = "Rule: dates going backwards", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
-  { id = "A04", title = "Rule: εκκρεμότητα", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
-  { id = "A05", title = "Rule: (partial) duplicates", phase = "Z", batch = 9, size = "M", deps = ["A01", "D03"], status = "todo" },
-  { id = "A06", title = "Rule: missing attachment", phase = "Z", batch = 9, size = "S", deps = ["A01"], status = "todo" },
-  { id = "X01", title = "Audit log — recording", phase = "Z", batch = 9, size = "M", deps = ["N02"], status = "todo" },
-  { id = "X02", title = "Audit log — viewing", phase = "Z", batch = 9, size = "M", deps = ["X01"], status = "todo" },
-  { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 9, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
-  { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 9, size = "S", deps = ["Z01"], status = "todo" },
-  { id = "Z03", title = "Final security review", phase = "Z", batch = 9, size = "M", deps = ["Z02"], status = "todo" },
+  { id = "R6a", title = "Users & roles screens", phase = "R", batch = 9, size = "M", deps = ["N04"], status = "todo" },
+  { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 9, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R1d", title = "Apply auto-assignment on save", phase = "R", batch = 9, size = "S", deps = ["R1a", "R6b"], status = "todo" },
+  { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 9, size = "M", deps = ["N04", "R4b"], status = "todo" },
+  { id = "R7", title = "Printing & exports", phase = "R", batch = 9, size = "M", deps = ["R2"], status = "todo" },
+
+  # ---------------- Batch 10 ----------------
+  { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
+  { id = "A03", title = "Rule: dates going backwards", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
+  { id = "A04", title = "Rule: εκκρεμότητα", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
+  { id = "A05", title = "Rule: (partial) duplicates", phase = "Z", batch = 10, size = "M", deps = ["A01", "D03"], status = "todo" },
+  { id = "A06", title = "Rule: missing attachment", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
+  { id = "X01", title = "Audit log — recording", phase = "Z", batch = 10, size = "M", deps = ["N02"], status = "todo" },
+  { id = "X02", title = "Audit log — viewing", phase = "Z", batch = 10, size = "M", deps = ["X01"], status = "todo" },
+  { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 10, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
+  { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },
+  { id = "Z03", title = "Final security review", phase = "Z", batch = 10, size = "M", deps = ["Z02"], status = "todo" },
 
 ]
 

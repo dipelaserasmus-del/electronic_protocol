@@ -53,6 +53,7 @@ Legend
 | F02 | Test foundation: factories, synthetic Greek seeders, **characterization tests** of current behavior (login, register, create/edit/copy, list, search, download, roles, settings). These become the spec of legacy rules | INFRA | P0 | L | F01 |
 | F04 | Real-data loader for owner: import production MySQL dump + attachments from `local-data/` into the local stack 👤 | INFRA | P0 | S | F03 |
 | L01 | 👤 Owner's computer: VS Code + Docker, `./dev.sh up`, load the real DB/attachments with the F04 loader, open the app locally. Claude prepares `.vscode/` tasks + a step-by-step guide; the owner runs it (real data never leaves the owner's machine). Ask the owner's OS at start | INFRA | P1 | S | F04 |
+| L02 | 👤 Owner's second computer (macOS) + Fedora VS Code from RPM; switch between them at any time (`docs/LOCAL-SETUP.md`) | INFRA | P1 | S | L01 |
 | F05 | Evidence tooling: Playwright E2E + screenshots against Docker stack, report template | INFRA | P0 | M | F02, F03 |
 
 ## Phase 1 — Urgent patches (current code)
@@ -161,14 +162,17 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ## Execution order
 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
-2. **Batch 2:** B09 → F04 → L01 👤 → F05 → S04 → B04 → B07
+2. **Batch 2:** B09 → F04 → L01 👤 → L02 👤 → F05 → S04 → B04 → B07
 3. **Batch 3:** N01 → N02 → N03 → N04
-4. **Batch 4:** D01 → D05 👤 → D02 👤 → D03 👤 → D04 👤
-5. **Batch 5:** R1a → R1b → R1c → R2 → R4a → R4b
-6. **Batch 6:** R3a → R3b → R3c
-7. **Batch 7:** R5a 📧 → R5c → R5d → R5b
-8. **Batch 8:** R6a → R6b → R1d → R6c → R7
-9. **Batch 9:** A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03
+4. **Batch 4** (moved earlier by the owner, 2026-11-15): D05 👤 → R5a 📧 — emoji e-mails can't be registered; the
+   inbox downloads every e-mail in full on each visit (main remaining timeout cause, see B07). R5a plugs its cache
+   into the **current** inbox page; the new inbox screen stays R5c.
+5. **Batch 5:** D01 → D02 👤 → D03 👤 → D04 👤
+6. **Batch 6:** R1a → R1b → R1c → R2 → R4a → R4b
+7. **Batch 7:** R3a → R3b → R3c
+8. **Batch 8:** R5c → R5d → R5b 📧
+9. **Batch 9:** R6a → R6b → R1d → R6c → R7
+10. **Batch 10:** A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03
 
 X01 can be moved earlier at any time (it is generic and doesn't depend on module rebuilds).
 

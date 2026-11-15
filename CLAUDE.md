@@ -18,7 +18,8 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 6. Open a PR to `master`, wait for **all CI jobs green**, read automated review comments (Codex bot): verify each,
    fix real ones (with tests), reply on the thread. Then merge. The owner allowed Claude to run the **whole PR procedure
    on its own** (commit, push, review replies, merge on green CI) without asking.
-7. Each batch ends with `docs/reports/BATCH-<n>.md`.
+7. Each batch ends with `docs/reports/BATCH-<n>.md` and an updated [`OWNER-TODO.md`](OWNER-TODO.md) (the owner's list:
+   next suggested prompt, open questions, owner actions — keep it short).
 
 ## Hard rules
 - **Real data never reaches Claude or GitHub.** Production DB dumps, attachments and private emails stay in the
