@@ -110,6 +110,8 @@ jobs:
         run: npm ci && npx playwright install --with-deps chromium
       - name: Run browser tests
         run: ./dev.sh e2e
+      - name: nginx survives a recreated app container (F06)
+        run: sh tests/shell/nginx-reconnect.test.sh
       - name: Upload report and traces
         if: failure()
         uses: actions/upload-artifact@v4
