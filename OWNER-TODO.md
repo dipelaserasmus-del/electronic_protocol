@@ -9,9 +9,6 @@ Nothing needed: Batch 3 is running (N01 done; N02 → N03 → N04 next). When it
 account (fixed in S00, but you deploy only at the end). The one-line Apache rule that refuses registrations is in
 [docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16).
 
-**Question for later (no hurry, needed for the deployment guide):** which computer will run Docker in production:
-the same Windows 11 PC (Docker Desktop with WSL 2) or another one?
-
 ## Before Batch 4 (D05 emoji support, R5a e-mail cache)
 1. **E-mails for testing R5a.** Prepare a few `.eml` files (in Thunderbird: select the message → *Save As*):
    - Greek subjects/text that show as `??` today
@@ -39,7 +36,7 @@ the same Windows 11 PC (Docker Desktop with WSL 2) or another one?
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
-- Production will run the Docker stack after the rebuild (replaces XAMPP); you migrate the old database and files (2026-11-16).
+- Production will run the Docker stack after the rebuild (replaces XAMPP); on the same Windows 11 PC (Docker Desktop); you migrate the old database and files (2026-11-16).
 - No deployment to production until all tasks are completed and verified (2026-11-16).
 - L02 postponed (2026-11-16).
 - R5a and D05 moved earlier (Batch 4), 2026-11-15.

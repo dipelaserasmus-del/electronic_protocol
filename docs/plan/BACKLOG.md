@@ -18,7 +18,7 @@ Legend
 | Approach | **Module-by-module rebuild inside the running app.** Old code for a module is deleted once the new module passes tests. App stays usable after every merge. Upstream (g-theodoroy) changes will no longer be merged. |
 | Stack | Laravel (current) · PHP latest safe stable · **MySQL only** · **Blade + Livewire + Alpine + Bootstrap 5** · Vite |
 | Workflow | Branch `task/<ID>-slug` → PR to `master` → **Claude merges when CI is green** → evidence report `docs/reports/<ID>.md` |
-| Production | (2026-11-16) After the rebuild production runs the **Docker stack** (same image + MySQL 8.4 as dev/CI), replacing XAMPP (PHP 8.1, MariaDB 10.4). Owner migrates the old DB and files into it; no XAMPP compatibility work. |
+| Production | (2026-11-16) After the rebuild production runs the **Docker stack** (same image + MySQL 8.4 as dev/CI), replacing XAMPP (PHP 8.1, MariaDB 10.4), on the same Windows 11 PC via Docker Desktop + WSL 2. Owner migrates the old DB and files into it; no XAMPP compatibility work. |
 | Real data | Stays on owner's machine (git-ignored `local-data/`). Claude uses synthetic data / row-less schema dumps. |
 | Emails | Repo is a public fork (can't be private). Commit only public-safe `.eml`; sensitive ones stay in owner's `local-data/emails/`. 📧 **Remind owner before every email task.** |
 | Errors | Clear message for everyone; technical details only for administrators. |
