@@ -68,8 +68,8 @@ test('same subject: a notice with links, saving is not blocked (R1b)', async ({ 
 test('reader sees the protocol read-only, without save (R1b)', async ({ page }) => {
   await login(page, 'reader');
   await page.goto('/home/list');
-  await page.locator('a[href*="/home/"]').filter({ hasText: /^\d+$/ }).first().click().catch(() => {});
-  await page.goto(page.url().match(/\/home\/\d+$/) ? page.url() : '/home');
+  await page.locator('.protocol-row a.fw-bold').first().click();
+  await expect(page).toHaveURL(/\/home\/\d+$/);
   await expect(page.locator('#f-thema')).toBeDisabled();
   await expect(page.locator('#protocol-form button[type=submit]')).toHaveCount(0);
 });

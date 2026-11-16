@@ -50,8 +50,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/home', [ProtocolFormController::class, 'create']);   // R1b
     Route::get('/chkForUpdates', [ProtocolController::class, 'chkForUpdates']);
-    Route::get('/home/list', [ProtocolController::class, 'indexList'])->middleware(['redirectAfterLogin']);
-    Route::get('/home/list/{filter?}/{userId?}', [ProtocolController::class, 'indexList']);
+    Route::get('/home/list', [ProtocolFormController::class, 'list'])->middleware(['redirectAfterLogin']);   // R2
+    Route::get('/home/list/{filter?}/{userId?}', [ProtocolFormController::class, 'list']);
     Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolFormController::class, 'show']);   // R1b
     Route::get('getKeep4Fakelos/{fakelos}', [ProtocolController::class, 'getKeep4Fakelos']);
 

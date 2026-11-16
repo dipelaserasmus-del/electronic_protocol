@@ -26,3 +26,8 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .dropzone:hover, .dropzone:focus-within { border-color: var(--bs-primary) !important; }
 /* not d-flex: its !important would beat x-show's display:none */
 .drop-overlay { display: flex; align-items: center; justify-content: center; background: rgba(var(--bs-primary-rgb), .15); z-index: 2000; pointer-events: none; }
+
+/* R2: protocol list — header stays under the top bar while scrolling; the whole row opens the protocol */
+.table-sticky thead th { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 3; background: var(--bs-tertiary-bg); box-shadow: inset 0 -1px 0 var(--bs-border-color); }
+.protocol-row { position: relative; }
+.stretched-link-row::after { content: ''; position: absolute; inset: 0; z-index: 1; }
