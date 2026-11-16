@@ -55,6 +55,8 @@ class ProtocolForm extends Component
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> new files (R1c adds drag & drop) */
     public $uploads = [];
     public string $newAda = '';
+    /** R1b: receipt by e-mail for a protocol already saved */
+    public string $receiptEmail = '';
 
     public function mount(?Protocol $protocol = null, bool $copy = false, ?int $prefillNum = null): void
     {
@@ -96,7 +98,12 @@ class ProtocolForm extends Component
 
     private function protocol(): Protocol
     {
-        return $this->protocolId ? Protocol::with('assignments', 'attachments')->findOrFail($this->protocolId) : new Protocol();
+        if (! $this->protocolId) {
+            return new Protocol();
+        }
+        $protocol = Protocol::with('assignments', 'attachments')->findOrFail($this->protocolId);
+        abort_if(Auth::user()->cannot('view', $protocol), 404);   // on every request, not only when the page opened
+        return $protocol;
     }
 
     private function activeYear(): int
@@ -142,6 +149,22 @@ class ProtocolForm extends Component
             return null;
         }
         return $this->done($result, $this->protocolId ? 'Οι αλλαγές αποθηκεύτηκαν.' : "Καταχωρίστηκε με αριθμό {$result->protocol->protocolnum}/{$result->protocol->etos}.");
+    }
+
+    public function sendReceipt(ProtocolWriter $writer): void
+    {
+        try {
+            $result = $writer->emailReceipt(Auth::user(), $this->protocol(), $this->receiptEmail);
+        } catch (AuthorizationException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            return;
+        }
+        if ($result->warnings) {
+            $this->dispatch('toast', message: $result->warnings[0], type: 'error');
+            return;
+        }
+        $this->receiptEmail = '';
+        $this->dispatch('toast', message: 'Στάλθηκε η απόδειξη: ' . ($result->messages[0] ?? ''), type: 'success');
     }
 
     public function assignOnly(ProtocolWriter $writer)
@@ -278,6 +301,7 @@ class ProtocolForm extends Component
             'attachments' => $protocol->exists ? $protocol->attachments : collect(),
             'canComplete' => $protocol->exists && ! $access->canSave && $access->doneDate && $user->can('complete', $protocol),
             'isReader' => $isReader,
+            'canEmailReceipt' => $protocol->exists && ! $isReader,
             'putStamp' => (bool) Config::getConfigValueOf('putStamp'),
             'diavgeiaUrl' => Config::getConfigValueOf('diavgeiaUrl'),
         ]);

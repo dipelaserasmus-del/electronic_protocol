@@ -277,6 +277,22 @@
                 </div>
             </section>
 
+            @if ($canEmailReceipt)
+                <section class="card shadow-sm mb-3" aria-labelledby="receipt-title">
+                    <h2 class="card-header h6 mb-0" id="receipt-title">Απόδειξη παραλαβής με email</h2>
+                    <div class="card-body">
+                        <label for="f-receipt" class="form-label small fw-semibold mb-1">Διεύθυνση email</label>
+                        <div class="input-group">
+                            <input id="f-receipt" type="email" class="form-control @if ($e('receipt_email')) is-invalid @endif"
+                                   wire:model="receiptEmail" autocomplete="off">
+                            <button type="button" class="btn btn-outline-primary" wire:click="sendReceipt" wire:loading.attr="disabled" wire:target="sendReceipt">Αποστολή</button>
+                            @if ($e('receipt_email'))<div class="invalid-feedback">{{ $e('receipt_email') }}</div>@endif
+                        </div>
+                        <div class="form-text">Στέλνεται η απόδειξη του πρωτοκόλλου και σημειώνεται στις Παρατηρήσεις.</div>
+                    </div>
+                </section>
+            @endif
+
             @if (! $protocol->exists && $access->canSave)
                 <fieldset class="card shadow-sm mb-3">
                     <legend class="card-header h6 mb-0 w-100">Απόδειξη παραλαβής</legend>
