@@ -102,7 +102,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ### R1 Protocol entry
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
-| R1a | Protocol service: numbering (B03/B08 services), validation, **input sanitation** (`--` bug + fuzz `' " ; % _ \ < > &`, emoji, Greek), copy **incl. date**, writer may edit date when setting enabled, replace ΕΛΕΥΘΕΡΟ placeholder with confirmation | BE/BUG | P0 | M | D01, D02 |
+| R1a | Protocol service: numbering (B03/B08 services), validation, **input sanitation** (`--` bug + fuzz `' " ; % _ \ < > &`, emoji, Greek), copy **incl. date**, writer may edit date when setting enabled, replace ΕΛΕΥΘΕΡΟ placeholder with confirmation; write assignments to `protocol_assignments` and drop the text column `diekperaiosi` (D02 keeps it in sync until then; also receipts/prints still read the text) | BE/BUG | P0 | M | D01, D02 |
 | R1b | Protocol form screen: number with "**already used**" indicator, TAB → day field, date components, inline non-blocking notices for existing subject / incoming number (replaces YES/NO dialog), pill actions | UI | P1 | M | R1a, N04 |
 | R1c | Attachments panel: always open on new/copy, **whole-window drag-and-drop**, file icons + size, subject placeholder from filename | UI | P1 | M | R1b, D03 |
 | R1d | Auto-assignment on save using folder rules (rules UI in R6b) | BE | P2 | S | R1a, R6b |

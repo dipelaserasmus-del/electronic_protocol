@@ -102,13 +102,6 @@ class ProtocolController extends Controller implements HasMiddleware
         ];
     }
 
-    private function diekperaiosiConcatRawStr()
-    {
-        if (config('database.default') == 'sqlite') return "`diekperaiosi` || ','";
-        return "CONCAT(`diekperaiosi`, ',')";
-    }
-
-
     public function index(Protocol $protocol, $copyAsNew = null)
     {
         // S02: access check before "copy as new" clears the id (the copy used to bypass it)
@@ -250,7 +243,7 @@ class ProtocolController extends Controller implements HasMiddleware
             $diekpDateReadonly = 'readonly';
             $class = 'bg-warning';
             $protocoltitle = 'Πρωτόκολλο';
-            if ($protocol->diekperaiosi && strpos($protocol->diekperaiosi  . ',', 'd' . Auth::user()->id . ',') !== false) {
+            if (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd')) {   // D02
                 $readerVisible = 'active';
                 $diekpDateReadonly = '';
                 if ($allowWriterUpdateProtocolTimeInMinutes && $protocol->user_id == Auth::user()->id) {
@@ -355,7 +348,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $time2update = 0;
                 }
                 // Αν είναι προς διεκπεραίωση από το χρήστη => επιτρέπεται η επεξεργασία μόνο εξερχομένου
-                if (strpos($protocol->diekperaiosi  . ',', 'd' . Auth::user()->id . ',') !== false and !$protocol->diekp_date) {
+                if (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd') and !$protocol->diekp_date) {
                     $class = 'bg-success';
                     $submitVisible = 'active';
                     $headReadonly = 'readonly';
@@ -363,7 +356,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $outReadonly = '';
                     $diekpDateReadonly = '';
                     $time2update = 0;
-                } elseif (strpos($protocol->diekperaiosi  . ',', 'd' . Auth::user()->id . ',') !== false and $protocol->diekp_date) {
+                } elseif (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd') and $protocol->diekp_date) {
                     // Αν έχει διεκπεραιωθεί αρχίζω αντίστροφη μέτρηση
                     // αν τα λεπτά είναι μεγαλύτερα του 0 τότε ελέγχεται ο χρόνος που πέρασε και μετά κρύβεται το κουμπί
                     if ($allowWriterUpdateProtocolTimeInMinutes and !$inTimeLastEdit) {
@@ -505,17 +498,17 @@ class ProtocolController extends Controller implements HasMiddleware
             // φιλτραρω τα πρωτόκολλα για το χρήστη
             if ($this->limitProtocolAccessList()) {
                 $protocols = $protocols->where(function ($query) {
-                    $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                    $query->ownOrAssigned(Auth::user()->id);   // D02
                 });
             }
             if ($filter == 'd') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->whereNull('diekp_date');
+                $protocols = $protocols->assignedTo((int) Auth::user()->id, 'd')->whereNull('diekp_date');
                 $protocoltitle = 'Πρωτόκολλο προς Διεκπεραίωση';
             } elseif ($filter == 'e') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%");
+                $protocols = $protocols->assignedTo((int) Auth::user()->id, 'e');
                 $protocoltitle = 'Πρωτόκολλο προς Ενημέρωση';
             } elseif ($filter == 'f') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->wherenotNull('diekp_date');
+                $protocols = $protocols->assignedTo((int) Auth::user()->id, 'd')->wherenotNull('diekp_date');
                 $protocoltitle = 'Πρωτόκολλο Διεκπεραιώθηκε';
             }
         } elseif (User::whereId($userId)->count() and $filter) {
@@ -525,13 +518,13 @@ class ProtocolController extends Controller implements HasMiddleware
                 $user2show = User::whereId($userId)->first('name')->name;
             }
             if ($filter == 'd') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . $userId . ",%")->whereNull('diekp_date');
+                $protocols = $protocols->assignedTo((int) $userId, 'd')->whereNull('diekp_date');
                 $protocoltitle = "$user2show, προς Διεκπεραίωση";
             } elseif ($filter == 'e') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . $userId . ",%");
+                $protocols = $protocols->assignedTo((int) $userId, 'e');
                 $protocoltitle = "$user2show, προς Ενημέρωση";
             } elseif ($filter == 'f') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . $userId . ",%")->wherenotNull('diekp_date');
+                $protocols = $protocols->assignedTo((int) $userId, 'd')->wherenotNull('diekp_date');
                 $protocoltitle = "$user2show, Διεκπεραιώθηκε";
             } else {
                 $protocols = $protocols->where('user_id', $userId);
@@ -539,13 +532,13 @@ class ProtocolController extends Controller implements HasMiddleware
             }
         } else {
             if ($filter == 'd') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . "%")->whereNull('diekp_date');
+                $protocols = $protocols->assignedFor('d')->whereNull('diekp_date');
                 $protocoltitle = "Όλοι οι χρήστες, προς Διεκπεραίωση";
             } elseif ($filter == 'e') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . "%");
+                $protocols = $protocols->assignedFor('e');
                 $protocoltitle = "Όλοι οι χρήστες, προς Ενημέρωση";
             } elseif ($filter == 'f') {
-                $protocols = $protocols->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . "%")->wherenotNull('diekp_date');
+                $protocols = $protocols->assignedFor('d')->wherenotNull('diekp_date');
                 $protocoltitle = "Όλοι οι χρήστες, Διεκπεραιώθηκε";
             }
         }
@@ -1047,6 +1040,7 @@ class ProtocolController extends Controller implements HasMiddleware
                 'keywords' => $keywords,
                 'paratiriseis' => $data['paratiriseis']
             ]);
+            \App\Support\Assignments::sync((int) $id);   // D02: this query skips the model's save event
 
             $saveCycleSxetiko = Config::getConfigValueOf('saveCycleSxetiko');
             if ($saveCycleSxetiko) $this->saveCycleSxetiko($data['protocolnum'], $data['etos'], $sxetiko);
@@ -1294,11 +1288,11 @@ class ProtocolController extends Controller implements HasMiddleware
             // φιλτραρω τα πρωτόκολλα για το χρήστη
             if ($limitProtocolAccessList) {
                 $count = Protocol::whereEtos($etos)->where('protocolnum', $protocolnum)->where(function ($query) {
-                    $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                    $query->ownOrAssigned(Auth::user()->id);   // D02
                 })->count();
                 if ($count) {
                     $protocol_id = Protocol::whereEtos($etos)->where('protocolnum', $protocolnum)->where(function ($query) {
-                        $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                        $query->ownOrAssigned(Auth::user()->id);   // D02
                     })->first()->id;
                     return redirect("home/$protocol_id");
                 }
@@ -1312,7 +1306,7 @@ class ProtocolController extends Controller implements HasMiddleware
             if ($step == 'b') {
                 if ($limitProtocolAccessList) {
                     $protocol_id = Protocol::where(function ($query) {
-                        $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                        $query->ownOrAssigned(Auth::user()->id);   // D02
                     })->where(function ($query) use ($protocolnum, $etos) {
                         $query->where([['protocolnum', '<', $protocolnum], ['etos', $etos]])->orwhere('etos', "<", $etos);
                     })->orderby('etos', 'DESC')->orderby('protocolnum', 'DESC')->take(1)->get('id');
@@ -1326,7 +1320,7 @@ class ProtocolController extends Controller implements HasMiddleware
             } elseif ($step == 'f') {
                 if ($limitProtocolAccessList) {
                     $protocol_id = Protocol::where(function ($query) {
-                        $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                        $query->ownOrAssigned(Auth::user()->id);   // D02
                     })->where(function ($query) use ($protocolnum, $etos) {
                         $query->where([['protocolnum', '>', $protocolnum], ['etos', $etos]])->orwhere('etos', ">", $etos);
                     })->orderby('etos', 'ASC')->orderby('protocolnum', 'ASC')->take(1)->get('id');
@@ -1340,7 +1334,7 @@ class ProtocolController extends Controller implements HasMiddleware
             } elseif ($step == 'bb') {
                 if ($limitProtocolAccessList) {
                     $protocol_id = Protocol::where(function ($query) {
-                        $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                        $query->ownOrAssigned(Auth::user()->id);   // D02
                     })->where(function ($query) use ($protocolnum, $etos) {
                         $query->where([['protocolnum', '<', $protocolnum], ['etos', $etos]])->orwhere('etos', "<", $etos);
                     })->orderby('etos', 'DESC')->orderby('protocolnum', 'DESC')->skip(Config::getConfigValueOf('protocolArrowStep') - 1)->take(1)->get('id');
@@ -1354,7 +1348,7 @@ class ProtocolController extends Controller implements HasMiddleware
             } elseif ($step == 'ff') {
                 if ($limitProtocolAccessList) {
                     $protocol_id = Protocol::where(function ($query) {
-                        $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                        $query->ownOrAssigned(Auth::user()->id);   // D02
                     })->where(function ($query) use ($protocolnum, $etos) {
                         $query->where([['protocolnum', '>', $protocolnum], ['etos', $etos]])->orwhere('etos', ">", $etos);
                     })->orderby('etos', 'ASC')->orderby('protocolnum', 'ASC')->skip(Config::getConfigValueOf('protocolArrowStep') - 1)->take(1)->get('id');
@@ -1445,7 +1439,6 @@ class ProtocolController extends Controller implements HasMiddleware
         $sqlite = env('DB_CONNECTION') == 'sqlite';
 
         $maxRowsInFindPage = Config::getConfigValueOf('maxRowsInFindPage');
-        $diekpStr = 'd';
 
         $fields = array_merge($this->protocolfields, $this->attachmentfields);
         $attachmentfields = $this->attachmentfields;
@@ -1455,6 +1448,8 @@ class ProtocolController extends Controller implements HasMiddleware
         $whereNullFields = [];
         $whereAttachmentvalues = [];
         $whereNullAttachmentvalues = [];
+        $assigneeNames = [];
+        $noAssignee = false;
 
         if (request('aponum')) {
             $wherevalues[] = ['protocolnum', '>', request('aponum') - 1];
@@ -1486,7 +1481,9 @@ class ProtocolController extends Controller implements HasMiddleware
         }
         if (request('searchData1') or request('searchData1chk')) {
             if (request('searchData1chk')) {
-                if (array_key_exists(request('searchField1'), $attachmentfields)) {
+                if (request('searchField1') == 'diekperaiosi') {
+                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
+                } elseif (array_key_exists(request('searchField1'), $attachmentfields)) {
                     $whereNullAttachmentvalues[] = request('searchField1');
                 } else {
                     $whereNullFields[] = request('searchField1');
@@ -1496,10 +1493,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $whereAttachmentvalues[] = [request('searchField1'), 'LIKE', '%' . request('searchData1') . '%'];
                 } else {
                     if (request('searchField1') == 'diekperaiosi') {
-                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData1') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
-                        if ($searchData) {
-                            $wherevalues[] = [request('searchField1'), $searchData];
-                        }
+                        $assigneeNames[] = request('searchData1');   // D02: any protocol with such a user for διεκπεραίωση
                     } else {
                         if (!$sqlite) $wherevalues[] = [request('searchField1'), 'LIKE', '%' . request('searchData1') . '%'];
                         if ($sqlite) $filtervalues[] = [request('searchField1'), request('searchData1')];
@@ -1509,7 +1503,9 @@ class ProtocolController extends Controller implements HasMiddleware
         }
         if (request('searchData2') or request('searchData2chk')) {
             if (request('searchData2chk')) {
-                if (array_key_exists(request('searchField2'), $attachmentfields)) {
+                if (request('searchField2') == 'diekperaiosi') {
+                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
+                } elseif (array_key_exists(request('searchField2'), $attachmentfields)) {
                     $whereNullAttachmentvalues[] = request('searchField2');
                 } else {
                     $whereNullFields[] = request('searchField2');
@@ -1519,10 +1515,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $whereAttachmentvalues[] = [request('searchField2'), 'LIKE', '%' . request('searchData2') . '%'];
                 } else {
                     if (request('searchField2') == 'diekperaiosi') {
-                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData2') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
-                        if ($searchData) {
-                            $wherevalues[] = [request('searchField2'), $searchData];
-                        }
+                        $assigneeNames[] = request('searchData2');   // D02: any protocol with such a user for διεκπεραίωση
                     } else {
                         if (!$sqlite) $wherevalues[] = [request('searchField2'), 'LIKE', '%' . request('searchData2') . '%'];
                         if ($sqlite) $filtervalues[] = [request('searchField2'), request('searchData2')];
@@ -1532,7 +1525,9 @@ class ProtocolController extends Controller implements HasMiddleware
         }
         if (request('searchData3') or request('searchData3chk')) {
             if (request('searchData3chk')) {
-                if (array_key_exists(request('searchField3'), $attachmentfields)) {
+                if (request('searchField3') == 'diekperaiosi') {
+                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
+                } elseif (array_key_exists(request('searchField3'), $attachmentfields)) {
                     $whereNullAttachmentvalues[] = request('searchField3');
                 } else {
                     $whereNullFields[] = request('searchField3');
@@ -1542,10 +1537,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $whereAttachmentvalues[] =  [request('searchField3'), 'LIKE', '%' . request('searchData3')  . '%'];
                 } else {
                     if (request('searchField3') == 'diekperaiosi') {
-                        $searchData = $diekpStr . (User::where('name', 'LIKE', '%' . request('searchData3') . '%')->value('id') ?? 'none');   // B07: unknown name → no results, not a 500
-                        if ($searchData) {
-                            $wherevalues[] = [request('searchField3'), $searchData];
-                        }
+                        $assigneeNames[] = request('searchData3');   // D02: any protocol with such a user for διεκπεραίωση
                     } else {
                         if (!$sqlite) $wherevalues[] = [request('searchField3'), 'LIKE', '%' . request('searchData3') . '%'];
                         if ($sqlite) $filtervalues[] = [request('searchField3'), request('searchData3')];
@@ -1554,21 +1546,28 @@ class ProtocolController extends Controller implements HasMiddleware
             }
         }
 
-        if (!$wherevalues and !$whereAttachmentvalues and !$whereNullFields and !$whereNullAttachmentvalues and !$filtervalues) {
+        if (!$wherevalues and !$whereAttachmentvalues and !$whereNullFields and !$whereNullAttachmentvalues and !$filtervalues and !$assigneeNames and !$noAssignee) {
             // no usable criteria: nothing to search (but say which typed values were not valid)
             return response($ignoredFilters ? '<div class="alert alert-warning" id="ignoredFilters">Αγνοήθηκαν μη έγκυρα κριτήρια: '
                 . implode(', ', $ignoredFilters) . ' (αριθμοί: μόνο ψηφία · ημερομηνίες: ηη/μμ/εεεε).</div>' : '');
         }
 
         $foundProtocolsCount = null;
-        $protocols = Protocol::with('attachments');
+        $protocols = Protocol::with('attachments', 'assignments');
         foreach ($whereNullFields as $whereNullField) {
             $protocols = $protocols->whereNull($whereNullField);
+        }
+        foreach ($assigneeNames as $name) {
+            $ids = User::where('name', 'LIKE', '%' . $name . '%')->pluck('id');   // unknown name → no ids → no results (B07)
+            $protocols = $protocols->whereHas('assignments', fn ($q) => $q->where('type', 'd')->whereIn('user_id', $ids));
+        }
+        if ($noAssignee) {
+            $protocols = $protocols->whereDoesntHave('assignments', fn ($q) => $q->where('type', 'd'));
         }
         // Restrict results even when SQLite applies text filters in memory.
         if ($this->limitProtocolAccessList()) {
             $protocols = $protocols->where(function ($query) {
-                $query->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'd' . Auth::user()->id . ",%")->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%" . 'e' . Auth::user()->id . ",%")->orWhere('user_id', Auth::user()->id);
+                $query->ownOrAssigned(Auth::user()->id);   // D02
             });
         }
         if ($wherevalues) {
@@ -1621,9 +1620,9 @@ class ProtocolController extends Controller implements HasMiddleware
             if ($protocol->protocoldate) {
                 $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
             }
-            if ($protocol->diekperaiosi) {
-                $protocol->diekperaiosi = $userNames[ltrim($protocol->diekperaiosi, $diekpStr)] ?? null;
-            }
+            // D02: names of the users assigned for διεκπεραίωση (the old code showed nothing when there was also an "e")
+            $names = $protocol->assignments->where('type', 'd')->map(fn ($a) => $userNames[$a->user_id] ?? null)->filter();
+            $protocol->diekperaiosi = $names->isEmpty() ? null : $names->implode(', ');
         }
 
         $searchField1 = request('searchField1');
@@ -2350,11 +2349,7 @@ class ProtocolController extends Controller implements HasMiddleware
         $source = Protocol::latest();
         if (\App\Policies\ProtocolPolicy::isLimited(Auth::user())) {
             $uid = Auth::user()->id;
-            $source->where(function ($q) use ($uid) {
-                $q->where(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%d$uid,%")
-                    ->orWhere(DB::raw($this->diekperaiosiConcatRawStr()), 'like', "%e$uid,%")
-                    ->orWhere('user_id', $uid);
-            });
+            $source->ownOrAssigned((int) $uid);   // D02
         }
         $protocols = $source->take(Config::getConfigValueOf('rowsToSearchGiaSimplirosi') ?? 1000)->pluck($field)->countBy()->sortDesc()->keys();
         $protocols = $protocols->filter(function ($item) use ($term) {

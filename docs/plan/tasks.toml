@@ -53,7 +53,7 @@ tasks = [
   { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 37 },
 
   # ---------------- Batch 5 ----------------
-  { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },
+  { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 38 },
   { id = "D03", title = "Attachment size/hash/deleted_by", phase = "D", batch = 5, size = "S", deps = ["F04"], status = "done", pr = 39 },
   { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },
 
