@@ -24,9 +24,14 @@ async function typeNumber(page, num) {
 
 // the form may come back to the same address (/home with messages): wait for the POST's page, not for a URL
 async function saveForm(page) {
-  const posted = page.waitForResponse((r) => r.request().method() === 'POST' && /\/home(\/\d+)?$/.test(r.url()));
-  await page.evaluate(() => formSubmit());
-  await posted;
+  // the old page asks the server for the inbox count when it loads; a reply arriving between the POST and the
+  // redirected page used up the flashed messages and typed values (a property of the old page, replaced in R1b)
+  await page.waitForLoadState('networkidle');
+  const posted = page.waitForResponse((r) => r.request().method() === 'POST' && /\/home(\/\d+)?$/.test(r.url()), { timeout: 15000 });
+  const submitted = await page.evaluate(() => formSubmit());
+  expect(submitted, 'the old form\'s own checks let it submit').not.toBe(false);
+  const response = await posted;
+  await page.waitForURL(response.headers()['location']);
   await page.waitForLoadState('load');
 }
 
@@ -46,11 +51,12 @@ test('special characters are stored and shown exactly as typed (R1a)', async ({ 
 });
 
 test('number held by ΕΛΕΥΘΕΡΟ: confirm, then the new protocol takes its place (R1a)', async ({ page }) => {
-  const num = String(900000 + (Date.now() % 90000));
   const subject = `R1a αντικατάσταση ${Date.now()}`;
 
-  // an administrator keeps a number free
+  // an administrator keeps a number free: one above the next free number, so never used before
   await page.goto('/home');
+  const proposed = Number(await page.locator('input[name=protocolnum_proposed]').inputValue());
+  const num = String(proposed + 100 + (Date.now() % 100));
   await typeNumber(page, num);
   await page.fill('#thema', 'ΕΛΕΥΘΕΡΟ');
   await saveForm(page);

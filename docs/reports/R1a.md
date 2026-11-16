@@ -96,7 +96,14 @@ OWNER-TODO).
   ![replaced](img/R1a/r1a-placeholder-replaced.png)
 
   ![special characters kept](img/R1a/r1a-special-characters-form.png)
-- Full suites: PHPUnit 284, browser 29/29.
+- Review findings (Codex), all confirmed and fixed with tests:
+  - an old assignment to a deleted user blocked the others' saves;
+  - number/year like `12.5` or `2026x` were cut to integers;
+  - a failure after the protocol was saved sent the user back to register it again (a second protocol).
+- Found while making the browser test stable: the old form page asks for the inbox count when it loads. If that answer
+  arrives between saving and the next page, the error message and the typed values are lost (the user sees an empty
+  form). The test now waits for the page to settle. The rebuilt form (R1b) does not have this problem.
+- Full suites: PHPUnit 288, browser 29/29.
 
 ## Owner actions
 1. Optional, after `git pull`: **Real data: load** again (runs `migrate`, which drops the old assignments text after

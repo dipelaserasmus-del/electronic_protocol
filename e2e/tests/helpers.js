@@ -35,7 +35,10 @@ async function setSetting(page, name, value) {
   const previous = await field.inputValue();
   if ((await field.evaluate((el) => el.tagName)) === 'SELECT') await field.selectOption(String(value));
   else await field.fill(String(value));
-  await Promise.all([page.waitForURL(/\/settings/), page.evaluate(() => document.forms['configform'].submit())]);
+  // the page stays at /settings: wait for the saved page itself, not for an address the browser is already on
+  const saved = page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame());
+  await page.evaluate(() => document.forms['configform'].submit());
+  await saved;
   await page.waitForLoadState('load');
   return previous;
 }
