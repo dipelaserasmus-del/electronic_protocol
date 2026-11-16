@@ -113,6 +113,30 @@
     @yield('content')
 </main>
 
+{{-- N04 toasts: window.appToast(message, type), session('toast') = [message, type], Livewire dispatch('toast') --}}
+<div id="app-toasts" class="toast-container position-fixed bottom-0 end-0 p-3">
+    @if (is_array(session('toast')))
+        <div hidden data-toast-message="{{ session('toast')[0] ?? '' }}" data-toast-type="{{ session('toast')[1] ?? 'success' }}"></div>
+    @endif
+</div>
+
+{{-- N04 confirm dialog for any element/form with data-confirm="question" --}}
+<div class="modal fade" id="app-confirm" tabindex="-1" aria-labelledby="app-confirm-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="app-confirm-title">Επιβεβαίωση</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>
+            </div>
+            <div class="modal-body" data-confirm-message></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Άκυρο</button>
+                <button type="button" class="btn btn-primary rounded-pill" data-confirm-yes>Ναι</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @livewireScripts
 </body>
 </html>

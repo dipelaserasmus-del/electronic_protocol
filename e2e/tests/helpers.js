@@ -15,6 +15,8 @@ async function evidence(page, name, options = {}) {
   if (!task) return;
   const dir = path.join(__dirname, '..', '..', 'docs', 'reports', 'img', task);
   fs.mkdirSync(dir, { recursive: true });
+  // the development debug toolbar is not part of the app: keep it out of the evidence
+  await page.addStyleTag({ content: '.phpdebugbar { display: none !important; }' });
   await page.screenshot({ path: path.join(dir, `${name}.png`), ...options });
 }
 

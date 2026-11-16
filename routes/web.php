@@ -102,3 +102,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/delExpired', [ConfigController::class, 'delExpired']);
     Route::get('/delDeleted', [ConfigController::class, 'delDeleted']);
 });
+
+// N04: the shared components in one page (browser tests, trying them out). Never in production.
+if (app()->environment(['local', 'development', 'testing'])) {
+    Route::view('/dev/ui', 'dev.ui')->middleware('auth');
+}
