@@ -57,6 +57,12 @@ class StoreFromEmailTest extends FeatureTestCase
         $this->assertSame('application/pdf', $pdf->mimeType);
         $this->assertSame('Πρόσκληση.pdf', $pdf->name, 'RFC 2231 file name decoded');
         $this->assertSame("%PDF-1.4\nfake pdf for tests\n%%EOF\n", Storage::get($pdf->savedPath));
+
+        // D03: size and hash of each stored file
+        foreach ([$eml, $pdf] as $a) {
+            $this->assertSame(strlen(Storage::get($a->savedPath)), $a->size);
+            $this->assertSame(hash('sha256', Storage::get($a->savedPath)), $a->sha256);
+        }
     }
 
     public function test_email_can_be_stored_as_html_page(): void

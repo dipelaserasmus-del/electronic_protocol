@@ -95,6 +95,8 @@ real_cmd() {
       in_real php artisan migrate:adopt-legacy
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
+      # D03: size + SHA-256 of the attachment files (counts only; only files not measured yet)
+      in_real php artisan attachments:fill-metadata --no-ansi
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
       in_real php artisan tinker --execute='\App\Models\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
       in_real chmod -R a+rwX storage/app

@@ -31,6 +31,7 @@ class AdoptLegacySchemaTest extends TestCase
         Schema::drop('migrations');
         DB::statement("ALTER TABLE users MODIFY role_id INT UNSIGNED NOT NULL DEFAULT '1'");
         DB::statement('ALTER TABLE protocols MODIFY thema VARCHAR(255) NULL, MODIFY in_perilipsi VARCHAR(255) NULL');   // pre-D01
+        DB::statement('ALTER TABLE attachments DROP INDEX attachments_sha256_index, DROP COLUMN size, DROP COLUMN sha256, DROP COLUMN deleted_by');   // pre-D03
         $users = DB::table('users')->count();
 
         $this->artisan('migrate:adopt-legacy')->assertSuccessful();
@@ -50,6 +51,7 @@ class AdoptLegacySchemaTest extends TestCase
         $this->assertSame($users, DB::table('users')->count(), 'data is kept');
         $this->assertSame('text', Schema::getColumnType('protocols', 'thema'), 'D01 applied');
         $this->assertSame('text', Schema::getColumnType('protocols', 'in_perilipsi'));
+        $this->assertTrue(Schema::hasColumns('attachments', ['size', 'sha256', 'deleted_by']), 'D03 applied');
     }
 
     public function test_only_tables_that_exist_are_recorded(): void

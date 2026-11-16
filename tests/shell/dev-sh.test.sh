@@ -59,6 +59,7 @@ run "real load: no dump → message"  -                                    real 
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"
 run "real load (.sql.gz)"           "artisan migrate --force"            real load
 run "real load adopts old backups"  "artisan migrate:adopt-legacy"       real load
+run "real load measures attachments (D03)" "artisan attachments:fill-metadata" real load
 rm -f "$WORK/repo/local-data/db/"*; (cd "$WORK" && echo "SELECT 1;" > dump.sql && zip -q repo/local-data/db/export.zip dump.sql)
 run "real load (.zip from phpMyAdmin)" "artisan migrate --force"          real load
 run "real down"                     "compose -p electronic-protocol-real" real down
