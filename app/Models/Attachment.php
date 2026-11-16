@@ -67,9 +67,10 @@ class Attachment extends Model
 
     protected static function booted(): void
     {
-        // D03: size and SHA-256 of the stored file, whenever the stored file changes
+        // D03: size and SHA-256 of the stored file on every save. Not only when the path changes: uploading a file
+        // with the same name again overwrites the file at the same path (review finding).
         static::saving(function (Attachment $attachment) {
-            if ($attachment->isDirty('savedPath') || ($attachment->savedPath && $attachment->size === null)) {
+            if ($attachment->isDirty('savedPath') || $attachment->savedPath) {
                 $attachment->fillFileMetadata();
             }
         });
@@ -109,7 +110,9 @@ class Attachment extends Model
         $storage = \Illuminate\Support\Facades\Storage::disk();
         $candidates = [$this->savedPath];
         if ($this->trashed() && $this->savedPath) {
-            $candidates[] = str_replace('arxeio', 'trash', $this->savedPath);   // attachDelete moves the file, keeps the path
+            // attachDelete moves the file to trash/ but keeps the path; look there first, because a newer upload with
+            // the same name may now be at the old path (review finding)
+            array_unshift($candidates, str_replace('arxeio', 'trash', $this->savedPath));
         }
         foreach ($candidates as $p) {
             if (is_string($p) && $p !== '' && $storage->exists($p) && is_file($storage->path($p))) {

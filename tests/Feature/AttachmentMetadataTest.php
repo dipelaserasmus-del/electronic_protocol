@@ -47,6 +47,30 @@ class AttachmentMetadataTest extends FeatureTestCase
         $this->assertSame(hash('sha256', 'δεύτερο περιεχόμενο'), $a->fresh()->sha256);
     }
 
+    /** Review finding: a new upload with the same name overwrites the file at the same path */
+    public function test_file_overwritten_at_the_same_path_is_measured_again(): void
+    {
+        $a = Attachment::factory()->withFile('παλιά έκδοση')->create();
+        Storage::put($a->savedPath, 'νέα έκδοση, μεγαλύτερη');
+        $a->update(['keep' => '5']);   // what updateOrCreate does for the existing row
+
+        $this->assertSame(strlen('νέα έκδοση, μεγαλύτερη'), $a->fresh()->size);
+        $this->assertSame(hash('sha256', 'νέα έκδοση, μεγαλύτερη'), $a->fresh()->sha256);
+    }
+
+    /** Review finding: a trashed attachment is measured in trash/, even if a newer file now has its old path */
+    public function test_trashed_attachment_is_measured_in_the_trash_first(): void
+    {
+        Storage::put('arxeio/Φ.1/5-20250105_x.pdf', 'νεότερο αρχείο με το ίδιο όνομα');
+        Storage::put('trash/Φ.1/5-20250105_x.pdf', 'το διαγραμμένο');
+        DB::table('attachments')->insert(['protocol_id' => 1, 'name' => 'x.pdf', 'savedPath' => 'arxeio/Φ.1/5-20250105_x.pdf',
+            'deleted_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+
+        $this->artisan('attachments:fill-metadata')->assertSuccessful();
+
+        $this->assertSame(hash('sha256', 'το διαγραμμένο'), DB::table('attachments')->value('sha256'));
+    }
+
     public function test_moving_to_the_trash_records_who_did_it(): void
     {
         $writer = $this->writer();
