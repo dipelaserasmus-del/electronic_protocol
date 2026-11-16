@@ -9,12 +9,6 @@ Nothing needed: Batch 3 is running (N01, N02 done; N03 → N04 next). When it fi
 account (fixed in S00, but you deploy only at the end). The one-line Apache rule that refuses registrations is in
 [docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16).
 
-## Question (answer whenever, needed in Batch 4)
-1. **The e-mail with the long subject:** what exactly went wrong in the app? For example: an error message (which
-   one?), the subject cut short, the save did nothing, or something else. With today's code it registers normally
-   (subject 255 characters), so the problem is probably in what your server runs now, or happens in a step I haven't
-   tried. No need to send the e-mail again.
-
 ## When you have time
 2. **L02, real data on the Mac** (postponed, blocks nothing): `git pull`, then *Real data: load*. Take the database
    and the files from the server at the same time. Reply **"L02 works"**.
@@ -30,6 +24,7 @@ account (fixed in S00, but you deploy only at the end). The one-line Apache rule
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Long e-mail subjects (over 255 characters) are fixed in Batch 4 (task D01, moved earlier), 2026-11-16.
 - Your e-mails in `local-data/emails/`: received (2026-11-16). I read them only on this computer; nothing from them is published.
 - Production will run the Docker stack after the rebuild (replaces XAMPP); on the same Windows 11 PC (Docker Desktop); you migrate the old database and files (2026-11-16).
 - No deployment to production until all tasks are completed and verified (2026-11-16).
