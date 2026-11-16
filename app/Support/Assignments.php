@@ -7,9 +7,9 @@ use App\Models\ProtocolAssignment;
 use Illuminate\Support\Facades\DB;
 
 /**
- * D02: who a protocol is assigned to. The legacy form still posts the old text format "d14,e10"
- * (d = διεκπεραίωση, e = ενημέρωση, followed by the user id) into protocols.diekperaiosi; every save copies it into
- * the table protocol_assignments, which is what searches, filters and access checks read.
+ * D02/R1a: who a protocol is assigned to, in the table protocol_assignments (one row per user and type:
+ * d = διεκπεραίωση, e = ενημέρωση). The old text column protocols.diekperaiosi ("d14,e10") was dropped in R1a;
+ * the legacy screens still use that text form through the virtual attribute Protocol::$diekperaiosi.
  */
 final class Assignments
 {
@@ -35,19 +35,22 @@ final class Assignments
     }
 
     /**
-     * Make the table match the protocol's text column (adds missing rows, removes rows no longer there).
-     * The text is read again from the database with the row locked, never from the caller's copy: when two users
-     * reassign the same protocol at the same time, the later sync must not write back the earlier text.
+     * R1a: set who a protocol is assigned to. Adds missing rows, removes rows no longer wanted, keeps the others
+     * (their created_at says since when). The protocol row is locked meanwhile, so two users re-assigning the same
+     * protocol at the same moment are applied one after the other (D02 review finding).
+     *
+     * @param list<array{user_id:int, type:string}> $wanted  (see parse())
+     * @return list<array{user_id:int, type:string}> the rows that were added
      */
-    public static function sync(Protocol|int $protocol): void
+    public static function replace(Protocol|int $protocol, array $wanted): array
     {
         $id = $protocol instanceof Protocol ? (int) $protocol->getKey() : $protocol;
+        $key = fn ($row) => $row['type'] . $row['user_id'];
+        $wanted = array_values(array_combine(array_map($key, $wanted), $wanted) ?: []);
 
-        DB::transaction(function () use ($id) {
-            $text = DB::table('protocols')->where('id', $id)->lockForUpdate()->value('diekperaiosi');
-            $wanted = self::parse($text);
+        return DB::transaction(function () use ($id, $wanted, $key) {
+            DB::table('protocols')->where('id', $id)->lockForUpdate()->value('id');
             $existing = ProtocolAssignment::where('protocol_id', $id)->get();
-            $key = fn ($row) => $row['type'] . $row['user_id'];
             $wantedKeys = array_map($key, $wanted);
             foreach ($existing as $row) {
                 if (!in_array($key($row), $wantedKeys, true)) {
@@ -55,15 +58,37 @@ final class Assignments
                 }
             }
             $existingKeys = $existing->map(fn ($row) => $key($row))->all();
+            $added = [];
             foreach ($wanted as $row) {
                 if (!in_array($key($row), $existingKeys, true)) {
-                    ProtocolAssignment::create(['protocol_id' => $id] + $row);
+                    ProtocolAssignment::create(['protocol_id' => $id, 'user_id' => $row['user_id'], 'type' => $row['type']]);
+                    $added[] = ['user_id' => $row['user_id'], 'type' => $row['type']];
                 }
             }
+            return $added;
         });
     }
 
-    /** Fill the table from the text column for all protocols (migration; safe to run again). Returns rows written. */
+    /**
+     * The legacy text form "d14,e10" of rows (D02 order: by type, then user). Receipts, prints and the inbox page
+     * still read that form through Protocol::$diekperaiosi until they are rebuilt.
+     *
+     * @param iterable<array{user_id:int, type:string}|ProtocolAssignment> $rows
+     */
+    public static function asText(iterable $rows): string
+    {
+        $parts = [];
+        foreach ($rows as $row) {
+            $parts[] = [$row['type'], (int) $row['user_id']];
+        }
+        usort($parts, fn ($a, $b) => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+        return implode(',', array_map(fn ($p) => $p[0] . $p[1], $parts));
+    }
+
+    /**
+     * Fill the table from the text column for all protocols (D02 migration; safe to run again). Returns rows written.
+     * Only for migrations that run while the column still exists (R1a drops it after a last backfill).
+     */
     public static function backfill(int $chunk = 1000): int
     {
         $written = 0;

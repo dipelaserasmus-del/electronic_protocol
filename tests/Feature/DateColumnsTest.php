@@ -57,9 +57,9 @@ class DateColumnsTest extends FeatureTestCase
 
     public function test_saving_the_form_stores_the_dates(): void
     {
-        $this->setting('safeNewProtocolNum', 0);
-        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
-            'protocolnum' => 1, 'protocoldate' => '05/01/2026', 'etos' => 2026, 'in_num' => 'Φ.1/2', 'in_date' => '03/01/2026',
+        $this->setting('protocolValidate', 0);   // an administrator who may set the number and the date (R1a)
+        $this->actingAs($this->admin())->post('/home', $this->protocolForm([
+            'protocolnum' => 1, 'protocolnum_proposed' => 2, 'protocoldate' => '05/01/2026', 'etos' => 2026, 'in_num' => 'Φ.1/2', 'in_date' => '03/01/2026',
             'out_date' => '07/01/2026', 'diekp_eos' => '01/02/2026',
             'in_topos_ekdosis' => 'Δοκιμή', 'in_arxi_ekdosis' => 'Διεύθυνση Δοκιμής', 'in_paraliptis' => 'Διευθυντής', 'out_to' => 'Γραφείο Δοκιμής',
         ]))->assertSessionHasNoErrors()->assertRedirect();

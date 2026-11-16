@@ -109,7 +109,11 @@ class ProtocolController extends Controller implements HasMiddleware
             abort(404);
         }
 
+        $copyDate = null;
         if ($copyAsNew) {
+            $copyDate = $protocol->dateOf('protocoldate')?->format('d/m/Y');
+            $protocol->diekperaiosi = $protocol->diekperaiosi;   // R1a: keep the assignments in memory for the copy's form
+            $protocol->exists = false;
             $protocol->id = null;
             $protocol->etos = null;
             $protocol->protocolnum = null;
@@ -197,218 +201,28 @@ class ProtocolController extends Controller implements HasMiddleware
             $protocoltitle = 'Επεξεργασία Πρωτοκόλλου';
             $protocolUser = User::whereId($protocol->user_id)->first();
         }
-        // η μεταβλητή $time2update ορίζει πόσο χρόνο σε λεπτά μπορεί να επεξεργαστεί
-        // ένα πρωτόκολλο ο χρήστης. Το 0 σημαίνει χωρίς περιορισμό
-        // αρχικοποίηση μεταβλητής για απεριόριστο χρόνο
-        $time2update = 0;
-        // έλεγχος τί έχει συμπληρωθεί
-        //$headWithData = false;
-        //if($protocol->fakelos || $protocol->thema) $headWithData = true;
-        // εισερχόμενο πρωτόκολλο
-        $inWithData = false;
-        if ($protocol->in_num || $protocol->in_date || $protocol->in_topos_ekdosis || $protocol->in_arxi_ekdosis || $protocol->in_paraliptis || $protocol->in_perilipsi) $inWithData = true;
-        // εξερχόμενο πρωτόκολλο
-        $outWithData = false;
-        if ($protocol->out_to || $protocol->out_date || $protocol->out_perilipsi) $outWithData = true;
-        // έλεγχος αν επιτρέπεται η ενημέρωση
-        // αν δεν έχει περάσει ο χρόνος που ορίζεται στις ρυθμίσεις
-        // η μεταβλητή γίνεται true = επεξεργασία
-        // μόνο σε ενημέρωση και όχι σε νέο πρωτόκολλο
-        if ($protocol->id) {
-            // αν ο χρόνος που πέρασε από την πρώτη καταχώριση είναι μέσα στα όρια επιτρέπεται η επεξεργασία
-            $inTimeFirstCommit = false;
-            if ($protocol->created_at->getTimestamp() > Carbon::now()->subMinutes($allowWriterUpdateProtocolTimeInMinutes)->getTimestamp()) $inTimeFirstCommit = true;
-            // αν ο χρόνος που πέρασε από την την τελευταία ενημέρωση είναι μέσα στα όρια επιτρέπεται η επεξεργασία
-            $inTimeLastEdit = false;
-            if ($protocol->updated_at->getTimestamp() > Carbon::now()->subMinutes($allowWriterUpdateProtocolTimeInMinutes)->getTimestamp()) $inTimeLastEdit = true;
-        }
-
-        // έλεγχος των κουμπιών που θα φαίνονται ή θα κρύβονται ανάλογα με το ρόλο του χρήστη
-        // αρχικές ρυθμίσεις -> όλα επιτρέπονται
-        $submitVisible = 'active';
-        $readerVisible = 'hidden';
-        $headReadonly = '';
-        $inReadonly = '';
-        $outReadonly = '';
-        $diekpDateReadonly = '';
-
-        // ΔΙΚΑΙΩΜΑΤΑ ΑΠΟΘΗΚΕΥΣΗΣ
-        // ΑΠΟΚΡΥΨΗ ΤΟΥ ΚΟΥΜΠΙΟΥ ΑΠΟΘΗΚΕΥΣΗ
-        // 1 αν ο χρήστης είναι Αναγνώστης μπορεί μόνο να ενημερώσει την ημνια διεκπεραίωσης και τίποτε άλλο
-        if (Auth::user()->role->role == 'Αναγνώστης') {
-            $submitVisible = 'hidden';
-            $headReadonly = 'readonly';
-            $inReadonly = 'readonly';
-            $outReadonly = 'readonly';
-            $diekpDateReadonly = 'readonly';
-            $class = 'bg-warning';
-            $protocoltitle = 'Πρωτόκολλο';
-            if (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd')) {   // D02
-                $readerVisible = 'active';
-                $diekpDateReadonly = '';
-                if ($allowWriterUpdateProtocolTimeInMinutes && $protocol->user_id == Auth::user()->id) {
-                    // αν έχει περάσει ο χρόνος κρύβεται
-                    if (!$inTimeLastEdit) {
-                        $readerVisible = 'hidden';
-                        $diekpDateReadonly = 'readonly';
-                    }
-                }
-                if ($readerVisible == 'active' && $protocol->diekp_date) {
-                    $time2update = $allowWriterUpdateProtocolTimeInMinutes * 60 - (Carbon::now()->getTimestamp() - $protocol->updated_at->getTimestamp());
-                }
-            }
-        }
-        // 2 αν ο χρήστης είναι Συγγραφέας ή Αναθέτων
-        if (in_array(Auth::user()->role->role, ["Συγγραφέας",  "Αναθέτων"])) {
-            // αν είναι παλιό πρωτόκολλο (έχει id) ΕΠΕΞΕΡΓΑΣΙΑ ΠΡΩΤΟΚΟΛΛΟΥ
-            if ($protocol->id) {
-                // αν η μεταβλητή είναι 0 ή null δηλαδή δεν επιτρέπεται τροποποίηση από Συγγραφείς
-                if (!$allowWriterUpdateProtocol) {
-                    $submitVisible = 'hidden';
-                    $headReadonly = 'readonly';
-                    $inReadonly = 'readonly';
-                    $outReadonly = 'readonly';
-                    $diekpDateReadonly = 'readonly';
-                    // αν η μεταβλητή είναι 1 δηλαδή επιτρέπεται μόνο στον Συγγραφέα που καταχώρισε το Πρ.
-                } elseif ($allowWriterUpdateProtocol == 1) {
-                    // αν ο Συγγραφέας ΔΕΝ είναι ο ίδιος ΚΡΥΒΕΤΑΙ
-                    if ($protocol->user_id <> Auth::user()->id) {
-                        $submitVisible = 'hidden';
-                        $headReadonly = 'readonly';
-                        $inReadonly = 'readonly';
-                        $outReadonly = 'readonly';
-                        $diekpDateReadonly = 'readonly';
-                    } else {
-                        // αν τα λεπτά είναι μεγαλύτερα του 0 τότε ελέγχεται ο χρόνος που πέρασε και μετά κρύβεται το κουμπί
-                        if ($allowWriterUpdateProtocolTimeInMinutes) {
-                            // εκτός ορίων Κλειστα όλα
-                            if (!$inTimeFirstCommit && !$inTimeLastEdit) {
-                                $submitVisible = 'hidden';
-                                $headReadonly = 'readonly';
-                                $inReadonly = 'readonly';
-                                $outReadonly = 'readonly';
-                                $diekpDateReadonly = 'readonly';
-                            }
-                            // εκτός από την αρχική καταχώριση - εντός από τελευταία ενημέρωση
-                            // ανοιχτά σε επεξεργασία μόνο τα εξερχόμενα
-                            if (!$inTimeFirstCommit && $inTimeLastEdit) {
-                                // έχει δεδομένα εισερχόμενα και εξερχόμενα -> ανοιχτά μόνο εξερχόμενα
-                                if ($inWithData && $outWithData) {
-                                    $headReadonly = 'readonly';
-                                    $inReadonly = 'readonly';
-                                }
-                                // έχει δεδομένα εξερχόμενα -> ανοιχτά φάκελος-θέμα και εξερχόμενα
-                                if (!$inWithData && $outWithData) {
-                                    $inReadonly = 'readonly';
-                                }
-                            }
-                        }
-                    }
-                    // αν η μεταβλητή είναι 2 δηλαδή επιτρέπεται σε κάθε Συγγραφέα να τροποποιήσει
-                } else {
-                    // αν τα λεπτά είναι μεγαλύτερα του 0 τότε ελέγχεται ο χρόνος που πέρασε και μετά κρύβεται το κουμπί
-                    if ($allowWriterUpdateProtocolTimeInMinutes) {
-                        // εκτός ορίων Κλειστα όλα
-                        if (!$inTimeFirstCommit && !$inTimeLastEdit) {
-                            $submitVisible = 'hidden';
-                            $headReadonly = 'readonly';
-                            $inReadonly = 'readonly';
-                            $outReadonly = 'readonly';
-                            $diekpDateReadonly = 'readonly';
-                        }
-                        if (!$inTimeFirstCommit && $inTimeLastEdit) {
-                            // έχει δεδομένα εισερχόμενα και εξερχόμενα -> ανοιχτά μόνο εξερχόμενα
-                            if ($inWithData && $outWithData) {
-                                $headReadonly = 'readonly';
-                                $inReadonly = 'readonly';
-                            }
-                            // έχει δεδομένα εξερχόμενα -> ανοιχτά φάκελος-θέμα και εξερχόμενα
-                            if (!$inWithData && $outWithData) {
-                                $inReadonly = 'readonly';
-                            }
-                        }
-                    }
-                }
-                // Αν περνώντας τα παραπάνω τεστ μπορεί να τροποιήσει αρχίζω αντίστροφη μέτρηση
-                if ($submitVisible == 'active') {
-                    $time2update = $allowWriterUpdateProtocolTimeInMinutes * 60 - (Carbon::now()->getTimestamp() - $protocol->updated_at->getTimestamp());
-                    $class = 'bg-success';
-                } else {
-                    $class = 'bg-warning';
-                    $protocoltitle = 'Πρωτόκολλο';
-                }
-                // Αν το πρωτόκολλο δεν έχει θέμα (είναι δηλαδή κενό) ακυρώνονται όλα τα παραπάνω
-                if (!$protocol->thema) {
-                    $submitVisible = 'active';
-                    $headReadonly = '';
-                    $inReadonly = '';
-                    $outReadonly = '';
-                    $diekpDateReadonly = '';
-                    $class = 'bg-success';
-                    $time2update = 0;
-                }
-                // Αν είναι προς διεκπεραίωση από το χρήστη => επιτρέπεται η επεξεργασία μόνο εξερχομένου
-                if (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd') and !$protocol->diekp_date) {
-                    $class = 'bg-success';
-                    $submitVisible = 'active';
-                    $headReadonly = 'readonly';
-                    $inReadonly = 'readonly';
-                    $outReadonly = '';
-                    $diekpDateReadonly = '';
-                    $time2update = 0;
-                } elseif (\App\Policies\ProtocolPolicy::isAssigned(Auth::user(), $protocol, 'd') and $protocol->diekp_date) {
-                    // Αν έχει διεκπεραιωθεί αρχίζω αντίστροφη μέτρηση
-                    // αν τα λεπτά είναι μεγαλύτερα του 0 τότε ελέγχεται ο χρόνος που πέρασε και μετά κρύβεται το κουμπί
-                    if ($allowWriterUpdateProtocolTimeInMinutes and !$inTimeLastEdit) {
-                        $submitVisible = 'hidden';
-                        $headReadonly = 'readonly';
-                        $inReadonly = 'readonly';
-                        $outReadonly = 'readonly';
-                        $diekpDateReadonly = 'readonly';
-                    }
-                }
-                /*
-                // αν δεν έχει συμπληρωμένα εξερχόμενα παραμένει ανοιχτό μόνο για εξερχόμενα
-                if(! $outWithData && ! $inTimeFirstCommit && ! $inTimeLastEdit){
-                    $submitVisible = '';
-                    $headReadonly = 'readonly';
-                    $inReadonly = 'readonly';
-                    $outReadonly = '';
-                    $diekpDateReadonly = 'readonly';
-                    $time2update = 0;
-                }
-                */
-                // αν δεν έχει οριστεί χρόνος που μπορεί ο συγγραφέας να επεξεργαστεί
-                // τότε η επεξεργασία επιτρέπεται και ανοίγουν όλα
-                if (!$allowWriterUpdateProtocolTimeInMinutes) {
-                    $class = 'bg-success';
-                    $submitVisible = 'active';
-                    $headReadonly = '';
-                    $inReadonly = '';
-                    $outReadonly = '';
-                    $diekpDateReadonly = '';
-                    $time2update = 0;
-                }
-            }
-        }
-
-        // Αν ο χρήστης είναι Διαχειριστής και οι έλεγχοι καταχώρισης είναι ΟΧΙ
-        // ανοίγω και πεδία που κανονικά είναι κλειδωμενα (Αρ.Πρωτ, Ημνια , Έτος, ...)
-        $readonly = 'readonly';
-        $delVisible = 'hidden';
-        if (!$protocolValidate) {
-            if (Auth::user()->role->role == 'Διαχειριστής') {
-                $readonly = '';
-                $class = 'bg-danger';
-                $delVisible = 'active';
-            }
+        // R1a: who may change what (also enforced by ProtocolWriter on save), shown with the legacy view's variables
+        $access = \App\Services\Protocols\ProtocolAccess::for(Auth::user(), $protocol);
+        $submitVisible = $access->canSave ? 'active' : 'hidden';
+        $readerVisible = (Auth::user()->role->role == 'Αναγνώστης' && $access->doneDate) ? 'active' : 'hidden';
+        $headReadonly = $access->head ? '' : 'readonly';
+        $inReadonly = $access->in ? '' : 'readonly';
+        $outReadonly = $access->out ? '' : 'readonly';
+        $diekpDateReadonly = $access->doneDate ? '' : 'readonly';
+        $readonly = $access->number ? '' : 'readonly';
+        $dateReadonly = $access->date ? '' : 'readonly';
+        $delVisible = $access->number ? 'active' : 'hidden';
+        $time2update = $access->secondsLeft;
+        $class = ['new' => 'bg-info', 'edit' => 'bg-success', 'readonly' => 'bg-warning', 'admin' => 'bg-danger'][$access->tone];
+        if ($access->number) $class = 'bg-danger';
+        if ($access->tone === 'readonly') $protocoltitle = 'Πρωτόκολλο';
+        // R1a: a copy keeps the original's date when the user may set the date (otherwise today, as saved)
+        if ($copyAsNew && $access->date && $copyDate) {
+            $newprotocoldate = $copyDate;
         }
 
         // Μόνο Διαχειριστής και Αναθέτων μπορούν να αναθέσουν Διεκπεραίωση σε χρήστη
-        $forbidenChangeDiekperaiosiSelect = 1;
-        if (in_array(Auth::user()->role->role, ["Διαχειριστής",  "Αναθέτων"])) {
-            $forbidenChangeDiekperaiosiSelect = null;
-        }
+        $forbidenChangeDiekperaiosiSelect = $access->canAssign ? null : 1;
 
         // βρίσκω την τιμή διατήρησης ανάλογα τον φάκελο Φ.
         $keepval = null;
@@ -423,7 +237,7 @@ class ProtocolController extends Controller implements HasMiddleware
         $years = Keepvalue::whereNotNull('keep')->select('keep')->distinct()->orderby('keep', 'asc')->get();
         $words = Keepvalue::whereNotNull('keep_alt')->select('keep_alt')->distinct()->orderby('keep_alt', 'asc')->get();
 
-        return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'prefillNum', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly'));
+        return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'prefillNum', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly', 'dateReadonly'));
     }
 
     /**
@@ -493,7 +307,14 @@ class ProtocolController extends Controller implements HasMiddleware
         //      f => Διεκπεραιώθηκαν
         $protocoltitle = 'Πρωτόκολλο';
         $user2show = '';
-        $protocols = Protocol::with('attachments')->orderby('etos', 'desc')->orderby($field, $sort);
+        $protocols = Protocol::with('attachments', 'assignments')->orderby('etos', 'desc');
+        if ($field === 'diekperaiosi') {
+            // R1a: no text column any more; sort by the first user assigned for διεκπεραίωση
+            $protocols = $protocols->orderBy(\App\Models\ProtocolAssignment::selectRaw('MIN(user_id)')
+                ->whereColumn('protocol_assignments.protocol_id', 'protocols.id')->where('type', 'd'), $sort);
+        } else {
+            $protocols = $protocols->orderby($field, $sort);
+        }
         if (!$userId) {
             // φιλτραρω τα πρωτόκολλα για το χρήστη
             if ($this->limitProtocolAccessList()) {
@@ -634,603 +455,80 @@ class ProtocolController extends Controller implements HasMiddleware
 
 
 
+    /** R1a: saving goes through ProtocolWriter (rules, numbering, files, e-mails); this only adapts the legacy form. */
     public function store()
     {
-        // παίρνω τα δεδομένα της φορμας
-        $data = request()->all();
-
-        // το id του Διεκπεραιωτή (άν έχει σταλεί) για αποστολή email
-        $sendEmailTo = request('sendEmailTo');
-        // το email (αν υπάρχει) στο οποίο θα σταλεί απόδειξη παραλαβής
-        $reply_to_email = request('reply_to_email');
-
-        // διαβάζω ρυθμίσεις
-        $protocolValidate = Config::getConfigValueOf('protocolValidate');
-        $etos = request('etos');
-        $currentEtos = Carbon::now()->format('Y');
-        $safeNewProtocolNum = Config::getConfigValueOf('safeNewProtocolNum');
-        $sendEmailOnDiekperaiosiChange = Config::getConfigValueOf('sendEmailOnDiekperaiosiChange');
-
-        // B03: a number the user typed (different from the proposed one) is always respected,
-        // even with "safe new protocol number" ON. Safe mode only replaces numbers the user didn't touch.
-        $numbering = app(\App\Services\ProtocolNumbering::class);
-        // only users who can edit the number field (admin with "registration checks" OFF) may choose a number
-        $manualNumber = $numbering->userMayChooseNumber(Auth::user())
-            && $numbering->isManual(request('protocolnum'), request('protocolnum_proposed'));
-        $mustValidate = [
-            'etos' => 'required|integer|digits:4',
-            'protocoldate' => 'required',
-        ];
-        if (!$safeNewProtocolNum || $manualNumber) {
-            // the exact number will be stored: it must be free for the year
-            $mustValidate['protocolnum'] = "required|integer|min:1|unique:protocols,protocolnum,NULL,id,etos,$etos";
-        }
-        // εφαρμογή του validation (αυτό γίνεται πάντα)
-        $this->validate(request(), $mustValidate, [
-            'protocolnum.unique' => "Ο Αρ. Πρωτοκόλλου " . e(request('protocolnum')) . " υπάρχει ήδη για το έτος " . e($etos) . ". Επιλέξτε άλλον αριθμό.",
-        ]);
-
-        // ελέγχεται η μορφή των ημερομηνιών
-        $validator = Validator::make(request()->all(), [
-            'protocoldate' => 'regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'in_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'out_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'diekp_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-        ], [
-            'protocoldate.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'in_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'out_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'diekp_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-        ])->validate();
-
-        // παίρνω τις ρυθμίσεις [Έλεγχοι & περιορισμοί κατά την καταχώριση]
-        // αν είναι true (1)
-        if ($protocolValidate) {
-            $str = $etos < $currentEtos ? 'παρελθόν' : 'μέλλον';
-            // έλεγχος για το έτος πρωτοκόλλησης (αλλαγή χρόνου)
-            $validator = Validator::make(request()->all(), [
-                'etos' => "in:$currentEtos",
-            ], [
-                'etos.in' => "Δεν μπορείτε να καταχωρίσετε Νέο Πρωτόκολλο στο $str έτος $etos.<br><br>Αλλάξτε στις ρυθμίσεις εφαρμογής το ''Ενεργό έτος πρωτοκόλλησης'' είτε σε:<br>-> <b>$currentEtos</b> για να ξεκινήσετε από το 1<br>-> <b>κενό</b> για τον επόμενο Αρ.Πρωτ.<br>&nbsp;",
-            ])->validate();
-
-
-            $validator = Validator::make(request()->all(), [
-                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:' . Protocol::LONG_TEXT_MAX,
-                'in_date' => 'required_with:in_num,in_topos_ekdosis,in_arxi_ekdosis',
-                'in_topos_ekdosis' => 'required_with:in_num,in_date,in_arxi_ekdosis|max:255',
-                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:' . Protocol::LONG_TEXT_MAX,
-                'in_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
-                'out_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
-                'in_paraliptis' => 'required_with:in_num,in_date,in_arxi_ekdosis,in_topos_ekdosis|max:255',
-                'out_date' => 'required_with:out_to,out_perilipsi',
-                'out_to' => 'required_with:out_date,out_perilipsi|max:255',
-            ], [
-                'thema.required_with' => "Συμπληρώστε<br>το θέμα.",
-                'in_topos_ekdosis.required_with' => "Συμπληρώστε<br>τον τόπο έκδοσης.",
-                'in_arxi_ekdosis.required_with' => "Συμπληρώστε<br>την Αρχή έκδοσης.",
-                'in_date.required_with' => "Συμπληρώστε<br>την Ημ/νια έκδοσης.",
-                'in_paraliptis.required_with' => "Συμπληρώστε<br>τον Παραλήπτη.",
-                'out_date.required_with' => "Συμπληρώστε<br>την Ημ/νια έξερχομένου.",
-                'out_to.required_with' => "Συμπληρώστε<br>το πεδίο Απευθύνεται σε",
-            ])->validate();
-        }
-
-        // αλλάζω τη μορφή ημερομηνίας για καταχώριση στη βάση
-        $in_date = null;
-        $out_date = null;
-        $diekp_eos = null;
-        $diekp_date = null;
-        if ($data['in_date']) {
-            $in_date = Carbon::createFromFormat('d/m/Y', $data['in_date'])->format('Ymd');
-        }
-        if ($data['out_date']) {
-            $out_date = Carbon::createFromFormat('d/m/Y', $data['out_date'])->format('Ymd');
-        }
-        if ($data['diekp_eos']) {
-            $diekp_eos = Carbon::createFromFormat('d/m/Y', $data['diekp_eos'])->format('Ymd');
-        }
-        if ($data['diekp_date']) {
-            $diekp_date = Carbon::createFromFormat('d/m/Y', $data['diekp_date'])->format('Ymd');
-        }
-        $keywords = null;
-        if ($data['keywords']) {
-            $keywords = rtrim($data['keywords'], ',');
-        }
-        $sxetiko = null;
-        if ($data['sxetiko']) {
-            $sxetiko = rtrim($data['sxetiko'], ',');
-        }
-
-        // Αρ.Πρωτ. που θα αποθηκευτεί: null = ο επόμενος ελεύθερος (B03/B08)
-        $chosenNumber = ($safeNewProtocolNum && !$manualNumber) ? null : (int) $data['protocolnum'];
-
-        // δημιουργία του πρωτοκόλλου (ατομικά, με κλείδωμα αρίθμησης - B08)
         try {
-            $protocol = $numbering->create((int) $etos, $chosenNumber, fn (int $num) => Protocol::create([
-                'user_id' => Auth::user()->id,
-                'protocolnum' => $num,
-                'protocoldate' => Carbon::createFromFormat('d/m/Y', $data['protocoldate'])->format('Ymd'),
-                'etos' => $data['etos'],
-                'fakelos' => $data['fakelos'],
-                'thema' => $data['thema'],
-                'in_num' => $data['in_num'],
-                'in_date' => $in_date,
-                'in_topos_ekdosis' =>  $data['in_topos_ekdosis'],
-                'in_arxi_ekdosis' => $data['in_arxi_ekdosis'],
-                'in_paraliptis' => $data['in_paraliptis'],
-                'diekperaiosi' => isset($data['diekperaiosi']) ? implode(',', $data['diekperaiosi']) : '',
-                'diekp_eos' => $diekp_eos,
-                'in_perilipsi' => $data['in_perilipsi'],
-                'out_date' => $out_date,
-                'diekp_date' => $diekp_date,
-                'sxetiko' => $sxetiko,
-                'out_to' => $data['out_to'],
-                'out_perilipsi' => $data['out_perilipsi'],
-                'keywords' => $keywords,
-                'paratiriseis' => $data['paratiriseis']
-            ]));
-            $protocolNewNum = $protocol->protocolnum;
-
-            $saveCycleSxetiko = Config::getConfigValueOf('saveCycleSxetiko');
-            if ($saveCycleSxetiko) $this->saveCycleSxetiko($protocolNewNum, $data['etos'], $sxetiko);
-        } catch (\App\Services\ProtocolNumberTaken $e) {
-            // ο αριθμός που επέλεξε ο χρήστης καταλήφθηκε στο μεταξύ: επιστροφή στη φόρμα χωρίς απώλεια δεδομένων
-            return back()->withInput()->withErrors([
-                'protocolnum' => "Ο Αρ. Πρωτοκόλλου {$e->number} υπάρχει ήδη για το έτος {$e->etos}. Επιλέξτε άλλον αριθμό.",
-            ]);
+            $result = app(\App\Services\Protocols\ProtocolWriter::class)->create(Auth::user(), request()->all(), $this->postedAttachments());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;   // back to the form with the messages and everything typed
         } catch (\Throwable $e) {
-            // αν υπάρξει σφάλμα το στέλνω στο log
-            // στέλνω ειδοποίηση στη session
             report($e);
-            $notification = array(
+            session()->flash('notification', [
                 'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση του Πρωτοκόλλου<br>Παρακαλώ επαναλάβετε την καταχώριση.',
-                'alert-type' => 'error'
-            );
-            session()->flash('notification', $notification);
-            // επιστρέφω στη φόρμα κρατώντας ό,τι είχε συμπληρώσει ο χρήστης
+                'alert-type' => 'error',
+            ]);
             return back()->withInput();
         }
-        // δημιουργία στάμπας ΑΡ.Πρωτ.
-        $putStamp = Config::getConfigValueOf('putStamp');
-        // έλεγχος αν ο χρήστης δεν επιθυμεί στάμπα
-        if (isset($data['explicityNoStamp']))  $putStamp = false;
-        $stampDone = false;
-        if ($protocol && $putStamp) {
-            $stampDone = $this->createStamp($protocol);
-        }
-
-        // εισαγωγή συνημμένων εγγράφων
-        $filescount = 3 * $data['file_inputs_count'];
-        $protocol_id = $protocol->id;
-
-        for ($i = 1; $i < $filescount + 1; $i++) {
-            if ($data["ada$i"] or request()->hasFile("att$i")) {
-                $filename = null;
-                $mimeType = null;
-                $savedPath = null;
-                $expires = null;
-                // αν έχει σταλεί αρχείο από τη φόρμα
-                if (request()->hasFile("att$i")) {
-                    $file = request()->file("att$i");
-                    // παίρνω το όνομα του αρχείου
-                    $filename = $file->getClientOriginalName();
-                    // αφαίρεση απαγορευμένων χαρακτήρων από το όνομα του συνημμένου
-                    $filename = $this->filter_filename($filename, false);
-                    // τον τύπο mimeType του αρχείου
-                    $mimeType = $file->getMimeType();
-                    // φτιάχνω το όνομα Αρ.Πρ + Ημνια.Πρ
-                    $dir = 'arxeio/' . request()->fakelos;
-                    $filenameToStore = \App\Support\FileNames::fit($protocol->protocolnum . '-' . $protocol->protocoldate . '_', $filename, $dir);   // F08
-                    // τον φάκελο arxeio + Φ.
-                    // αποθηκεύω το αρχείο και παίρνω το path αποθήκευσης
-                    if ($stampDone && $putStamp) {
-                        $savedPath = $this->putStamp($dir, $filenameToStore, $file, null);
-                    } else {
-                        $savedPath = $file->storeas($dir, $filenameToStore);
-                    }
-                }
-                if ($data['keep'] and is_numeric($data['keep'])) {
-                    // αν είναι η διατήρηση αριθμός πρόσθέτω χρόνια
-                    // για να φτιάξω την Ημνια λήξης
-                    $dt = Carbon::createFromFormat('d/m/Y', request()->protocoldate);
-                    $dt->addYears((int) $data['keep']);
-                    $expires = $dt->format('Ymd');
-                }
-                try {
-                    // δημιουργία συνημμένου
-                    Attachment::updateOrCreate(
-                        [
-                            'protocol_id' => $protocol_id,
-                            'ada' => $data["ada$i"],
-                            'name' => $filename,
-                            'mimeType' => $mimeType,
-                            'savedPath' => $savedPath,
-                        ],
-                        [
-                            'keep' => $data['keep'],
-                            'expires' => $expires,
-                        ]
-                    );
-                } catch (\Throwable $e) {
-                    // αν υπάρχει λάθος το γράφω στο log
-                    report($e);
-                    // δημιουργώ μήνυμα στο session
-                    $notification = array(
-                        'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση των συνημμένων αρχείων<br>Ελέγξτε αν καταχωρίστηκαν όλα σωστά.<br>' . $e->getMessage(),
-                        'alert-type' => 'error'
-                    );
-                    session()->flash('notification', $notification);
-                    // πηγαίνω στην επεξεργασία του πρωτοκόλλου που μόλις αποθήκευσα
-                    return redirect("home/$protocol_id");
-                }
-            }
-        }
-        // διαγράφω τη στάμπα
-        if (file_exists('arPr.png')) unlink('arPr.png');
-
-        // αν πρέπει να στείλω email στον Διεκπεραιωτή $sendEmailTo = user.id
-        // και οι ρυθμίσεις λένα να στέλνω email σε ανάθεση
-        // στέλνω email
-        $message = '';
-        if ($sendEmailTo && $sendEmailOnDiekperaiosiChange) {
-            $sendEmailToArray = explode(',', $sendEmailTo);
-            foreach ($sendEmailToArray as $smt) {
-                if (substr($smt, 0, 1) == 'd') {
-                    $message .= $this->sendMailToDiekperaioti(ltrim($smt, 'd'), $protocol);
-                }
-                if (substr($smt, 0, 1) == 'e') {
-                    $message .= $this->diekpInformMail(ltrim($smt, 'e'), $protocol);
-                }
-            }
-        }
-
-        // αν έχει συμπληρωθεί email για αποστολή απόδειξης παραλαβής
-        if ($reply_to_email) {
-            // φτιάχνω τα δεδομένα
-            $emaildate = Carbon::now()->format('d/m/Y H:i:s');
-            $protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-            $sendReplyTo = $reply_to_email;
-            $html = view('receiptProtocol', compact('protocol', 'protocoldate'))->render();
-            // στέλνω το email (B09)
-            $mailer = app(\App\Services\OutgoingMail::class);
-            if ($mailer->sendHtml($sendReplyTo, "Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.", $html)) {
-                // προσθέτω στις παρατηρήσεις ότι στάλθηκε απόδειξη παραλαβής με email
-                $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
-                $parMessage .= "$emaildate απόδειξη παραλαβής σε $sendReplyTo";
-                //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
-                $protocol->paratiriseis = $parMessage;
-                $protocol->update();
-                $message .= "<li>" . e($parMessage) . "</li>";
-            } else {
-                // το πρωτόκολλο αποθηκεύτηκε· ενημερώνω μόνο ότι το email δεν στάλθηκε
-                $message .= "<li><strong>Μη δυνατή αποστολή βεβαίωσης καταχώρισης με email</strong> σε " . e($sendReplyTo) . ".</li>";
-            }
-        }
-        // ενημέρωση για την επιτυχία της καταχώρισης
-        $notification = array(
-            'message' => 'Επιτυχημένη ενημέρωση.' . "<ul>$message</ul>",
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-        // μετάβαση στην Επεξεργασία του Πρ. που μόλις αποθήκευσα
-        return redirect("home/$protocol_id");
+        return $this->afterSave($result);
     }
-
 
     public function update(Protocol $protocol)
     {
         $this->authorize('update', $protocol);   // S02
-        // παίρνω τα δεδομένα
-        $data = request()->all();
-        // και κάποιες μεταβλητές που χρειάζομαι
-        // από το παλιό πρωτόκολλο για ελέγχους
-        $id = $protocol->id;
-        $oldFakelos = $protocol->fakelos;
-        // το έτος
-        $etos = request('etos');
-        // το id του Διεκπεραιωτή για email
-        $sendEmailTo = request('sendEmailTo');
-        // διαβάζω ρυθμίσεις
-        $protocolValidate = Config::getConfigValueOf('protocolValidate');
-        $sendEmailOnDiekperaiosiChange = Config::getConfigValueOf('sendEmailOnDiekperaiosiChange');
-
-        // πάντα validate
-        // validation της μορφής ημνιων
-        $validator = Validator::make(request()->all(), [
-            'protocolnum' => "required|integer|unique:protocols,protocolnum,$id,id,etos,$etos",
-            'etos' => 'required|integer|digits:4',
-            'protocoldate' => 'required',
-            'protocoldate' => 'regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'in_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'out_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'diekp_eos' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            'diekp_date' => 'nullable|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-        ], [
-            'protocoldate.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'in_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'out_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'diekp_eos.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-            'diekp_date.regex' => "Η ημερομηνία πρέπει να έχει τη μορφή 'ηη/μμ/εεεε'.<br>&nbsp;",
-        ])->validate();
-
-        // παίρνω τις ρυθμίσεις [Έλεγχοι & περιορισμοί κατά την καταχώριση]
-        // αν είναι true (1)
-        if ($protocolValidate) {
-            $validator = Validator::make(request()->all(), [
-                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:' . Protocol::LONG_TEXT_MAX,
-                'in_date' => 'required_with:in_num,in_topos_ekdosis,in_arxi_ekdosis',
-                'in_topos_ekdosis' => 'required_with:in_num,in_date,in_arxi_ekdosis|max:255',
-                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:' . Protocol::LONG_TEXT_MAX,
-                'in_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
-                'out_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
-                'in_paraliptis' => 'required_with:in_num,in_date,in_arxi_ekdosis,in_topos_ekdosis|max:255',
-                'out_date' => 'required_with:out_to,out_perilipsi',
-                'out_to' => 'required_with:out_date,out_perilipsi|max:255',
-            ], [
-                'thema.required_with' => "Συμπληρώστε<br>το θέμα.",
-                'in_topos_ekdosis.required_with' => "Συμπληρώστε<br>τον τόπο έκδοσης.",
-                'in_arxi_ekdosis.required_with' => "Συμπληρώστε<br>την Αρχή έκδοσης.",
-                'in_date.required_with' => "Συμπληρώστε<br>την Ημ/νια έκδοσης.",
-                'in_paraliptis.required_with' => "Συμπληρώστε<br>τον Παραλήπτη.",
-                'out_date.required_with' => "Συμπληρώστε<br>την Ημ/νια έξερχομένου.",
-                'out_to.required_with' => "Συμπληρώστε<br>το πεδίο Απευθύνεται σε",
-            ])->validate();
-        }
-
-        // αλλαγή μορφής ημνιων για αποθήκευση στη ΒΔ
-        $in_date = null;
-        $out_date = null;
-        $diekp_eos = null;
-        $diekp_date = null;
-        if ($data['in_date']) {
-            $in_date = Carbon::createFromFormat('d/m/Y', $data['in_date'])->format('Ymd');
-        }
-        if ($data['out_date']) {
-            $out_date = Carbon::createFromFormat('d/m/Y', $data['out_date'])->format('Ymd');
-        }
-        if ($data['diekp_eos']) {
-            $diekp_eos = Carbon::createFromFormat('d/m/Y', $data['diekp_eos'])->format('Ymd');
-        }
-        if ($data['diekp_date']) {
-            $diekp_date = Carbon::createFromFormat('d/m/Y', $data['diekp_date'])->format('Ymd');
-        }
-        // βγάζω το τελευταίο (,) κόμα από τις λέξεις κλειδιά
-        $keywords = null;
-        if ($data['keywords']) {
-            $keywords = rtrim($data['keywords'], ',');
-        }
-        $sxetiko = null;
-        if ($data['sxetiko']) {
-            $sxetiko = rtrim($data['sxetiko'], ',');
-        }
-
-        // αν διαγράφηκε και υπάρχουν συνημμένα αρχεία
-        // ενημερώνω ότι δεν μπορεί ο φάκελος Φ. να είναι κενός
-        if ($protocol->attachments()->count() && !$data['fakelos']) {
-            $validator = Validator::make(request()->all(), [
-                'fakelos' => "required",
-            ], [
-                'fakelos.required' => "Ο Φάκελλος πρωτοκόλλου με συνημμένα αρχεία δεν μπορεί να είναι κενός.<br>Για να επιτευχθεί αυτό πρέπει πρώτα να διαγράψετε τα συνημμένα αρχεία.",
-            ])->validate();
-        }
-
-        // ενημέρωση του πρωτοκόλλου
         try {
-            Protocol::whereId($id)->update([
-                'user_id' => Auth::user()->id,
-                'protocolnum' => $data['protocolnum'],
-                'protocoldate' => Carbon::createFromFormat('d/m/Y', $data['protocoldate'])->format('Ymd'),
-                'etos' => $data['etos'],
-                'fakelos' => $data['fakelos'],
-                'thema' => $data['thema'],
-                'in_num' => $data['in_num'],
-                'in_date' => $in_date,
-                'in_topos_ekdosis' =>  $data['in_topos_ekdosis'],
-                'in_arxi_ekdosis' => $data['in_arxi_ekdosis'],
-                'in_paraliptis' => $data['in_paraliptis'],
-                'diekperaiosi' => isset($data['diekperaiosi']) ? implode(',', $data['diekperaiosi']) : '',
-                'diekp_eos' => $diekp_eos,
-                'in_perilipsi' => $data['in_perilipsi'],
-                'out_date' => $out_date,
-                'diekp_date' => $diekp_date,
-                'sxetiko' => $sxetiko,
-                'out_to' => $data['out_to'],
-                'out_perilipsi' => $data['out_perilipsi'],
-                'keywords' => $keywords,
-                'paratiriseis' => $data['paratiriseis']
-            ]);
-            \App\Support\Assignments::sync((int) $id);   // D02: this query skips the model's save event
-
-            $saveCycleSxetiko = Config::getConfigValueOf('saveCycleSxetiko');
-            if ($saveCycleSxetiko) $this->saveCycleSxetiko($data['protocolnum'], $data['etos'], $sxetiko);
+            $result = app(\App\Services\Protocols\ProtocolWriter::class)->update(Auth::user(), $protocol, request()->all(), $this->postedAttachments());
+        } catch (\Illuminate\Validation\ValidationException|\Illuminate\Auth\Access\AuthorizationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
-            // αν χτυπήσει λάθος ενημερώνω το log
             report($e);
-            // στέλνω μήνυμα στο χρήστη
-            $notification = array(
+            session()->flash('notification', [
                 'message' => 'Υπήρξε κάποιο πρόβλημα στην ενημέρωση του Πρωτοκόλλου<br>Παρακαλώ επαναλάβετε την ενημέρωση.',
-                'alert-type' => 'error'
-            );
-            session()->flash('notification', $notification);
-            // γυρνάω στην επεξεργασία Πρωτοκόλλου
-            return redirect("home/$id");
+                'alert-type' => 'error',
+            ]);
+            return redirect("home/{$protocol->id}");
         }
-
-
-        // αν άλλαξε ο Φακελλος και υπάρχουν συνημμένα αρχεία
-        if ($protocol->attachments()->count()) {
-            if ($data['fakelos'] !== $oldFakelos) {
-
-                $attachments = $protocol->attachments()->get();
-                foreach ($attachments as $attachment) {
-                    $savedPath = $attachment->savedPath;
-                    $newPath = str_replace($oldFakelos, $data['fakelos'], $savedPath);
-                    // αν υπάρχει το αρχείο
-                    if ($savedPath && Storage::exists($attachment->savedPath) && $newPath !== $savedPath) {
-                        // το μετακινώ στον νέο φάκελο
-                        Storage::move($savedPath, $newPath);
-                    }
-                    $attachment->savedPath = $newPath;
-                    $attachment->save();
-                }
-            }
-        }
-
-        // δημιουργία στάμπας ΑΡ.Πρωτ.
-        $putStamp = Config::getConfigValueOf('putStamp');
-        // έλεγχος αν ο χρήστης δεν επιθυμεί στάμπα
-        if (isset($data['explicityNoStamp']))  $putStamp = false;
-        $stampDone = false;
-        if ($protocol && $putStamp) {
-            $stampDone = $this->createStamp($protocol);
-        }
-
-        // αποθηκεύω τα συνημμένα αρχεία
-        $filescount = 3 * $data['file_inputs_count'];
-        for ($i = 1; $i < $filescount + 1; $i++) {
-            if ($data["ada$i"] or request()->hasFile("att$i")) {
-                $filename = null;
-                $mimeType = null;
-                $savedPath = null;
-                $expires = null;
-                // αν η φόρμα περιέχει αρχείο
-                if (request()->hasFile("att$i")) {
-                    $file = request()->file("att$i");
-                    // παίρνω το όνομα αρχείου
-                    $filename = $file->getClientOriginalName();
-                    // αφαίρεση απαγορευμένων χαρακτήρων από το όνομα του συνημμένου
-                    $filename = $this->filter_filename($filename, false);
-                    // τον τύπο αρχείου
-                    $mimeType = $file->getMimeType();
-                    // φτιάχνω το όνομα αποθήκευσης
-                    $dir = 'arxeio/' . request()->fakelos;
-                    $filenameToStore = \App\Support\FileNames::fit(request()->protocolnum . '-' . Carbon::createFromFormat('d/m/Y', request()->protocoldate)->format('Ymd') . '_', $filename, $dir);   // F08
-                    // τον φάκελο αποθήκευσης
-                    // αποθηκεύω και παίρνω το path
-                    if ($stampDone && $putStamp) {
-                        $savedPath = $this->putStamp($dir, $filenameToStore, $file, null);
-                    } else {
-                        $savedPath = $file->storeas($dir, $filenameToStore);
-                    }
-                }
-                if ($data['keep'] and is_numeric($data['keep'])) {
-                    // αν η διατήρηση είναι αριθμός
-                    // προσθέτω χρόνια και φτιάχνω ημνια λήξης
-                    $dt = Carbon::createFromFormat('d/m/Y', request()->protocoldate);
-                    $dt->addYears((int) $data['keep']);
-                    $expires = $dt->format('Ymd');
-                }
-                // αποθήκευση συνημμένου στη ΒΔ
-                try {
-                    Attachment::updateOrCreate(
-                        [
-                            'protocol_id' => $id,
-                            'ada' => $data["ada$i"],
-                            'name' => $filename,
-                            'mimeType' => $mimeType,
-                            'savedPath' => $savedPath,
-                        ],
-                        [
-                            'keep' => $data['keep'],
-                            'expires' => $expires,
-                        ]
-                    );
-                } catch (\Throwable $e) {
-                    // σε λάθος στέλνω στο log
-                    report($e);
-                    // ενημερώνω το χρήστη
-                    $notification = array(
-                        'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση των συνημμένων αρχείων<br>Ελέγξτε αν καταχωρίστηκαν όλα σωστά.<br>' . $e->getMessage(),
-                        'alert-type' => 'error'
-                    );
-                    session()->flash('notification', $notification);
-                    // γυρνάω πίσω
-                    return redirect("home/$id");
-                }
-            }
-        }
-        // διαγράφω τη στάμπα
-        if (file_exists('arPr.png')) unlink('arPr.png');
-
-        // αν έχω id του Διεκπεραιωτή και επιτρέπεται από τις ρυθμίσεις στέλνω email στον Διεκπεραιωτή
-        $message = '';
-        if ($sendEmailTo && $sendEmailOnDiekperaiosiChange) {
-            $sendEmailToArray = explode(',', $sendEmailTo);
-            foreach ($sendEmailToArray as $smt) {
-                if (substr($smt, 0, 1) == 'd') {
-                    $message .= $this->sendMailToDiekperaioti(ltrim($smt, 'd'), $protocol);
-                }
-                if (substr($smt, 0, 1) == 'e') {
-                    $message .= $this->diekpInformMail(ltrim($smt, 'e'), $protocol);
-                }
-            }
-        }
-        // ενημέρωση όλα ok
-        $notification = array(
-            'message' => 'Επιτυχημένη ενημέρωση.' . "<ul>$message</ul>",
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-        // γυρνάω στο Πρωτόκολλο
-        return redirect("home/$id");
+        return $this->afterSave($result);
     }
 
+    /** The legacy form's file rows: att1…attN and ada1…adaN (3 per "file_inputs_count"). */
+    private function postedAttachments(): array
+    {
+        $rows = [];
+        $count = 3 * max(0, (int) request('file_inputs_count'));
+        for ($i = 1; $i <= $count; $i++) {
+            $rows[] = ['file' => request()->file("att$i"), 'ada' => request("ada$i")];
+        }
+        return $rows;
+    }
+
+    private function afterSave(\App\Services\Protocols\SaveResult $result)
+    {
+        $lines = '';
+        foreach ($result->messages as $line) {
+            $lines .= '<li>' . e($line) . '</li>';
+        }
+        foreach ($result->warnings as $line) {
+            $lines .= '<li><strong>' . e($line) . '</strong></li>';
+        }
+        session()->flash('notification', [
+            'message' => 'Επιτυχημένη ενημέρωση.' . "<ul>$lines</ul>",
+            'alert-type' => $result->warnings ? 'warning' : 'success',
+        ]);
+        return redirect("home/{$result->protocol->id}");
+    }
+
+    /** Assignment e-mails (also used by anathesiSe); R1a moved them to AssignmentMail. Returns an HTML list item. */
     public function sendMailToDiekperaioti($sendEmailTo, $protocol)
     {
-        // βρίσκω τα δεδομένα
-        $diekperaiotis = User::find($sendEmailTo)->name;
-        $emailTo = User::find($sendEmailTo)->email;
-        $date = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-        $diekp_eos = $protocol->diekp_eos ? Carbon::createFromFormat('Ymd', $protocol->diekp_eos)->format('d/m/Y') : '';
-        // παίρνω το περιεχόμενο του μηνύματος
-        $html = view('diekperaiosiMail', compact('protocol', 'diekperaiotis', 'date', 'diekp_eos'))->render();
-        $thema = $protocol->thema;
-        // χρήση του 2ο (εναλλακτικό) mailer
-        $message = '';
-        $mailer = app(\App\Services\OutgoingMail::class);
-        if ($mailer->sendHtml($emailTo, "Ανάθεση Πρωτοκόλλου για Διεκπεραίωση" . " με θέμα \"" . $thema . "\"", $html, 'intra-mail')) {
-            // προσθέτω στις παρατηρήσεις ότι στάλθηκε email στον διεκπεραιωτή
-            $emaildate = Carbon::now()->format('d/m/Y H:i:s');
-            $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
-            $parMessage .= "$emaildate email διεκπεραίωσης σε $diekperaiotis";
-            //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
-            $protocol->paratiriseis = $parMessage;
-            $protocol->update();
-            // ενημερώνω το χρήστη
-            $message = "<li>Στάλθηκε email ανάθεσης στον $diekperaiotis.</li>";
-        } else {
-            $message = "<li>Δεν ήταν δυνατή η αποστολή email ανάθεσης στον " . e($diekperaiotis) . ".</li>";
-        }
-        return $message;
+        $line = app(\App\Services\Protocols\AssignmentMail::class)->send($protocol, (int) $sendEmailTo, 'd');
+        return $line === null ? '' : '<li>' . e($line) . '</li>';
     }
 
     public function diekpInformMail($sendEmailTo, $protocol)
     {
-        // βρίσκω τα δεδομένα
-        $diekperaiotis = User::find($sendEmailTo)->name;
-        $emailTo = User::find($sendEmailTo)->email;
-        $date = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-        // παίρνω το περιεχόμενο του μηνύματος
-        $html = view('diekpInformMail', compact('protocol', 'diekperaiotis', 'date'))->render();
-        $thema = $protocol->thema;
-        // χρήση του 2ο (εναλλακτικό) mailer
-        $message = '';
-        $mailer = app(\App\Services\OutgoingMail::class);
-        if ($mailer->sendHtml($emailTo, "Ενημέρωση για Πρωτόκολλο" . " με θέμα \"" . $thema . "\"", $html, 'intra-mail')) {
-            // προσθέτω στις παρατηρήσεις ότι στάλθηκε email στον διεκπεραιωτή
-            $emaildate = Carbon::now()->format('d/m/Y H:i:s');
-            $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
-            $parMessage .= "$emaildate email ενημέρωσης σε $diekperaiotis";
-            //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
-            $protocol->paratiriseis = $parMessage;
-            $protocol->update();
-            // ενημερώνω το χρήστη
-            $message = "<li>Στάλθηκε email ενημέρωσης στον $diekperaiotis.</li>";
-        } else {
-            $message = "<li>Δεν ήταν δυνατή η αποστολή email ενημέρωσης στον " . e($diekperaiotis) . ".</li>";
-        }
-        return $message;
+        $line = app(\App\Services\Protocols\AssignmentMail::class)->send($protocol, (int) $sendEmailTo, 'e');
+        return $line === null ? '' : '<li>' . e($line) . '</li>';
     }
 
 
@@ -1622,7 +920,7 @@ class ProtocolController extends Controller implements HasMiddleware
             }
             // D02: names of the users assigned for διεκπεραίωση (the old code showed nothing when there was also an "e")
             $names = $protocol->assignments->where('type', 'd')->map(fn ($a) => $userNames[$a->user_id] ?? null)->filter();
-            $protocol->diekperaiosi = $names->isEmpty() ? null : $names->implode(', ');
+            $protocol->setAttribute('assignee_names', $names->isEmpty() ? null : $names->implode(', '));   // display only, never saved
         }
 
         $searchField1 = request('searchField1');
@@ -2221,10 +1519,10 @@ class ProtocolController extends Controller implements HasMiddleware
                 $numCreatedAttachments++;
             }
             // διαγράφω τη στάμπα
-            if (file_exists('arPr.png')) unlink('arPr.png');
+            $this->stamp?->cleanup();
         } catch (\Throwable $e) {
             // διαγράφω τη στάμπα
-            if (file_exists('arPr.png')) unlink('arPr.png');
+            $this->stamp?->cleanup();
             report($e);
             $this->undoEmailRegistration($protocol, $writtenFiles);
             $notification = array(
@@ -2368,21 +1666,29 @@ class ProtocolController extends Controller implements HasMiddleware
             $collection = collect($valuesArray)->unique()->sortBy('Key')->values()->all();
             foreach ($collection as $value) {
                 if (mb_stristr($this->removeAccents($value), $this->removeAccents($term))) {
-                    $output .= '<li style="cursor: pointer"><a onclick="javascript:appendValue(\'' . $id . '\',\'' . $value . '\',\'' . $divId . '\',\'' . $multi . '\')">' . e($value) . '</a></li>
-            ';
+                    $output .= $this->suggestion($id, $value, $divId, $multi);
                 }
             }
         } else {
             foreach ($protocols as $protocol) {
-                $value = $protocol;
-                $output .= '<li style="cursor: pointer"><a onclick="javascript:appendValue(\'' . $id . '\',\'' . $value . '\',\'' . $divId . '\',\'' . $multi . '\')">' . e($value) . '</a></li>
-            ';
+                $output .= $this->suggestion($id, $protocol, $divId, $multi);
             }
         }
         return response($output);
     }
 
 
+
+    /**
+     * R1a: one autocomplete suggestion. The value used to be pasted into the onclick script between quotes: a value
+     * with ' (e.g. «Δ/νση Π.Ε. Ν' Αθηνών») broke the click, and a crafted one could run script. Now the arguments
+     * are JSON, escaped for the attribute.
+     */
+    private function suggestion($id, $value, $divId, $multi): string
+    {
+        $args = e(json_encode([(string) $id, (string) $value, (string) $divId, (string) $multi], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
+        return '<li style="cursor: pointer"><a onclick="appendValue.apply(null, ' . $args . ')">' . e($value) . "</a></li>\n";
+    }
 
     /**
      * Replace accented characters with non accented
@@ -2558,154 +1864,25 @@ class ProtocolController extends Controller implements HasMiddleware
             ->header('X-Content-Type-Options', 'nosniff');
     }
 
-    private function saveCycleSxetiko($newProtocolNum, $etos, $sxetiko)
-    {
-        // φτιάχνω την εγγραφή αρπρ/ετος
-        $newProtocolSxetiko = "$newProtocolNum/$etos";
-        //παίρνω πίνακα με την υποβολή της φόρμας
-        $sxetiko = array_map('trim', explode(',', $sxetiko));
-
-
-        // πρέπει να είναι αριθμός/4ψηφιο έτος
-        $pattern = "/^\d+\/\d{4}/i";
-        foreach ($sxetiko as $sxet) {
-            // αν ταιριάζει με το pattern
-            if (preg_match($pattern, $sxet)) {
-                // παίρνω τον ΑρΠ και το έτος
-                $data = explode('/', $sxet);
-                // βρίσκω το Πρωτόκολλο
-                $protocol = Protocol::where('protocolnum', $data[0])->where('etos', $data[1])->first();
-                // αν δεν βρω πρωτόκολλο πάω στο επόμενο
-                if (!$protocol) continue;
-                // αν έχει ήδη σχετικά
-                if (isset($protocol->sxetiko)) {
-                    // παίρνω την παλιά τιμή σε πίνακα
-                    $oldSxetiko = array_map('trim', explode(',', $protocol->sxetiko));
-                    // ενώνω παλιές τιμές και νέες και το νέο πρωτόκολλο
-                    $newSxetiko = array_unique(array_merge($oldSxetiko, array_diff($sxetiko, [$sxet]), [$newProtocolSxetiko]));
-                    // αν δεν έχει σχετικά
-                } else {
-                    // νέες τιμές και το νέο πρωτόκολλο
-                    $newSxetiko = array_unique(array_merge(array_diff($sxetiko, [$sxet]), [$newProtocolSxetiko]));
-                }
-
-                // το κάνω string
-                $protocol->sxetiko = implode(', ', $newSxetiko);
-                // αποθηκεύω
-                $protocol->save();
-            }
-        }
-        return;
-    }
+    /** R1a: stamp of the e-mail registration (storeFromEmail); see App\Services\Protocols\Stamp. */
+    private ?\App\Services\Protocols\Stamp $stamp = null;
 
     public function createStamp($protocol)
     {
-        $ipiresia =  Config::getConfigValueOf('ipiresiasName');
-        $protocolNum = $protocol->protocolnum;
-        $date = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d-m-Y');
-        // κείμενο στάμπας
-        $txt = "$ipiresia\nΑρ.Πρ: $protocolNum / $date";
-
-        /**
-         * Στα win 10 Ελληνικά υπάρχει πρόβλημα με το path των font
-         * είναι θέμα του path των windows και της βιβλιοθήκης php-gd2.dll
-         * αν σας χτυπάει αλλάξτε τις δύο επόμενες γραμμές κώδικα
-         * κάνοντας την 1η σχόλιο και τη δεύτερη ενεργή
-         **/
-        $font = config('stamp.font');
-        //$font = mb_convert_encoding(realpath(config('stamp.font')), 'iso-8859-7', 'utf-8');
-
-        $font_size = config('stamp.font_size');
-
-        // βρίσκω το πλάτος και το ύψος του τετραγώνου
-        $type_space = imagettfbbox($font_size, 0, $font, $txt);
-        $w = abs($type_space[4] - $type_space[0]) + 10;
-        $h = abs($type_space[5] - $type_space[1]) + 10;
-
-        try {
-            $img = imagecreate($w, $h);
-            // (B) SET COLORS
-            $textColor = imagecolorallocate($img, config('stamp.txtR'), config('stamp.txtG'), config('stamp.txtB'));
-            $borderColor = imagecolorallocate($img, config('stamp.brdR'), config('stamp.brdG'), config('stamp.brdB'));
-            $bgColor = imagecolorallocate($img, config('stamp.bgR'), config('stamp.bgG'), config('stamp.bgB'));
-            // το κάνω από λευκό διάφανο
-            if (config('stamp.transparent')) imagecolortransparent($img, $bgColor);
-            // (C) EMPTY RECTANGLE
-            imagefilledrectangle($img, 0, 0, $w, $h, $bgColor);
-            // (C) BORDERS GRAY
-            imagerectangle($img, 0, 0, $w - 1, $h - 1, $borderColor);
-            // (D) WRITE TEXT
-            // imagettftext(IMAGE, FONT SIZE, ANGLE, X, Y, COLOR, FONT, TEXT)
-            imagettftext($img, $font_size, 0, 5, 5 + $font_size, $textColor, $font, $txt);
-
-            imagepng($img, "arPr.png");
-            imagedestroy($img); // OPTIONAL});
-        } catch (\Throwable $e) {
-            return false;
-        }
-        return true;
+        $this->stamp = new \App\Services\Protocols\Stamp();
+        return $this->stamp->prepare($protocol);
     }
 
-    public function putStamp($dir, $filenameToStore, $file = null,  $content = null)
+    /** Store an e-mail attachment's content and stamp it; returns the stored path. */
+    public function putStamp($dir, $filenameToStore, $file = null, $content = null)
     {
+        $savedPath = "$dir/$filenameToStore";
         if ($file) {
-            // το αρχείο έρχεται από το χρήστη
-            $savedPath = $file->storeas($dir, $filenameToStore);
-            // βρίσκω το mimeType
-            $mimeType = $file->getMimeType();
+            $savedPath = $file->storeAs($dir, $filenameToStore);
+        } elseif (!Storage::put($savedPath, $content)) {
+            throw new \RuntimeException("file not written: $savedPath");
         }
-        if ($content) {
-            // το αρχείο έρχεται από το email
-            $savedPath = "$dir/$filenameToStore";
-            Storage::put($savedPath, $content);
-            // ορίζω το mimeType με βάση την κατάληξη του αρχείου pdf ή docx
-            if (substr($filenameToStore, -3) == 'pdf') {
-                $mimeType = 'application/pdf';
-            } elseif (substr($filenameToStore, -4) == 'docx') {
-                $mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-            } elseif (substr($filenameToStore, -3) == 'odt') {
-                $mimeType = 'application/vnd.oasis.opendocument.text';
-            } else {
-                $mimeType = null;
-            }
-        }
-
-        if ($mimeType) {
-            try {
-                copy(storage_path("app/$savedPath"), "toStamp." . pathinfo($filenameToStore, PATHINFO_EXTENSION));
-
-                $watermark  = WatermarkFactory::load("toStamp." . pathinfo($filenameToStore, PATHINFO_EXTENSION))
-                    ->outputFile("stamped." . pathinfo($filenameToStore, PATHINFO_EXTENSION))
-                    ->setImage('arPr.png')
-                    ->opacity(config('stamp.opacity'));
-                if (config('stamp.section') == 'header') {
-                    $watermark = $watermark->sectionHeader();
-                } else {
-                    $watermark = $watermark->sectionFooter();
-                }
-                if (config('stamp.align') == 'left') {
-                    $watermark = $watermark->alignLeft(config('stamp.x'), config('stamp.y'));
-                } else {
-                    $watermark = $watermark->alignRight(config('stamp.x'), config('stamp.y'));
-                }
-                if (config('stamp.onlyFirstPage')) {
-                    $watermark =  $watermark->onlyFirstPage();
-                }               
-                $watermark = $watermark->generate();
-
-                rename("stamped." . pathinfo($filenameToStore, PATHINFO_EXTENSION), storage_path("app/$savedPath"));
-                if (file_exists( "toStamp." . pathinfo($filenameToStore, PATHINFO_EXTENSION))) unlink("toStamp." . pathinfo($filenameToStore, PATHINFO_EXTENSION));
-            } catch (\Throwable $e) {
-                if ($file) {
-                    $savedPath = $file->storeas($dir, $filenameToStore);
-                }
-                if ($content) {
-                    $savedPath = "$dir/$filenameToStore";
-                    Storage::put($savedPath, $content);
-                }
-            }
-        }
-
+        $this->stamp?->apply($savedPath);
         return $savedPath;
     }
 

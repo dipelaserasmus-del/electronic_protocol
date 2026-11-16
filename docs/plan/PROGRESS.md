@@ -7,15 +7,15 @@
 
 | | |
 |---|---|
-| Tasks done | **30 / 57** `████████████████░░░░░░░░░░░░░░` 53% |
-| Effort done (PERT) | **14.2 / 28.3 h** `███████████████░░░░░░░░░░░░░░░` 50% |
-| Remaining effort, one agent in sequence | **14.0 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **31 / 57** `████████████████░░░░░░░░░░░░░░` 54% |
+| Effort done (PERT) | **14.8 / 28.3 h** `████████████████░░░░░░░░░░░░░░` 52% |
+| Remaining effort, one agent in sequence | **13.5 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.1 h ± 0.3 |
 | In progress | — |
-| Next task | **R1a** — Protocol service (sanitation, copy date…) |
+| Next task | **R1b** — Protocol form screen |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
-**Critical path (remaining):** R1a → R1b → R1c → Z01 → Z02 → Z03
+**Critical path (remaining):** R3a → R3b → R3c → Z01 → Z02 → Z03
 
 ## Batches
 
@@ -26,7 +26,7 @@
 | 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
 | 4 | ✅D05 ✅D01 ✅R5a ✅F08 | 4/4 | `██████████` |
 | 5 | ✅D02 ✅D03 ✅D04 | 3/3 | `██████████` |
-| 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
+| 6 | ✅R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 1/6 | `██░░░░░░░░` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
 | 8 | ⬜R5c ⬜R5d ⬜R5b | 0/3 | `░░░░░░░░░░` |
 | 9 | ⬜R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 0/5 | `░░░░░░░░░░` |
@@ -191,10 +191,10 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04 done
-  class R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a done
+  class R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
-  class R1a,R1b,R1c,Z01,Z02,Z03 critical
+  class R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
 
 ## Timeline (one agent, execution order)
@@ -242,16 +242,16 @@ gantt
   D03 Attachment size/hash/deleted_by :done, d03, 2026-11-12 22:14, 19m
   D04 Integer dates → DATE columns :done, d04, 2026-11-12 22:33, 33m
   section Batch 6
-  R1a Protocol service (sanitation, copy date…) :crit, r1a, 2026-11-12 23:06, 33m
-  R1b Protocol form screen :crit, r1b, 2026-11-12 23:39, 33m
-  R1c Attachments panel, drag & drop :crit, r1c, 2026-11-13 00:12, 33m
+  R1a Protocol service (sanitation, copy date…) :done, r1a, 2026-11-12 23:06, 33m
+  R1b Protocol form screen :r1b, 2026-11-12 23:39, 33m
+  R1c Attachments panel, drag & drop :r1c, 2026-11-13 00:12, 33m
   R2 Protocol list rebuild :r2, 2026-11-13 00:45, 33m
   R4a Secure file handling :r4a, 2026-11-13 01:18, 19m
   R4b Attachment trash with retention :r4b, 2026-11-13 01:37, 33m
   section Batch 7
-  R3a Advanced search screen :r3a, 2026-11-13 02:10, 33m
-  R3b Gmail-style query parser :r3b, 2026-11-13 02:43, 33m
-  R3c Global search box + results page :r3c, 2026-11-13 03:16, 33m
+  R3a Advanced search screen :crit, r3a, 2026-11-13 02:10, 33m
+  R3b Gmail-style query parser :crit, r3b, 2026-11-13 02:43, 33m
+  R3c Global search box + results page :crit, r3c, 2026-11-13 03:16, 33m
   section Batch 8
   R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 03:49, 33m
   R5d Register-from-email flow, keywords :r5d, 2026-11-13 04:22, 33m
@@ -311,7 +311,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 | #38 |
 | ✅ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 3.8 | 4.2 | 3.0 | #39 |
 | ✅ | **D04** | Integer dates → DATE columns | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 6.1 | 6.7 | 5.3 | #40 |
-| ⬜ | **R1a** | Protocol service (sanitation, copy date…) | D01, D02 | 0.5 | 0.1 | 1.7 | 2.3 | 3.6 | 4.2 | 1.9 |  |
+| ✅ | **R1a** | Protocol service (sanitation, copy date…) | D01, D02 | 0.5 | 0.1 | 1.7 | 2.3 | 3.6 | 4.2 | 1.9 | #42 |
 | ⬜ | **R1b** | Protocol form screen | R1a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 |  |
 | ⬜ | **R1c** | Attachments panel, drag & drop | R1b, D03 | 0.5 | 0.1 | 4.2 | 4.7 | 4.7 | 5.3 | 0.5 |  |
 | ⬜ | **R2** | Protocol list rebuild | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 |  |

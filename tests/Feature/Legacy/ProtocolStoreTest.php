@@ -4,6 +4,7 @@ namespace Tests\Feature\Legacy;
 
 use App\Models\Protocol;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 
@@ -174,22 +175,48 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertSame(1, Protocol::count());
     }
 
-    public function test_manual_date_is_stored(): void
+    public function test_manual_date_is_stored_for_an_administrator_with_checks_off(): void
     {
-        $this->setting('safeNewProtocolNum', 0);
+        $this->setting('protocolValidate', 0);
 
-        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
-            'protocolnum' => 5, 'protocoldate' => '03/02/' . now()->year,
+        $this->actingAs($this->admin())->post('/home', $this->protocolForm([
+            'protocolnum' => 5, 'protocolnum_proposed' => 1, 'protocoldate' => '03/02/' . now()->year,
         ]));
 
-        $this->assertDatabaseHas('protocols', ['protocolnum' => 5, 'protocoldate' => now()->year . '0203']);
+        $this->assertDatabaseHas('protocols', ['protocolnum' => 5, 'protocoldate' => now()->year . '-02-03']);
     }
 
-    public function test_date_must_be_dd_mm_yyyy(): void
+    /** R1a: the date field is read-only for writers; a posted date used to be stored anyway. */
+    public function test_writer_gets_todays_date_unless_the_setting_allows_changing_it(): void
     {
-        $this->actingAs($this->writer())->from('/home')
-            ->post('/home', $this->protocolForm(['protocolnum' => 1, 'protocoldate' => '3/2/' . now()->year]))
+        $this->setting('safeNewProtocolNum', 0);
+        $writer = $this->writer();
+
+        $this->actingAs($writer)->post('/home', $this->protocolForm(['protocolnum' => 5, 'protocoldate' => '03/02/2020']));
+        $this->assertSame(now()->format('Y-m-d'), DB::table('protocols')->where('protocolnum', 5)->value('protocoldate'));
+
+        $this->setting('allowWriterChangeDate', 1);
+        $this->actingAs($writer)->post('/home', $this->protocolForm(['protocolnum' => 6, 'protocoldate' => '03/02/' . now()->year]));
+        $this->assertSame(now()->year . '-02-03', DB::table('protocols')->where('protocolnum', 6)->value('protocoldate'));
+    }
+
+    /** R1a: short forms are completed as in the date input (N04); impossible dates are refused (31/02 became 03/03). */
+    public function test_date_is_completed_or_refused(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post('/home', $this->protocolForm(['protocolnum' => 1, 'protocolnum_proposed' => 2, 'protocoldate' => '3/2/' . now()->year]))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(now()->year . '-02-03', DB::table('protocols')->where('protocolnum', 1)->value('protocoldate'));
+
+        $this->actingAs($admin)->from('/home')
+            ->post('/home', $this->protocolForm(['protocolnum' => 7, 'protocolnum_proposed' => 2, 'protocoldate' => '31/02/' . now()->year]))
             ->assertSessionHasErrors('protocoldate');
+        $this->actingAs($admin)->from('/home')
+            ->post('/home', $this->protocolForm(['protocolnum' => 7, 'protocolnum_proposed' => 2, 'in_date' => '2026-01-03']))
+            ->assertSessionHasErrors('in_date');
+        $this->assertSame(1, Protocol::count());
     }
 
     public function test_incoming_fields_require_each_other(): void

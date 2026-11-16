@@ -413,6 +413,20 @@
                                                     title=''>
                                             </div>
                                         </div>
+                                        {{-- R1a --}}
+                                        <div class="row">
+                                            <div
+                                                class="form-control-static col-md-8 col-sm-8   col-md-offset-1 col-sm-offset-1">
+                                                Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία πρωτοκόλλου
+                                            </div>
+                                            <div class="col-md-2 col-sm-2  " id="allowWriterChangeDatediv">
+                                                <select id='allowWriterChangeDate' name='allowWriterChangeDate' class="form-control"
+                                                    title='Συγγραφείς και Αναθέτοντες ορίζουν την ημερομηνία (π.χ. έγγραφο που παραλήφθηκε χθες). Αλλιώς μπαίνει η σημερινή.'>
+                                                    <option value="0" @selected(!($settings['allowWriterChangeDate'] ?? null))>ΟΧΙ</option>
+                                                    <option value="1" @selected(($settings['allowWriterChangeDate'] ?? null))>ΝΑΙ</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="row">
                                             <div
                                                 class="form-control-static col-md-8 col-sm-8   col-md-offset-1 col-sm-offset-1">

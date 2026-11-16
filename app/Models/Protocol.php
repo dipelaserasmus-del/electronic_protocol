@@ -128,12 +128,41 @@ class Protocol extends Model
         return $this->hasMany(ProtocolAssignment::class, 'protocol_id');
     }
 
+    /** R1a: assignments given through $protocol->diekperaiosi, written to protocol_assignments on save */
+    private ?array $pendingAssignments = null;
+
+    /**
+     * R1a: the old column diekperaiosi is gone; this keeps its text form "d14,e10" for the legacy screens that still
+     * read or write it (prints, receipts, inbox registration). Reading: from protocol_assignments (or what was set and
+     * not saved yet). Writing: parsed (see Assignments::parse) and applied to the table when the protocol is saved.
+     * New code uses the assignments relation and App\Support\Assignments::replace().
+     */
+    protected function diekperaiosi(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function () {
+                if ($this->pendingAssignments !== null) {
+                    return \App\Support\Assignments::asText($this->pendingAssignments);
+                }
+                if (! $this->exists || $this->getKey() === null) {
+                    return '';
+                }
+                return \App\Support\Assignments::asText($this->assignments);
+            },
+            set: function ($value) {
+                $this->pendingAssignments = \App\Support\Assignments::parse(is_array($value) ? implode(',', $value) : $value);
+                return [];   // no column
+            },
+        )->withoutObjectCaching();
+    }
+
     protected static function booted(): void
     {
-        // D02: the legacy form writes the text "d14,e10"; keep the assignments table in step with it
         static::saved(function (Protocol $protocol) {
-            if ($protocol->wasRecentlyCreated || $protocol->wasChanged('diekperaiosi')) {
-                \App\Support\Assignments::sync($protocol);
+            if ($protocol->pendingAssignments !== null) {
+                \App\Support\Assignments::replace($protocol, $protocol->pendingAssignments);
+                $protocol->pendingAssignments = null;
+                $protocol->unsetRelation('assignments');
             }
         });
     }

@@ -25,4 +25,22 @@ async function toasts(page) {
   return (await page.locator('.toast-message').allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
 }
 
-module.exports = { login, evidence, toasts };
+/**
+ * Change one setting through Ρυθμίσεις (logged in as admin) and return its previous value, so the test can put it
+ * back. The settings form posts every setting, as a user would.
+ */
+async function setSetting(page, name, value) {
+  await page.goto('/settings');
+  const field = page.locator(`[name="${name}"]`);
+  const previous = await field.inputValue();
+  if ((await field.evaluate((el) => el.tagName)) === 'SELECT') await field.selectOption(String(value));
+  else await field.fill(String(value));
+  // the page stays at /settings: wait for the saved page itself, not for an address the browser is already on
+  const saved = page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame());
+  await page.evaluate(() => document.forms['configform'].submit());
+  await saved;
+  await page.waitForLoadState('load');
+  return previous;
+}
+
+module.exports = { login, evidence, toasts, setSetting };
