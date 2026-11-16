@@ -24,6 +24,9 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 ## Hard rules
 - **Real data never reaches Claude or GitHub.** Production DB dumps, attachments and private emails stay in the
   owner's git-ignored `local-data/`; only the owner runs them. Claude uses synthetic data / row-less schema dumps.
+  **Exception (owner, 2026-11-16):** Claude may read the e-mails in `local-data/emails/` locally (private, not
+  secret), but nothing from them (text, names, addresses, attachments, screenshots) goes into commits, PRs, fixtures or
+  reports; committed tests copy only their structure. The real database stays off-limits (not even counts).
 - The repository is **public**: commit only invented test data and owner-approved public emails.
 - Never weaken or skip a test to get CI green. Never force-push `master`.
 - Do not put model names/IDs in commits, PRs or code.

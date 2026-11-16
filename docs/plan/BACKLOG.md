@@ -56,6 +56,7 @@ Legend
 | L01 | 👤 Owner's computer: VS Code + Docker, `./dev.sh up`, load the real DB/attachments with the F04 loader, open the app locally. Claude prepares `.vscode/` tasks + a step-by-step guide; the owner runs it (real data never leaves the owner's machine). Ask the owner's OS at start | INFRA | P1 | S | F04 |
 | L02 | 👤 Owner's second computer (macOS) + Fedora VS Code from RPM; switch between them at any time (`docs/LOCAL-SETUP.md`) | INFRA | P1 | S | L01 |
 | F05 | Evidence tooling: Playwright E2E + screenshots against Docker stack, report template | INFRA | P0 | M | F02, F03 |
+| F08 | 🔎 (from the owner's e-mails, 2026-11-16) Attachment file names must fit **255 bytes** on Linux (Docker production, WSL 2): today names are cut at 120 *characters*, but Greek letters take 2 bytes, so a long Greek name + the `num-date_key_` prefix fails to save. Cut by bytes on a character boundary for new files; `./dev.sh real check-names` counts existing files whose names are too long, before the owner copies files from Windows (NTFS allows them) | BUG/INFRA | P1 | S | F04 |
 | F06 | nginx looks up the `app` container through Docker DNS while running, so a recreated app container (new IP, e.g. after Docker Desktop restarts) no longer causes 502 until nginx is restarted. Found by the owner on the Mac | INFRA | P1 | S | F03 |
 
 ## Phase 1 — Urgent patches (current code)
@@ -167,7 +168,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
 2. **Batch 2:** B09 → F04 → L01 👤 → L02 👤 → F05 → S04 → B04 → B07 → F06 (added 2026-11-15)
 3. **Batch 3:** N01 → N02 → N03 → N04
-4. **Batch 4** (moved earlier by the owner, 2026-11-15): D05 👤 → R5a 📧 — emoji e-mails can't be registered; the
+4. **Batch 4** (moved earlier by the owner, 2026-11-15): D05 👤 → R5a 📧 → F08 (added 2026-11-16) — emoji e-mails can't be registered; the
    inbox downloads every e-mail in full on each visit (main remaining timeout cause, see B07). R5a plugs its cache
    into the **current** inbox page; the new inbox screen stays R5c.
 5. **Batch 5:** D01 → D02 👤 → D03 👤 → D04 👤

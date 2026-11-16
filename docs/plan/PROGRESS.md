@@ -7,9 +7,9 @@
 
 | | |
 |---|---|
-| Tasks done | **20 / 56** `███████████░░░░░░░░░░░░░░░░░░░` 36% |
-| Effort done (PERT) | **9.3 / 27.9 h** `██████████░░░░░░░░░░░░░░░░░░░░` 33% |
-| Remaining effort, one agent in sequence | **18.6 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **20 / 57** `███████████░░░░░░░░░░░░░░░░░░░` 35% |
+| Effort done (PERT) | **9.3 / 28.3 h** `██████████░░░░░░░░░░░░░░░░░░░░` 33% |
+| Remaining effort, one agent in sequence | **19.0 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 4.2 h ± 0.3 |
 | In progress | L02 |
 | Next task | **N03** — Vite + Bootstrap 5 + Livewire, top nav layout |
@@ -24,7 +24,7 @@
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
 | 3 | ✅B10 ✅N01 ✅N02 ⬜N03 ⬜N04 | 3/5 | `██████░░░░` |
-| 4 | ⬜D05 ⬜R5a | 0/2 | `░░░░░░░░░░` |
+| 4 | ⬜D05 ⬜R5a ⬜F08 | 0/3 | `░░░░░░░░░░` |
 | 5 | ⬜D01 ⬜D02 ⬜D03 ⬜D04 | 0/4 | `░░░░░░░░░░` |
 | 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
@@ -48,6 +48,7 @@ flowchart LR
     F05["F05<br/>Playwright evidence tooling"]
     F06["F06<br/>nginx finds a recreated app container (no 502)"]
     F07["F07<br/>real load: adopt a backup without migrations table"]
+    F08["F08<br/>Attachment names fit 255 bytes (Linux/Docker)"]
   end
   subgraph U["1 Urgent patches"]
     S00["S00<br/>Close open admin registration"]
@@ -132,6 +133,7 @@ flowchart LR
   N03 --> N04
   F04 --> D05
   N01 --> R5a
+  F04 --> F08
   F02 --> D01
   F04 --> D02
   F04 --> D03
@@ -191,7 +193,7 @@ flowchart LR
   classDef critical stroke:#dc3545,stroke-width:3px
   class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02 done
   class L02 inprogress
-  class N03,N04,D05,R5a,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class N03,N04,D05,R5a,F08,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class N03,N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
@@ -234,43 +236,44 @@ gantt
   section Batch 4
   D05 Tables → utf8mb4 :d05, 2026-11-12 19:38, 19m
   R5a Email service, EML cache, charsets :r5a, 2026-11-12 19:57, 66m
+  F08 Attachment names fit 255 bytes (Linux/Docker) :f08, 2026-11-12 21:03, 19m
   section Batch 5
-  D01 Subject/summary → TEXT :d01, 2026-11-12 21:03, 19m
-  D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 21:22, 33m
-  D03 Attachment size/hash/deleted_by :d03, 2026-11-12 21:55, 19m
-  D04 Integer dates → DATE columns :d04, 2026-11-12 22:14, 33m
+  D01 Subject/summary → TEXT :d01, 2026-11-12 21:22, 19m
+  D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 21:41, 33m
+  D03 Attachment size/hash/deleted_by :d03, 2026-11-12 22:14, 19m
+  D04 Integer dates → DATE columns :d04, 2026-11-12 22:33, 33m
   section Batch 6
-  R1a Protocol service (sanitation, copy date…) :r1a, 2026-11-12 22:47, 33m
-  R1b Protocol form screen :r1b, 2026-11-12 23:20, 33m
-  R1c Attachments panel, drag & drop :r1c, 2026-11-12 23:53, 33m
-  R2 Protocol list rebuild :r2, 2026-11-13 00:26, 33m
-  R4a Secure file handling :r4a, 2026-11-13 00:59, 19m
-  R4b Attachment trash with retention :r4b, 2026-11-13 01:18, 33m
+  R1a Protocol service (sanitation, copy date…) :r1a, 2026-11-12 23:06, 33m
+  R1b Protocol form screen :r1b, 2026-11-12 23:39, 33m
+  R1c Attachments panel, drag & drop :r1c, 2026-11-13 00:12, 33m
+  R2 Protocol list rebuild :r2, 2026-11-13 00:45, 33m
+  R4a Secure file handling :r4a, 2026-11-13 01:18, 19m
+  R4b Attachment trash with retention :r4b, 2026-11-13 01:37, 33m
   section Batch 7
-  R3a Advanced search screen :crit, r3a, 2026-11-13 01:51, 33m
-  R3b Gmail-style query parser :crit, r3b, 2026-11-13 02:24, 33m
-  R3c Global search box + results page :crit, r3c, 2026-11-13 02:57, 33m
+  R3a Advanced search screen :crit, r3a, 2026-11-13 02:10, 33m
+  R3b Gmail-style query parser :crit, r3b, 2026-11-13 02:43, 33m
+  R3c Global search box + results page :crit, r3c, 2026-11-13 03:16, 33m
   section Batch 8
-  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 03:30, 33m
-  R5d Register-from-email flow, keywords :r5d, 2026-11-13 04:03, 33m
-  R5b winmail.dat (TNEF) :r5b, 2026-11-13 04:36, 66m
+  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 03:49, 33m
+  R5d Register-from-email flow, keywords :r5d, 2026-11-13 04:22, 33m
+  R5b winmail.dat (TNEF) :r5b, 2026-11-13 04:55, 66m
   section Batch 9
-  R6a Users & roles screens :r6a, 2026-11-13 05:42, 33m
-  R6b Folders + auto-assignment rules :r6b, 2026-11-13 06:15, 33m
-  R1d Apply auto-assignment on save :r1d, 2026-11-13 06:48, 19m
-  R6c Settings, backups, archive screens :r6c, 2026-11-13 07:07, 33m
-  R7 Printing & exports :r7, 2026-11-13 07:40, 33m
+  R6a Users & roles screens :r6a, 2026-11-13 06:01, 33m
+  R6b Folders + auto-assignment rules :r6b, 2026-11-13 06:34, 33m
+  R1d Apply auto-assignment on save :r1d, 2026-11-13 07:07, 19m
+  R6c Settings, backups, archive screens :r6c, 2026-11-13 07:26, 33m
+  R7 Printing & exports :r7, 2026-11-13 07:59, 33m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 08:13, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 08:46, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 09:05, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 09:24, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 09:57, 19m
-  X01 Audit log — recording :x01, 2026-11-13 10:16, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 10:49, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 11:22, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 11:55, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 12:14, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 08:32, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 09:05, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 09:24, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 09:43, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 10:16, 19m
+  X01 Audit log — recording :x01, 2026-11-13 10:35, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 11:08, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 11:41, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 12:14, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 12:33, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -304,6 +307,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ⬜ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 |  |
 | ⬜ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
 | ⬜ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 3.1 | 4.2 | 1.1 |  |
+| ⬜ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
 | ⬜ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 |  |
 | ⬜ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 |  |
 | ⬜ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 3.8 | 4.2 | 3.0 |  |

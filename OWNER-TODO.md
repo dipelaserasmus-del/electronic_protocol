@@ -9,17 +9,11 @@ Nothing needed: Batch 3 is running (N01, N02 done; N03 → N04 next). When it fi
 account (fixed in S00, but you deploy only at the end). The one-line Apache rule that refuses registrations is in
 [docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16).
 
-## Before Batch 4 (D05 emoji support, R5a e-mail cache)
-1. **E-mails for testing R5a.** Prepare a few `.eml` files (in Thunderbird: select the message → *Save As*):
-   - Greek subjects/text that show as `??` today
-   - e-mails from Outlook / Exchange, Gmail and the ministry's e-mail system
-   - attachments: PDF, Word, a large one (> 10 MB)
-   - a subject with an emoji
-   - optionally a `winmail.dat` attachment (needed later, Batch 8)
-
-   And tell me **where** they go:
-   - **public-safe** ones: I add them to the repository as test files, and everyone can see them;
-   - **private** ones: in your `local-data/emails/`. I never see these; you run the check and tell me the result.
+## Question (answer whenever, needed in Batch 4)
+1. **The e-mail with the long subject:** what exactly went wrong in the app? For example: an error message (which
+   one?), the subject cut short, the save did nothing, or something else. With today's code it registers normally
+   (subject 255 characters), so the problem is probably in what your server runs now, or happens in a step I haven't
+   tried. No need to send the e-mail again.
 
 ## When you have time
 2. **L02, real data on the Mac** (postponed, blocks nothing): `git pull`, then *Real data: load*. Take the database
@@ -36,6 +30,7 @@ account (fixed in S00, but you deploy only at the end). The one-line Apache rule
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Your e-mails in `local-data/emails/`: received (2026-11-16). I read them only on this computer; nothing from them is published.
 - Production will run the Docker stack after the rebuild (replaces XAMPP); on the same Windows 11 PC (Docker Desktop); you migrate the old database and files (2026-11-16).
 - No deployment to production until all tasks are completed and verified (2026-11-16).
 - L02 postponed (2026-11-16).
