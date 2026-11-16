@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * D02: one user assigned to one protocol, for διεκπεραίωση (type "d") or ενημέρωση (type "e").
- * Kept in sync with protocols.diekperaiosi by App\Support\Assignments::sync (the legacy form writes the text).
+ * Written by App\Support\Assignments::replace (R1a; the old text column protocols.diekperaiosi is gone).
  *
  * @property int $protocol_id
  * @property int $user_id

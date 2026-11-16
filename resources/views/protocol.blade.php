@@ -102,6 +102,13 @@
                                                 {{-- B03: lets the server tell a typed number from the proposed one --}}
                                                 <input type="hidden" name="protocolnum_proposed" value="{{ old('protocolnum_proposed') ?: $newprotocolnum }}">
                                             @endunless
+                                            @if ($errors->has('replace_placeholder'))
+                                                {{-- R1a: the chosen number is held by an ΕΛΕΥΘΕΡΟ placeholder --}}
+                                                <div class="col-md-12 col-sm-12 text-danger" id="replacePlaceholderDiv">
+                                                    <label><input type="checkbox" name="replace_placeholder" value="1">
+                                                        {{ $errors->first('protocolnum') }} {{ $errors->first('replace_placeholder') }}</label>
+                                                </div>
+                                            @endif
                                             <div class="col-md-1 col-sm-1 small text-center">
                                                 <strong>Ημνια<br>παραλαβής</strong>
                                             </div>
@@ -112,7 +119,7 @@
                                                     placeholder="date"
                                                     value="{{ old('protocoldate') ? old('protocoldate') : $newprotocoldate }}"
                                                     title='2. Ημερομηνία παραλαβής εγγράφου' required tabindex=-1
-                                                    {{ $readonly }}>
+                                                    {{ $dateReadonly }}>
                                             </div>
                                         </div>
                                     </div>

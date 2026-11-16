@@ -71,7 +71,8 @@ class AccessControlTest extends FeatureTestCase
             'protocolnum' => $p->protocolnum, 'etos' => $p->etos,
             'protocoldate' => \Carbon\Carbon::createFromFormat('Ymd', $p->protocoldate)->format('d/m/Y'),
             'thema' => $p->thema, 'out_date' => now()->format('d/m/Y'), 'out_to' => 'Διεύθυνση', 'out_perilipsi' => 'Απάντηση',
-        ]))->assertRedirect();
+            'diekp_date' => now()->format('d/m/Y'),   // the form asks for it (R1a: the server too)
+        ]))->assertSessionHasNoErrors()->assertRedirect();
 
         $this->assertSame('Απάντηση', $p->fresh()->out_perilipsi);
     }

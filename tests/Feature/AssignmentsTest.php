@@ -65,16 +65,34 @@ class AssignmentsTest extends FeatureTestCase
     }
 
     /** Review finding: two reassignments at the same time; the later sync must follow the stored text */
-    public function test_sync_follows_the_stored_text_not_a_stale_copy(): void
+    /** R1a: replace() sets exactly the rows asked for, keeps the unchanged ones and says which ones are new. */
+    public function test_replace_sets_the_rows_and_reports_the_added_ones(): void
     {
-        [$a, $b] = [$this->writer(), $this->writer()];
+        [$a, $b, $c] = [$this->writer(), $this->writer(), $this->reader()];
         $p = Protocol::factory()->number(1)->assignedTo($a)->create();
-        $stale = Protocol::find($p->id);                                   // request A: has read "d{a}"
-        Protocol::find($p->id)->update(['diekperaiosi' => "d{$b->id}"]);   // request B saves and syncs
+        $kept = ProtocolAssignment::where('protocol_id', $p->id)->value('id');
 
-        Assignments::sync($stale);                                         // request A's sync comes late
+        $added = Assignments::replace($p, [['user_id' => $a->id, 'type' => 'd'], ['user_id' => $b->id, 'type' => 'd'], ['user_id' => $c->id, 'type' => 'e']]);
 
-        $this->assertSame(["d{$b->id}"], $this->rows($p));
+        $this->assertSame([['user_id' => $b->id, 'type' => 'd'], ['user_id' => $c->id, 'type' => 'e']], $added);
+        $this->assertSame($kept, ProtocolAssignment::where('protocol_id', $p->id)->where('user_id', $a->id)->value('id'), 'unchanged row kept');
+        $this->assertSame("d{$a->id},d{$b->id},e{$c->id}", Protocol::find($p->id)->diekperaiosi, 'legacy text form');
+
+        Assignments::replace($p, []);
+        $this->assertSame([], $this->rows($p));
+    }
+
+    /** R1a: the text form set on the model (legacy screens) is applied on save, also through mass assignment. */
+    public function test_legacy_text_form_is_applied_on_save(): void
+    {
+        [$a, $b] = [$this->writer(), $this->reader()];
+        $p = Protocol::factory()->number(1)->create(['diekperaiosi' => "d{$a->id},e{$b->id},"]);
+        $this->assertSame(["d{$a->id}", "e{$b->id}"], $this->rows($p));
+
+        $p->diekperaiosi = "e{$a->id}";
+        $this->assertSame("e{$a->id}", $p->diekperaiosi, 'read back before saving');
+        $p->save();
+        $this->assertSame(["e{$a->id}"], $this->rows($p));
     }
 
     public function test_assign_button_updates_the_assignments(): void
@@ -91,28 +109,6 @@ class AssignmentsTest extends FeatureTestCase
         $p = Protocol::factory()->number(1)->assignedTo($this->writer())->create();
         $p->delete();
         $this->assertSame(0, ProtocolAssignment::count());
-    }
-
-    public function test_backfill_reads_the_text_of_existing_protocols(): void
-    {
-        [$a, $b] = [$this->writer(), $this->reader()];
-        // rows as in a production backup: written without the model (no events), text in every legacy variant
-        $base = ['user_id' => $a->id, 'protocoldate' => 20260105, 'etos' => 2026, 'thema' => 'Παλιό', 'created_at' => now(), 'updated_at' => now()];
-        DB::table('protocols')->insert([
-            $base + ['protocolnum' => 1, 'diekperaiosi' => "d{$a->id},e{$b->id},"],
-            $base + ['protocolnum' => 2, 'diekperaiosi' => "e{$a->id}"],
-            $base + ['protocolnum' => 3, 'diekperaiosi' => ''],
-            $base + ['protocolnum' => 4, 'diekperaiosi' => null],
-            $base + ['protocolnum' => 5, 'diekperaiosi' => 'd999999'],   // user deleted since: kept
-        ]);
-
-        $this->assertSame(4, Assignments::backfill(2));
-        $this->assertSame(0, Assignments::backfill(), 'running it again adds nothing');
-        $p = fn (int $n) => Protocol::where('protocolnum', $n)->first();
-        $this->assertSame(["d{$a->id}", "e{$b->id}"], $this->rows($p(1)));
-        $this->assertSame(["e{$a->id}"], $this->rows($p(2)));
-        $this->assertSame([], $this->rows($p(3)));
-        $this->assertSame(['d999999'], $this->rows($p(5)));
     }
 
     public function test_search_by_assignee_finds_protocols_that_also_have_a_user_for_information(): void

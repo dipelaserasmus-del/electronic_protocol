@@ -88,6 +88,22 @@ class ProtocolNumbering
         }
     }
 
+    /**
+     * R1a: run $fn under the same lock and in a transaction (e.g. check a number and replace the ΕΛΕΥΘΕΡΟ placeholder
+     * that holds it, without another save taking the number in between).
+     */
+    public function locked(callable $fn): mixed
+    {
+        $locked = $this->acquireLock();
+        try {
+            return DB::transaction($fn);
+        } finally {
+            if ($locked) {
+                $this->releaseLock();
+            }
+        }
+    }
+
     private function acquireLock(): bool
     {
         if (DB::getDriverName() !== 'mysql') {

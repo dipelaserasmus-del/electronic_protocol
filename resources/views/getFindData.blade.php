@@ -18,9 +18,9 @@
         <div class="row bg-primary">
             <div class="form-control-static col-md-1 col-sm-1 text-center ">Αρ.Πρωτ.</div>
             <div class="form-control-static col-md-1 col-sm-1  text-center ">Ημ.Πρωτ.</div>
-            <div class="form-control-static col-md-5 col-sm-5  ">{{ $fields[$searchField1] }}</div>
-            <div class="form-control-static col-md-3 col-sm-3  ">{{ $fields[$searchField2] }}</div>
-            <div class="form-control-static col-md-2 col-sm-2  ">{{ $fields[$searchField3] }}</div>
+            <div class="form-control-static col-md-5 col-sm-5  ">{{ $fields[$searchField1] ?? '' }}</div>
+            <div class="form-control-static col-md-3 col-sm-3  ">{{ $fields[$searchField2] ?? '' }}</div>
+            <div class="form-control-static col-md-2 col-sm-2  ">{{ $fields[$searchField3] ?? '' }}</div>
         </div>
 
         @php($i = 0)
@@ -38,66 +38,22 @@
                 {{ $protocol->protocolnum }}
             </div>
             <div class="col-md-1 col-sm-1 text-center ">{{ $protocol->protocoldate }}</div>
-            @if (array_key_exists($searchField1, $attachmentfields))
-                <div class="col-md-4 col-sm-4 ">
-                    <ul class='list-inline'>
-                        @foreach ($protocol->attachments()->get() as $attachment)
-                            <li>
-                                {!! str_ireplace($searchData1, "<mark><strong>$searchData1</strong></mark>", $attachment->$searchField1) !!}
-                            </li>
-                        @endforeach
-                    </ul>
+            {{-- R1a: values and the search term are escaped first, then the term is marked (they were printed raw) --}}
+            @foreach ([[$searchField1, $searchData1, 4], [$searchField2, $searchData2, 3], [$searchField3, $searchData3, 3]] as [$sField, $sData, $sWidth])
+                <div class="col-md-{{ $sWidth }} col-sm-{{ $sWidth }} ">
+                    @if (array_key_exists($sField, $attachmentfields))
+                        <ul class='list-inline'>
+                            @foreach ($protocol->attachments as $attachment)
+                                <li>{!! \App\Support\Highlight::html($attachment->$sField, $sData) !!}</li>
+                            @endforeach
+                        </ul>
+                    @elseif ($sField === 'diekperaiosi')
+                        {!! \App\Support\Highlight::html($protocol->assignee_names, $sData) !!}
+                    @else
+                        {!! \App\Support\Highlight::html($protocol->$sField, $sData) !!}
+                    @endif
                 </div>
-            @else
-                {{-- <div class="col-md-4 col-sm-4 ">{!! str_ireplace($searchData1, "<mark><strong>$searchData1</strong></mark>", $protocol->$searchField1) !!}</div> --}}
-                @php($sv1 = [mb_strtolower($searchData1), mb_strtoupper($searchData1), mb_ucfirst(mb_strtolower($searchData1))])
-                <div class="col-md-4 col-sm-4 ">{!! str_ireplace(
-                    $sv1,
-                    array_map(fn($value) => "<mark><strong>$value</strong></mark>", $sv1),
-                    $protocol->$searchField1,
-                ) !!}
-                </div>
-            @endif
-            @if (array_key_exists($searchField2, $attachmentfields))
-                <div class="col-md-3 col-sm-3 ">
-                    <ul class='list-inline'>
-                        @foreach ($protocol->attachments()->get() as $attachment)
-                            <li>
-                                {!! str_ireplace($searchData2, "<mark><strong>$searchData2</strong></mark>", $attachment->$searchField2) !!}
-                            </li>
-                        @endforeach
-                </div>
-            @else
-                {{-- <div class="col-md-3 col-sm-3 ">{!! str_ireplace($searchData2, "<mark><strong>$searchData2</strong></mark>", $protocol->$searchField2) !!}</div> --}}
-                @php($sv2 = [mb_strtolower($searchData2), mb_strtoupper($searchData2), mb_ucfirst(mb_strtolower($searchData2))])
-                <div class="col-md-3 col-sm-3 ">{!! str_ireplace(
-                    $sv2,
-                    array_map(fn($value) => "<mark><strong>$value</strong></mark>", $sv2),
-                    $protocol->$searchField2,
-                ) !!}
-                </div>
-            @endif
-            @if (array_key_exists($searchField3, $attachmentfields))
-                <div class="col-md-3 col-sm-3 ">
-                    <ul class='list-inline'>
-                        @foreach ($protocol->attachments as $attachment)
-                            <li>
-                                {!! str_ireplace($searchData3, "<mark><strong>$searchData3</strong></mark>", $attachment->$searchField3) !!}
-                            </li>
-                        @endforeach
-                </div>
-            @else
-                {{-- <div class="col-md-2 col-sm-2 ">{!! str_ireplace($searchData3, "<mark><strong>$searchData3</strong></mark>", $protocol->$searchField3) !!}</div> --}}
-                @php($sv3 = [mb_strtolower($searchData3), mb_strtoupper($searchData3), mb_ucfirst(mb_strtolower($searchData3))])
-                <div class="col-md-3 col-sm-3"> {!! str_ireplace(
-                    $sv3,
-                    array_map(function ($value3) {
-                        return "<mark><strong>$value3</strong></mark>";
-                    }, $sv3),
-                    $protocol->$searchField3,
-                ) !!}
-                </div>
-            @endif
+            @endforeach
 </div>
 @php($i++)
 @endforeach

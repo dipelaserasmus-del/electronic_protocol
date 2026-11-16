@@ -15,7 +15,7 @@
     <h4>Ηλεκτρονικό Πρωτόκολλο</h4>
     <p>&nbsp;</p>
     <p>{{ date('d/m/Y H:i:s') }}</p>
-    <p>Αποστολέας: <b>{{ Auth::user()->name }}</b></p>
+    <p>Αποστολέας: <b>{{ $sender ?? Auth::user()?->name }}</b></p>
     <p>Παραλήπτης: <b>{{ $diekperaiotis }}</b></p>
     <p>&nbsp;</p>
     <h3>Ανάθεση Ηλ. Πρωτοκόλλου προς Διεκπεραίωση</h3>
@@ -46,7 +46,7 @@
         @endif
         <tr>
             <td>Αναθέτων:</td>
-            <td>{{ Auth::user()->name }}</td>
+            <td>{{ $sender ?? Auth::user()?->name }}</td>
         </tr>
         <tr>
             <td>Σύνδεσμος:</td>

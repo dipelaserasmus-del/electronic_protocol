@@ -67,7 +67,7 @@ class ProtocolPolicy
     /**
      * Save changes / delete attachments. Mirrors the form's rules for writers:
      * setting allowWriterUpdateProtocol 0 = writers can't edit, 1 = only their own entries, 2 = all.
-     * (The time-window part of that setting is still enforced by the form only; see task R1a.)
+     * The finer rules (time limit, which parts of the form) are in App\Services\Protocols\ProtocolAccess (R1a).
      */
     public function update(User $user, Protocol $protocol): bool
     {
@@ -79,7 +79,7 @@ class ProtocolPolicy
             // same exceptions as the form (ProtocolController::index):
             // - a protocol without subject is open to everyone who can write
             // - the user assigned for διεκπεραίωση may save (the form unlocks only the outgoing fields; R1a
-            //   will enforce that field restriction on the server too)
+            //   enforces that field restriction on the server too, ProtocolAccess)
             if (!$protocol->thema || self::isAssigned($user, $protocol, 'd')) {
                 return true;
             }
