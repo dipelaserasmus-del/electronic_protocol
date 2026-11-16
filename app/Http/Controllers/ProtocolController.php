@@ -1462,22 +1462,22 @@ class ProtocolController extends Controller implements HasMiddleware
         }
 
         if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('apoEiserxDate')) {
-            $wherevalues[] = ['in_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoEiserxDate'))->format('Ymd')];
+            $wherevalues[] = ['in_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoEiserxDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('eosEiserxDate')) {
-            $wherevalues[] = ['in_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosEiserxDate'))->format('Ymd')];
+            $wherevalues[] = ['in_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosEiserxDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('apoExerxDate')) {
-            $wherevalues[] = ['out_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoExerxDate'))->format('Ymd')];
+            $wherevalues[] = ['out_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoExerxDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('eosExerxDate')) {
-            $wherevalues[] = ['out_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosExerxDate'))->format('Ymd')];
+            $wherevalues[] = ['out_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosExerxDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('searchData1') or request('searchData1chk')) {
             if (request('searchData1chk')) {
@@ -1666,10 +1666,10 @@ class ProtocolController extends Controller implements HasMiddleware
             $etos = request('etosForMany');
         }
         if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
         $foundProtocolsCount = null;
         if (!$wherevalues) {
@@ -1803,10 +1803,10 @@ class ProtocolController extends Controller implements HasMiddleware
             $etos = request('etosForMany');
         }
         if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
         if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Ymd')];
+            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
         }
 
         $foundProtocolsCount = null;
@@ -2435,7 +2435,7 @@ class ProtocolController extends Controller implements HasMiddleware
 
     public function checkInNum(Request $request)
     {
-        $in_date = Carbon::createFromFormat('d/m/Y', $request->in_date)->format('Ymd');
+        $in_date = Carbon::createFromFormat('d/m/Y', $request->in_date)->format('Y-m-d');   // D04
         $protocols = Protocol::where('in_date', $in_date)->where('in_num', $request->in_num);
         if ($request->id) {
             $protocols =  $protocols->where('id', '!=', $request->id);
@@ -2447,7 +2447,7 @@ class ProtocolController extends Controller implements HasMiddleware
     public function checkSameEmail(Request $request)
     {
         $count = [];
-        $in_date = Carbon::createFromFormat('d/m/Y', $request->in_date)->format('Ymd');
+        $in_date = Carbon::createFromFormat('d/m/Y', $request->in_date)->format('Y-m-d');   // D04
         $count['thema'] =  Protocol::where('thema', $request->thema)->count();
         $count['in_num'] =  Protocol::where('in_date', $in_date)->where('in_num', $request->in_num)->count();
         return response()->json($count);

@@ -35,7 +35,7 @@ class NumberGaps
                 continue;
             }
             // lowest number dated inside the window (protocols before it are outside the check)
-            $lower = (int) Protocol::whereEtos($year)->where('protocoldate', '>=', $windowStart)->min('protocolnum');
+            $lower = (int) Protocol::whereEtos($year)->where('protocoldate', '>=', \Carbon\Carbon::createFromFormat('Ymd', (string) $windowStart)->toDateString())->min('protocolnum');   // D04: DATE column
             if (!$lower) {
                 continue;
             }

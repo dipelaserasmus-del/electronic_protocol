@@ -157,7 +157,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 | A06 | Rule: no attachment and none of `sxetiko` / "εκκρεμότητα" / "ΕΛΕΥΘΕΡΟ" | AUTO | P2 | S | A01 |
 | X01 | **Audit log — recording**: append-only `audit_log` table (user, action, entity, old→new values, IP, time); automatic capture of create/update/delete on protocols, attachments, assignments, users, folders, settings; logins / logouts / failed logins; attachment downloads; email registrations; retention setting | AUDIT | P3 | M | N02 |
 | X02 | **Audit log — viewing**: admin page with filters (user, action, date, protocol), per-protocol "History" tab, CSV export; not editable from UI | AUDIT | P3 | M | X01 |
-| Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2 | MOD | P2 | M | R1–R7 |
+| Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2; D04 transitional cast `LegacyYmdDate` → `date` | MOD | P2 | M | R1–R7 |
 | Z02 | Auth hardening: rate limiting login/reset, secure cookies, security headers/CSP (🔎 S07) | SEC | P2 | S | Z01 |
 | Z03 | Final security review of whole app + dependency audit; final evidence report | SEC | P1 | M | Z02 |
 

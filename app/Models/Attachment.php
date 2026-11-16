@@ -53,7 +53,8 @@ class Attachment extends Model
         'flag'
     ];
 
-    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer'];
+    /** D03: numbers; D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
+    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class];
 
     public function protocol(){
         return $this->belongsTo('App\Models\Protocol');

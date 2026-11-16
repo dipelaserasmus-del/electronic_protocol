@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer $id
  * @property integer $user_id
  * @property integer $protocolnum
- * @property integer $protocoldate
+ * @property integer $protocoldate  (D04: DATE column, shown as Ymd integer; dateOf() for a date)
  * @property integer $etos
  * @property string $fakelos
  * @property string $thema
@@ -97,6 +97,25 @@ class Protocol extends Model
         'keywords',
         'paratiriseis'
     ];
+
+    /** D04: DATE columns, shown to the legacy code as integers Ymd (transitional, see LegacyYmdDate) */
+    public const DATE_COLUMNS = ['protocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date'];
+
+    protected $casts = [
+        'protocoldate' => \App\Casts\LegacyYmdDate::class,
+        'in_date' => \App\Casts\LegacyYmdDate::class,
+        'out_date' => \App\Casts\LegacyYmdDate::class,
+        'diekp_eos' => \App\Casts\LegacyYmdDate::class,
+        'diekp_date' => \App\Casts\LegacyYmdDate::class,
+    ];
+
+    /** D04: a date column as a date (for new code), or null */
+    public function dateOf(string $column): ?\Carbon\CarbonImmutable
+    {
+        abort_unless(in_array($column, self::DATE_COLUMNS, true), 500, "Not a date column: $column");
+        $raw = $this->getAttributes()[$column] ?? null;
+        return is_string($raw) && preg_match('/^\d{4}-\d{2}-\d{2}/', $raw) ? \Carbon\CarbonImmutable::parse(substr($raw, 0, 10))->startOfDay() : null;
+    }
 
     public function attachments()
     {

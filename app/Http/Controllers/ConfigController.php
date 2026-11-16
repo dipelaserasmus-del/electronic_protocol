@@ -144,7 +144,7 @@ class ConfigController extends Controller implements HasMiddleware
 
     public function arxeio()
     {
-        $arxeianum = Attachment::where('expires', '<', Carbon::now()->format('Ymd'))->count();
+        $arxeianum = Attachment::where('expires', '<', Carbon::today()->toDateString())->count();
         $arxeiaNumTrash = Attachment::onlyTrashed()->count();
         return view('arxeio', compact('arxeianum', 'arxeiaNumTrash'));
     }
@@ -155,7 +155,7 @@ class ConfigController extends Controller implements HasMiddleware
             $arxeia = Attachment::onlyTrashed()->with('protocol')->get();
             $title = "ΕΓΓΡΑΦΑ ΓΙΑ ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ";
         } else {
-            $arxeia = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::now()->format('Ymd'))->with('protocol')->get();
+            $arxeia = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString())->with('protocol')->get();
             $title = "ΕΚΚΑΘΑΡΙΣΗ ΑΡΧΕΙΟΥ";
         }
         foreach ($arxeia as $arxeio) {
@@ -181,8 +181,8 @@ class ConfigController extends Controller implements HasMiddleware
 
     public function delExpired()
     {
-        $arxeianum = Attachment::where('expires', '<', Carbon::now()->format('Ymd'))->count();
-        $arxeia = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::now()->format('Ymd'))->get();
+        $arxeianum = Attachment::where('expires', '<', Carbon::today()->toDateString())->count();
+        $arxeia = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString())->get();
         $arxeiaNumTrash = Attachment::whereNotNull('deleted_at')->count();
         $arxeiaTrash = Attachment::whereNotNull('deleted_at')->get();
 
@@ -195,7 +195,7 @@ class ConfigController extends Controller implements HasMiddleware
             Attachment::where('savedPath', $savedPath)->update(['savedPath' => $trashPath]);
         }
 
-        $expired = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::now()->format('Ymd'));
+        $expired = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString());
         (clone $expired)->update(['deleted_by' => Auth::id()]);   // D03: a query delete skips the model events
         $expired->delete();
 

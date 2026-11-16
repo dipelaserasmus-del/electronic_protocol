@@ -55,7 +55,7 @@ tasks = [
   # ---------------- Batch 5 ----------------
   { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 38 },
   { id = "D03", title = "Attachment size/hash/deleted_by", phase = "D", batch = 5, size = "S", deps = ["F04"], status = "done", pr = 39 },
-  { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },
+  { id = "D04", title = "Integer dates → DATE columns", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 40 },
 
   # ---------------- Batch 6 ----------------
   { id = "R1a", title = "Protocol service (sanitation, copy date…)", phase = "R", batch = 6, size = "M", deps = ["D01", "D02"], status = "todo" },
