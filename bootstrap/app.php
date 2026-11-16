@@ -4,6 +4,7 @@ use App\Http\Middleware\LimitProtocolAccessList;
 use App\Http\Middleware\MustBeAdmin;
 use App\Http\Middleware\MustBeWriterOrAdmin;
 use App\Http\Middleware\ProtocolEmail;
+use App\Http\Middleware\PurgeTrashDaily;
 use App\Http\Middleware\RedirectAfterLogin;
 use App\Http\Middleware\TouchUserActivity;
 use App\Support\Home;
@@ -19,7 +20,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectUsersTo(Home::LIST);   // logged-in user opens /login → protocol list
-        $middleware->web(append: [TouchUserActivity::class]);
+        $middleware->web(append: [TouchUserActivity::class, PurgeTrashDaily::class]);
         $middleware->alias([
             'admin' => MustBeAdmin::class,
             'writer' => MustBeWriterOrAdmin::class,

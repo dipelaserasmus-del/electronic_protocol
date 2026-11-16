@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **35 / 57** `██████████████████░░░░░░░░░░░░` 61% |
-| Effort done (PERT) | **16.7 / 28.3 h** `██████████████████░░░░░░░░░░░░` 59% |
-| Remaining effort, one agent in sequence | **11.5 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **36 / 57** `███████████████████░░░░░░░░░░░` 63% |
+| Effort done (PERT) | **17.3 / 28.3 h** `██████████████████░░░░░░░░░░░░` 61% |
+| Remaining effort, one agent in sequence | **11.0 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.1 h ± 0.3 |
 | In progress | — |
-| Next task | **R4b** — Attachment trash with retention |
+| Next task | **R3a** — Advanced search screen |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** R3a → R3b → R3c → Z01 → Z02 → Z03
@@ -26,7 +26,7 @@
 | 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
 | 4 | ✅D05 ✅D01 ✅R5a ✅F08 | 4/4 | `██████████` |
 | 5 | ✅D02 ✅D03 ✅D04 | 3/3 | `██████████` |
-| 6 | ✅R1a ✅R1b ✅R1c ✅R2 ✅R4a ⬜R4b | 5/6 | `████████░░` |
+| 6 | ✅R1a ✅R1b ✅R1c ✅R2 ✅R4a ✅R4b | 6/6 | `██████████` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
 | 8 | ⬜R5c ⬜R5d ⬜R5b | 0/3 | `░░░░░░░░░░` |
 | 9 | ⬜R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 0/5 | `░░░░░░░░░░` |
@@ -191,8 +191,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a done
-  class R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b done
+  class R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
@@ -247,7 +247,7 @@ gantt
   R1c Attachments panel, drag & drop :done, r1c, 2026-11-13 00:12, 33m
   R2 Protocol list rebuild :done, r2, 2026-11-13 00:45, 33m
   R4a Secure file handling :done, r4a, 2026-11-13 01:18, 19m
-  R4b Attachment trash with retention :r4b, 2026-11-13 01:37, 33m
+  R4b Attachment trash with retention :done, r4b, 2026-11-13 01:37, 33m
   section Batch 7
   R3a Advanced search screen :crit, r3a, 2026-11-13 02:10, 33m
   R3b Gmail-style query parser :crit, r3b, 2026-11-13 02:43, 33m
@@ -316,7 +316,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1c** | Attachments panel, drag & drop | R1b, D03 | 0.5 | 0.1 | 4.2 | 4.7 | 4.7 | 5.3 | 0.5 | #44 |
 | ✅ | **R2** | Protocol list rebuild | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 | #45 |
 | ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 3.8 | 4.2 | 1.9 | #46 |
-| ⬜ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 4.2 | 4.7 | 1.9 |  |
+| ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 4.2 | 4.7 | 1.9 | #47 |
 | ⬜ | **R3a** 🔴 | Advanced search screen | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 3.6 | 4.2 | 0.0 |  |
 | ⬜ | **R3b** 🔴 | Gmail-style query parser | R3a | 0.5 | 0.1 | 4.2 | 4.7 | 4.2 | 4.7 | 0.0 |  |
 | ⬜ | **R3c** 🔴 | Global search box + results page | R3b | 0.5 | 0.1 | 4.7 | 5.3 | 4.7 | 5.3 | 0.0 |  |

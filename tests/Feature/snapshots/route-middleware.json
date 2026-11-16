@@ -160,6 +160,14 @@
         "auth",
         "web"
     ],
+    "GET trash": [
+        "auth",
+        "web"
+    ],
+    "GET trash/{attachment}/download": [
+        "auth",
+        "web"
+    ],
     "GET updated": [
         "auth",
         "web",

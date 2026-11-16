@@ -263,37 +263,33 @@ final class ProtocolWriter
     }
 
     /**
-     * R1b: delete a protocol (administrators; the form offers it with "Έλεγχοι καταχώρισης" OFF). Its files are
-     * removed with it, as before (R4b will keep them in the trash for a while).
+     * R1b: delete a protocol (administrators; the form offers it with "Έλεγχοι καταχώρισης" OFF). R4b: its attachments
+     * go to the trash with the protocol's number and subject, for the retention days (before: deleted at once).
      */
     public function delete(User $user, Protocol $protocol): void
     {
         \Illuminate\Support\Facades\Gate::forUser($user)->authorize('delete', $protocol);
+        $trash = app(\App\Services\Attachments\Trash::class);
+        $label = $trash->label($protocol);
         foreach (Attachment::withTrashed()->where('protocol_id', $protocol->id)->get() as $attachment) {
-            if ($path = $attachment->storedFilePath()) {
-                Storage::delete($path);
+            if ($attachment->trashed()) {
+                $attachment->protocol_label ??= $label;
+                $attachment->saveQuietly();
+            } else {
+                $trash->trash($attachment, $user, $label);
             }
-            $attachment->forceDelete();
         }
         $protocol->delete();
     }
 
-    /** R1b: an attachment to the trash (file to trash/, row soft-deleted; legacy rule until R4b). */
+    /** R1b/R4b: an attachment to the trash (restorable for the retention days, see Attachments\Trash). */
     public function removeAttachment(User $user, Attachment $attachment): void
     {
         $protocol = $attachment->protocol;
         if (! $protocol || ! ProtocolAccess::for($user, $protocol)->canSave || \Illuminate\Support\Facades\Gate::forUser($user)->denies('update', $protocol)) {
             throw new \Illuminate\Auth\Access\AuthorizationException('Δεν επιτρέπεται η διαγραφή αυτού του συνημμένου.');
         }
-        $path = (string) $attachment->savedPath;
-        $trash = str_replace('arxeio', 'trash', $path);
-        if ($path !== '' && Storage::exists($path)) {
-            if (Storage::exists($trash)) {
-                Storage::delete($trash);
-            }
-            Storage::move($path, $trash);
-        }
-        $attachment->delete();
+        app(\App\Services\Attachments\Trash::class)->trash($attachment, $user);
     }
 
     public static function isPlaceholder(Protocol $p): bool

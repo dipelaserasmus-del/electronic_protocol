@@ -61,6 +61,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
     Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
+    Route::get('/trash', [ProtocolFormController::class, 'trash']);   // R4b (administrators)
+    Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
     Route::get('/find', [ProtocolController::class, 'find']);
     Route::get('/getFindData', [ProtocolController::class, 'getFindData']);
