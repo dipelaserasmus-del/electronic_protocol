@@ -130,6 +130,88 @@ class StoreFromEmailTest extends FeatureTestCase
         $this->assertSame(0, Protocol::count());
     }
 
+    /**
+     * Owner (2026-11-16): the sender's name shows "??" in the inbox form and the sender line. Some mail programs
+     * (here: Horde webmail) split a long name into encoded words in the middle of a 2-byte Greek letter; decoding
+     * each word on its own yields two invalid halves → "??". Both decoders (mail-mime-parser for the form and the
+     * saved protocol, App\Support\Imap\HeaderDecoder for the inbox list) do it. Fix: R5a (join the words first).
+     */
+    public function test_known_bug_sender_name_split_inside_a_greek_letter_becomes_question_marks(): void
+    {
+        $name = 'Γραφείο Σχολικών Δραστηριοτήτων';
+        $cut = strpos($name, 'ί') + 1;   // inside the 2-byte letter ί
+        $from = '=?utf-8?b?'.base64_encode(substr($name, 0, $cut)).'?='."\r\n ".'=?utf-8?b?'.base64_encode(substr($name, $cut)).'?=';
+        $user = $this->writer();
+        $this->putEml($user->id, str_replace("From: =?UTF-8?B?".base64_encode('Γραφείο Σχολικών Δραστηριοτήτων').'?=', 'From: '.$from, $this->sampleEml()));
+
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
+
+        $this->assertSame('Γραφε??ο Σχολικών Δραστηριοτήτων <grafeio@example.org>', Protocol::firstOrFail()->in_arxi_ekdosis);
+        $this->assertSame('Γραφε??ο Σχολικών Δραστηριοτήτων', \App\Support\Imap\HeaderDecoder::toUtf8($from), 'inbox list too');
+    }
+
+    /**
+     * An attachment whose name has an emoji (4-byte character) can't be stored in the utf8 (3-byte) tables: the
+     * protocol is created, the attachment is not, an error is shown and the e-mail stays in the inbox, so
+     * registering it again creates a second protocol. Fix: D05 (utf8mb4) + R5a/R5d (all-or-nothing registration).
+     */
+    public function test_known_bug_emoji_in_attachment_name_leaves_a_protocol_without_its_attachment(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->emlWithAttachmentName('Αίτηση 📎 άδειας.pdf'));
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on'])
+            ->assertRedirect('home/'.Protocol::firstOrFail()->id);   // not back to the inbox, but the e-mail is still there
+
+        $this->assertSame(1, Protocol::count(), 'protocol created');
+        $this->assertSame(0, Attachment::where('mimeType', 'application/pdf')->count(), 'the attachment is missing');
+        $this->assertStringContainsString('συνημμένων', session('notification.message'));
+    }
+
+    /**
+     * F08: names are cut at 120 characters, but Linux (Docker, also on Windows via WSL 2) allows 255 *bytes* per file
+     * name and a Greek letter takes 2. A long Greek name without spaces + the "num-date_key_" prefix doesn't fit: the
+     * attachment is recorded, the file is not written, and registration reports success (the e-mail leaves the inbox).
+     */
+    public function test_known_bug_long_greek_attachment_name_is_recorded_but_not_saved_on_linux(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->emlWithAttachmentName(str_repeat('Αίτηση', 21).'.pdf'));
+
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        $this->assertGreaterThan(255, strlen(basename($pdf->savedPath)), 'file name over 255 bytes');
+        $this->assertFalse(Storage::exists($pdf->savedPath), 'recorded, but no file');
+        $this->assertStringNotContainsString('συνημμένων', (string) session('notification.message'), 'no error about attachments');
+    }
+
+    /** F08: a name of only illegal characters loses its extension; an attachment without a name gets an empty one. */
+    public function test_known_bug_attachment_names_without_usable_characters(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->emlWithAttachmentName('???.pdf'));
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->assertSame('pdf', Attachment::where('mimeType', 'application/pdf')->sole()->name);
+
+        Attachment::query()->delete();
+        $this->putEml($user->id, $this->emlWithAttachmentName(null));
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->assertSame('', Attachment::where('mimeType', 'application/pdf')->sole()->name);
+    }
+
+    /** Invented plain message with one small PDF; null = attachment without a file name. */
+    private function emlWithAttachmentName(?string $name): string
+    {
+        $disposition = $name === null ? 'attachment' : "attachment; filename*=UTF-8''".rawurlencode($name);
+
+        return implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: Αίτηση',
+            'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="b"', '',
+            '--b', 'Content-Type: text/plain; charset=utf-8', '', 'Καλημέρα', '--b', 'Content-Type: application/pdf',
+            'Content-Disposition: '.$disposition, 'Content-Transfer-Encoding: base64', '',
+            base64_encode("%PDF-1.4\nfake\n%%EOF\n"), '--b--', '']);
+    }
+
     /** Invented Greek subject of 280 characters. */
     private static function longSubject(): string
     {
