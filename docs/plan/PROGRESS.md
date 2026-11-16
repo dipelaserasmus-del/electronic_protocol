@@ -291,7 +291,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | 🔄 | **L02** | Two computers: macOS guide, RPM VS Code, switching | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 |  |
 | ✅ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 | #17 |
 | ✅ | **F06** | nginx finds a recreated app container (no 502) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 6.4 | 6.7 | 5.8 | #23 |
-| ✅ | **F07** | real load: adopt a backup without migrations table | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 |  |
+| ✅ | **F07** | real load: adopt a backup without migrations table | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 | #24 |
 | ✅ | **S04** | Remove committed .env / APP_KEY | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #18 |
 | ✅ | **B04** | Descriptive error pages | — | 0.3 | 0.1 | 0.0 | 0.3 | 5.8 | 6.1 | 5.8 | #19 |
 | ✅ | **B07** | Diagnose timeouts / 500s | F03, B04 | 0.5 | 0.1 | 0.5 | 1.1 | 6.1 | 6.7 | 5.6 | #20 |

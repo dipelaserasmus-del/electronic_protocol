@@ -49,7 +49,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-16 | F07 | #? | production backup has no `migrations` table → `migrate:adopt-legacy` records existing tables; `real load` runs it before `migrate` |
+| 2026-11-16 | F07 | #24 | production backup has no `migrations` table → `migrate:adopt-legacy` records existing tables; `real load` runs it before `migrate` |
 | 2026-11-15 | F06 | #23 | nginx re-resolves `app` (Docker DNS, 5 s): 502 after Docker Desktop restart on the Mac; `tests/shell/nginx-reconnect.test.sh` in CI e2e job |
 | 2026-11-15 | Plan change + owner list | #22 | D05, R5a → new Batch 4 (later batches +1); `OWNER-TODO.md` |
 | 2026-11-12 | F03, F01, F02, S00, B03, B08, S02, A02 | #2–#9 | see `docs/reports/BATCH-1.md` |
