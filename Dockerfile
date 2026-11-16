@@ -9,6 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # ext-imap is intentionally NOT installed: it was removed from PHP core in 8.4, depends on the
 # unmaintained c-client library, and webklex/php-imap talks IMAP over native sockets.
+# mysql-client provides mysqldump for Ρυθμίσεις → Backup (B10).
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl unzip git tzdata \
@@ -18,6 +19,7 @@ RUN apt-get update \
       php${PHP_VERSION}-gd php${PHP_VERSION}-intl php${PHP_VERSION}-bcmath \
       php${PHP_VERSION}-bz2 php${PHP_VERSION}-curl \
       composer \
+      mysql-client \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # PHP-FPM: listen on TCP 9000 for the nginx container, log to stderr, keep env vars.

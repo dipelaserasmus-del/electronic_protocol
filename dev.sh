@@ -63,9 +63,9 @@ real_cmd() {
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
       ;;
     load)
-      # newest dump in local-data/db (or the file given), .sql or .sql.gz
-      local dump="${2:-$(ls -t local-data/db/*.sql local-data/db/*.sql.gz 2>/dev/null | head -1)}"
-      [ -n "$dump" ] && [ -f "$dump" ] || { echo "No dump found. Put the production backup (.sql or .sql.gz) in local-data/db/"; exit 1; }
+      # newest dump in local-data/db (or the file given): .sql, .sql.gz or .zip (phpMyAdmin export)
+      local dump="${2:-$(ls -t local-data/db/*.sql local-data/db/*.sql.gz local-data/db/*.zip 2>/dev/null | head -1)}"
+      [ -n "$dump" ] && [ -f "$dump" ] || { echo "No dump found. Put the production backup (.sql, .sql.gz or .zip) in local-data/db/"; exit 1; }
       real_cmd up >/dev/null
       local db; db=$(grep '^DB_DATABASE=' "$REAL_ENV" | cut -d= -f2)
       local rootpw; rootpw=$(grep '^DB_ROOT_PASSWORD=' "$REAL_ENV" | cut -d= -f2 || true); rootpw=${rootpw:-myStrongRootP@ss}
@@ -74,7 +74,7 @@ real_cmd() {
       compose_real exec -T db mysql -uroot -p"$rootpw" -e "DROP DATABASE IF EXISTS \`$db\`; CREATE DATABASE \`$db\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON \`$db\`.* TO 'laravel'@'%';" 2>/dev/null
       # strip CREATE DATABASE / USE lines so a dump made with --databases still goes into this database
       local importlog; importlog=$(mktemp)
-      if ! { case "$dump" in *.gz) gunzip -c "$dump" ;; *) cat "$dump" ;; esac; } \
+      if ! { case "$dump" in *.gz) gunzip -c "$dump" ;; *.zip) unzip -p "$dump" ;; *) cat "$dump" ;; esac; } \
           | sed -E '/^(CREATE DATABASE|USE) /d' \
           | compose_real exec -T db mysql -uroot -p"$rootpw" --default-character-set=utf8mb4 "$db" 2>"$importlog"; then
         grep -v "Using a password" "$importlog" >&2 || true
