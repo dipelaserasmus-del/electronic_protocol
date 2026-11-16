@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Config;
 use App\Models\Protocol;
 use App\Models\User;
+use App\Support\Assignments;
 
 /**
  * S02: single source of truth for who may see / change a protocol and its attachments.
@@ -32,17 +33,16 @@ class ProtocolPolicy
             && in_array(self::role($user), [self::WRITER, self::READER], true);
     }
 
-    /** User ids assigned in the legacy text column, e.g. "d14,e10" → type d: [14], type e: [10] */
+    /**
+     * User ids assigned for type d (διεκπεραίωση) or e (ενημέρωση). D02: read from protocol_assignments; a protocol
+     * not saved yet, or the form for "copy as new" (id cleared), has no rows, so its text "d14,e10" is read instead.
+     */
     public static function assignedIds(Protocol $protocol, string $type): array
     {
-        $ids = [];
-        foreach (explode(',', (string) $protocol->diekperaiosi) as $part) {
-            $part = trim($part);
-            if ($part !== '' && $part[0] === $type && ctype_digit(substr($part, 1))) {
-                $ids[] = (int) substr($part, 1);
-            }
-        }
-        return $ids;
+        $rows = $protocol->exists && $protocol->getKey() !== null
+            ? $protocol->assignments->map(fn ($a) => ['user_id' => $a->user_id, 'type' => $a->type])->all()
+            : Assignments::parse($protocol->diekperaiosi);
+        return array_values(array_map(fn ($a) => (int) $a['user_id'], array_filter($rows, fn ($a) => $a['type'] === $type)));
     }
 
     public static function isAssigned(User $user, Protocol $protocol, ?string $type = null): bool

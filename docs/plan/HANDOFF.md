@@ -64,6 +64,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 15:35 | D02 | #38 | `protocol_assignments` (protocol, user, type d/e) + backfill; `App\Support\Assignments` (parse/sync/backfill), Protocol scopes `assignedTo`/`assignedFor`/`ownOrAssigned`; text column still written by the old form, synced on save (model event + after the edit query); fixed: search by assignee missed `d14,e10`, no name in results, *Κενό* missed `''` |
 | 2026-11-16 14:26 | F08 | #37 | `App\Support\FileNames` (`fit`: ≤255 bytes/≤200 chars, char boundary, keeps extension; `clean`: `συνημμένο.<ext>`); `tools/check-attachment-names.php` (PHP 8.1, counts only) + `./dev.sh real check-names` |
 | 2026-11-16 14:04 | R5a | #36 | `App\Services\Mail\{Inbox,MailCache,Mailbox,ImapMailbox,MailboxConnector}`: UID list + one fetch for missing, cache `storage/app/mail-cache/<mailbox>/<UIDVALIDITY>/<UID>.eml` (lock, expiry = still in inbox); `EncodedWords` joins split encoded words, `MailParser` also joins RFC 2231 continuations in every part header (owner's sick-leave e-mail, 2026-11-16); `MailParser::parse` everywhere; registration all-or-nothing; no `public/tmp` copies (were public!), `/viewEmailHtml` sandboxed; tests: `FakeMailbox` (`tests/Support`) |
 | 2026-11-16 13:44 | D01 | #35 | `thema`, `in_arxi_ekdosis`, `in_perilipsi`, `out_perilipsi` → TEXT; `Protocol::LONG_TEXT_MAX` (16000) in form checks; e-mail registration error shows `E-XXXXXX`, never the SQL |

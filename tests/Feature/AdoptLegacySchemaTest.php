@@ -31,6 +31,9 @@ class AdoptLegacySchemaTest extends TestCase
         Schema::drop('migrations');
         DB::statement("ALTER TABLE users MODIFY role_id INT UNSIGNED NOT NULL DEFAULT '1'");
         DB::statement('ALTER TABLE protocols MODIFY thema VARCHAR(255) NULL, MODIFY in_perilipsi VARCHAR(255) NULL');   // pre-D01
+        Schema::drop('protocol_assignments');   // pre-D02: assignments only as text
+        $protocolId = DB::table('protocols')->insertGetId(['user_id' => 1, 'protocolnum' => 990001, 'protocoldate' => 20260105,
+            'etos' => 2026, 'thema' => 'Παλιό ανατεθειμένο', 'diekperaiosi' => 'd1,e2,']);
         $users = DB::table('users')->count();
 
         $this->artisan('migrate:adopt-legacy')->assertSuccessful();
@@ -50,6 +53,9 @@ class AdoptLegacySchemaTest extends TestCase
         $this->assertSame($users, DB::table('users')->count(), 'data is kept');
         $this->assertSame('text', Schema::getColumnType('protocols', 'thema'), 'D01 applied');
         $this->assertSame('text', Schema::getColumnType('protocols', 'in_perilipsi'));
+        $this->assertSame(['d1', 'e2'], DB::table('protocol_assignments')->where('protocol_id', $protocolId)
+            ->orderBy('type')->get()->map(fn ($a) => $a->type . $a->user_id)->all(), 'D02 backfilled');
+        DB::table('protocols')->where('id', $protocolId)->delete();
     }
 
     public function test_only_tables_that_exist_are_recorded(): void
