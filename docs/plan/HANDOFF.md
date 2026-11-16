@@ -2,7 +2,8 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-16 (after Batch 3)
+## Current state — 2026-11-16 (Batch 4 running)
+- **Batch 4 running:** D05 (#34) done (utf8mb4, `utf8mb4_general_ci` = same comparisons as before). **Next: D01** → R5a → F08. 191 PHPUnit tests, 20 browser tests.
 - **Batch 3 complete** (N01 #27, N02 #28, N03 #31, N04 #33; plus #26, #29, #30, #32 plan/known-bug PRs). Summary: [`docs/reports/BATCH-3.md`](../reports/BATCH-3.md). 186 PHPUnit tests, 18 browser tests.
 - **Batch 2 complete** (PRs #14–#21), plus F06 (#23), F07 (#24), B10 (#25). `master` CI green, branch-protected
   (all 9 CI jobs required, admins included, no force push). 127 PHPUnit tests, 9 browser tests.
@@ -12,7 +13,6 @@ Read this first when (re)starting work. Update it at the end of every task.
   deployment (see `OWNER-TODO.md`). Consequence: S00 (open admin registration) stays exploitable in production;
   the old code ignores `storage/conf/.denyregister`. Mitigation without deploying code: a web-server rule that refuses
   `POST /register`: `docs/BLOCK-REGISTRATION.md` (owner has it, not applied yet).
-- **Batch 3 in progress.** N01 (#27), N02 (#28), N03 (#31), N04 (#33) done → **Batch 3 complete**. **Next: Batch 4** `D05` → `D01` → `R5a` → `F08`.
 - **Production target (owner, 2026-11-16): the Docker stack** after the rebuild (today: Windows 11 + XAMPP, Apache,
   PHP 8.1.25, MariaDB 10.4.32, php-imap). No XAMPP/MariaDB compatibility work. The owner migrates the old DB + files;
   path = `./dev.sh real load` (MariaDB dump → MySQL 8.4 + `migrate:adopt-legacy`). Still to ask before the deployment
@@ -63,6 +63,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 | D05 | #34 | connection + all tables → utf8mb4 (`utf8mb4_general_ci`: searches/unique keys as before); legacy COMPACT tables → DYNAMIC; migration irreversible (backup); N04 review fix (confirm dialog in capture phase) merged with #33 |
 | 2026-11-16 | N04 | #33 | `<x-date-input>`, `<x-pill-actions>`, `<x-file-badge>`, `<x-notice>`, toasts, `data-confirm` dialog; date rules in PHP + JS checked against one shared case list; `/dev/ui` (dev/test only) |
 | 2026-11-16 | N03 | #31 | Vite 7 + Bootstrap 5.3 + Livewire 4.4; Node 22 inside the app image; `layouts/modern` + `App\Support\Navigation` (menu per role, tested); `/about` first page; `./dev.sh assets` |
 | 2026-11-16 | N02 | #28 | `App\Models\*`, Laravel 11+ `bootstrap/app.php`, class-based routes in an `auth` group, `HasMiddleware`; route-middleware snapshot test (unchanged); fix: error handler crashed outside web requests |

@@ -1,20 +1,22 @@
 // B07: registering an e-mail must store the protocol AND move the e-mail out of the inbox
 // (before: "NO EXPUNGE failed" → error page, protocol stored, e-mail left in the inbox).
+// D05: an e-mail with emoji is registered with them (before: utf8 tables refused them).
 const { test, expect } = require('@playwright/test');
 const { login, evidence, toasts } = require('./helpers');
 
-test('register an e-mail from the inbox: protocol created and e-mail leaves the inbox', async ({ page }) => {
-  await login(page, 'admin');
+const inboxCount = async (page) => Number((await page.locator('body').innerText()).match(/από (\d+) εισερχόμενα/)[1]);
+
+/** Registers the inbox e-mail whose form contains `text`; returns the toast text and the inbox count before. */
+async function register(page, text) {
   // the order of the mock e-mails differs between machines: find the page that holds this e-mail
   let form;
   for (const p of [1, 2, 3]) {
     await page.goto(`/viewEmails?imap_page=${p}`);
-    form = page.locator('form[action$="storeFromEmail"]', { hasText: 'Αίτηση γονέα' }).first();
+    form = page.locator('form[action$="storeFromEmail"]', { hasText: text }).first();
     if (await form.count()) break;
   }
   await expect(form).toBeVisible();
-  const count = async () => Number((await page.locator('body').innerText()).match(/από (\d+) εισερχόμενα/)[1]);
-  const before = await count();
+  const before = await inboxCount(page);
 
   const posted = page.waitForResponse((r) => r.url().includes('/storeFromEmail') && r.request().method() === 'POST');
   await form.locator('a[href*="sendReceipt"][href*="val(0)"]').first().click();
@@ -26,10 +28,30 @@ test('register an e-mail from the inbox: protocol created and e-mail leaves the 
   await page.waitForLoadState('load');
   await page.locator('.toast-message').first().waitFor();
 
-  const message = await toasts(page);
+  return { message: await toasts(page), before };
+}
+
+test('register an e-mail from the inbox: protocol created and e-mail leaves the inbox', async ({ page }) => {
+  await login(page, 'admin');
+  const { message, before } = await register(page, 'Αίτηση γονέα');
+
   expect(message).toContain('Το email καταχωρίστηκε');
   expect(message).not.toContain('δεν μεταφέρθηκε');
   await evidence(page, 'email-registered', { clip: { x: 0, y: 0, width: 1440, height: 420 } });
 
-  expect(await count()).toBe(before - 1);
+  expect(await inboxCount(page)).toBe(before - 1);
+});
+
+test('register an e-mail with emoji: the protocol keeps them (D05)', async ({ page }) => {
+  await login(page, 'admin');
+  const { message, before } = await register(page, 'Ομάδα "Δοκιμών"');   // synthetic e-mail 05-special-characters
+
+  expect(message).toContain('Το email καταχωρίστηκε');
+  expect(await inboxCount(page)).toBe(before - 1);
+
+  const [, num, year] = message.match(/Αρ\.Πρωτ: (\d+) \/ \d\d-\d\d-(\d{4})/);
+  await page.goto(`/goto/${year}/${num}?find=1`);
+  await expect(page.locator('[name=thema]')).toHaveValue(/σύμβολα: 50% ; <tag> \\ _ 📎$/);
+  await expect(page.locator('[name=in_arxi_ekdosis]')).toHaveValue('Ομάδα "Δοκιμών" & Συνεργάτες <oteam@example.test>');
+  await evidence(page, 'd05-emoji-protocol', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
 });

@@ -35,6 +35,19 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertSame($user->id, (int) $p->user_id);
     }
 
+    /** D05: emoji and other 4-byte characters typed in the form are stored (utf8mb4), also in searches. */
+    public function test_emoji_typed_in_the_form_is_stored_and_found(): void
+    {
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 1, 'thema' => 'Γιορτή 🎄 σχολείου', 'paratiriseis' => 'σημείωση 𝔸 ✅',
+        ]));
+
+        $p = Protocol::firstOrFail();
+        $this->assertSame('Γιορτή 🎄 σχολείου', $p->thema);
+        $this->assertSame('σημείωση 𝔸 ✅', $p->paratiriseis);
+        $this->assertSame(1, Protocol::where('thema', 'like', '%γιορτη 🎄%')->count());
+    }
+
     public function test_next_number_is_max_of_year_plus_one(): void
     {
         Protocol::factory()->number(7)->create();

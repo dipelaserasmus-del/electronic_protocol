@@ -151,21 +151,40 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /**
-     * An attachment whose name has an emoji (4-byte character) can't be stored in the utf8 (3-byte) tables: the
-     * protocol is created, the attachment is not, an error is shown and the e-mail stays in the inbox, so
-     * registering it again creates a second protocol. Fix: D05 (utf8mb4) + R5a/R5d (all-or-nothing registration).
+     * D05 (was: known_bug_emoji_in_attachment_name_leaves_a_protocol_without_its_attachment). The utf8 (3-byte)
+     * tables refused the name: the protocol was created without the attachment. utf8mb4 stores it.
      */
-    public function test_known_bug_emoji_in_attachment_name_leaves_a_protocol_without_its_attachment(): void
+    public function test_emoji_in_attachment_name_is_stored_with_the_attachment(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName('Αίτηση 📎 άδειας.pdf'));
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on'])
-            ->assertRedirect('home/'.Protocol::firstOrFail()->id);   // not back to the inbox, but the e-mail is still there
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
 
-        $this->assertSame(1, Protocol::count(), 'protocol created');
-        $this->assertSame(0, Attachment::where('mimeType', 'application/pdf')->count(), 'the attachment is missing');
-        $this->assertStringContainsString('συνημμένων', session('notification.message'));
+        $this->assertSame(1, Protocol::count());
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        $this->assertSame('Αίτηση 📎 άδειας.pdf', $pdf->name);
+        $this->assertSame("%PDF-1.4\nfake\n%%EOF\n", Storage::get($pdf->savedPath));
+        $this->assertStringNotContainsString('συνημμένων', (string) session('notification.message'), 'no error about attachments');
+    }
+
+    /** D05: owner's case, an e-mail with an emoji in the subject, the sender's name and the text could not be registered. */
+    public function test_email_with_emoji_in_subject_sender_and_text_is_registered(): void
+    {
+        $eml = str_replace(
+            ['Subject: Αίτηση', 'From: grafeio@example.org', 'Καλημέρα'],
+            ['Subject: =?UTF-8?B?'.base64_encode('Συγχαρητήρια 🎉 στους μαθητές').'?=',
+                'From: =?UTF-8?B?'.base64_encode('Σύλλογος Γονέων 🌻').'?= <grafeio@example.org>', 'Καλημέρα 😊'],
+            $this->emlWithAttachmentName('a.pdf'));
+        $user = $this->writer();
+        $this->putEml($user->id, $eml);
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID]);
+
+        $p = Protocol::firstOrFail();
+        $this->assertSame('Συγχαρητήρια 🎉 στους μαθητές', $p->thema);
+        $this->assertSame('Σύλλογος Γονέων 🌻 <grafeio@example.org>', $p->in_arxi_ekdosis);
+        $this->assertSame('Καλημέρα 😊', $p->in_perilipsi);
     }
 
     /**
