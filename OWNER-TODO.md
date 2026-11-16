@@ -8,7 +8,6 @@ Start a **new conversation** in this project and send (fill in the brackets):
 ```
 Production server: OS [..], PHP [..], php-imap installed [yes/no], MySQL/MariaDB [..], web server [Apache/nginx],
 I update it with [git pull / copying files / other].
-Block registration in production now: [yes/no]
 run batch 3
 ```
 On the **production server**, these commands print the versions and no data:
@@ -29,8 +28,9 @@ head -2 /etc/os-release
 but the finished app must run on that server (or the server gets upgraded then), so I pick the target from its versions.
 
 **Registration (security):** the code on your server still lets anyone who can reach it create an **administrator**
-account (fixed in S00, but you deploy only at the end). Answer "yes" and I'll give you a one-line web-server rule
-that refuses new registrations until the final deployment. It changes no app code and is easy to undo.
+account (fixed in S00, but you deploy only at the end). The one-line web-server rule that refuses registrations is in
+[docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16). It changes no
+app code and is easy to undo; applying it takes a minute whenever you decide.
 
 ## Before Batch 4 (D05 emoji support, R5a e-mail cache)
 1. **E-mails for testing R5a.** Prepare a few `.eml` files (in Thunderbird: select the message → *Save As*):

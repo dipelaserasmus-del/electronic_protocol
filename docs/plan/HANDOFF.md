@@ -10,7 +10,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   So the production server keeps the old code; owner actions "after deploying" are collected for one final
   deployment (see `OWNER-TODO.md`). Consequence: S00 (open admin registration) stays exploitable in production;
   the old code ignores `storage/conf/.denyregister`. Mitigation without deploying code: a web-server rule that refuses
-  `POST /register` (offered to the owner, needs to know Apache/nginx).
+  `POST /register`: `docs/BLOCK-REGISTRATION.md` (owner has it, not applied yet).
 - **Next:** Batch 3 → `N01` (PHP/Composer upgrade, drop ext-imap) → `N02` → `N03` → `N04`.
   **Before N01, get the production server's OS/PHP/MySQL versions** (asked in `OWNER-TODO.md`): no deploy until the
   end, but the final deploy must run on that server (or the server is upgraded then), so N01 picks its target from it.
@@ -31,7 +31,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Production server facts | Asked 2026-11-15 (OWNER-TODO): OS, PHP, php-imap, MySQL, web server, update method, what is deployed. Needed before N01. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
 | Final deployment (all tasks done) | Owner: back up DB + `.env`; `php artisan migrate:adopt-legacy` once (no `migrations` table, F07), then `php artisan migrate`; check `users` for unknown admin accounts; `which mysqldump`, press Backup once (B10). Claude writes a deployment guide before then. |
-| Open registration in production (S00) | Not deployed by owner decision. Offered: a web-server rule refusing `POST /register` until the final deploy. Waiting for the owner's answer. |
+| Open registration in production (S00) | Not deployed by owner decision. Web-server rules (Apache/nginx) given in `docs/BLOCK-REGISTRATION.md`; owner chose **not to apply them yet** (2026-11-16). Remind at the final deployment (remove the rule before `git pull`). |
 
 ## Decisions log (short)
 - Module-by-module rebuild, Livewire + Bootstrap 5, MySQL only (BACKLOG "Decisions").
