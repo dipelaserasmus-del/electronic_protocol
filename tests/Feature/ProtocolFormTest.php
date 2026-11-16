@@ -178,4 +178,16 @@ class ProtocolFormTest extends FeatureTestCase
             $this->assertMatchesRegularExpression('/tabindex="-1"|type="checkbox"/', $tag, "focusable before the date: $tag");
         }
     }
+
+    /** The browser can't switch the form to a protocol the user may not see. */
+    public function test_the_form_can_not_be_pointed_at_another_protocol(): void
+    {
+        $this->setting('limitProtocolAccessList', 1);
+        $writer = $this->writer();
+        $mine = Protocol::factory()->number(1)->create(['user_id' => $writer->id]);
+        Protocol::factory()->number(2)->create(['thema' => 'Απόρρητο']);
+
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+        Livewire::actingAs($writer)->test(ProtocolForm::class, ['protocol' => $mine])->set('protocolId', $mine->id + 1);
+    }
 }

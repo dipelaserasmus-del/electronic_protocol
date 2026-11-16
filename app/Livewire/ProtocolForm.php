@@ -16,6 +16,7 @@ use App\Support\DateInput;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -35,7 +36,10 @@ class ProtocolForm extends Component
         'in_arxi_ekdosis', 'in_paraliptis', 'in_perilipsi', 'diekp_eos', 'diekp_date', 'sxetiko', 'out_to', 'out_date',
         'out_perilipsi', 'keywords', 'paratiriseis', 'keep', 'reply_to_email'];
 
+    /** Locked: the browser can't point the form at another protocol (it would show it without the access check) */
+    #[Locked]
     public ?int $protocolId = null;
+    #[Locked]
     public ?int $copyOf = null;
 
     /** @var array<string, string> the form's fields, as typed */
