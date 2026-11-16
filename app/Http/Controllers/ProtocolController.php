@@ -96,148 +96,10 @@ class ProtocolController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            new Middleware('writer:home/list', except: ['index', 'indexList', 'getFileInputs', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about', 'setDiekpDate']),
+            new Middleware('writer:home/list', except: ['indexList', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about']),
             new Middleware('email', only: ['viewEmails', 'setEmailRead', 'storeFromEmail', 'viewEmailAttachment', 'viewEmailHtml']),
             new Middleware('limitList', only: ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']),
         ];
-    }
-
-    public function index(Protocol $protocol, $copyAsNew = null)
-    {
-        // S02: access check before "copy as new" clears the id (the copy used to bypass it)
-        if ($protocol->exists && Gate::denies('view', $protocol)) {
-            abort(404);
-        }
-
-        $copyDate = null;
-        if ($copyAsNew) {
-            $copyDate = $protocol->dateOf('protocoldate')?->format('d/m/Y');
-            $protocol->diekperaiosi = $protocol->diekperaiosi;   // R1a: keep the assignments in memory for the copy's form
-            $protocol->exists = false;
-            $protocol->id = null;
-            $protocol->etos = null;
-            $protocol->protocolnum = null;
-            $protocol->protocoldate = null;
-        }
-
-        // βρίσκω τους Συγγραφείς, Αναθέτοντες και Διαχειριστές
-        $writers_admins = User::get_writers_and_admins();
-        // παίρνω τους Φακέλους με συγκεκριμμένη ταξινόμηση
-        $fakeloi = Keepvalue::orderBy(DB::raw("SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-3)+0<>0 DESC, SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-(3))+0, `fakelos`"))->select('fakelos', 'describe')->get();
-
-        // διαβάζω τις ρυθμίσεις
-        $settings = Config::getConfigValues();
-        $newetos = $settings['yearInUse']  ?? Config::getConfigValueOf('yearInUse');
-        if (!$newetos) $newetos =  Carbon::now()->format('Y');
-        $showUserInfo = $settings['showUserInfo'] ?? Config::getConfigValueOf('showUserInfo');
-        $firstProtocolNum = $settings['firstProtocolNum'] ?? Config::getConfigValueOf('firstProtocolNum');
-        $protocolArrowStep = $settings['protocolArrowStep'] ?? Config::getConfigValueOf('protocolArrowStep');
-        $allowWriterUpdateProtocol = $settings['allowWriterUpdateProtocol'] ?? Config::getConfigValueOf('allowWriterUpdateProtocol');
-        $allowWriterUpdateProtocolTimeInMinutes = $settings['allowWriterUpdateProtocolTimeInMinutes']  ?? Config::getConfigValueOf('allowWriterUpdateProtocolTimeInMinutes')  ?? 0;
-        $protocolValidate = $settings['protocolValidate'] ?? Config::getConfigValueOf('protocolValidate');
-        $diavgeiaUrl = $settings['diavgeiaUrl'] ?? Config::getConfigValueOf('diavgeiaUrl');
-        $allowUserChangeKeepSelect = $settings['allowUserChangeKeepSelect'] ?? Config::getConfigValueOf('allowUserChangeKeepSelect');
-        $allowListValuesMatchingInput = $settings['allowListValuesMatchingInput'] ?? Config::getConfigValueOf('allowListValuesMatchingInput');
-
-        // βρίσκω το νέο αριθμό πρωτοκόλλου (ίδιος κανόνας με την αποθήκευση)
-        $newprotocolnum = app(\App\Services\ProtocolNumbering::class)->next((int) $newetos);
-        // A02: "fill a gap" link from the protocol list pre-fills the chosen number (treated as a manual number on save)
-        $prefillNum = (!$protocol->exists && ctype_digit((string) request('num'))
-            && app(\App\Services\ProtocolNumbering::class)->userMayChooseNumber(Auth::user())) ? (int) request('num') : null;
-
-        // βρίσκω τους όλους ενεργούς χρήστες
-        $activeusers = User::activeOnline()->get(); 
-        $activeusers2show = [];
-        foreach ($activeusers as $actuser) {
-            if ($showUserInfo == 1) {
-                $activeusers2show[] = $actuser->username;
-            } elseif ($showUserInfo == 2) {
-                $activeusers2show[] = $actuser->name;
-            }
-        }
-        // μετράω μόνο τους Διαχειριστές και Συγγραφείς που έχουν δικαίωμα να γράψουν
-        $activeuserscount = User::activeOnline()->where('role_id', '!=', Role::whereRole('Αναγνώστης')->first()->id)->count();
-        // αν είναι πάνω από ένας δεν εμφανίζω τον επόμενο Αρ.Πρωτ.
-        $newprotocolnumvisible = 'active';
-        if ($activeuserscount > 1 and !$protocol->id) {
-            $newprotocolnumvisible = 'hidden';
-        }
-
-        // συμπληρώνω τα στοιχεία αν πρόκειται για νέο πρωτόκολλο
-        // ή επεξεργασία πρωτοκόλλου
-        $newprotocoldate = Carbon::now()->format('d/m/Y');
-        $class = 'bg-info';
-        $protocoltitle = 'Νέο Πρωτόκολλο';
-        if ($copyAsNew) $protocoltitle = 'Αντιγραφή ως Νέο Πρωτόκολλο';
-
-        $protocolUser = '';
-        if ($protocol->etos) {
-            $newetos = $protocol->etos;
-        }
-        if ($protocol->protocolnum) {
-            $newprotocolnum = $protocol->protocolnum;
-        }
-        if ($protocol->protocoldate) {
-            $newprotocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-        }
-        $in_date = null;
-        if ($protocol->in_date) {
-            $in_date = Carbon::createFromFormat('Ymd', $protocol->in_date)->format('d/m/Y');
-        }
-        $out_date = null;
-        if ($protocol->out_date) {
-            $out_date = Carbon::createFromFormat('Ymd', $protocol->out_date)->format('d/m/Y');
-        }
-        $diekp_eos = null;
-        if ($protocol->diekp_eos) {
-            $diekp_eos = Carbon::createFromFormat('Ymd', $protocol->diekp_eos)->format('d/m/Y');
-        }
-        $diekp_date = null;
-        if ($protocol->diekp_date) {
-            $diekp_date = Carbon::createFromFormat('Ymd', $protocol->diekp_date)->format('d/m/Y');
-        }
-        if ($protocol->protocolnum) {
-            $class = 'bg-success';
-            $protocoltitle = 'Επεξεργασία Πρωτοκόλλου';
-            $protocolUser = User::whereId($protocol->user_id)->first();
-        }
-        // R1a: who may change what (also enforced by ProtocolWriter on save), shown with the legacy view's variables
-        $access = \App\Services\Protocols\ProtocolAccess::for(Auth::user(), $protocol);
-        $submitVisible = $access->canSave ? 'active' : 'hidden';
-        $readerVisible = (Auth::user()->role->role == 'Αναγνώστης' && $access->doneDate) ? 'active' : 'hidden';
-        $headReadonly = $access->head ? '' : 'readonly';
-        $inReadonly = $access->in ? '' : 'readonly';
-        $outReadonly = $access->out ? '' : 'readonly';
-        $diekpDateReadonly = $access->doneDate ? '' : 'readonly';
-        $readonly = $access->number ? '' : 'readonly';
-        $dateReadonly = $access->date ? '' : 'readonly';
-        $delVisible = $access->number ? 'active' : 'hidden';
-        $time2update = $access->secondsLeft;
-        $class = ['new' => 'bg-info', 'edit' => 'bg-success', 'readonly' => 'bg-warning', 'admin' => 'bg-danger'][$access->tone];
-        if ($access->number) $class = 'bg-danger';
-        if ($access->tone === 'readonly') $protocoltitle = 'Πρωτόκολλο';
-        // R1a: a copy keeps the original's date when the user may set the date (otherwise today, as saved)
-        if ($copyAsNew && $access->date && $copyDate) {
-            $newprotocoldate = $copyDate;
-        }
-
-        // Μόνο Διαχειριστής και Αναθέτων μπορούν να αναθέσουν Διεκπεραίωση σε χρήστη
-        $forbidenChangeDiekperaiosiSelect = $access->canAssign ? null : 1;
-
-        // βρίσκω την τιμή διατήρησης ανάλογα τον φάκελο Φ.
-        $keepval = null;
-        if ($protocol->fakelos  and Keepvalue::whereFakelos($protocol->fakelos)->first()) {
-            $keepval = Keepvalue::whereFakelos($protocol->fakelos)->first()->keep;
-            if (!$keepval) {
-                $keepval = Keepvalue::whereFakelos($protocol->fakelos)->first()->keep_alt;
-            }
-        }
-
-        // γεμίζω τη λίστα με τη διατήρηση αρχείων
-        $years = Keepvalue::whereNotNull('keep')->select('keep')->distinct()->orderby('keep', 'asc')->get();
-        $words = Keepvalue::whereNotNull('keep_alt')->select('keep_alt')->distinct()->orderby('keep_alt', 'asc')->get();
-
-        return view('protocol', compact('fakeloi', 'protocol', 'newetos', 'newprotocolnum', 'newprotocoldate', 'in_date', 'out_date', 'diekp_eos', 'diekp_date', 'class', 'protocoltitle', 'protocolArrowStep', 'submitVisible', 'delVisible', 'readonly', 'readerVisible', 'years', 'words', 'keepval', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'activeusers2show', 'showUserInfo', 'newprotocolnumvisible', 'prefillNum', 'protocolUser', 'time2update', 'writers_admins', 'forbidenChangeDiekperaiosiSelect', 'allowListValuesMatchingInput', 'headReadonly', 'inReadonly', 'outReadonly', 'diekpDateReadonly', 'dateReadonly'));
     }
 
     /**
@@ -447,14 +309,6 @@ class ProtocolController extends Controller implements HasMiddleware
     }
 
 
-    public function getFileInputs($num)
-    {
-        $data = request()->all();
-        return view('getFileInputs', compact('num', 'data'));
-    }
-
-
-
     /** R1a: saving goes through ProtocolWriter (rules, numbering, files, e-mails); this only adapts the legacy form. */
     public function store()
     {
@@ -531,53 +385,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return $line === null ? '' : '<li>' . e($line) . '</li>';
     }
 
-
-    public function delprotocol(Protocol $protocol)
-    {
-        $this->authorize('delete', $protocol);   // S02: administrators only
-        $protocolnum = $protocol->protocolnum;
-        $etos = $protocol->etos;
-        // αν υπάρχουν συνημμένα δεν διαγράφω και ενημερώνω
-        if ($protocol->attachments()->count()) {
-            //return $protocol->attachments()->get();
-            foreach ($protocol->attachments()->get() as $att) {
-                // διαγραφή του αρχείου
-                Storage::delete($att->savedPath);
-                // hard delete
-                $att->forceDelete();
-            }
-        }
-        // διαγραφή Πρωτοκόλλου
-        Protocol::destroy($protocol->id);
-        // ενημέρωση του χρήστη
-        $notification = array(
-            'message' => "Διαγράφηκε το Πρωτόκολλο με αριθμό $protocolnum για το έτος $etos",
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-        // επιστροφή στο home
-        return redirect("home");
-    }
-
-
-    public function attachDelete(Attachment $attachment)
-    {
-        abort_unless($attachment->protocol && Gate::allows('update', $attachment->protocol), 403);   // S02
-        // διαβάζω τα δεδομένα
-        $protocol = $attachment->protocol;
-        $savedPath = $attachment->savedPath;
-        $trashPath = str_replace('arxeio', 'trash', $savedPath);
-        // αν υπάρχει το αρχείο
-        if ($savedPath && Storage::exists($attachment->savedPath)) {
-            // το μετακινώ στον Κάδο Ανακύκλωσης
-            if ($trashPath && Storage::exists($trashPath)) Storage::delete($trashPath);
-            Storage::move($savedPath, $trashPath);
-        }
-        // διαγράφω την καταχώριση στη ΒΔ (softDelete)
-        $attachment->delete();
-        // επιστρέφω τα συνημμένα αρχεία του Πρωτοκόλλου
-        return view('getArxeia', compact('protocol'));
-    }
 
     public function gotonum($etos, $protocolnum, $step = null)
     {
@@ -1036,30 +843,6 @@ class ProtocolController extends Controller implements HasMiddleware
         } else {
             return response()->json(['error' => 'Αποτυχία αποστολής email. Η αιτία καταγράφηκε στο αρχείο καταγραφής.'], 502);
         }
-    }
-
-    public function setDiekpDate(Request $request)
-    {
-        $this->authorize('complete', Protocol::findOrFail($request->id));   // S02
-        $diekp_date = Carbon::createFromFormat('d/m/Y', $request->diekp_date)->format('Ymd');
-        $now = Carbon::now()->format('d/m/Y H:i:s');
-        $paratiriseis = Protocol::whereId($request->id)->first()->paratiriseis;
-        $parMessage = $paratiriseis ? $paratiriseis . ', ' : '';
-        $parMessage .= "$now διεκπεραιώθηκε από " . Auth::user()->name;
-        //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
-        $result = Protocol::whereId($request->id)->update([
-            'user_id' => Auth::user()->id,
-            'diekp_date' => $diekp_date,
-            'paratiriseis' => $parMessage,
-        ]);
-        // ενημερώνω το χρήστη
-        $notification = array(
-            'message' => "Επιτυχής ενημέρωση της ημερομηνίας Διεκπεραίωσης σε $request->diekp_date.",
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-        // επιστρέφω
-        return response()->json($result);
     }
 
     public function about()
@@ -1739,17 +1522,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return $filename;
     }
 
-    public function checkInNum(Request $request)
-    {
-        $in_date = Carbon::createFromFormat('d/m/Y', $request->in_date)->format('Y-m-d');   // D04
-        $protocols = Protocol::where('in_date', $in_date)->where('in_num', $request->in_num);
-        if ($request->id) {
-            $protocols =  $protocols->where('id', '!=', $request->id);
-        }
-        $count =  $protocols->count();
-        return response()->json($count);
-    }
-
     public function checkSameEmail(Request $request)
     {
         $count = [];
@@ -1757,37 +1529,6 @@ class ProtocolController extends Controller implements HasMiddleware
         $count['thema'] =  Protocol::where('thema', $request->thema)->count();
         $count['in_num'] =  Protocol::where('in_date', $in_date)->where('in_num', $request->in_num)->count();
         return response()->json($count);
-    }
-
-    public function anathesiSe(Request $request)
-    {
-        $sendEmailTo = $request->diekperaiosi;
-        $protocol = Protocol::findOrFail($request->id);
-        $this->authorize('assign', $protocol);   // S02: administrators and assigners
-        $protocol->diekperaiosi = $sendEmailTo;
-        $protocol->diekp_eos = $request->diekp_eos ? Carbon::createFromFormat('d/m/Y', $request->diekp_eos)->format('Ymd') : null;
-        $protocol->diekp_date = null;
-        $protocol->update();
-
-        // στέλνω mail στον Διεκπεραιωτή
-        if ($sendEmailTo) {
-            $sendEmailToArray = explode(',', $sendEmailTo);
-            $message = '';
-            foreach ($sendEmailToArray as $smt) {
-                if (substr($smt, 0, 1) == 'd') {
-                    $message .= $this->sendMailToDiekperaioti(ltrim($smt, 'd'), $protocol);
-                }
-                if (substr($smt, 0, 1) == 'e') {
-                    $message .= $this->diekpInformMail(ltrim($smt, 'e'), $protocol);
-                }
-            }
-            $notification = array(
-                'message' =>  "<ul>$message</ul>",
-                'alert-type' => 'success'
-            );
-            session()->flash('notification', $notification);
-        }
-        return response()->json($message);
     }
 
     public static function limitProtocolAccessList()

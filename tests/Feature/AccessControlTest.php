@@ -95,18 +95,27 @@ class AccessControlTest extends FeatureTestCase
     {
         $a = Attachment::factory()->withFile()->create(['protocol_id' => $this->foreign->id]);
 
-        $this->actingAs($this->writer)->get("/attach/del/{$a->id}")->assertForbidden();
-        $this->assertNotNull(Attachment::find($a->id));
+        // R1b: an action of the form (was GET /attach/del); the protocol is hidden, so the form doesn't even open
+        \Livewire\Livewire::actingAs($this->writer)->test(\App\Livewire\ProtocolForm::class, ['protocol' => $this->foreign])->assertNotFound();
+        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        try {
+            app(\App\Services\Protocols\ProtocolWriter::class)->removeAttachment($this->writer, $a);
+        } finally {
+            $this->assertNotNull(Attachment::find($a->id));
+        }
     }
 
     public function test_only_admin_and_assigner_can_assign(): void
     {
         $this->setting('limitProtocolAccessList', 0);
-        $payload = ['id' => $this->foreign->id, 'diekperaiosi' => 'd' . $this->writer->id, 'diekp_eos' => ''];
+        // R1b: "Ανάθεση" of the form (was POST /anathesiSe)
+        $assign = fn ($user) => \Livewire\Livewire::actingAs($user)->test(\App\Livewire\ProtocolForm::class, ['protocol' => $this->foreign])
+            ->set('handle', [(string) $this->writer->id])->call('assignOnly');
 
-        $this->actingAs($this->writer)->post('/anathesiSe', $payload)->assertForbidden();
-        $this->actingAs($this->reader())->post('/anathesiSe', $payload)->assertRedirect();   // readers never reach it (writer middleware)
-        $this->actingAs($this->assigner())->post('/anathesiSe', $payload)->assertSuccessful();
+        $assign($this->writer)->assertForbidden();
+        $assign($this->reader())->assertForbidden();
+        $this->assertSame('', $this->foreign->fresh()->diekperaiosi);
+        $assign($this->assigner())->assertRedirect();
 
         $this->assertSame('d' . $this->writer->id, $this->foreign->fresh()->diekperaiosi);
     }
@@ -115,12 +124,13 @@ class AccessControlTest extends FeatureTestCase
     {
         $this->setting('limitProtocolAccessList', 0);
         $reader = $this->reader();
-        $payload = fn (Protocol $p) => ['id' => $p->id, 'diekp_date' => now()->format('d/m/Y')];
+        // R1b: "Διεκπεραιώθηκε" of the form (was POST /setDiekpDate)
+        $done = fn ($user, Protocol $p) => \Livewire\Livewire::actingAs($user)->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])->call('markDone');
 
-        $this->actingAs($reader)->post('/setDiekpDate', $payload($this->foreign))->assertForbidden();
+        $done($reader, $this->foreign)->assertForbidden();
         $this->assertNull($this->foreign->fresh()->diekp_date);
 
-        $this->actingAs($this->writer)->post('/setDiekpDate', $payload($this->mine))->assertSuccessful();
+        $done($this->writer, $this->mine)->assertRedirect();
         $this->assertNotNull($this->mine->fresh()->diekp_date);
     }
 

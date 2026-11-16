@@ -25,6 +25,12 @@ document.addEventListener('focusout', e => {
     else input.classList.remove('is-invalid');
 });
 
+// R1b: entering the field selects its text, so typing the day replaces the date (e.g. TAB from the number, then "9")
+document.addEventListener('focusin', e => {
+    const input = e.target.closest?.('input[data-date-value]');
+    if (input && !input.readOnly) input.select();
+});
+
 document.addEventListener('keydown', e => {
     const input = e.target.closest?.('input[data-date-value]');
     if (!input || input.readOnly || input.disabled) return;

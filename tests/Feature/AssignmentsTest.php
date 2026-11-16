@@ -99,8 +99,8 @@ class AssignmentsTest extends FeatureTestCase
     {
         $w = $this->writer();
         $p = Protocol::factory()->number(1)->create();
-        $this->actingAs($this->assigner())->post('/anathesiSe', ['id' => $p->id, 'diekperaiosi' => "d{$w->id}", 'diekp_eos' => ''])
-            ->assertSuccessful();
+        \Livewire\Livewire::actingAs($this->assigner())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])   // R1b "Ανάθεση"
+            ->set('handle', [(string) $w->id])->call('assignOnly')->assertRedirect();
         $this->assertSame(["d{$w->id}"], $this->rows($p));
     }
 

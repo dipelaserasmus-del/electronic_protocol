@@ -171,13 +171,13 @@ class ProtocolWriterTest extends FeatureTestCase
         $admin = $this->admin();
         Protocol::factory()->number(5)->placeholder()->create();
 
-        $this->actingAs($admin)->from('/home')->post('/home', $this->protocolForm(['protocolnum' => 5, 'protocolnum_proposed' => 6, 'thema' => 'Νέο']))
-            ->assertRedirect('/home')->assertSessionHasErrors(['protocolnum', 'replace_placeholder']);
-        $this->actingAs($admin)->get('/home')->assertSee('name="replace_placeholder"', false);
-
-        $this->actingAs($admin)->post('/home', $this->protocolForm(['protocolnum' => 5, 'protocolnum_proposed' => 6, 'thema' => 'Νέο', 'replace_placeholder' => '1']))
-            ->assertSessionHasNoErrors();
-        $this->assertSame('Νέο', Protocol::where('protocolnum', 5)->value('thema'));
+        \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolForm::class)   // R1b form
+            ->set('form.protocolnum', '5')->set('form.thema', 'Νέο')
+            ->assertSee('Κρατημένος ως «ΕΛΕΥΘΕΡΟ»')->assertSee('id="f-replace"', false)
+            ->call('save')->assertHasErrors(['protocolnum', 'replace_placeholder'])
+            ->assertSet('form.thema', 'Νέο')
+            ->set('replacePlaceholder', true)->call('save')->assertHasNoErrors()->assertRedirect();
+        $this->assertSame(['Νέο'], Protocol::where('protocolnum', 5)->pluck('thema')->all());
     }
 
     public function test_a_real_protocol_or_a_placeholder_with_attachments_is_never_replaced(): void

@@ -1,6 +1,7 @@
 // @smoke: the main screens work for every role, and the core actions succeed in a real browser.
 const { test, expect } = require('@playwright/test');
 const { login, evidence, toasts } = require('./helpers');
+const { fillProtocol, saveProtocol, notice } = require('./helpers');
 
 test.describe('@smoke', () => {
   for (const user of ['admin', 'anathetis', 'writer', 'reader']) {
@@ -23,12 +24,10 @@ test.describe('@smoke', () => {
     await login(page, 'writer');
     await page.goto('/home');
     const subject = `E2E θέμα ${Date.now()}`;
-    await page.fill('#thema', subject);
-    await page.fill('#reply_to_email', 'sender@example.test');
-    await page.evaluate(() => formSubmit());
-    await page.waitForURL(/\/home\/\d+$/);
-    await expect(page.locator('#thema')).toHaveValue(subject);
-    expect(await toasts(page)).toContain('απόδειξη παραλαβής σε sender@example.test');
+    await fillProtocol(page, { thema: subject, reply_to_email: 'sender@example.test' });
+    await saveProtocol(page);
+    await expect(page.locator('#f-thema')).toHaveValue(subject);
+    expect(await notice(page)).toContain('απόδειξη παραλαβής σε sender@example.test');
     await evidence(page, 'e2e-protocol-saved', { clip: { x: 0, y: 0, width: 1440, height: 450 } });
   });
 

@@ -51,8 +51,8 @@ test('register an e-mail with emoji: the protocol keeps them (D05)', async ({ pa
 
   const [, num, year] = message.match(/Αρ\.Πρωτ: (\d+) \/ \d\d-\d\d-(\d{4})/);
   await page.goto(`/goto/${year}/${num}?find=1`);
-  await expect(page.locator('[name=thema]')).toHaveValue(/σύμβολα: 50% ; <tag> \\ _ 📎$/);
-  await expect(page.locator('[name=in_arxi_ekdosis]')).toHaveValue('Ομάδα "Δοκιμών" & Συνεργάτες <oteam@example.test>');
+  await expect(page.locator('#f-thema')).toHaveValue(/σύμβολα: 50% ; <tag> \\ _ 📎$/);
+  await expect(page.locator('#f-in_arxi_ekdosis')).toHaveValue('Ομάδα "Δοκιμών" & Συνεργάτες <oteam@example.test>');
   await evidence(page, 'd05-emoji-protocol', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
 });
 
@@ -65,7 +65,7 @@ test('register an e-mail with a 300-character subject: saved in full (D01)', asy
 
   const [, num, year] = message.match(/Αρ\.Πρωτ: (\d+) \/ \d\d-\d\d-(\d{4})/);
   await page.goto(`/goto/${year}/${num}?find=1`);
-  const thema = await page.locator('[name=thema]').inputValue();
+  const thema = await page.locator('#f-thema').inputValue();
   expect(thema.length).toBe(300);
   expect(thema).toMatch(/^Ενημέρωση για τη διαδικασία υποβολής αιτήσεων μετάθεσης/);
   await evidence(page, 'd01-long-subject-protocol', { clip: { x: 0, y: 0, width: 1440, height: 520 } });

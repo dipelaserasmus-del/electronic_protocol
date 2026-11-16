@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\KeepvalueController;
+use App\Http\Controllers\ProtocolFormController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -47,21 +48,17 @@ Route::middleware('auth')->group(function () {
     Route::post('keep/{keepvalue}', [KeepvalueController::class, 'update']);
     Route::get('keep/del/{keepvalue}', [KeepvalueController::class, 'delete']);
 
-    Route::get('/home', [ProtocolController::class, 'index']);
+    Route::get('/home', [ProtocolFormController::class, 'create']);   // R1b
     Route::get('/chkForUpdates', [ProtocolController::class, 'chkForUpdates']);
     Route::get('/home/list', [ProtocolController::class, 'indexList'])->middleware(['redirectAfterLogin']);
     Route::get('/home/list/{filter?}/{userId?}', [ProtocolController::class, 'indexList']);
-    Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolController::class, 'index']);
-    Route::get('getFileInputs/{num}', [ProtocolController::class, 'getFileInputs']);
+    Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolFormController::class, 'show']);   // R1b
     Route::get('getKeep4Fakelos/{fakelos}', [ProtocolController::class, 'getKeep4Fakelos']);
 
     Route::post('/home', [ProtocolController::class, 'store']);
     Route::post('/home/{protocol}', [ProtocolController::class, 'update']);
-    Route::get('/delprotocol/{protocol}', [ProtocolController::class, 'delprotocol']);
-    Route::post('/checkInNum', [ProtocolController::class, 'checkInNum'])->name('checkInNum');
     Route::post('/checkSameEmail', [ProtocolController::class, 'checkSameEmail'])->name('checkSameEmail');
 
-    Route::get('/attach/del/{attachment}', [ProtocolController::class, 'attachDelete']);
     Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
     Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
 
@@ -80,8 +77,6 @@ Route::middleware('auth')->group(function () {
     Route::post('receiptToEmail', [ProtocolController::class, 'receiptToEmail'])->name('receiptToEmail');
     Route::get('/about', [ProtocolController::class, 'about']);
     Route::get('/updated', [ProtocolController::class, 'updated']);
-    Route::post('/setDiekpDate', [ProtocolController::class, 'setDiekpDate'])->name('setDiekpDate');
-    Route::post('/anathesiSe', [ProtocolController::class, 'anathesiSe'])->name('anathesiSe');
 
     Route::get('/viewEmails', [ProtocolController::class, 'viewEmails']);
     Route::get('/getEmailNum', [ProtocolController::class, 'getEmailNum']);

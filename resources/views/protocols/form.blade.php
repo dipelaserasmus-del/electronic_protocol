@@ -1,0 +1,15 @@
+{{-- R1b: page of the protocol form (new / edit / copy); the form itself is the Livewire component ProtocolForm. --}}
+@extends('layouts.modern')
+
+@section('title', $protocol?->exists && ! $copy ? "Πρωτόκολλο {$protocol->protocolnum}/{$protocol->etos}" : 'Νέο πρωτόκολλο')
+
+@section('content')
+    <livewire:protocol-form :protocol="$protocol" :copy="$copy" :prefill-num="$prefillNum" />
+
+    {{-- values offered while typing (most used in recent protocols) --}}
+    @foreach (\App\Support\Suggestions::for(auth()->user()) as $field => $values)
+        <datalist id="suggest-{{ $field }}">
+            @foreach ($values as $value)<option value="{{ $value }}"></option>@endforeach
+        </datalist>
+    @endforeach
+@endsection

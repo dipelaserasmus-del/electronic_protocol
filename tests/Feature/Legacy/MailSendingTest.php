@@ -50,9 +50,8 @@ class MailSendingTest extends FeatureTestCase
         $reader = $this->reader();
         $p = Protocol::factory()->number(1)->create(['thema' => 'Θέμα ανάθεσης']);
 
-        $this->actingAs($this->assigner())->post('/anathesiSe', [
-            'id' => $p->id, 'diekperaiosi' => "d{$writer->id},e{$reader->id}", 'diekp_eos' => '',
-        ])->assertSuccessful();
+        \Livewire\Livewire::actingAs($this->assigner())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])   // R1b "Ανάθεση"
+            ->set('handle', [(string) $writer->id])->set('inform', [(string) $reader->id])->call('assignOnly')->assertRedirect();
 
         $sent = $this->sentMails('intra-mail');
         $this->assertCount(2, $sent);

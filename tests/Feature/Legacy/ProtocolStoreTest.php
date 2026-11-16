@@ -17,8 +17,8 @@ class ProtocolStoreTest extends FeatureTestCase
 
         $this->actingAs($this->writer())->get('/home')
             ->assertOk()
-            ->assertSee('name="protocolnum"', false)
-            ->assertSee('value="42"', false);
+            ->assertSee('id="f-protocolnum"', false)
+            ->assertSee('Δίνεται κατά την αποθήκευση (επόμενος: 42)');   // R1b form
     }
 
     public function test_writer_creates_protocol(): void
@@ -137,22 +137,21 @@ class ProtocolStoreTest extends FeatureTestCase
     }
 
     /** Review finding on B03: after a validation error the form must keep the ORIGINAL proposed number */
-    public function test_proposed_number_survives_a_validation_redirect(): void
+    /** B03 in the R1b form: a number typed by someone who may choose it is kept; left empty, the next free one. */
+    public function test_new_form_keeps_a_typed_number_and_fills_an_empty_one(): void
     {
-        Protocol::factory()->number(10)->create();
-        Protocol::factory()->number(11)->create();   // someone took 11 meanwhile; we were proposed 11
-
-        $this->withSession(['_old_input' => ['protocolnum' => '11', 'protocolnum_proposed' => '11']])
-            ->actingAs($this->writer())->get('/home')
-            ->assertSee('name="protocolnum_proposed" value="11"', false);
-    }
-
-    public function test_new_protocol_form_sends_the_proposed_number(): void
-    {
+        $this->setting('protocolValidate', 0);
         Protocol::factory()->number(41)->create();
+        $admin = $this->admin();
 
-        $this->actingAs($this->writer())->get('/home')
-            ->assertSee('name="protocolnum_proposed" value="42"', false);
+        \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolForm::class)
+            ->assertSee('placeholder="42"', false)
+            ->set('form.protocolnum', '50')->set('form.thema', 'Επιλεγμένος')->call('save')->assertHasNoErrors();
+        \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolForm::class)
+            ->set('form.thema', 'Επόμενος')->call('save')->assertHasNoErrors();
+
+        $this->assertSame([41, 50, 51], Protocol::orderBy('protocolnum')->pluck('protocolnum')->all());
+        $this->assertSame('Επιλεγμένος', Protocol::where('protocolnum', 50)->value('thema'));
     }
 
     public function test_manual_number_is_kept_when_safe_numbering_is_off(): void
