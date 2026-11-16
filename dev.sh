@@ -4,6 +4,7 @@
 #   ./dev.sh up            build + start the stack, install deps, migrate + seed on first run
 #   ./dev.sh cloud-up      same as up, inside a Claude Code cloud sandbox (see docker/dev/cloud-setup.sh)
 #   ./dev.sh mail          (re)generate test emails and reload the mock IMAP mailbox
+#   ./dev.sh assets        rebuild the frontend of the new pages (Vite, inside the app container)
 #   ./dev.sh test [args]   run the PHPUnit test suite inside the app container (MySQL "testing" DB)
 #   ./dev.sh e2e [args]    browser tests (Playwright) against the running stack; EVIDENCE=<ID> saves screenshots
 #   ./dev.sh reset         wipe the dev database and re-seed it
@@ -26,6 +27,12 @@ ENV_FILE=.env.development
 # the container's www-data user: files then stay manageable by you on the host (VS Code, git, rm).
 compose() { docker compose -p electronic-protocol-dev --env-file "$ENV_FILE" -f docker-compose.yml -f docker-compose.dev.yml "$@"; }
 in_app() { compose exec -T app "$@"; }
+
+# frontend of the rebuilt pages (N03): npm + Vite run inside the app container, as your user (no Node on the host)
+build_assets() {   # $1 = compose function of the stack
+  "$1" exec -T -u "$(id -u):$(id -g)" -e HOME=/tmp -e npm_config_update_notifier=false app \
+    sh -c 'npm ci --no-audit --no-fund --loglevel=error >/dev/null && npm run build --silent >/dev/null'
+}
 
 load_mail() {
   in_app php docker/dev/make-emails.php tests/fixtures/emails/synthetic docker/dev/mail-preload
@@ -58,6 +65,7 @@ real_cmd() {
       compose_real up -d --force-recreate imap >/dev/null 2>&1   # reload the test mailbox
       # fresh checkout: install PHP dependencies (as your user) before running artisan
       [ -f vendor/autoload.php ] || compose_real exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
+      build_assets compose_real   # ~5 s; keeps the new pages' frontend current after a git pull
       in_real chmod -R a+rwX storage bootstrap/cache public/tmp
       grep -q '^APP_KEY=base64' "$REAL_ENV" || in_real php artisan key:generate --force
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
@@ -110,6 +118,7 @@ case "${1:-help}" in
     compose up -d --build
     # as your own user, so vendor/ stays yours (not root's) on the host
     compose exec -T -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer app composer install --no-interaction --no-progress
+    build_assets compose
     in_app chmod -R a+rwX storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
     if [ "$(in_app php artisan tinker --execute='echo \Schema::hasTable("roles") ? 1 : 0;' 2>/dev/null | tail -1 | tr -d "[:space:]")" != "1" ]; then
@@ -129,6 +138,7 @@ case "${1:-help}" in
     mkdir -p docker/dev/mail-preload
     compose up -d
     in_app php artisan package:discover >/dev/null
+    [ -f public/build/manifest.json ] || build_assets compose
     in_app chmod -R a+rwX storage bootstrap/cache public/tmp
     grep -q '^APP_KEY=base64' "$ENV_FILE" || in_app php artisan key:generate --force
     for _ in $(seq 1 30); do in_app php artisan migrate:status >/dev/null 2>&1 && break; sleep 2; done
@@ -182,6 +192,7 @@ case "${1:-help}" in
     # always start from an empty test database, like CI does (only the "testing" database is wiped)
     in_app php artisan db:wipe --env=testing --force >/dev/null
     in_app php vendor/bin/phpunit "$@" ;;
+  assets) build_assets compose && echo "Frontend built: public/build" ;;
   reset) in_app php artisan migrate:fresh --force --seed && in_app php artisan db:seed --force --class=DevSeeder ;;
   artisan) shift; in_app php artisan "$@" ;;
   shell) compose exec app bash ;;

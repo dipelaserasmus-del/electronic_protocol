@@ -10,6 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # ext-imap is intentionally NOT installed: it was removed from PHP core in 8.4, depends on the
 # unmaintained c-client library, and webklex/php-imap talks IMAP over native sockets.
 # mysql-client provides mysqldump for Ρυθμίσεις → Backup (B10).
+# nodejs/npm (Ubuntu's own packages) build the frontend with Vite (N03); no Node needed on the host.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl unzip git tzdata \
@@ -20,6 +21,7 @@ RUN apt-get update \
       php${PHP_VERSION}-bz2 php${PHP_VERSION}-curl \
       composer \
       mysql-client \
+      nodejs npm \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # PHP-FPM: listen on TCP 9000 for the nginx container, log to stderr, keep env vars.
@@ -35,6 +37,8 @@ COPY docker/php/local.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-laravel.ini
 
 WORKDIR /var/www/html
 COPY --chown=www-data:www-data . /var/www/html
+# frontend for rebuilt pages (public/build); the dev stack mounts the source over this and builds it itself
+RUN npm ci --no-audit --no-fund && npm run build && rm -rf node_modules
 
 EXPOSE 9000
 CMD ["php-fpm", "-F"]

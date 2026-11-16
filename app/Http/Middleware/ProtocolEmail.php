@@ -17,15 +17,8 @@ class ProtocolEmail
      */
     public function handle($request, Closure $next)
     {
-
-        // αν ο λογαριασμός είναι κενός δεν προχωράω
-        $defaultImapEmail = Config::getConfigValueOf('defaultImapEmail');
-        if (!$defaultImapEmail) {
-            return redirect()->back();
-        }
-        // αν οι χρήστες δεν επιτρέπεται να πρωτοκολλήσουν email
-        $allowedEmailUsers = Config::getConfigValueOf('allowedEmailUsers');
-        if ($allowedEmailUsers && strpos($allowedEmailUsers, Auth::user()->username) === false) {
+        // no IMAP account set, or the user is not in "allowedEmailUsers" (rule shared with the top bar)
+        if (! \App\Support\InboxAccess::allows(Auth::user())) {
             return redirect()->back();
         }
         return $next($request);
