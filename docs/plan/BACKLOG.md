@@ -123,7 +123,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
 | R4a | Secure file handling: policy-checked download, safe `Content-Disposition`, upload type/size validation (🔎 S06) | SEC | P1 | S | S02 |
-| R4b | **Trash with retention**: setting "keep N days", daily auto-purge (scheduler), trash page with original protocol (number/year/subject, link), deleted by/when, restore / delete now; covers attachments of deleted protocols | DATA/BE | P1 | M | R4a, D03 |
+| R4b | **Trash with retention**: setting "keep N days", daily auto-purge (scheduler), trash page with original protocol (number/year/subject, link), deleted by/when, restore / delete now; covers attachments of deleted protocols. 🔎 (D03) the trash button moves the file to `trash/` but keeps the `arxeio/` path in `savedPath` | DATA/BE | P1 | M | R4a, D03 |
 
 ### R5 Email
 📧 Remind owner to provide emails before starting.

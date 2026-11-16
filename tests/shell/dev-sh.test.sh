@@ -46,6 +46,10 @@ run "test without arguments"        "exec -T app php vendor/bin/phpunit" test
 run "test with filter"              "phpunit --filter Foo"               test --filter Foo
 run "artisan"                       "php artisan migrate:status"         artisan migrate:status
 run "up (existing database)"        "artisan migrate --force"            up
+# storage is opened up again after migrate/seed (files the seeder creates as root must be writable by the web server)
+last() { grep -n -- "$1" "$LOG" | tail -1 | cut -d: -f1; }
+if [ "$(last 'chmod -R a+rwX storage')" -gt "$(last 'artisan migrate')" ]; then echo "ok   up: storage writable after seeding"
+else echo "FAIL up: chmod of storage must come after migrate/seed"; fails=$((fails+1)); fi
 run "mail"                          "force-recreate imap"                mail
 run "down"                          "compose -p electronic-protocol-dev" down
 run "e2e on Linux: host network"    "--network=host"                     e2e
@@ -59,6 +63,7 @@ run "real load: no dump → message"  -                                    real 
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"
 run "real load (.sql.gz)"           "artisan migrate --force"            real load
 run "real load adopts old backups"  "artisan migrate:adopt-legacy"       real load
+run "real load measures attachments (D03)" "artisan attachments:fill-metadata" real load
 rm -f "$WORK/repo/local-data/db/"*; (cd "$WORK" && echo "SELECT 1;" > dump.sql && zip -q repo/local-data/db/export.zip dump.sql)
 run "real load (.zip from phpMyAdmin)" "artisan migrate --force"          real load
 run "real down"                     "compose -p electronic-protocol-real" real down

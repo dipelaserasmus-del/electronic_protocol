@@ -95,6 +95,8 @@ real_cmd() {
       in_real php artisan migrate:adopt-legacy
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
+      # D03: size + SHA-256 of the attachment files (counts only; only files not measured yet)
+      in_real php artisan attachments:fill-metadata --no-ansi
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
       in_real php artisan tinker --execute='\App\Models\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
       in_real chmod -R a+rwX storage/app
@@ -129,6 +131,9 @@ case "${1:-help}" in
     else
       in_app php artisan migrate --force
     fi
+    # again after seeding: the demo seeder (root) creates attachment folders the web server could not write into,
+    # so an upload into one of them silently failed (flaky e2e F08 upload test in CI)
+    in_app chmod -R a+rwX storage
     load_mail
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
     ;;
@@ -150,6 +155,9 @@ case "${1:-help}" in
     else
       in_app php artisan migrate --force
     fi
+    # again after seeding: the demo seeder (root) creates attachment folders the web server could not write into,
+    # so an upload into one of them silently failed (flaky e2e F08 upload test in CI)
+    in_app chmod -R a+rwX storage
     load_mail
     echo "Ready: http://localhost:$(grep '^APP_PORT=' "$ENV_FILE" | cut -d= -f2)"
     ;;
