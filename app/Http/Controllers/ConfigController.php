@@ -11,6 +11,7 @@ use App\Models\Config;
 use Carbon\Carbon;
 use App\Models\Attachment;
 use App\Services\DatabaseBackup;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
@@ -194,7 +195,9 @@ class ConfigController extends Controller implements HasMiddleware
             Attachment::where('savedPath', $savedPath)->update(['savedPath' => $trashPath]);
         }
 
-        Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString())->delete();
+        $expired = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString());
+        (clone $expired)->update(['deleted_by' => Auth::id()]);   // D03: a query delete skips the model events
+        $expired->delete();
 
         $notification = array(
             'message' => "Διαγράφηκαν $arxeianum αρχεία.",

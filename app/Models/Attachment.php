@@ -53,10 +53,73 @@ class Attachment extends Model
         'flag'
     ];
 
-    /** D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
-    protected $casts = ['expires' => \App\Casts\LegacyYmdDate::class];
+    /** D03: numbers; D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
+    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class];
 
     public function protocol(){
         return $this->belongsTo('App\Models\Protocol');
+    }
+
+    /** D03: the user who moved this attachment to the trash */
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    protected static function booted(): void
+    {
+        // D03: size and SHA-256 of the stored file on every save. Not only when the path changes: uploading a file
+        // with the same name again overwrites the file at the same path (review finding).
+        static::saving(function (Attachment $attachment) {
+            if ($attachment->isDirty('savedPath') || $attachment->savedPath) {
+                $attachment->fillFileMetadata();
+            }
+        });
+        // D03: who moved it to the trash (soft delete); cleared when restored
+        static::softDeleted(function (Attachment $attachment) {
+            $attachment->deleted_by = auth()->id();
+            $attachment->saveQuietly();
+        });
+        static::restored(function (Attachment $attachment) {
+            $attachment->deleted_by = null;
+            $attachment->saveQuietly();
+        });
+    }
+
+    /**
+     * D03: read size and hash from the stored file (default disk). A file that is not there leaves both empty.
+     * For an attachment in the trash, the file may already have been moved from arxeio/ to trash/.
+     * @return bool whether a file was found
+     */
+    public function fillFileMetadata(): bool
+    {
+        $path = $this->storedFilePath();
+        if ($path === null) {
+            $this->size = null;
+            $this->sha256 = null;
+            return false;
+        }
+        $full = \Illuminate\Support\Facades\Storage::path($path);
+        $this->size = filesize($full);
+        $this->sha256 = hash_file('sha256', $full);
+        return true;
+    }
+
+    /** Path on the default disk where the file is now, or null */
+    public function storedFilePath(): ?string
+    {
+        $storage = \Illuminate\Support\Facades\Storage::disk();
+        $candidates = [$this->savedPath];
+        if ($this->trashed() && $this->savedPath) {
+            // attachDelete moves the file to trash/ but keeps the path; look there first, because a newer upload with
+            // the same name may now be at the old path (review finding)
+            array_unshift($candidates, str_replace('arxeio', 'trash', $this->savedPath));
+        }
+        foreach ($candidates as $p) {
+            if (is_string($p) && $p !== '' && $storage->exists($p) && is_file($storage->path($p))) {
+                return $p;
+            }
+        }
+        return null;
     }
 }

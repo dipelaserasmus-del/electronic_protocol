@@ -122,6 +122,47 @@ class Protocol extends Model
         return $this->hasMany('App\Models\Attachment', 'protocol_id');
     }
 
+    /** D02: users assigned for διεκπεραίωση (type d) or ενημέρωση (type e) */
+    public function assignments()
+    {
+        return $this->hasMany(ProtocolAssignment::class, 'protocol_id');
+    }
+
+    protected static function booted(): void
+    {
+        // D02: the legacy form writes the text "d14,e10"; keep the assignments table in step with it
+        static::saved(function (Protocol $protocol) {
+            if ($protocol->wasRecentlyCreated || $protocol->wasChanged('diekperaiosi')) {
+                \App\Support\Assignments::sync($protocol);
+            }
+        });
+    }
+
+    /** D02: assigned to this user (for type d or e, or either) */
+    public function scopeAssignedTo($query, int $userId, ?string $type = null)
+    {
+        return $query->whereHas('assignments', function ($q) use ($userId, $type) {
+            $q->where('user_id', $userId);
+            if ($type !== null) {
+                $q->where('type', $type);
+            }
+        });
+    }
+
+    /** D02: assigned to anyone for this type */
+    public function scopeAssignedFor($query, string $type)
+    {
+        return $query->whereHas('assignments', fn ($q) => $q->where('type', $type));
+    }
+
+    /** S02 "limitProtocolAccessList": created by the user or assigned to them (d or e) */
+    public function scopeOwnOrAssigned($query, int $userId)
+    {
+        return $query->where(function ($q) use ($userId) {
+            $q->where('user_id', $userId)->orWhere(fn ($q) => $q->assignedTo($userId));
+        });
+    }
+
     public static function last()
     {
         return self::latest()->first();

@@ -102,7 +102,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ### R1 Protocol entry
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
-| R1a | Protocol service: numbering (B03/B08 services), validation, **input sanitation** (`--` bug + fuzz `' " ; % _ \ < > &`, emoji, Greek), copy **incl. date**, writer may edit date when setting enabled, replace ΕΛΕΥΘΕΡΟ placeholder with confirmation | BE/BUG | P0 | M | D01, D02 |
+| R1a | Protocol service: numbering (B03/B08 services), validation, **input sanitation** (`--` bug + fuzz `' " ; % _ \ < > &`, emoji, Greek), copy **incl. date**, writer may edit date when setting enabled, replace ΕΛΕΥΘΕΡΟ placeholder with confirmation; write assignments to `protocol_assignments` and drop the text column `diekperaiosi` (D02 keeps it in sync until then; also receipts/prints still read the text) | BE/BUG | P0 | M | D01, D02 |
 | R1b | Protocol form screen: number with "**already used**" indicator, TAB → day field, date components, inline non-blocking notices for existing subject / incoming number (replaces YES/NO dialog), pill actions | UI | P1 | M | R1a, N04 |
 | R1c | Attachments panel: always open on new/copy, **whole-window drag-and-drop**, file icons + size, subject placeholder from filename | UI | P1 | M | R1b, D03 |
 | R1d | Auto-assignment on save using folder rules (rules UI in R6b) | BE | P2 | S | R1a, R6b |
@@ -123,7 +123,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
 | R4a | Secure file handling: policy-checked download, safe `Content-Disposition`, upload type/size validation (🔎 S06) | SEC | P1 | S | S02 |
-| R4b | **Trash with retention**: setting "keep N days", daily auto-purge (scheduler), trash page with original protocol (number/year/subject, link), deleted by/when, restore / delete now; covers attachments of deleted protocols | DATA/BE | P1 | M | R4a, D03 |
+| R4b | **Trash with retention**: setting "keep N days", daily auto-purge (scheduler), trash page with original protocol (number/year/subject, link), deleted by/when, restore / delete now; covers attachments of deleted protocols. 🔎 (D03) the trash button moves the file to `trash/` but keeps the `arxeio/` path in `savedPath` | DATA/BE | P1 | M | R4a, D03 |
 
 ### R5 Email
 📧 Remind owner to provide emails before starting.
@@ -157,7 +157,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 | A06 | Rule: no attachment and none of `sxetiko` / "εκκρεμότητα" / "ΕΛΕΥΘΕΡΟ" | AUTO | P2 | S | A01 |
 | X01 | **Audit log — recording**: append-only `audit_log` table (user, action, entity, old→new values, IP, time); automatic capture of create/update/delete on protocols, attachments, assignments, users, folders, settings; logins / logouts / failed logins; attachment downloads; email registrations; retention setting | AUDIT | P3 | M | N02 |
 | X02 | **Audit log — viewing**: admin page with filters (user, action, date, protocol), per-protocol "History" tab, CSV export; not editable from UI | AUDIT | P3 | M | X01 |
-| Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2 | MOD | P2 | M | R1–R7 |
+| Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2; D04 transitional cast `LegacyYmdDate` → `date` | MOD | P2 | M | R1–R7 |
 | Z02 | Auth hardening: rate limiting login/reset, secure cookies, security headers/CSP (🔎 S07) | SEC | P2 | S | Z01 |
 | Z03 | Final security review of whole app + dependency audit; final evidence report | SEC | P1 | M | Z02 |
 

@@ -31,6 +31,12 @@ class AdoptLegacySchemaTest extends TestCase
         Schema::drop('migrations');
         DB::statement("ALTER TABLE users MODIFY role_id INT UNSIGNED NOT NULL DEFAULT '1'");
         DB::statement('ALTER TABLE protocols MODIFY thema VARCHAR(255) NULL, MODIFY in_perilipsi VARCHAR(255) NULL');   // pre-D01
+        DB::statement('ALTER TABLE attachments DROP INDEX attachments_sha256_index, DROP COLUMN size, DROP COLUMN sha256, DROP COLUMN deleted_by');   // pre-D03
+        Schema::drop('protocol_assignments');   // pre-D02: assignments only as text
+        DB::statement('ALTER TABLE protocols MODIFY protocoldate INT UNSIGNED NOT NULL, MODIFY in_date INT UNSIGNED NULL, MODIFY out_date INT UNSIGNED NULL, MODIFY diekp_eos INT UNSIGNED NULL, MODIFY diekp_date INT UNSIGNED NULL');   // pre-D04
+        DB::statement('ALTER TABLE attachments MODIFY expires INT UNSIGNED NULL');
+        $protocolId = DB::table('protocols')->insertGetId(['user_id' => 1, 'protocolnum' => 990001, 'protocoldate' => 20260105,
+            'etos' => 2026, 'thema' => 'Παλιό ανατεθειμένο', 'diekperaiosi' => 'd1,e2,']);
         $users = DB::table('users')->count();
 
         $this->artisan('migrate:adopt-legacy')->assertSuccessful();
@@ -50,6 +56,13 @@ class AdoptLegacySchemaTest extends TestCase
         $this->assertSame($users, DB::table('users')->count(), 'data is kept');
         $this->assertSame('text', Schema::getColumnType('protocols', 'thema'), 'D01 applied');
         $this->assertSame('text', Schema::getColumnType('protocols', 'in_perilipsi'));
+        $this->assertTrue(Schema::hasColumns('attachments', ['size', 'sha256', 'deleted_by']), 'D03 applied');
+        $this->assertSame(['d1', 'e2'], DB::table('protocol_assignments')->where('protocol_id', $protocolId)
+            ->orderBy('type')->get()->map(fn ($a) => $a->type . $a->user_id)->all(), 'D02 backfilled');
+        $this->assertSame('date', Schema::getColumnType('protocols', 'protocoldate'), 'D04 applied');
+        $this->assertSame('date', Schema::getColumnType('attachments', 'expires'));
+        $this->assertSame('2026-01-05', DB::table('protocols')->where('id', $protocolId)->value('protocoldate'), 'D04 kept the date');
+        DB::table('protocols')->where('id', $protocolId)->delete();
     }
 
     public function test_only_tables_that_exist_are_recorded(): void
