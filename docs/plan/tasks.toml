@@ -62,7 +62,7 @@ tasks = [
   { id = "R1b", title = "Protocol form screen", phase = "R", batch = 6, size = "M", deps = ["R1a", "N04"], status = "done", pr = 43 },
   { id = "R1c", title = "Attachments panel, drag & drop", phase = "R", batch = 6, size = "M", deps = ["R1b", "D03"], status = "done", pr = 44 },
   { id = "R2", title = "Protocol list rebuild", phase = "R", batch = 6, size = "M", deps = ["N04", "D02"], status = "done", pr = 45 },
-  { id = "R4a", title = "Secure file handling", phase = "R", batch = 6, size = "S", deps = ["S02"], status = "todo" },
+  { id = "R4a", title = "Secure file handling", phase = "R", batch = 6, size = "S", deps = ["S02"], status = "done", pr = 46 },
   { id = "R4b", title = "Attachment trash with retention", phase = "R", batch = 6, size = "M", deps = ["R4a", "D03"], status = "todo" },
 
   # ---------------- Batch 7 ----------------

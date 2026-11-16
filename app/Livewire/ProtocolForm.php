@@ -204,12 +204,21 @@ class ProtocolForm extends Component
 
     public function updatedPicked(): void
     {
-        $this->validate(['picked.*' => ['file', 'max:65536']], [], ['picked.*' => 'αρχείο']);
+        $this->resetErrorBag('picked');
+        $refused = [];
         foreach ((array) $this->picked as $file) {
+            // R4a: refused at once (size, types that run code), the others are added
+            if ($why = \App\Support\SafeFile::refuse($file)) {
+                $refused[] = $why;
+                continue;
+            }
             $this->uploads[] = $file;
             $this->uploadAdas[] = '';
         }
         $this->picked = [];
+        if ($refused) {
+            $this->addError('picked', implode(' ', $refused));
+        }
     }
 
     public function removeUpload(int $index): void

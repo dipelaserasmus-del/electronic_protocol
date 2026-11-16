@@ -399,10 +399,18 @@ final class ProtocolWriter
         if ($v['reply_to_email'] !== null && ! filter_var($v['reply_to_email'], FILTER_VALIDATE_EMAIL)) {
             $errors['reply_to_email'] = 'Μη έγκυρη διεύθυνση email.';
         }
+        $refused = [];
         foreach ($attachments as $row) {
             if (mb_strlen((string) TextInput::clean($row['ada'] ?? null)) > 255) {
                 $errors['ada'] = 'Ο ΑΔΑ είναι έως 255 χαρακτήρες.';
             }
+            // R4a: size and type of every new file, whichever screen sent it
+            if (($row['file'] ?? null) instanceof UploadedFile && ($why = \App\Support\SafeFile::refuse($row['file']))) {
+                $refused[] = $why;
+            }
+        }
+        if ($refused) {
+            $errors['uploads'] = implode(' ', $refused);
         }
         if ($newAssignments && User::whereIn('id', array_column($newAssignments, 'user_id'))->count() < count(array_unique(array_column($newAssignments, 'user_id')))) {
             $errors['diekperaiosi'] = 'Άγνωστος χρήστης στην ανάθεση.';
