@@ -44,7 +44,7 @@ tasks = [
   { id = "N01", title = "PHP + Composer upgrade, drop ext-imap", phase = "N", batch = 3, size = "M", deps = ["F01", "F02", "F03"], status = "done", pr = 27 },
   { id = "N02", title = "Laravel structure modernization", phase = "N", batch = 3, size = "M", deps = ["N01"], status = "done", pr = 28 },
   { id = "N03", title = "Vite + Bootstrap 5 + Livewire, top nav layout", phase = "N", batch = 3, size = "M", deps = ["N02", "F05"], status = "done", pr = 31 },
-  { id = "N04", title = "Shared UI components (pills, date input…)", phase = "N", batch = 3, size = "M", deps = ["N03"], status = "todo" },
+  { id = "N04", title = "Shared UI components (pills, date input…)", phase = "N", batch = 3, size = "M", deps = ["N03"], status = "done", pr = 0 },
 
   # ---------------- Batch 4 ---------------- (moved earlier by the owner, 2026-11-15: emoji e-mails; inbox timeouts)
   { id = "D05", title = "Tables → utf8mb4", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "todo" },

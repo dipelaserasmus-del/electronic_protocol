@@ -11,7 +11,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   deployment (see `OWNER-TODO.md`). Consequence: S00 (open admin registration) stays exploitable in production;
   the old code ignores `storage/conf/.denyregister`. Mitigation without deploying code: a web-server rule that refuses
   `POST /register`: `docs/BLOCK-REGISTRATION.md` (owner has it, not applied yet).
-- **Batch 3 in progress.** N01 (#27), N02 (#28), N03 (#31) done. **Next: `N04`** (shared UI components on `layouts/modern`).
+- **Batch 3 in progress.** N01 (#27), N02 (#28), N03 (#31), N04 (#PR) done → **Batch 3 complete**. **Next: Batch 4** `D05` → `D01` → `R5a` → `F08`.
 - **Production target (owner, 2026-11-16): the Docker stack** after the rebuild (today: Windows 11 + XAMPP, Apache,
   PHP 8.1.25, MariaDB 10.4.32, php-imap). No XAMPP/MariaDB compatibility work. The owner migrates the old DB + files;
   path = `./dev.sh real load` (MariaDB dump → MySQL 8.4 + `migrate:adopt-legacy`). Still to ask before the deployment
@@ -62,6 +62,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 | N04 | #PR | `<x-date-input>`, `<x-pill-actions>`, `<x-file-badge>`, `<x-notice>`, toasts, `data-confirm` dialog; date rules in PHP + JS checked against one shared case list; `/dev/ui` (dev/test only) |
 | 2026-11-16 | N03 | #31 | Vite 7 + Bootstrap 5.3 + Livewire 4.4; Node 22 inside the app image; `layouts/modern` + `App\Support\Navigation` (menu per role, tested); `/about` first page; `./dev.sh assets` |
 | 2026-11-16 | N02 | #28 | `App\Models\*`, Laravel 11+ `bootstrap/app.php`, class-based routes in an `auth` group, `HasMiddleware`; route-middleware snapshot test (unchanged); fix: error handler crashed outside web requests |
 | 2026-11-16 | N01 | #27 | mail-mime-parser 4, PHPUnit 13, `php ^8.4.1` + platform pin, watermark pinned (next commit swaps `markpdf` binaries); `StoreFromEmailTest` characterizes e-mail registration. Production → Docker (owner) |

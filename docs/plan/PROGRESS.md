@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **21 / 57** `███████████░░░░░░░░░░░░░░░░░░░` 37% |
-| Effort done (PERT) | **9.8 / 28.3 h** `██████████░░░░░░░░░░░░░░░░░░░░` 35% |
-| Remaining effort, one agent in sequence | **18.4 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **22 / 57** `████████████░░░░░░░░░░░░░░░░░░` 39% |
+| Effort done (PERT) | **10.4 / 28.3 h** `███████████░░░░░░░░░░░░░░░░░░░` 37% |
+| Remaining effort, one agent in sequence | **17.9 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.6 h ± 0.3 |
 | In progress | L02 |
-| Next task | **N04** — Shared UI components (pills, date input…) |
+| Next task | **D05** — Tables → utf8mb4 |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** D02 → R1a → R1b → R1c → Z01 → Z02 → Z03
@@ -23,7 +23,7 @@
 |---|---|---|---|
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
-| 3 | ✅B10 ✅N01 ✅N02 ✅N03 ⬜N04 | 4/5 | `████████░░` |
+| 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
 | 4 | ⬜D05 ⬜D01 ⬜R5a ⬜F08 | 0/4 | `░░░░░░░░░░` |
 | 5 | ⬜D02 ⬜D03 ⬜D04 | 0/3 | `░░░░░░░░░░` |
 | 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
@@ -191,9 +191,9 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03 done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04 done
   class L02 inprogress
-  class N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class D02,R1a,R1b,R1c,Z01,Z02,Z03 critical
 ```
@@ -232,7 +232,7 @@ gantt
   N01 PHP + Composer upgrade, drop ext-imap :done, n01, 2026-11-12 17:26, 33m
   N02 Laravel structure modernization :done, n02, 2026-11-12 17:59, 33m
   N03 Vite + Bootstrap 5 + Livewire, top nav layout :done, n03, 2026-11-12 18:32, 33m
-  N04 Shared UI components (pills, date input…) :n04, 2026-11-12 19:05, 33m
+  N04 Shared UI components (pills, date input…) :done, n04, 2026-11-12 19:05, 33m
   section Batch 4
   D05 Tables → utf8mb4 :d05, 2026-11-12 19:38, 19m
   D01 Subject/summary → TEXT :d01, 2026-11-12 19:57, 19m
@@ -304,7 +304,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **N01** 🔴 | PHP + Composer upgrade, drop ext-imap | F01, F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 1.4 | 2.0 | 0.0 | #27 |
 | ✅ | **N02** 🔴 | Laravel structure modernization | N01 | 0.5 | 0.1 | 2.0 | 2.5 | 2.0 | 2.5 | 0.0 | #28 |
 | ✅ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | 0.0 | #31 |
-| ⬜ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 |  |
+| ✅ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 |  |
 | ⬜ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
 | ⬜ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 |  |
 | ⬜ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 3.1 | 4.2 | 1.1 |  |
