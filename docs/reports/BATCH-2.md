@@ -1,4 +1,4 @@
-# Batch 2 — summary (2026-11-13)
+# Batch 2 — summary (2026-11-13; written 2026-11-14 15:12)
 
 All 7 planned tasks done, each merged to `master` only after CI was green. CI now also runs **browser tests on the
 full Docker stack** (app + MySQL + mock mailbox + Mailpit) and a **data-hygiene check** (fails if real data,

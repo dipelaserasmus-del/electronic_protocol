@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **25 / 57** `█████████████░░░░░░░░░░░░░░░░░` 44% |
-| Effort done (PERT) | **12.1 / 28.3 h** `█████████████░░░░░░░░░░░░░░░░░` 43% |
-| Remaining effort, one agent in sequence | **16.1 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **26 / 57** `██████████████░░░░░░░░░░░░░░░░` 46% |
+| Effort done (PERT) | **12.5 / 28.3 h** `█████████████░░░░░░░░░░░░░░░░░` 44% |
+| Remaining effort, one agent in sequence | **15.8 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.6 h ± 0.3 |
 | In progress | L02 |
-| Next task | **F08** — Attachment names fit 255 bytes (Linux/Docker) |
+| Next task | **D02** — Assignments table (replace d14,e10 text) |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** D02 → R1a → R1b → R1c → Z01 → Z02 → Z03
@@ -24,7 +24,7 @@
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
 | 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
-| 4 | ✅D05 ✅D01 ✅R5a ⬜F08 | 3/4 | `████████░░` |
+| 4 | ✅D05 ✅D01 ✅R5a ✅F08 | 4/4 | `██████████` |
 | 5 | ⬜D02 ⬜D03 ⬜D04 | 0/3 | `░░░░░░░░░░` |
 | 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
@@ -191,9 +191,9 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08 done
   class L02 inprogress
-  class F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class D02,R1a,R1b,R1c,Z01,Z02,Z03 critical
 ```
@@ -237,7 +237,7 @@ gantt
   D05 Tables → utf8mb4 :done, d05, 2026-11-12 19:38, 19m
   D01 Subject/summary → TEXT :done, d01, 2026-11-12 19:57, 19m
   R5a Email service, EML cache, charsets :done, r5a, 2026-11-12 20:16, 66m
-  F08 Attachment names fit 255 bytes (Linux/Docker) :f08, 2026-11-12 21:22, 19m
+  F08 Attachment names fit 255 bytes (Linux/Docker) :done, f08, 2026-11-12 21:22, 19m
   section Batch 5
   D02 Assignments table (replace d14,e10 text) :crit, d02, 2026-11-12 21:41, 33m
   D03 Attachment size/hash/deleted_by :d03, 2026-11-12 22:14, 19m
@@ -308,7 +308,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 | #34 |
 | ✅ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 | #35 |
 | ✅ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 3.1 | 4.2 | 1.1 | #36 |
-| ⬜ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
+| ✅ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 | #37 |
 | ⬜ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 |  |
 | ⬜ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 3.8 | 4.2 | 3.0 |  |
 | ⬜ | **D04** | Integer dates → DATE columns | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 6.1 | 6.7 | 5.3 |  |

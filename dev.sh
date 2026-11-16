@@ -10,7 +10,7 @@
 #   ./dev.sh reset         wipe the dev database and re-seed it
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
-#   ./dev.sh real ...      local copy of production data (load|up|down|wipe) — see docs/LOCAL-REAL-DATA.md
+#   ./dev.sh real ...      local copy of production data (load|up|down|wipe|check-names) — see docs/LOCAL-REAL-DATA.md
 #   ./dev.sh doctor        check the set-up (versions and status only, no data) — safe to send
 #
 # App: http://localhost:8080 (demo users admin / anathetis / writer / reader, password: password)
@@ -107,7 +107,9 @@ real_cmd() {
     wipe) compose_real down -v; echo "Local copy removed (database volume deleted). Files in local-data/ are untouched." ;;
     logs) compose_real logs -f ;;
     artisan) shift; in_real php artisan "$@" ;;
-    *) echo "usage: ./dev.sh real up|load [dump]|down|wipe|logs|artisan ..."; ;;
+    # F08: attachment file names that don't fit Linux's 255 bytes (counts only; add --list to see them)
+    check-names) shift; real_cmd up >/dev/null; in_real php tools/check-attachment-names.php storage/app "$@" || true ;;
+    *) echo "usage: ./dev.sh real up|load [dump]|down|wipe|logs|artisan|check-names ..."; ;;
   esac
 }
 

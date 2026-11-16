@@ -211,6 +211,24 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertSame($text, Protocol::firstOrFail()->thema);
     }
 
+    /** F08: a file uploaded with a long Greek name (over 255 bytes with the prefix) is stored with a shortened name. */
+    public function test_uploaded_file_with_a_long_greek_name_is_stored(): void
+    {
+        $this->setting('safeNewProtocolNum', 0);
+        $name = str_repeat('Αίτηση', 25).'.pdf';   // 154 characters, 304 bytes
+
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 12, 'fakelos' => 'Φ.1',
+            'att1' => UploadedFile::fake()->createWithContent($name, '%PDF-1.4 long name'),
+        ]));
+
+        $a = Protocol::firstOrFail()->attachments()->firstOrFail();
+        $this->assertSame($name, $a->name, 'shown with its whole name');
+        $this->assertLessThanOrEqual(255, strlen(basename($a->savedPath)));
+        $this->assertStringEndsWith('.pdf', $a->savedPath);
+        $this->assertSame('%PDF-1.4 long name', Storage::get($a->savedPath));
+    }
+
     public function test_attachment_is_stored_with_protocol(): void
     {
         $this->setting('safeNewProtocolNum', 0);

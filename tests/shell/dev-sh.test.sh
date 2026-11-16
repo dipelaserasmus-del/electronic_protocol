@@ -54,6 +54,7 @@ FAKE_UNAME=Darwin run "e2e on macOS: host.docker.internal" "APP_URL=http://host.
 FAKE_UNAME=Darwin run "e2e on macOS: passes arguments" "-- --grep smoke" e2e --grep smoke
 run "doctor"                        "version --format"                   doctor
 run "real up"                       "compose -p electronic-protocol-real" real up
+run "real check-names (F08)"       "php tools/check-attachment-names.php storage/app" real check-names
 run "real load: no dump → message"  -                                    real help
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"
 run "real load (.sql.gz)"           "artisan migrate --force"            real load

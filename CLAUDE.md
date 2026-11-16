@@ -20,6 +20,10 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
    on its own** (commit, push, review replies, merge on green CI) without asking.
 7. Each batch ends with `docs/reports/BATCH-<n>.md` and an updated [`OWNER-TODO.md`](OWNER-TODO.md) (the owner's list:
    next suggested prompt, open questions, owner actions — keep it short).
+8. Date stamps in the md files for the owner and Claude (`Last update:`, `Current state —`, batch summaries, the
+   HANDOFF task log) include the time, Greek time: `2026-11-16 14:26` (owner, 2026-11-16).
+9. No changes on the **production server** until the migration to the new version (owner, 2026-11-16): no rules,
+   scripts or checks there; put such steps in the final-deployment guide instead.
 
 ## Hard rules
 - **Real data never reaches Claude or GitHub.** Production DB dumps, attachments and private emails stay in the
