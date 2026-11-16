@@ -149,7 +149,9 @@ class InboxTest extends FeatureTestCase
         $pdf = $this->actingAs($user)->get('/viewEmailAttachment/1/0')->assertOk();
         $this->assertSame('application/pdf', $pdf->headers->get('Content-Type'));
         $this->assertStringContainsString("filename*=utf-8''".rawurlencode('Πρόσκληση ημερίδας 2026.pdf'), $pdf->headers->get('Content-Disposition'));
-        $this->assertSame('sandbox', $pdf->headers->get('Content-Security-Policy'));
+        $this->assertStringStartsWith('inline;', $pdf->headers->get('Content-Disposition'));
+        $this->assertSame('nosniff', $pdf->headers->get('X-Content-Type-Options'));
+        // R4a: no sandbox for a PDF (Chrome refuses to show sandboxed PDFs); risky types: SafeFileTest
         $this->actingAs($user)->get('/viewEmailAttachment/1/9')->assertNotFound();
 
         $this->setting('allowedEmailUsers', 'someone-else');

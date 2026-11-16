@@ -10,7 +10,7 @@ return [
      */
     'temporary_file_upload' => [
         'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK'),
-        'rules' => ['required', 'file', 'max:65536'],
+        'rules' => ['required', 'file', 'max:'.(int) env('ATTACHMENT_MAX_KB', 65536)],   // same as config/attachments.php
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [],   // no temporary public preview links for uploaded documents

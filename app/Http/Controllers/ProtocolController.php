@@ -291,28 +291,25 @@ class ProtocolController extends Controller implements HasMiddleware
         return back();
     }
 
+    /**
+     * R4a: an attachment, for users who may see its protocol (S02; an attachment without protocol: administrators).
+     * Safe headers and streaming: App\Support\SafeFile.
+     */
     public function download(Attachment $attachment)
     {
-        // S02: same visibility as the protocol (orphan attachments: administrators only)
         $protocol = $attachment->protocol;
         $allowed = $protocol ? Gate::allows('view', $protocol) : Auth::user()->role->role === 'Διαχειριστής';
         abort_unless($allowed, 404);
-        if (Storage::exists($attachment->savedPath)) {
-            $content = Storage::get($attachment->savedPath);
-            ob_end_clean();
-            return response($content)
-                ->header('Content-Type', $attachment->mimeType)
-                ->header('Content-Disposition', "filename=" . $attachment->name);
+        $path = $attachment->storedFilePath();
+        if ($path !== null) {
+            return \App\Support\SafeFile::download(Storage::path($path), $attachment->name ?: basename($path), $attachment->mimeType);
         }
-        $message = 'Το αρχείο<center>' . $attachment->name . '</center><br>που επιλέξατε δεν υπάρχει!<br>Πιθανόν να έχει διαγραφεί από άλλο εξωτερικό πρόγραμμα!';
-        $notification = array(
-            'message' => $message,
-            'alert-type' => 'info'
-        );
-        session()->flash('notification', $notification);
+        session()->flash('notification', [
+            'message' => 'Το αρχείο «' . e($attachment->name) . '» δεν υπάρχει στον δίσκο. Πιθανόν να διαγράφηκε από άλλο πρόγραμμα.',
+            'alert-type' => 'info',
+        ]);
         return back();
     }
-
 
     public function find()
     {
@@ -834,14 +831,8 @@ class ProtocolController extends Controller implements HasMiddleware
         $content = $oAttachment->getContent();
         // παίρνω το όνομα του αρχείου
         $filename = (string) $oAttachment->getFilename();
-        // το στέλνω για εμφάνιση
-        // R5a: όνομα αρχείου κωδικοποιημένο σωστά (Ελληνικά, εισαγωγικά)· ένα συνημμένο HTML δεν τρέχει μέσα στην εφαρμογή
-        $fallback = preg_replace('/[^\x20-\x7E]|["\\\\%\/]/', '_', $filename) ?: 'attachment';
-        return response($content)
-            ->header('Content-Type', $oAttachment->getContentType())
-            ->header('Content-Disposition', \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('inline', str_replace(['/', '\\'], '_', $filename) ?: 'attachment', $fallback))
-            ->header('Content-Security-Policy', 'sandbox')
-            ->header('X-Content-Type-Options', 'nosniff');
+        // R5a/R4a: correctly encoded name, opened only when safe (PDF, image, text), never run in the application
+        return \App\Support\SafeFile::content((string) $content, $filename, $oAttachment->getContentType());
     }
 
     public function setEmailRead($messageUid)

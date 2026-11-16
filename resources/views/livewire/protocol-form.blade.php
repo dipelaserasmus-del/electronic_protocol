@@ -281,7 +281,10 @@
                              :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
                             <div class="progress-bar" :style="'width: ' + progress + '%'" x-text="progress + '%'"></div>
                         </div>
+                        @error('picked')<div class="text-danger small" id="upload-refused">{{ $message }}</div>@enderror
                         @error('picked.*')<div class="text-danger small">{{ $message }}</div>@enderror
+                        @if ($e('uploads'))<div class="text-danger small">{{ $e('uploads') }}</div>@endif
+                        <div class="form-text">Έως {{ \App\Support\FileBadge::size(config('attachments.max_kb') * 1024) }} ανά αρχείο. Δεν επιτρέπονται αρχεία που εκτελούν κώδικα (π.χ. .exe, .bat, .js, .html).</div>
                         @if ($e('ada'))<div class="text-danger small">{{ $e('ada') }}</div>@endif
 
                         <div class="row g-2 mt-1">
