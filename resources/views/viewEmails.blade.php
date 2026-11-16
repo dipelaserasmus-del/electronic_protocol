@@ -542,7 +542,7 @@
                 @php
                     $chkMessage = ZBateson\MailMimeParser\Message::from($oMessage->getHeader()->raw . $oMessage->getRawBody(), true);
                 @endphp
-                emailHasAttachments[{{ $Uid }}] = {{ $chkMessage->getAttachmentCount() ? 'true' : 'false' }}
+                emailHasAttachments[{{ $oMessage->getUid() }}] = {{ $chkMessage->getAttachmentCount() ? 'true' : 'false' }}
             @endforeach
 
             if (emailHasAttachments[uid] || alwaysShowFakelosInViewEmails) {
