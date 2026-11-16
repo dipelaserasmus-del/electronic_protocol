@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * R1b: the rebuilt protocol form (App\Livewire\ProtocolForm) at the old addresses:
- * /home (new), /home/{id} (edit or view), /home/{id}/1 (copy as new), /home?num=N (A02: fill a gap).
+ * /home (new), /home/{id} (edit or view), /home/{id}/1 (copy as new), /home?num=N (A02: fill a gap);
+ * and the list (R2) at /home/list.
  */
 class ProtocolFormController extends Controller
 {
@@ -17,6 +18,12 @@ class ProtocolFormController extends Controller
         $num = request('num');
         $prefill = ctype_digit((string) $num) && app(ProtocolNumbering::class)->userMayChooseNumber(Auth::user()) ? (int) $num : null;
         return view('protocols.form', ['protocol' => new Protocol(), 'copy' => false, 'prefillNum' => $prefill]);
+    }
+
+    /** R2: the protocol list (App\Livewire\ProtocolList); /home/list/{d|e|f|m}/{userId|a} as before */
+    public function list(?string $filter = null, ?string $userId = null)
+    {
+        return view('protocols.list', ['filter' => $filter, 'userId' => $userId]);
     }
 
     public function show(Protocol $protocol, $copyAsNew = null)

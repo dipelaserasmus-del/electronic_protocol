@@ -183,3 +183,11 @@ document.addEventListener('livewire:init', () => {
 
 // exposed for the browser tests of the shared date rules
 window.appDate = { expandDate, shiftDate };
+
+/* R2: height of the sticky top bar, for headers that stick right under it (.table-sticky) */
+function measureTopbar() {
+    const bar = document.querySelector('.app-topbar');
+    if (bar) document.documentElement.style.setProperty('--app-topbar-height', `${bar.getBoundingClientRect().height}px`);
+}
+window.addEventListener('load', measureTopbar);
+window.addEventListener('resize', measureTopbar);

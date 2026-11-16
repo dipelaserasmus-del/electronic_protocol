@@ -10,7 +10,8 @@ test.describe('@smoke', () => {
       await expect(page).toHaveURL(/\/home\/list/);   // readers land on their own filtered list
       await page.goto('/home/list');
       await expect(page.locator('body')).toContainText('Θέμα');
-      expect(await page.locator('.row.line').count()).toBeGreaterThan(5);   // demo protocols are listed
+      await expect(page.locator('.protocol-row').first()).toBeVisible();
+      expect(await page.locator('.protocol-row').count()).toBeGreaterThan(5);   // demo protocols are listed (R2 list)
       await page.goto('/find');
       await expect(page.locator('body')).toContainText('Αναζήτηση');
       const settings = await page.goto('/settings');
