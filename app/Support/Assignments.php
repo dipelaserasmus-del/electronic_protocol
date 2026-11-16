@@ -34,14 +34,18 @@ final class Assignments
         return array_values($out);
     }
 
-    /** Make the table match the protocol's text column (adds missing rows, removes rows no longer there). */
+    /**
+     * Make the table match the protocol's text column (adds missing rows, removes rows no longer there).
+     * The text is read again from the database with the row locked, never from the caller's copy: when two users
+     * reassign the same protocol at the same time, the later sync must not write back the earlier text.
+     */
     public static function sync(Protocol|int $protocol): void
     {
         $id = $protocol instanceof Protocol ? (int) $protocol->getKey() : $protocol;
-        $text = $protocol instanceof Protocol ? $protocol->diekperaiosi : DB::table('protocols')->where('id', $id)->value('diekperaiosi');
-        $wanted = self::parse($text);
 
-        DB::transaction(function () use ($id, $wanted) {
+        DB::transaction(function () use ($id) {
+            $text = DB::table('protocols')->where('id', $id)->lockForUpdate()->value('diekperaiosi');
+            $wanted = self::parse($text);
             $existing = ProtocolAssignment::where('protocol_id', $id)->get();
             $key = fn ($row) => $row['type'] . $row['user_id'];
             $wantedKeys = array_map($key, $wanted);

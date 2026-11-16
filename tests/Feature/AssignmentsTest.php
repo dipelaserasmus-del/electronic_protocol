@@ -64,6 +64,19 @@ class AssignmentsTest extends FeatureTestCase
         $this->assertSame(["d{$e->id}"], $this->rows($p));
     }
 
+    /** Review finding: two reassignments at the same time; the later sync must follow the stored text */
+    public function test_sync_follows_the_stored_text_not_a_stale_copy(): void
+    {
+        [$a, $b] = [$this->writer(), $this->writer()];
+        $p = Protocol::factory()->number(1)->assignedTo($a)->create();
+        $stale = Protocol::find($p->id);                                   // request A: has read "d{a}"
+        Protocol::find($p->id)->update(['diekperaiosi' => "d{$b->id}"]);   // request B saves and syncs
+
+        Assignments::sync($stale);                                         // request A's sync comes late
+
+        $this->assertSame(["d{$b->id}"], $this->rows($p));
+    }
+
     public function test_assign_button_updates_the_assignments(): void
     {
         $w = $this->writer();
