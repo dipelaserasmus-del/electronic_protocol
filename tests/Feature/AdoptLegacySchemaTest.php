@@ -30,6 +30,7 @@ class AdoptLegacySchemaTest extends TestCase
         // what a production backup looks like: all tables, no migration records, pre-S00 role default
         Schema::drop('migrations');
         DB::statement("ALTER TABLE users MODIFY role_id INT UNSIGNED NOT NULL DEFAULT '1'");
+        DB::statement('ALTER TABLE protocols MODIFY thema VARCHAR(255) NULL, MODIFY in_perilipsi VARCHAR(255) NULL');   // pre-D01
         $users = DB::table('users')->count();
 
         $this->artisan('migrate:adopt-legacy')->assertSuccessful();
@@ -47,6 +48,8 @@ class AdoptLegacySchemaTest extends TestCase
         $default = DB::selectOne("SELECT COLUMN_DEFAULT AS d FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role_id'")->d;
         $this->assertSame((string) $readerId, trim((string) $default, "'"));
         $this->assertSame($users, DB::table('users')->count(), 'data is kept');
+        $this->assertSame('text', Schema::getColumnType('protocols', 'thema'), 'D01 applied');
+        $this->assertSame('text', Schema::getColumnType('protocols', 'in_perilipsi'));
     }
 
     public function test_only_tables_that_exist_are_recorded(): void

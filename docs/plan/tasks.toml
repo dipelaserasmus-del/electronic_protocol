@@ -48,7 +48,7 @@ tasks = [
 
   # ---------------- Batch 4 ---------------- (moved earlier by the owner, 2026-11-15: emoji e-mails; inbox timeouts)
   { id = "D05", title = "Tables → utf8mb4", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 34 },
-  { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "todo" },
+  { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "done", pr = 35 },
   { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 4, size = "L", deps = ["N01"], status = "todo" },
   { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "todo" },
 

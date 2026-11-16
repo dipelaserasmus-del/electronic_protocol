@@ -63,6 +63,11 @@ class Protocol extends Model
 {
     use HasFactory;
 
+    /**
+     * D01: the longest text (in characters) for the TEXT columns thema, in_arxi_ekdosis, in_perilipsi and
+     * out_perilipsi. TEXT holds 65,535 bytes; 16,000 characters fit even if every one takes 4 bytes (emoji).
+     */
+    public const LONG_TEXT_MAX = 16000;
 
     /**
      * The attributes that are mass assignable.

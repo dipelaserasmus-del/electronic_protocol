@@ -98,36 +98,67 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /**
-     * Reported by the owner (2026-11-16): a subject longer than 255 characters (here 280, invented) is not registered;
-     * the inbox just reloads with the e-mail still there. MySQL strict mode refuses the INSERT
-     * ("Data too long for column 'thema'"), the controller catches it and redirects back.
-     * The error text shown is the raw database message, which contains the whole SQL with the e-mail's data.
-     * Fixing task (D01, subject → TEXT) replaces these with tests that the e-mail is registered.
+     * D01 (was: known_bug_email_with_subject_over_255_characters_is_not_registered). Owner (2026-11-16): a subject
+     * longer than 255 characters (here 280, invented) was refused by MySQL ("Data too long for column 'thema'") and
+     * the inbox just reloaded. The subject is now TEXT.
      */
-    public function test_known_bug_email_with_subject_over_255_characters_is_not_registered(): void
+    public function test_email_with_subject_over_255_characters_is_registered_in_full(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml($this->encodedWords(self::longSubject())));
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID])
-            ->assertRedirect('/viewEmails')
-            ->assertSessionHas('notification.alert-type', 'error');
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID]);
 
-        $this->assertSame(0, Protocol::count(), 'nothing registered');
-        $this->assertStringContainsString('Data too long', session('notification.message'),
-            'raw database error (with the SQL) shown to the user');
+        $this->assertSame(self::longSubject(), Protocol::firstOrFail()->thema);
+        $this->assertSame(280, mb_strlen(Protocol::firstOrFail()->thema));
     }
 
-    /** Same failure through the inbox form, which posts the subject in the "thema" field (the owner's case). */
-    public function test_known_bug_subject_over_255_characters_posted_by_the_inbox_form_is_not_registered(): void
+    /** D01 (was: known_bug_subject_over_255_characters_posted_by_the_inbox_form_is_not_registered), the owner's case. */
+    public function test_subject_over_255_characters_posted_by_the_inbox_form_is_registered(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'thema' => self::longSubject()])
-            ->assertRedirect('/viewEmails');
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'thema' => self::longSubject()]);
+
+        $this->assertSame(self::longSubject(), Protocol::firstOrFail()->thema);
+    }
+
+    /** D01: a sender whose name + address is longer than 255 characters (column in_arxi_ekdosis, now TEXT). */
+    public function test_long_sender_name_is_registered_in_full(): void
+    {
+        $name = trim(str_repeat('Σύλλογος Γονέων και Κηδεμόνων Δημοτικού Σχολείου ', 6));
+        $user = $this->writer();
+        $this->putEml($user->id, str_replace('From: grafeio@example.org', 'From: '.$this->encodedWords($name).' <grafeio@example.org>',
+            $this->emlWithAttachmentName('a.pdf')));
+
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
+
+        $this->assertSame($name.' <grafeio@example.org>', Protocol::firstOrFail()->in_arxi_ekdosis);
+        $this->assertGreaterThan(255, mb_strlen(Protocol::firstOrFail()->in_arxi_ekdosis));
+    }
+
+    /**
+     * D01: when the database refuses the protocol (here: an incoming number longer than its column), the message
+     * says what happened and gives the log's reference code. Before, it showed the raw database error, which
+     * contains the whole SQL statement with the e-mail's data.
+     */
+    public function test_database_error_shows_a_reference_code_never_the_sql(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->sampleEml());
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'in_num' => str_repeat('1', 300)])
+            ->assertRedirect('/viewEmails')
+            ->assertSessionHas('notification.alert-type', 'error');
 
         $this->assertSame(0, Protocol::count());
+        $message = session('notification.message');
+        $this->assertMatchesRegularExpression('/Κωδικός σφάλματος: E-[A-Z0-9]{6}/', $message);
+        $this->assertStringContainsString('παραμένει στα εισερχόμενα', $message);
+        foreach (['SQLSTATE', 'insert into', 'Data too long', 'Πρόσκληση σε σύσκεψη'] as $leak) {
+            $this->assertStringNotContainsStringIgnoringCase($leak, $message);
+        }
     }
 
     /**
