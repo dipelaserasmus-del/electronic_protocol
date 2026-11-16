@@ -1,36 +1,13 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-16 (after B10).
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-16 (after N01).
 
 ## ▶ Your next message
-Start a **new conversation** in this project and send (fill in the brackets):
-
-```
-Production server: OS [..], PHP [..], php-imap installed [yes/no], MySQL/MariaDB [..], web server [Apache/nginx],
-I update it with [git pull / copying files / other].
-run batch 3
-```
-On the **production server**, these commands print the versions and no data:
-```bash
-php -v | head -1
-```
-```bash
-php -m | grep -i imap
-```
-```bash
-mysql --version
-```
-```bash
-head -2 /etc/os-release
-```
-
-**Why first:** Batch 3 upgrades PHP and its packages and removes the need for `php-imap`. You deploy only at the end,
-but the finished app must run on that server (or the server gets upgraded then), so I pick the target from its versions.
+Nothing needed: Batch 3 is running (N01 done; N02 → N03 → N04 next). When it finishes I'll update this list.
 
 **Registration (security):** the code on your server still lets anyone who can reach it create an **administrator**
-account (fixed in S00, but you deploy only at the end). The one-line web-server rule that refuses registrations is in
-[docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16). It changes no
-app code and is easy to undo; applying it takes a minute whenever you decide.
+account (fixed in S00, but you deploy only at the end). The one-line Apache rule that refuses registrations is in
+[docs/BLOCK-REGISTRATION.md](docs/BLOCK-REGISTRATION.md) (you decided not to apply it yet, 2026-11-16).
 
 ## Before Batch 4 (D05 emoji support, R5a e-mail cache)
 1. **E-mails for testing R5a.** Prepare a few `.eml` files (in Thunderbird: select the message → *Save As*):
@@ -59,6 +36,7 @@ app code and is easy to undo; applying it takes a minute whenever you decide.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Production will run the Docker stack after the rebuild (replaces XAMPP); on the same Windows 11 PC (Docker Desktop); you migrate the old database and files (2026-11-16).
 - No deployment to production until all tasks are completed and verified (2026-11-16).
 - L02 postponed (2026-11-16).
 - R5a and D05 moved earlier (Batch 4), 2026-11-15.

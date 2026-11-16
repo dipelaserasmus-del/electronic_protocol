@@ -14,7 +14,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.3 || ^8.4 || ^8.5",
+        "php": "^8.4.1",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "laravel/ui": "^4.5",
@@ -22,8 +22,8 @@
         "phpoffice/phpspreadsheet": "^5.9",
         "phpoffice/phpword": "^1.1.0",
         "webklex/laravel-imap": "^6.2",
-        "yasapurnama/document-watermark": "dev-main",
-        "zbateson/mail-mime-parser": "^3.0"
+        "yasapurnama/document-watermark": "dev-main#da116bc1fd56ecaa91110f8397cdcefe4aeaa530",
+        "zbateson/mail-mime-parser": "^4.0"
     },
     "require-dev": {
         "beyondcode/laravel-query-detector": "^2.0",
@@ -31,10 +31,13 @@
         "fruitcake/laravel-debugbar": "^4.4",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.5",
-        "phpunit/phpunit": "^11.0"
+        "phpunit/phpunit": "^13.0"
     },
     "config": {
         "optimize-autoloader": true,
+        "platform": {
+            "php": "8.4.1"
+        },
         "preferred-install": "dist",
         "sort-packages": true
     },
