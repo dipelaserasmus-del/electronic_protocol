@@ -36,9 +36,13 @@ COPY docker/php/local.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-laravel.ini
 COPY docker/php/local.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-laravel.ini
 
 WORKDIR /var/www/html
+COPY docker/app/build-assets.sh /usr/local/bin/build-assets
+COPY docker/app/entrypoint.sh /usr/local/bin/app-entrypoint
 COPY --chown=www-data:www-data . /var/www/html
-# frontend for rebuilt pages (public/build); the dev stack mounts the source over this and builds it itself
-RUN npm ci --no-audit --no-fund && npm run build && rm -rf node_modules
+# frontend for rebuilt pages (public/build). When the source folder is mounted over /var/www/html (docker-compose.yml),
+# the container builds it again at start if the sources changed (docker/app/entrypoint.sh).
+RUN build-assets && rm -rf node_modules
 
 EXPOSE 9000
+ENTRYPOINT ["app-entrypoint"]
 CMD ["php-fpm", "-F"]

@@ -8,6 +8,7 @@ services:
       # Laravel then reads .env.development (created by ./dev.sh from .env.development.example)
       # and never touches your normal .env
       APP_ENV: development
+      ASSETS_AUTO_BUILD: "0"   # ./dev.sh builds the frontend as your user (files stay yours)
       # separate cache files: a "php artisan config:cache" of a normal installation is never used here
       APP_CONFIG_CACHE: /tmp/ep-dev-config.php
       APP_ROUTES_CACHE: /tmp/ep-dev-routes.php
