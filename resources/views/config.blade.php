@@ -32,7 +32,7 @@
                                     <div class="col-md-4 col-sm-4  " id="ipiresiasNamediv">
                                         <input id="ipiresiasName" type="text" class="form-control text-center"
                                             name="ipiresiasName" placeholder="ipiresiasName"
-                                            value="{{ $settings['ipiresiasName'] ?? App\Config::getConfigValueOf('ipiresiasName') }}"
+                                            value="{{ $settings['ipiresiasName'] ?? App\Models\Config::getConfigValueOf('ipiresiasName') }}"
                                             title=''>
                                     </div>
                                 </div>
@@ -43,7 +43,7 @@
                                     <div class="col-md-2 col-sm-2  " id="yearInUsediv">
                                         <input id="yearInUse" type="text" class="form-control text-center" name="yearInUse"
                                             placeholder="yearInUse"
-                                            value="{{ $settings['yearInUse'] ?? App\Config::getConfigValueOf('yearInUse') }}"
+                                            value="{{ $settings['yearInUse'] ?? App\Models\Config::getConfigValueOf('yearInUse') }}"
                                             title='Αφήστε κενό για να συνεχίζεται η αρίθμηση διαχρονικά'>
                                     </div>
                                 </div>
@@ -54,7 +54,7 @@
                                     <div class="col-md-2 col-sm-2  " id="firstProtocolNumdiv">
                                         <input id="firstProtocolNum" type="text" class="form-control text-center"
                                             name="firstProtocolNum" placeholder="firstProtocolNum"
-                                            value="{{ $settings['firstProtocolNum'] ?? App\Config::getConfigValueOf('firstProtocolNum') }}"
+                                            value="{{ $settings['firstProtocolNum'] ?? App\Models\Config::getConfigValueOf('firstProtocolNum') }}"
                                             title=''>
                                     </div>
                                 </div>
@@ -66,7 +66,7 @@
                                     <div class="col-md-2 col-sm-2  " id="gapCheckFromNumberdiv">
                                         <input id="gapCheckFromNumber" type="text" class="form-control text-center"
                                             name="gapCheckFromNumber" placeholder="π.χ. 1000"
-                                            value="{{ $settings['gapCheckFromNumber'] ?? App\Config::getConfigValueOf('gapCheckFromNumber') }}"
+                                            value="{{ $settings['gapCheckFromNumber'] ?? App\Models\Config::getConfigValueOf('gapCheckFromNumber') }}"
                                             title='Αριθμοί κάτω από αυτόν δεν ελέγχονται για κενά'>
                                     </div>
                                 </div>
@@ -77,7 +77,7 @@
                                     <div class="col-md-2 col-sm-2  " id="gapCheckMonthsdiv">
                                         <input id="gapCheckMonths" type="text" class="form-control text-center"
                                             name="gapCheckMonths" placeholder="6"
-                                            value="{{ $settings['gapCheckMonths'] ?? (App\Config::getConfigValueOf('gapCheckMonths') ?: 6) }}"
+                                            value="{{ $settings['gapCheckMonths'] ?? (App\Models\Config::getConfigValueOf('gapCheckMonths') ?: 6) }}"
                                             title='Ελέγχονται πρωτόκολλα με ημερομηνία στο διάστημα αυτό'>
                                     </div>
                                 </div>
@@ -90,25 +90,25 @@
                                 <div class="row">
                                     <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1  ">
                                         Να εμφανίζονται στη σελίδα ->
-                                        <strong>{{ $settings['showRowsInPage'] ?? App\Config::getConfigValueOf('showRowsInPage') }}</strong>
+                                        <strong>{{ $settings['showRowsInPage'] ?? App\Models\Config::getConfigValueOf('showRowsInPage') }}</strong>
                                         <- γραμμές </div>
                                             <div class="col-md-2 col-sm-2  " id="showRowsInPagediv">
                                                 <input id="showRowsInPage" type="text" class="form-control text-center"
                                                     name="showRowsInPage" placeholder="showRowsInPage"
-                                                    value="{{ $settings['showRowsInPage'] ?? App\Config::getConfigValueOf('showRowsInPage') }}"
+                                                    value="{{ $settings['showRowsInPage'] ?? App\Models\Config::getConfigValueOf('showRowsInPage') }}"
                                                     title=''>
                                             </div>
                                     </div>
                                     <div class="row">
                                         <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
                                             Ανανέωση Πρωτοκόλλου κάθε ->
-                                            <strong>{{ $settings['minutesRefreshInterval'] ?? App\Config::getConfigValueOf('minutesRefreshInterval') }}</strong>
+                                            <strong>{{ $settings['minutesRefreshInterval'] ?? App\Models\Config::getConfigValueOf('minutesRefreshInterval') }}</strong>
                                             <- λεπτά </div>
                                                 <div class="col-md-2 col-sm-2  " id="minutesRefreshIntervaldiv">
                                                     <input id="minutesRefreshInterval" type="text"
                                                         class="form-control text-center" name="minutesRefreshInterval"
                                                         placeholder="minutesRefreshInterval"
-                                                        value="{{ $settings['minutesRefreshInterval'] ?? App\Config::getConfigValueOf('minutesRefreshInterval') }}"
+                                                        value="{{ $settings['minutesRefreshInterval'] ?? App\Models\Config::getConfigValueOf('minutesRefreshInterval') }}"
                                                         title=''>
                                                 </div>
                                         </div>
@@ -120,7 +120,7 @@
                                             <div class="col-md-2 col-sm-2  " id="titleColordiv">
                                                 <input id="titleColor" type="text" class="form-control text-center"
                                                     name="titleColor" placeholder="titleColor"
-                                                    value="{{ $settings['titleColor'] ?? App\Config::getConfigValueOf('titleColor') }}"
+                                                    value="{{ $settings['titleColor'] ?? App\Models\Config::getConfigValueOf('titleColor') }}"
                                                     title=''>
                                             </div>
                                         </div>
@@ -150,11 +150,11 @@
                                             <div class="col-md-2 col-sm-2  " id="showUserInfodiv">
                                                 <select id='showUserInfo' name='showUserInfo' class="form-control"
                                                     title=''>
-                                                    @if (!($settings['showUserInfo'] ?? App\Config::getConfigValueOf('showUserInfo')))
+                                                    @if (!($settings['showUserInfo'] ?? App\Models\Config::getConfigValueOf('showUserInfo')))
                                                         <option value="0" selected>ΟΧΙ</option>
                                                         <option value="1">username</option>
                                                         <option value="2">Όνομα</option>
-                                                    @elseif(($settings['showUserInfo'] ?? App\Config::getConfigValueOf('showUserInfo')) == 1)
+                                                    @elseif(($settings['showUserInfo'] ?? App\Models\Config::getConfigValueOf('showUserInfo')) == 1)
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>username</option>
                                                         <option value="2">Όνομα</option>
@@ -174,7 +174,7 @@
                                             <div class="col-md-2 col-sm-2  " id="allowListValuesMatchingInputdiv">
                                                 <select id='allowListValuesMatchingInput'
                                                     name='allowListValuesMatchingInput' class="form-control" title=''>
-                                                    @if ($settings['allowListValuesMatchingInput'] ?? App\Config::getConfigValueOf('allowListValuesMatchingInput'))
+                                                    @if ($settings['allowListValuesMatchingInput'] ?? App\Models\Config::getConfigValueOf('allowListValuesMatchingInput'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -192,7 +192,7 @@
                                             <div class="col-md-2 col-sm-2  " id="limitProtocolAccessListdiv">
                                                 <select id='limitProtocolAccessList' name='limitProtocolAccessList'
                                                     class="form-control" title=''>
-                                                    @if ($settings['limitProtocolAccessList'] ?? App\Config::getConfigValueOf('limitProtocolAccessList'))
+                                                    @if ($settings['limitProtocolAccessList'] ?? App\Models\Config::getConfigValueOf('limitProtocolAccessList'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -217,7 +217,7 @@
                                                 <select id='searchField1' name='searchField1' class="form-control"
                                                     title=''>
                                                     @foreach ($fields as $key => $value)
-                                                        @if ($key == ($settings['searchField1'] ?? App\Config::getConfigValueOf('searchField1')))
+                                                        @if ($key == ($settings['searchField1'] ?? App\Models\Config::getConfigValueOf('searchField1')))
                                                             <option value="{{ $key }}" selected>
                                                                 {{ $value }}</option>
                                                         @else
@@ -237,7 +237,7 @@
                                                 <select id='searchField2' name='searchField2' class="form-control"
                                                     title=''>
                                                     @foreach ($fields as $key => $value)
-                                                        @if ($key == ($settings['searchField2'] ?? App\Config::getConfigValueOf('searchField2')))
+                                                        @if ($key == ($settings['searchField2'] ?? App\Models\Config::getConfigValueOf('searchField2')))
                                                             <option value="{{ $key }}" selected>
                                                                 {{ $value }}</option>
                                                         @else
@@ -257,7 +257,7 @@
                                                 <select id='searchField3' name='searchField3' class="form-control"
                                                     title=''>
                                                     @foreach ($fields as $key => $value)
-                                                        @if ($key == ($settings['searchField3'] ?? App\Config::getConfigValueOf('searchField3')))
+                                                        @if ($key == ($settings['searchField3'] ?? App\Models\Config::getConfigValueOf('searchField3')))
                                                             <option value="{{ $key }}" selected>
                                                                 {{ $value }}</option>
                                                         @else
@@ -279,7 +279,7 @@
                                             <div class="col-md-2 col-sm-2  " id="protocolArrowStepdiv">
                                                 <input id="protocolArrowStep" type="text" class="form-control text-center"
                                                     name="protocolArrowStep" placeholder="protocolArrowStep"
-                                                    value="{{ $settings['protocolArrowStep'] ?? App\Config::getConfigValueOf('protocolArrowStep') }}"
+                                                    value="{{ $settings['protocolArrowStep'] ?? App\Models\Config::getConfigValueOf('protocolArrowStep') }}"
                                                     title=''>
                                             </div>
                                         </div>
@@ -291,7 +291,7 @@
                                             <div class="col-md-2 col-sm-2  " id="maxRowsInFindPagediv">
                                                 <input id="maxRowsInFindPage" type="text" class="form-control text-center"
                                                     name="maxRowsInFindPage" placeholder="maxRowsInFindPage"
-                                                    value="{{ $settings['maxRowsInFindPage'] ?? App\Config::getConfigValueOf('maxRowsInFindPage') }}"
+                                                    value="{{ $settings['maxRowsInFindPage'] ?? App\Models\Config::getConfigValueOf('maxRowsInFindPage') }}"
                                                     title=''>
                                             </div>
                                         </div>
@@ -310,7 +310,7 @@
                                             <div class="col-md-2 col-sm-2  " id="maxRowsInXlsExportdiv">
                                                 <input id="maxRowsInXlsExport" type="text" class="form-control text-center"
                                                     name="maxRowsInXlsExport" placeholder="5000"
-                                                    value="{{ $settings['maxRowsInXlsExport'] ?? App\Config::getConfigValueOf('maxRowsInXlsExport') }}"
+                                                    value="{{ $settings['maxRowsInXlsExport'] ?? App\Models\Config::getConfigValueOf('maxRowsInXlsExport') }}"
                                                     title='Ρυθμίστε ανάλογα με τη διαθέσιμη μνήμη για να μην εξαντλείται και καταρρέει η php'>
                                             </div>
                                         </div>
@@ -328,7 +328,7 @@
                                             <div class="col-md-2 col-sm-2  " id="protocolValidatediv">
                                                 <select id='protocolValidate' name='protocolValidate' class="form-control"
                                                     title=''>
-                                                    @if ($settings['protocolValidate'] ?? App\Config::getConfigValueOf('protocolValidate'))
+                                                    @if ($settings['protocolValidate'] ?? App\Models\Config::getConfigValueOf('protocolValidate'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -346,7 +346,7 @@
                                             <div class="col-md-2 col-sm-2  " id="safeNewProtocolNumdiv">
                                                 <select id='safeNewProtocolNum' name='safeNewProtocolNum'
                                                     class="form-control" title=''>
-                                                    @if ($settings['safeNewProtocolNum'] ?? App\Config::getConfigValueOf('safeNewProtocolNum'))
+                                                    @if ($settings['safeNewProtocolNum'] ?? App\Models\Config::getConfigValueOf('safeNewProtocolNum'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -364,7 +364,7 @@
                                             <div class="col-md-2 col-sm-2  " id="allowUserChangeKeepSelectdiv">
                                                 <select id='allowUserChangeKeepSelect' name='allowUserChangeKeepSelect'
                                                     class="form-control" title=''>
-                                                    @if ($settings['allowUserChangeKeepSelect'] ?? App\Config::getConfigValueOf('allowUserChangeKeepSelect'))
+                                                    @if ($settings['allowUserChangeKeepSelect'] ?? App\Models\Config::getConfigValueOf('allowUserChangeKeepSelect'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -382,11 +382,11 @@
                                             <div class="col-md-2 col-sm-2  " id="allowWriterUpdateProtocoldiv">
                                                 <select id='allowWriterUpdateProtocol' name='allowWriterUpdateProtocol'
                                                     class="form-control" title=''>
-                                                    @if (!($settings['allowWriterUpdateProtocol'] ?? App\Config::getConfigValueOf('allowWriterUpdateProtocol')))
+                                                    @if (!($settings['allowWriterUpdateProtocol'] ?? App\Models\Config::getConfigValueOf('allowWriterUpdateProtocol')))
                                                         <option value="0" selected>ΚΑΝΕΙΣ</option>
                                                         <option value="1">ΕΝΑΣ</option>
                                                         <option value="2">ΟΛΟΙ</option>
-                                                    @elseif (($settings['allowWriterUpdateProtocol'] ?? App\Config::getConfigValueOf('allowWriterUpdateProtocol')) == 1)
+                                                    @elseif (($settings['allowWriterUpdateProtocol'] ?? App\Models\Config::getConfigValueOf('allowWriterUpdateProtocol')) == 1)
                                                         <option value="0">ΚΑΝΕΙΣ</option>
                                                         <option value="1" selected>ΕΝΑΣ</option>
                                                         <option value="2">ΟΛΟΙ</option>
@@ -409,7 +409,7 @@
                                                     class="form-control text-center"
                                                     name="allowWriterUpdateProtocolTimeInMinutes"
                                                     placeholder="allowWriterUpdateProtocolTimeInMinutes"
-                                                    value="{{ $settings['allowWriterUpdateProtocolTimeInMinutes'] ??App\Config::getConfigValueOf('allowWriterUpdateProtocolTimeInMinutes') }}"
+                                                    value="{{ $settings['allowWriterUpdateProtocolTimeInMinutes'] ??App\Models\Config::getConfigValueOf('allowWriterUpdateProtocolTimeInMinutes') }}"
                                                     title=''>
                                             </div>
                                         </div>
@@ -421,7 +421,7 @@
                                             <div class="col-md-2 col-sm-2  " id="allowUserChangeKeepSelectdiv">
                                                 <select id='allowEmptyProtocol' name='allowEmptyProtocol'
                                                     class="form-control" title=''>
-                                                    @if ($settings['allowEmptyProtocol'] ?? App\Config::getConfigValueOf('allowEmptyProtocol'))
+                                                    @if ($settings['allowEmptyProtocol'] ?? App\Models\Config::getConfigValueOf('allowEmptyProtocol'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -439,7 +439,7 @@
                                             <div class="col-md-2 col-sm-2  " id="saveCycleSxetikodiv">
                                                 <select id='saveCycleSxetiko' name='saveCycleSxetiko'
                                                     class="form-control" title=''>
-                                                    @if ($settings['saveCycleSxetiko'] ?? App\Config::getConfigValueOf('saveCycleSxetiko'))
+                                                    @if ($settings['saveCycleSxetiko'] ?? App\Models\Config::getConfigValueOf('saveCycleSxetiko'))
                                                         <option value="">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -463,7 +463,7 @@
                                             <div class="col-md-2 col-sm-2  " id="updatesAutoCheckdiv">
                                                 <select id='updatesAutoCheck' name='updatesAutoCheck'
                                                     class="form-control" title=''>
-                                                    @if ($settings['updatesAutoCheck'] ?? App\Config::getConfigValueOf('updatesAutoCheck'))
+                                                    @if ($settings['updatesAutoCheck'] ?? App\Models\Config::getConfigValueOf('updatesAutoCheck'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -488,7 +488,7 @@
                                             <div class="col-md-4 col-sm-4  " id="diavgeiaUrldiv">
                                                 <input id="diavgeiaUrl" type="text" class="form-control text-center"
                                                     name="diavgeiaUrl" placeholder="diavgeiaUrl"
-                                                    value="{{ $settings['diavgeiaUrl'] ?? App\Config::getConfigValueOf('diavgeiaUrl') }}"
+                                                    value="{{ $settings['diavgeiaUrl'] ?? App\Models\Config::getConfigValueOf('diavgeiaUrl') }}"
                                                     title=''>
                                             </div>
                                         </div>
@@ -499,7 +499,7 @@
                                             </div>
                                             <div class="col-md-2 col-sm-2  " id="putStampdiv">
                                                 <select id='putStamp' name='putStamp' class="form-control" title=''>
-                                                    @if ($settings['putStamp'] ?? App\Config::getConfigValueOf('putStamp'))
+                                                    @if ($settings['putStamp'] ?? App\Models\Config::getConfigValueOf('putStamp'))
                                                         <option value="0">ΟΧΙ</option>
                                                         <option value="1" selected>ΝΑΙ</option>
                                                     @else
@@ -525,11 +525,11 @@
                                                 <select id='defaultImapEmail' name='defaultImapEmail'
                                                     class="form-control text-center"
                                                     title='Οι λογαριασμοί ρυθμίζονται στο config/imap.php'>
-                                                    <option value="" @if (!($settings['defaultImapEmail'] ?? App\Config::getConfigValueOf('defaultImapEmail'))) selected @endif>
+                                                    <option value="" @if (!($settings['defaultImapEmail'] ?? App\Models\Config::getConfigValueOf('defaultImapEmail'))) selected @endif>
                                                         ---</option>
                                                     @foreach (array_keys(config('imap.accounts')) as $key)
                                                         <option value="{{ $key }}"
-                                                            @if (($settings['defaultImapEmail'] ?? App\Config::getConfigValueOf('defaultImapEmail')) && ($settings['defaultImapEmail'] ?? App\Config::getConfigValueOf('defaultImapEmail')) == $key) selected @endif>
+                                                            @if (($settings['defaultImapEmail'] ?? App\Models\Config::getConfigValueOf('defaultImapEmail')) && ($settings['defaultImapEmail'] ?? App\Models\Config::getConfigValueOf('defaultImapEmail')) == $key) selected @endif>
                                                             {{ $key }}</option>
                                                     @endforeach
                                                 </select>
@@ -539,13 +539,13 @@
                                             <div
                                                 class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
                                                 Κατέβασε email μόνο για τις τελευταίες ->
-                                                <strong>{{ $settings['daysToCheckEmailBack'] ?? App\Config::getConfigValueOf('daysToCheckEmailBack') }}</strong>
+                                                <strong>{{ $settings['daysToCheckEmailBack'] ?? App\Models\Config::getConfigValueOf('daysToCheckEmailBack') }}</strong>
                                                 <- ημέρες </div>
                                                     <div class="col-md-2 col-sm-2  " id="daysToCheckEmailBackdiv">
                                                         <input id="daysToCheckEmailBack" type="text"
                                                             class="form-control text-center" name="daysToCheckEmailBack"
                                                             placeholder="daysToCheckEmailBack"
-                                                            value="{{ $settings['daysToCheckEmailBack'] ?? App\Config::getConfigValueOf('daysToCheckEmailBack') }}"
+                                                            value="{{ $settings['daysToCheckEmailBack'] ?? App\Models\Config::getConfigValueOf('daysToCheckEmailBack') }}"
                                                             title=''>
                                                     </div>
                                             </div>
@@ -557,7 +557,7 @@
                                                 <div class="col-md-2 col-sm-2  " id="emailNumFetchdiv">
                                                     <input id="emailNumFetch" type="text" class="form-control text-center"
                                                         name="emailNumFetch" placeholder="emailNumFetch"
-                                                        value="{{ $settings['emailNumFetch'] ?? App\Config::getConfigValueOf('emailNumFetch') }}"
+                                                        value="{{ $settings['emailNumFetch'] ?? App\Models\Config::getConfigValueOf('emailNumFetch') }}"
                                                         title=''>
                                                 </div>
                                             </div>
@@ -565,12 +565,12 @@
                                                 <div
                                                     class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
                                                     Ταξινόμηση email
-                                                    <strong>{{ $settings['emailFetchOrderDesc'] ?? App\Config::getConfigValueOf('emailFetchOrderDesc')? 'ΦΘΙΝΟΥΣΑ': 'ΑΥΞΟΥΣΑ' }}</strong>
+                                                    <strong>{{ $settings['emailFetchOrderDesc'] ?? App\Models\Config::getConfigValueOf('emailFetchOrderDesc')? 'ΦΘΙΝΟΥΣΑ': 'ΑΥΞΟΥΣΑ' }}</strong>
                                                 </div>
                                                 <div class="col-md-3 col-sm-3  " id="emailFetchOrderDescdiv">
                                                     <select id='emailFetchOrderDesc' name='emailFetchOrderDesc'
                                                         class="form-control" title=''>
-                                                        @if ($settings['emailFetchOrderDesc'] ?? App\Config::getConfigValueOf('emailFetchOrderDesc'))
+                                                        @if ($settings['emailFetchOrderDesc'] ?? App\Models\Config::getConfigValueOf('emailFetchOrderDesc'))
                                                             <option value="0">ΑΥΞΟΥΣΑ</option>
                                                             <option value="1" selected>ΦΘΙΝΟΥΣΑ</option>
                                                         @else
@@ -590,7 +590,7 @@
                                                     <select id='alwaysShowFakelosInViewEmails'
                                                         name='alwaysShowFakelosInViewEmails' class="form-control"
                                                         title=''>
-                                                        @if ($settings['alwaysShowFakelosInViewEmails'] ?? App\Config::getConfigValueOf('alwaysShowFakelosInViewEmails'))
+                                                        @if ($settings['alwaysShowFakelosInViewEmails'] ?? App\Models\Config::getConfigValueOf('alwaysShowFakelosInViewEmails'))
                                                             <option value="0">ΟΧΙ</option>
                                                             <option value="1" selected>ΝΑΙ</option>
                                                         @else
@@ -609,7 +609,7 @@
                                                 <div class="col-md-2 col-sm-2  " id="alwaysSendReceitForEmailsdiv">
                                                     <select id='alwaysSendReceitForEmails' name='alwaysSendReceitForEmails'
                                                         class="form-control" title=''>
-                                                        @if ($settings['alwaysSendReceitForEmails'] ?? App\Config::getConfigValueOf('alwaysSendReceitForEmails'))
+                                                        @if ($settings['alwaysSendReceitForEmails'] ?? App\Models\Config::getConfigValueOf('alwaysSendReceitForEmails'))
                                                             <option value="0">ΟΧΙ</option>
                                                             <option value="1" selected>ΝΑΙ</option>
                                                         @else
@@ -629,7 +629,7 @@
                                                     <input id="allowedEmailUsers" type="text"
                                                         class="form-control text-center" name="allowedEmailUsers"
                                                         placeholder="usernames"
-                                                        value="{{ $settings['allowedEmailUsers'] ?? App\Config::getConfigValueOf('allowedEmailUsers') }}"
+                                                        value="{{ $settings['allowedEmailUsers'] ?? App\Models\Config::getConfigValueOf('allowedEmailUsers') }}"
                                                         title='Πληκτρολογείστε τα usernames των χρηστών χωρισμένα με " " κενό'>
                                                 </div>
                                             </div>
@@ -670,7 +670,7 @@
                                                     <select id='sendEmailOnDiekperaiosiChange'
                                                         name='sendEmailOnDiekperaiosiChange' class="form-control"
                                                         title=''>
-                                                        @if ($settings['sendEmailOnDiekperaiosiChange'] ?? App\Config::getConfigValueOf('sendEmailOnDiekperaiosiChange'))
+                                                        @if ($settings['sendEmailOnDiekperaiosiChange'] ?? App\Models\Config::getConfigValueOf('sendEmailOnDiekperaiosiChange'))
                                                             <option value="0">ΟΧΙ</option>
                                                             <option value="1" selected>ΝΑΙ</option>
                                                         @else
@@ -698,7 +698,7 @@
                                                         <input id="mysqldumpPath" type="text"
                                                             class="form-control text-center" name="mysqldumpPath"
                                                             placeholder="mysqldumpPath"
-                                                            value="{{ $settings['mysqldumpPath'] ?? App\Config::getConfigValueOf('mysqldumpPath') }}"
+                                                            value="{{ $settings['mysqldumpPath'] ?? App\Models\Config::getConfigValueOf('mysqldumpPath') }}"
                                                             title=''>
                                                     </div>
                                                 </div>

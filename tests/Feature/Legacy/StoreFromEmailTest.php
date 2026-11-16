@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Legacy;
 
-use App\Attachment;
-use App\Protocol;
+use App\Models\Attachment;
+use App\Models\Protocol;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;
 

@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Config;
+use App\Models\Config;
 use Auth;
 
 class LimitProtocolAccessList

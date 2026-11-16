@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
-use App\Role;
-use App\User;
+use App\Models\Role;
+use App\Models\User;
 
 /**
  * Self-registration exists only to create the very first administrator of a new installation.

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Config;
-use App\Protocol;
+use App\Models\Config;
+use App\Models\Protocol;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +39,7 @@ class ProtocolNumbering
      * The number field is editable only for administrators while "Έλεγχοι καταχώρισης" (protocolValidate)
      * is OFF (see ProtocolController::index). The server applies the same rule.
      */
-    public function userMayChooseNumber(\App\User $user): bool
+    public function userMayChooseNumber(\App\Models\User $user): bool
     {
         return $user->role?->role === 'Διαχειριστής' && !Config::getConfigValueOf('protocolValidate');
     }

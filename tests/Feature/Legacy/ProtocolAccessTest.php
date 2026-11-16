@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Legacy;
 
-use App\Attachment;
-use App\Protocol;
+use App\Models\Attachment;
+use App\Models\Protocol;
 use Tests\Feature\FeatureTestCase;
 
 /** Characterization of list, search, download and role/assignment-based access. */

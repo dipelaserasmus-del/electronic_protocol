@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Config;
-use App\User;
+use App\Models\Config;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;

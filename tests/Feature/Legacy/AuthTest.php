@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
-use App\User;
+use App\Models\User;
 use Tests\Feature\FeatureTestCase;
 
 class AuthTest extends FeatureTestCase

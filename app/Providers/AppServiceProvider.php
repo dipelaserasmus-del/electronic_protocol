@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\User;
-use App\Config;
+use App\Models\User;
+use App\Models\Config;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;

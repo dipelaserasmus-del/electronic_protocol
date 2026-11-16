@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Role;
-use App\User;
-use App\Config;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Config;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
 

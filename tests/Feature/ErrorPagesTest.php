@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Protocol;
+use App\Models\Protocol;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 

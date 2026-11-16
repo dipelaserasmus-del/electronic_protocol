@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Protocol;
+use App\Models\Protocol;
 use App\Services\NumberGaps;
 use Carbon\Carbon;
 
@@ -142,8 +142,8 @@ class NumberGapsTest extends FeatureTestCase
 
         $this->actingAs($admin)->post('/settings', $base + ['gapCheckFromNumber' => 1000, 'gapCheckMonths' => 4])
             ->assertRedirect('/settings');
-        $this->assertSame('1000', \App\Config::getConfigValueOf('gapCheckFromNumber'));
-        $this->assertSame('4', \App\Config::getConfigValueOf('gapCheckMonths'));
+        $this->assertSame('1000', \App\Models\Config::getConfigValueOf('gapCheckFromNumber'));
+        $this->assertSame('4', \App\Models\Config::getConfigValueOf('gapCheckMonths'));
 
         $this->actingAs($admin)->post('/settings', $base + ['gapCheckMonths' => 99])->assertSessionHasErrors('gapCheckMonths');
     }

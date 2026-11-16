@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use File;
 use Storage;
-use App\Config;
+use App\Models\Config;
 use Carbon\Carbon;
-use App\Attachment;
+use App\Models\Attachment;
 use App\Services\DatabaseBackup;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;

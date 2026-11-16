@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Protocol;
+use App\Models\Protocol;
 
 /** B07: inputs that used to crash with HTTP 500. */
 class RobustnessTest extends FeatureTestCase

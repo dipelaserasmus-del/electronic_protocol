@@ -1,11 +1,11 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * App\Keepvalue
+ * App\Models\Keepvalue
  *
  * @property integer $id
  * @property string $fakelos
@@ -18,19 +18,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $readNotifications
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $unreadNotifications
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereId($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereFakelos($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereKeep($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereKeepAlt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereDescribe($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereRemarks($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereCreatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|\App\Keepvalue whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereFakelos($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereKeep($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereKeepAlt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereDescribe($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereRemarks($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereCreatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\Keepvalue whereUpdatedAt($value)
  */
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
-use App\Keepvalue;
+use App\Models\Keepvalue;
 
 class Keepvalue extends Model
 {

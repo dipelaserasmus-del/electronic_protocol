@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Config;
-use App\Protocol;
-use App\User;
+use App\Models\Config;
+use App\Models\Protocol;
+use App\Models\User;
 
 /**
  * S02: single source of truth for who may see / change a protocol and its attachments.

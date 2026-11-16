@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use DB;
 use Auth;
 use Validator;
-use App\Config;
-use App\Keepvalue;
+use App\Models\Config;
+use App\Models\Keepvalue;
 use Illuminate\Http\Request;
 
 class KeepvalueController extends Controller
