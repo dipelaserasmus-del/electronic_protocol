@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
-use App\Protocol;
+use App\Models\Protocol;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FeatureTestCase;

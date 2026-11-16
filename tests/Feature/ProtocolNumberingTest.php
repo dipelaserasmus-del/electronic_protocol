@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Protocol;
+use App\Models\Protocol;
 use App\Services\ProtocolNumberTaken;
 use App\Services\ProtocolNumbering;
 use Illuminate\Support\Facades\DB;

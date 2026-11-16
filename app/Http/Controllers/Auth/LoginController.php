@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
-class LoginController extends Controller
+class LoginController extends Controller implements HasMiddleware
 {
     /*
     |--------------------------------------------------------------------------
@@ -30,14 +33,12 @@ class LoginController extends Controller
      */
     protected $redirectTo = '/chkForUpdates';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('guest', ['except' => 'logout']);
+        return [
+            new Middleware('guest', except: ['logout']),
+        ];
     }
 
     /**
@@ -48,7 +49,7 @@ class LoginController extends Controller
         return 'username';
     }
 
-    protected function showLoginForm()
+    public function showLoginForm()
     {
         $allowregister = \App\Support\Registration::isOpen();
         return view('auth.login', compact('allowregister'));

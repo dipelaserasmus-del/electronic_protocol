@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -36,7 +36,7 @@ class User extends Authenticatable
     ];
 
     public function role(){
-        return $this->belongsTo('App\Role');
+        return $this->belongsTo('App\Models\Role');
     }
 
 

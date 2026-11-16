@@ -1,17 +1,15 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\KeepvalueController;
+use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
 
 Route::get('/', function () {
 	$allowregister = \App\Support\Registration::isOpen();
@@ -20,85 +18,87 @@ Route::get('/', function () {
 
 //Auth::routes();
 // Authentication Routes...
-Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
-Route::post('login', 'Auth\LoginController@login');
-Route::post('logout', 'Auth\LoginController@logout')->name('logout');
+Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('login', [LoginController::class, 'login']);
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 // Registration Routes... (open only until the first administrator exists, see App\Support\Registration)
-Route::get('register', 'Auth\RegisterController@showRegistrationForm')->name('register');
-Route::post('register', 'Auth\RegisterController@register')->middleware('throttle:5,1');
+Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('register', [RegisterController::class, 'register'])->middleware('throttle:5,1');
 
 // Password Reset Routes...
-Route::get('password/resetForm', 'Auth\ForgotPasswordController@showLinkRequestForm');
-Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail');
-Route::get('password/reset', 'Auth\ResetPasswordController@showResetForm')->name('password.reset');
-Route::post('password/reset', 'Auth\ResetPasswordController@reset')->name('password.reset');
+Route::get('password/resetForm', [ForgotPasswordController::class, 'showLinkRequestForm']);
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+Route::get('password/reset', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.reset');
 // End Auth::routes();
 
+// Everything below needs a logged-in user; each controller adds its role checks (HasMiddleware).
+Route::middleware('auth')->group(function () {
+    Route::get('users', [UserController::class, 'index']);
+    Route::post('users', [UserController::class, 'store']);
+    Route::get('users/{user}', [UserController::class, 'index']);
+    Route::post('users/{user}', [UserController::class, 'update']);
+    Route::get('users/del/{user}', [UserController::class, 'delete']);
 
-Route::get('users', 'UserController@index');
-Route::post('users', 'UserController@store');
-Route::get('users/{user}', 'UserController@index');
-Route::post('users/{user}', 'UserController@update');
-Route::get('users/del/{user}', 'UserController@delete');
+    Route::get('keep', [KeepvalueController::class, 'index']);
+    Route::post('keep', [KeepvalueController::class, 'store']);
+    Route::get('keep/{keepvalue}', [KeepvalueController::class, 'index']);
+    Route::post('keep/{keepvalue}', [KeepvalueController::class, 'update']);
+    Route::get('keep/del/{keepvalue}', [KeepvalueController::class, 'delete']);
 
-Route::get('keep', 'KeepvalueController@index');
-Route::post('keep', 'KeepvalueController@store');
-Route::get('keep/{keepvalue}', 'KeepvalueController@index');
-Route::post('keep/{keepvalue}', 'KeepvalueController@update');
-Route::get('keep/del/{keepvalue}', 'KeepvalueController@delete');
+    Route::get('/home', [ProtocolController::class, 'index']);
+    Route::get('/chkForUpdates', [ProtocolController::class, 'chkForUpdates']);
+    Route::get('/home/list', [ProtocolController::class, 'indexList'])->middleware(['redirectAfterLogin']);
+    Route::get('/home/list/{filter?}/{userId?}', [ProtocolController::class, 'indexList']);
+    Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolController::class, 'index']);
+    Route::get('getFileInputs/{num}', [ProtocolController::class, 'getFileInputs']);
+    Route::get('getKeep4Fakelos/{fakelos}', [ProtocolController::class, 'getKeep4Fakelos']);
 
-Route::get('/home', 'ProtocolController@index');
-Route::get('/chkForUpdates', 'ProtocolController@chkForUpdates');
-Route::get('/home/list', 'ProtocolController@indexList')->middleware(['redirectAfterLogin']);
-Route::get('/home/list/{filter?}/{userId?}', 'ProtocolController@indexList');
-Route::get('/home/{protocol}/{copyAsNew?}', 'ProtocolController@index');
-Route::get('getFileInputs/{num}', 'ProtocolController@getFileInputs');
-Route::get('getKeep4Fakelos/{fakelos}', 'ProtocolController@getKeep4Fakelos');
+    Route::post('/home', [ProtocolController::class, 'store']);
+    Route::post('/home/{protocol}', [ProtocolController::class, 'update']);
+    Route::get('/delprotocol/{protocol}', [ProtocolController::class, 'delprotocol']);
+    Route::post('/checkInNum', [ProtocolController::class, 'checkInNum'])->name('checkInNum');
+    Route::post('/checkSameEmail', [ProtocolController::class, 'checkSameEmail'])->name('checkSameEmail');
 
-Route::post('/home', 'ProtocolController@store');
-Route::post('/home/{protocol}', 'ProtocolController@update');
-Route::get('/delprotocol/{protocol}', 'ProtocolController@delprotocol');
-Route::post('/checkInNum', 'ProtocolController@checkInNum')->name('checkInNum');
-Route::post('/checkSameEmail', 'ProtocolController@checkSameEmail')->name('checkSameEmail');
+    Route::get('/attach/del/{attachment}', [ProtocolController::class, 'attachDelete']);
+    Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
+    Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
 
-Route::get('/attach/del/{attachment}', 'ProtocolController@attachDelete');
-Route::get('/goto/{etos}/{protocolnum}/{step?}', 'ProtocolController@gotonum');
-Route::get('/download/{attachment}', 'ProtocolController@download');
+    Route::get('/find', [ProtocolController::class, 'find']);
+    Route::get('/getFindData', [ProtocolController::class, 'getFindData']);
+    // autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
+    Route::get('/getValues/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValuesQuery']);
+    Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValues']);
 
-Route::get('/find', 'ProtocolController@find');
-Route::get('/getFindData', 'ProtocolController@getFindData');
-// autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
-Route::get('/getValues/{field}/{id}/{divId}/{multi}', 'ProtocolController@getValuesQuery');
-Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', 'ProtocolController@getValues');
+    Route::get('/print', [ProtocolController::class, 'printprotocols']);
+    Route::post('/printed', [ProtocolController::class, 'printed']);
+    Route::get('/printAttachments', [ProtocolController::class, 'printAttachments']);
+    Route::post('/printedAttachments', [ProtocolController::class, 'printedAttachments']);
 
-Route::get('/print', 'ProtocolController@printprotocols');
-Route::post('/printed', 'ProtocolController@printed');
-Route::get('/printAttachments', 'ProtocolController@printAttachments');
-Route::post('/printedAttachments', 'ProtocolController@printedAttachments');
+    Route::get('/receipt/{protocol}', [ProtocolController::class, 'receipt']);
+    Route::post('receiptToEmail', [ProtocolController::class, 'receiptToEmail'])->name('receiptToEmail');
+    Route::get('/about', [ProtocolController::class, 'about']);
+    Route::get('/updated', [ProtocolController::class, 'updated']);
+    Route::post('/setDiekpDate', [ProtocolController::class, 'setDiekpDate'])->name('setDiekpDate');
+    Route::post('/anathesiSe', [ProtocolController::class, 'anathesiSe'])->name('anathesiSe');
 
-Route::get('/receipt/{protocol}', 'ProtocolController@receipt');
-Route::post('receiptToEmail', 'ProtocolController@receiptToEmail')->name('receiptToEmail');
-Route::get('/about', 'ProtocolController@about');
-Route::get('/updated', 'ProtocolController@updated');
-Route::post('/setDiekpDate', 'ProtocolController@setDiekpDate')->name('setDiekpDate');
-Route::post('/anathesiSe', 'ProtocolController@anathesiSe')->name('anathesiSe');
+    Route::get('/viewEmails', [ProtocolController::class, 'viewEmails']);
+    Route::get('/getEmailNum', [ProtocolController::class, 'getEmailNum']);
+    Route::get('/viewEmailAttachment/{messageUid}/{attachmentKey}', [ProtocolController::class, 'viewEmailAttachment']);
+    Route::get('/setEmailRead/{messageUid}', [ProtocolController::class, 'setEmailRead']);
+    Route::post('/storeFromEmail', [ProtocolController::class, 'storeFromEmail']);
 
-Route::get('/viewEmails', 'ProtocolController@viewEmails');
-Route::get('/getEmailNum', 'ProtocolController@getEmailNum');
-Route::get('/viewEmailAttachment/{messageUid}/{attachmentKey}', 'ProtocolController@viewEmailAttachment');
-Route::get('/setEmailRead/{messageUid}', 'ProtocolController@setEmailRead');
-Route::post('/storeFromEmail', 'ProtocolController@storeFromEmail');
+    Route::get('/settings', [ConfigController::class, 'index']);
+    Route::post('/settings', [ConfigController::class, 'store']);
 
-Route::get('/settings', 'ConfigController@index');
-Route::post('/settings', 'ConfigController@store');
+    Route::get('/backups', [ConfigController::class, 'backups']);
+    Route::get('/backup', [ConfigController::class, 'backup']);
+    Route::get('/downloadBackup/{name}', [ConfigController::class, 'downloadBackup']);
+    Route::get('/deleteBackup/{name}', [ConfigController::class, 'deleteBackup']);
 
-Route::get('/backups', 'ConfigController@backups');
-Route::get('/backup', 'ConfigController@backup');
-Route::get('/downloadBackup/{name}', 'ConfigController@downloadBackup');
-Route::get('/deleteBackup/{name}', 'ConfigController@deleteBackup');
-
-Route::get('/arxeio', 'ConfigController@arxeio');
-Route::get('/expired/{deleted?}', 'ConfigController@expired');
-Route::get('/delExpired', 'ConfigController@delExpired');
-Route::get('/delDeleted', 'ConfigController@delDeleted');
+    Route::get('/arxeio', [ConfigController::class, 'arxeio']);
+    Route::get('/expired/{deleted?}', [ConfigController::class, 'expired']);
+    Route::get('/delExpired', [ConfigController::class, 'delExpired']);
+    Route::get('/delDeleted', [ConfigController::class, 'delDeleted']);
+});

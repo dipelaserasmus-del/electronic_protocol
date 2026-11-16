@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Attachment;
-use App\Protocol;
+use App\Models\Attachment;
+use App\Models\Protocol;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Storage;
 

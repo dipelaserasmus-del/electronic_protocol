@@ -27,6 +27,10 @@ class Handler extends ExceptionHandler
     /** Reference code of the current request's error (one per request). */
     public static function errorId(): string
     {
+        // artisan commands / scheduled jobs have no request (N02: the handler itself crashed there)
+        if (!app()->bound('request')) {
+            return self::$consoleErrorId ??= 'E-' . strtoupper(Str::random(6));
+        }
         $request = request();
         if (!$request->attributes->has('error_id')) {
             $request->attributes->set('error_id', 'E-' . strtoupper(Str::random(6)));
@@ -34,14 +38,16 @@ class Handler extends ExceptionHandler
         return $request->attributes->get('error_id');
     }
 
+    private static ?string $consoleErrorId = null;
+
     /** Added to every log entry written by report(). */
     protected function context(): array
     {
-        return array_merge(parent::context(), [
-            'error_id' => self::errorId(),
-            'url' => request()->fullUrl(),
-            'method' => request()->method(),
-        ]);
+        $context = ['error_id' => self::errorId()];
+        if (app()->bound('request')) {
+            $context += ['url' => request()->fullUrl(), 'method' => request()->method()];
+        }
+        return array_merge(parent::context(), $context);
     }
 
     public function render($request, Throwable $e)

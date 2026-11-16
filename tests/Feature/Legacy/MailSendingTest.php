@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Legacy;
 
-use App\Protocol;
+use App\Models\Protocol;
 use Tests\Feature\FeatureTestCase;
 
 /**

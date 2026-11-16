@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -10,7 +13,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use App\Support\Registration;
 use Illuminate\Http\Request;
 
-class RegisterController extends Controller
+class RegisterController extends Controller implements HasMiddleware
 {
     /*
     |--------------------------------------------------------------------------
@@ -34,14 +37,12 @@ class RegisterController extends Controller
      */
     protected $redirectTo = '/home/list';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('guest');
+        return [
+            new Middleware('guest'),
+        ];
     }
 
     /**

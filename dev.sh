@@ -88,12 +88,12 @@ real_cmd() {
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
-      in_real php artisan tinker --execute='\App\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
+      in_real php artisan tinker --execute='\App\Models\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
       in_real chmod -R a+rwX storage/app
       # summary: counts only, no data is printed
       in_real php artisan tinker --execute='
-        $files = 0; foreach (\App\Attachment::whereNotNull("savedPath")->pluck("savedPath") as $p) { if (\Storage::exists($p)) $files++; }
-        echo "Loaded: ", \App\Protocol::count(), " protocols, ", \App\User::count(), " users, ", \App\Attachment::count(), " attachments (", $files, " files found in local-data/storage/app)\n";'
+        $files = 0; foreach (\App\Models\Attachment::whereNotNull("savedPath")->pluck("savedPath") as $p) { if (\Storage::exists($p)) $files++; }
+        echo "Loaded: ", \App\Models\Protocol::count(), " protocols, ", \App\Models\User::count(), " users, ", \App\Models\Attachment::count(), " attachments (", $files, " files found in local-data/storage/app)\n";'
       ;;
     down) compose_real down ;;
     wipe) compose_real down -v; echo "Local copy removed (database volume deleted). Files in local-data/ are untouched." ;;

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Config;
-use App\Protocol;
+use App\Models\Config;
+use App\Models\Protocol;
 use Carbon\Carbon;
 
 /**

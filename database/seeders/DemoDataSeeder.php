@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Attachment;
-use App\Keepvalue;
-use App\Protocol;
-use App\User;
+use App\Models\Attachment;
+use App\Models\Keepvalue;
+use App\Models\Protocol;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 

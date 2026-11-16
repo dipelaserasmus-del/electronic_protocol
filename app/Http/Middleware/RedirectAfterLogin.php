@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Providers\RouteServiceProvider;
+use App\Support\Home;
 
 class RedirectAfterLogin
 {
@@ -23,7 +23,7 @@ class RedirectAfterLogin
 
             $landingPage = config('landing-page.page.' . auth()->user()->role_id);
             
-            if($landingPage !== RouteServiceProvider::HOME){
+            if($landingPage !== Home::LIST){
                 return redirect($landingPage);
             }
         }

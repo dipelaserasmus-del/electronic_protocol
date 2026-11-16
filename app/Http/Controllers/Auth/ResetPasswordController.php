@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
 
-class ResetPasswordController extends Controller
+class ResetPasswordController extends Controller implements HasMiddleware
 {
     /*
     |--------------------------------------------------------------------------
@@ -28,14 +31,12 @@ class ResetPasswordController extends Controller
      */
     protected $redirectTo = '/home/list';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('guest');
+        return [
+            new Middleware('guest'),
+        ];
     }
 
     // εχω κάνει override τις functions από το trait ResetsPasswords

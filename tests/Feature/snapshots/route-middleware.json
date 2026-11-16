@@ -1,0 +1,304 @@
+{
+    "GET /": [
+        "web"
+    ],
+    "GET about": [
+        "auth",
+        "web"
+    ],
+    "GET arxeio": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET attach/del/{attachment}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET backup": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET backups": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET chkForUpdates": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET delDeleted": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET delExpired": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET deleteBackup/{name}": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET delprotocol/{protocol}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET download/{attachment}": [
+        "auth",
+        "web"
+    ],
+    "GET downloadBackup/{name}": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET expired/{deleted?}": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET find": [
+        "auth",
+        "web"
+    ],
+    "GET getEmailNum": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET getFileInputs/{num}": [
+        "auth",
+        "web"
+    ],
+    "GET getFindData": [
+        "auth",
+        "web"
+    ],
+    "GET getKeep4Fakelos/{fakelos}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET getValues/{field}/{id}/{divId}/{multi}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET getValues/{term}/{field}/{id}/{divId}/{multi}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET goto/{etos}/{protocolnum}/{step?}": [
+        "auth",
+        "web"
+    ],
+    "GET home": [
+        "auth",
+        "web"
+    ],
+    "GET home/list": [
+        "auth",
+        "redirectAfterLogin",
+        "web"
+    ],
+    "GET home/list/{filter?}/{userId?}": [
+        "auth",
+        "web"
+    ],
+    "GET home/{protocol}/{copyAsNew?}": [
+        "auth",
+        "web"
+    ],
+    "GET keep": [
+        "auth",
+        "web"
+    ],
+    "GET keep/del/{keepvalue}": [
+        "admin:keep",
+        "auth",
+        "web"
+    ],
+    "GET keep/{keepvalue}": [
+        "auth",
+        "web"
+    ],
+    "GET login": [
+        "guest",
+        "web"
+    ],
+    "GET password/reset": [
+        "guest",
+        "web"
+    ],
+    "GET password/resetForm": [
+        "guest",
+        "web"
+    ],
+    "GET print": [
+        "auth",
+        "limitList",
+        "web"
+    ],
+    "GET printAttachments": [
+        "auth",
+        "limitList",
+        "web",
+        "writer:home/list"
+    ],
+    "GET receipt/{protocol}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET register": [
+        "guest",
+        "web"
+    ],
+    "GET setEmailRead/{messageUid}": [
+        "auth",
+        "email",
+        "web",
+        "writer:home/list"
+    ],
+    "GET settings": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET updated": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET users": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET users/del/{user}": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET users/{user}": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "GET viewEmailAttachment/{messageUid}/{attachmentKey}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "GET viewEmails": [
+        "auth",
+        "email",
+        "web",
+        "writer:home/list"
+    ],
+    "POST anathesiSe": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST checkInNum": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST checkSameEmail": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST home": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST home/{protocol}": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST keep": [
+        "admin:keep",
+        "auth",
+        "web"
+    ],
+    "POST keep/{keepvalue}": [
+        "admin:keep",
+        "auth",
+        "web"
+    ],
+    "POST login": [
+        "guest",
+        "web"
+    ],
+    "POST logout": [
+        "web"
+    ],
+    "POST password/email": [
+        "guest",
+        "web"
+    ],
+    "POST password/reset": [
+        "guest",
+        "web"
+    ],
+    "POST printed": [
+        "auth",
+        "limitList",
+        "web"
+    ],
+    "POST printedAttachments": [
+        "auth",
+        "limitList",
+        "web",
+        "writer:home/list"
+    ],
+    "POST receiptToEmail": [
+        "auth",
+        "web",
+        "writer:home/list"
+    ],
+    "POST register": [
+        "guest",
+        "throttle:5,1",
+        "web"
+    ],
+    "POST setDiekpDate": [
+        "auth",
+        "web"
+    ],
+    "POST settings": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "POST storeFromEmail": [
+        "auth",
+        "email",
+        "web",
+        "writer:home/list"
+    ],
+    "POST users": [
+        "admin:home",
+        "auth",
+        "web"
+    ],
+    "POST users/{user}": [
+        "admin:home",
+        "auth",
+        "web"
+    ]
+}

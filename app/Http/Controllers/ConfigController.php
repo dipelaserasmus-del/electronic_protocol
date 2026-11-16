@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use File;
 use Storage;
-use App\Config;
+use App\Models\Config;
 use Carbon\Carbon;
-use App\Attachment;
+use App\Models\Attachment;
 use App\Services\DatabaseBackup;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
-class ConfigController extends Controller
+class ConfigController extends Controller implements HasMiddleware
 {
 
     protected  $protocolfields = [
@@ -34,11 +37,13 @@ class ConfigController extends Controller
         'ada' => 'ΑΔΑ'
     ];
 
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('auth');
-        $this->middleware('web');
-        $this->middleware('admin:home');
+        return [
+            'auth',
+            'admin:home',
+        ];
     }
 
     public function index()

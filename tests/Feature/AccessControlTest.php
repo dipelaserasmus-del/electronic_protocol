@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Attachment;
-use App\Protocol;
-use App\User;
+use App\Models\Attachment;
+use App\Models\Protocol;
+use App\Models\User;
 
 /** S02: every route that reads or changes a protocol / attachment goes through ProtocolPolicy. */
 class AccessControlTest extends FeatureTestCase

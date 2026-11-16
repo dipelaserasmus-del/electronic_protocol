@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Config;
-use App\Role;
-use App\User;
+use App\Models\Config;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 

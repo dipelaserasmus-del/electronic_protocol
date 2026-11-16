@@ -1,6 +1,6 @@
 <ul class='list-inline'>
     @php
-        $diavgeiaUrl = \App\Config::where('key', 'diavgeiaUrl')->first()->value;
+        $diavgeiaUrl = \App\Models\Config::where('key', 'diavgeiaUrl')->first()->value;
     @endphp
     @foreach ($protocol->attachments()->get() as $attachment)
         <li>

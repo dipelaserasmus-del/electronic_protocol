@@ -30,7 +30,7 @@
                 </div>
                 <div class="form-control-static col-md-1 col-sm-1 "><strong>Ημνία:</strong></div>
                 <div class="form-control-static col-md-2 col-sm-2 ">
-                    {{ \Carbon\Carbon::parse($mailMessage->getHeader(HeaderConsts::DATE)->getDateTime())->timezone(App\Config::getConfigValueOf('timeZone'))->format('d/m/Y H:i:s') }}
+                    {{ \Carbon\Carbon::parse($mailMessage->getHeader(HeaderConsts::DATE)->getDateTime())->timezone(App\Models\Config::getConfigValueOf('timeZone'))->format('d/m/Y H:i:s') }}
                 </div>
             </div>
             <div class="row bg-warning ">
