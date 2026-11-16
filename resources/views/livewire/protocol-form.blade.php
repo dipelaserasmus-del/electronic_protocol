@@ -119,7 +119,10 @@
                         </select>
                         @if ($e('fakelos'))<div class="invalid-feedback">{{ $e('fakelos') }}</div>@endif
                     </div>
-                    <x-form.text name="thema" :value="$form['thema']" live label="Θέμα" rows="2" :error="$e('thema')">
+                    <x-form.text name="thema" :value="$form['thema']" live label="Θέμα" rows="2" :error="$e('thema')" :placeholder="$suggestedSubject">
+                        @if ($suggestedSubject)
+                            <div class="form-text" id="subject-from-file">Αν μείνει κενό, θέμα θα γίνει το όνομα του αρχείου. Κάντε κλικ στο πεδίο για να το αλλάξετε.</div>
+                        @endif
                         @if ($sameSubject)
                             <x-notice type="warning" class="mt-1" id="notice-thema">Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα:
                                 @foreach ($sameSubject as $p)<a href="{{ url('/home/'.$p->id) }}" target="_blank">{{ $p->protocolnum }}/{{ $p->etos }}</a>@if (! $loop->last), @endif @endforeach
@@ -214,17 +217,32 @@
                 </div>
             </fieldset>
 
-            {{-- attachments (R1c: drag & drop, icons) --}}
-            <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title">
-                <h2 class="card-header h6 mb-0" id="attachments-title">Συνημμένα</h2>
+            {{-- attachments (R1c): open on new and copy, files can be dropped anywhere on the window --}}
+            <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title"
+                @if ($access->canSave)
+                     x-data="{ over: false, depth: 0, progress: null,
+                               hasFiles(e) { return [...(e.dataTransfer?.types || [])].includes('Files') } }"
+                     x-on:dragenter.window="if (hasFiles($event)) { $event.preventDefault(); depth++; over = true }"
+                     x-on:dragover.window="if (hasFiles($event)) $event.preventDefault()"
+                     x-on:dragleave.window="if (hasFiles($event)) { depth = Math.max(0, depth - 1); if (! depth) over = false }"
+                     x-on:drop.window="if (hasFiles($event)) { $event.preventDefault(); depth = 0; over = false;
+                         progress = 0;
+                         $wire.uploadMultiple('picked', $event.dataTransfer.files, () => progress = null, () => progress = null, (e) => progress = e.detail.progress) }"
+                     x-on:livewire-upload-start="progress = 0" x-on:livewire-upload-progress="progress = $event.detail.progress"
+                     x-on:livewire-upload-finish="progress = null" x-on:livewire-upload-error="progress = null"
+                @endif>
+                <h2 class="card-header h6 mb-0 d-flex align-items-center gap-2" id="attachments-title">
+                    Συνημμένα
+                    <span class="badge rounded-pill text-bg-secondary">{{ count($attachments) + count((array) $uploads) }}</span>
+                </h2>
                 <div class="card-body">
                     @forelse ($attachments as $a)
-                        <div class="d-flex align-items-center gap-2 border-bottom py-1" wire:key="att-{{ $a->id }}">
+                        <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row" wire:key="att-{{ $a->id }}">
                             <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
                             @if ($a->savedPath)
                                 <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break me-auto">{{ $a->name }}</a>
                             @else
-                                <span class="me-auto">{{ $a->name }}</span>
+                                <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
                             @endif
                             @if ($a->ada)
                                 @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light">ΑΔΑ {{ $a->ada }}</a>
@@ -232,46 +250,63 @@
                             @endif
                             @if ($access->canSave)
                                 <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" wire:click="removeAttachment({{ $a->id }})"
-                                        data-confirm="Να μεταφερθεί στον κάδο το «{{ $a->name }}»;" title="Στον κάδο">✕</button>
+                                        data-confirm="Να μεταφερθεί στον κάδο το «{{ $a->name ?: $a->ada }}»;" title="Στον κάδο" aria-label="Στον κάδο">✕</button>
                             @endif
                         </div>
                     @empty
-                        <p class="text-body-secondary small mb-2">Δεν υπάρχουν συνημμένα.</p>
+                        @unless ($access->canSave)<p class="text-body-secondary small mb-0">Δεν υπάρχουν συνημμένα.</p>@endunless
                     @endforelse
 
                     @if ($access->canSave)
-                        <div class="mt-3">
-                            <label for="f-uploads" class="form-label small fw-semibold mb-1">Προσθήκη αρχείων</label>
-                            <input id="f-uploads" type="file" multiple class="form-control" wire:model="uploads">
-                            <div wire:loading wire:target="uploads" class="small text-body-secondary mt-1">Ανέβασμα…</div>
-                            @error('uploads.*')<div class="text-danger small">{{ $message }}</div>@enderror
-                            @foreach ((array) $uploads as $i => $file)
-                                <div class="d-flex align-items-center gap-2 py-1" wire:key="upload-{{ $i }}">
-                                    <x-file-badge :name="$file->getClientOriginalName()" :size="$file->getSize()" />
-                                    <span class="me-auto text-break">{{ $file->getClientOriginalName() }}</span>
-                                    <button type="button" class="btn btn-sm btn-link" wire:click="removeUpload({{ $i }})">αφαίρεση</button>
-                                </div>
-                            @endforeach
-                            <div class="row g-2 mt-1">
-                                <div class="col-md-6">
-                                    <label for="f-ada" class="form-label small fw-semibold mb-1">ΑΔΑ (Διαύγεια, χωρίς αρχείο)</label>
-                                    <input id="f-ada" class="form-control" wire:model.blur="newAda" autocomplete="off">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="f-keep" class="form-label small fw-semibold mb-1">Διατήρηση</label>
-                                    <select id="f-keep" class="form-select" wire:model="form.keep">
-                                        <option value="">—</option>
-                                        @foreach ($keepYears as $y)<option value="{{ $y }}" @selected((string) $y === $form['keep'])>{{ $y }} {{ $y == 1 ? 'έτος' : 'έτη' }}</option>@endforeach
-                                        @foreach ($keepWords as $w)<option value="{{ $w }}" @selected((string) $w === $form['keep'])>{{ $w }}</option>@endforeach
-                                    </select>
-                                </div>
+                        @foreach ((array) $uploads as $i => $file)
+                            <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 upload-row" wire:key="upload-{{ $i }}-{{ $file->getFilename() }}">
+                                <x-file-badge :name="$file->getClientOriginalName()" :size="$file->getSize()" />
+                                <span class="me-auto text-break">{{ $file->getClientOriginalName() }}
+                                    <small class="text-body-secondary">(θα αποθηκευτεί με το πρωτόκολλο)</small></span>
+                                <input class="form-control form-control-sm w-auto" placeholder="ΑΔΑ" aria-label="ΑΔΑ του {{ $file->getClientOriginalName() }}"
+                                       wire:model="uploadAdas.{{ $i }}" autocomplete="off">
+                                <button type="button" class="btn btn-sm btn-link" wire:click="removeUpload({{ $i }})">αφαίρεση</button>
                             </div>
-                            @if ($putStamp)
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" id="f-nostamp" wire:model="noStamp">
-                                    <label class="form-check-label" for="f-nostamp">Χωρίς σφραγίδα αριθμού στα αρχεία</label>
-                                </div>
-                            @endif
+                        @endforeach
+
+                        <label for="f-uploads" class="dropzone d-block border border-2 border-dashed rounded-3 text-center p-3 mt-2 text-body-secondary"
+                               :class="over && 'border-primary bg-primary-subtle'">
+                            <span class="fs-4 d-block" aria-hidden="true">📎</span>
+                            Σύρετε αρχεία οπουδήποτε στο παράθυρο ή <span class="text-primary text-decoration-underline">επιλέξτε</span>
+                            <input id="f-uploads" type="file" multiple class="visually-hidden" wire:model="picked">
+                        </label>
+                        <div class="progress mt-2" role="progressbar" aria-label="Ανέβασμα αρχείων" x-show="progress !== null" x-cloak
+                             :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar" :style="'width: ' + progress + '%'" x-text="progress + '%'"></div>
+                        </div>
+                        @error('picked.*')<div class="text-danger small">{{ $message }}</div>@enderror
+                        @if ($e('ada'))<div class="text-danger small">{{ $e('ada') }}</div>@endif
+
+                        <div class="row g-2 mt-1">
+                            <div class="col-md-6">
+                                <label for="f-ada" class="form-label small fw-semibold mb-1">ΑΔΑ (Διαύγεια, χωρίς αρχείο)</label>
+                                <input id="f-ada" class="form-control" wire:model="newAda" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="f-keep" class="form-label small fw-semibold mb-1">Διατήρηση</label>
+                                <select id="f-keep" class="form-select" wire:model="form.keep">
+                                    <option value="">—</option>
+                                    @foreach ($keepYears as $y)<option value="{{ $y }}" @selected((string) $y === $form['keep'])>{{ $y }} {{ $y == 1 ? 'έτος' : 'έτη' }}</option>@endforeach
+                                    @foreach ($keepWords as $w)<option value="{{ $w }}" @selected((string) $w === $form['keep'])>{{ $w }}</option>@endforeach
+                                </select>
+                            </div>
+                        </div>
+                        @if ($putStamp)
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="f-nostamp" wire:model="noStamp">
+                                <label class="form-check-label" for="f-nostamp">Χωρίς σφραγίδα αριθμού στα αρχεία</label>
+                            </div>
+                        @endif
+
+                        {{-- whole-window drop target, shown while files are dragged over the page --}}
+                        <div class="drop-overlay position-fixed top-0 start-0 w-100 h-100"
+                             x-show="over" x-cloak x-transition.opacity aria-hidden="true">
+                            <div class="bg-body rounded-4 shadow p-4 fs-4 border border-primary border-2">📎 Αφήστε τα αρχεία για επισύναψη</div>
                         </div>
                     @endif
                 </div>

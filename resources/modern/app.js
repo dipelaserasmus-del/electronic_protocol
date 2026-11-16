@@ -25,6 +25,15 @@ document.addEventListener('focusout', e => {
     else input.classList.remove('is-invalid');
 });
 
+// R1c: a field showing a suggestion (data-fill-placeholder): the first click into it, while empty, puts the suggestion
+// there to edit (e.g. the subject taken from an attachment's name)
+document.addEventListener('focusin', e => {
+    const field = e.target.closest?.('[data-fill-placeholder]');
+    if (!field || field.value || !field.placeholder || field.readOnly || field.disabled) return;
+    field.value = field.placeholder;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+});
+
 // R1b: entering the field selects its text, so typing the day replaces the date (e.g. TAB from the number, then "9")
 document.addEventListener('focusin', e => {
     const input = e.target.closest?.('input[data-date-value]');
