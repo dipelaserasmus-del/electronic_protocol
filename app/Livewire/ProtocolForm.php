@@ -48,8 +48,12 @@ class ProtocolForm extends Component
     public bool $replacePlaceholder = false;
     public bool $noStamp = false;
 
-    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> new files (R1c adds drag & drop) */
+    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> new files, saved with the protocol */
     public $uploads = [];
+    /** @var array<int, string> ΑΔΑ of each new file (same index as $uploads) */
+    public array $uploadAdas = [];
+    /** R1c: files just chosen or dropped on the window; added to $uploads (choosing again never drops earlier ones) */
+    public $picked = [];
     public string $newAda = '';
 
     public function mount(?Protocol $protocol = null, bool $copy = false, ?int $prefillNum = null): void
@@ -125,7 +129,12 @@ class ProtocolForm extends Component
             'explicityNoStamp' => $this->noStamp,
             'protocolnum_proposed' => '',   // any number typed in the new form is the user's choice (B03)
         ];
-        $files = array_map(fn ($f) => ['file' => $f, 'ada' => null], array_values((array) $this->uploads));
+        // R1c: an empty subject takes the attachment's name (shown greyed in the field before saving)
+        if (trim((string) $this->form['thema']) === '' && ($guess = $this->suggestedSubject())) {
+            $input['thema'] = $guess;
+        }
+        $adas = array_values($this->uploadAdas);
+        $files = array_map(fn ($f, $i) => ['file' => $f, 'ada' => $adas[$i] ?? null], array_values((array) $this->uploads), array_keys(array_values((array) $this->uploads)));
         if (trim($this->newAda) !== '') {
             $files[] = ['file' => null, 'ada' => $this->newAda];
         }
@@ -166,11 +175,34 @@ class ProtocolForm extends Component
         }
     }
 
+    public function updatedPicked(): void
+    {
+        $this->validate(['picked.*' => ['file', 'max:65536']], [], ['picked.*' => 'αρχείο']);
+        foreach ((array) $this->picked as $file) {
+            $this->uploads[] = $file;
+            $this->uploadAdas[] = '';
+        }
+        $this->picked = [];
+    }
+
     public function removeUpload(int $index): void
     {
         $uploads = array_values((array) $this->uploads);
-        unset($uploads[$index]);
+        $adas = array_values($this->uploadAdas);
+        unset($uploads[$index], $adas[$index]);
         $this->uploads = array_values($uploads);
+        $this->uploadAdas = array_values($adas);
+    }
+
+    /** R1c: subject offered from the first new file's name while the subject is empty. */
+    private function suggestedSubject(): ?string
+    {
+        foreach ((array) $this->uploads as $file) {
+            if ($guess = \App\Support\SubjectFromFile::guess($file->getClientOriginalName())) {
+                return $guess;
+            }
+        }
+        return null;
     }
 
     public function deleteProtocol(ProtocolWriter $writer)
@@ -276,6 +308,7 @@ class ProtocolForm extends Component
             'isReader' => $isReader,
             'putStamp' => (bool) Config::getConfigValueOf('putStamp'),
             'diavgeiaUrl' => Config::getConfigValueOf('diavgeiaUrl'),
+            'suggestedSubject' => trim((string) $this->form['thema']) === '' ? $this->suggestedSubject() : null,
         ]);
     }
 }
