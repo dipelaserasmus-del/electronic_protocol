@@ -15,7 +15,7 @@
 | Next task | **N04** — Shared UI components (pills, date input…) |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
-**Critical path (remaining):** N04 → R3a → R3b → R3c → Z01 → Z02 → Z03
+**Critical path (remaining):** D02 → R1a → R1b → R1c → Z01 → Z02 → Z03
 
 ## Batches
 
@@ -195,7 +195,7 @@ flowchart LR
   class L02 inprogress
   class N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
-  class N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
+  class D02,R1a,R1b,R1c,Z01,Z02,Z03 critical
 ```
 
 ## Timeline (one agent, execution order)
@@ -232,27 +232,27 @@ gantt
   N01 PHP + Composer upgrade, drop ext-imap :done, n01, 2026-11-12 17:26, 33m
   N02 Laravel structure modernization :done, n02, 2026-11-12 17:59, 33m
   N03 Vite + Bootstrap 5 + Livewire, top nav layout :done, n03, 2026-11-12 18:32, 33m
-  N04 Shared UI components (pills, date input…) :crit, n04, 2026-11-12 19:05, 33m
+  N04 Shared UI components (pills, date input…) :n04, 2026-11-12 19:05, 33m
   section Batch 4
   D05 Tables → utf8mb4 :d05, 2026-11-12 19:38, 19m
   D01 Subject/summary → TEXT :d01, 2026-11-12 19:57, 19m
   R5a Email service, EML cache, charsets :r5a, 2026-11-12 20:16, 66m
   F08 Attachment names fit 255 bytes (Linux/Docker) :f08, 2026-11-12 21:22, 19m
   section Batch 5
-  D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 21:41, 33m
+  D02 Assignments table (replace d14,e10 text) :crit, d02, 2026-11-12 21:41, 33m
   D03 Attachment size/hash/deleted_by :d03, 2026-11-12 22:14, 19m
   D04 Integer dates → DATE columns :d04, 2026-11-12 22:33, 33m
   section Batch 6
-  R1a Protocol service (sanitation, copy date…) :r1a, 2026-11-12 23:06, 33m
-  R1b Protocol form screen :r1b, 2026-11-12 23:39, 33m
-  R1c Attachments panel, drag & drop :r1c, 2026-11-13 00:12, 33m
+  R1a Protocol service (sanitation, copy date…) :crit, r1a, 2026-11-12 23:06, 33m
+  R1b Protocol form screen :crit, r1b, 2026-11-12 23:39, 33m
+  R1c Attachments panel, drag & drop :crit, r1c, 2026-11-13 00:12, 33m
   R2 Protocol list rebuild :r2, 2026-11-13 00:45, 33m
   R4a Secure file handling :r4a, 2026-11-13 01:18, 19m
   R4b Attachment trash with retention :r4b, 2026-11-13 01:37, 33m
   section Batch 7
-  R3a Advanced search screen :crit, r3a, 2026-11-13 02:10, 33m
-  R3b Gmail-style query parser :crit, r3b, 2026-11-13 02:43, 33m
-  R3c Global search box + results page :crit, r3c, 2026-11-13 03:16, 33m
+  R3a Advanced search screen :r3a, 2026-11-13 02:10, 33m
+  R3b Gmail-style query parser :r3b, 2026-11-13 02:43, 33m
+  R3c Global search box + results page :r3c, 2026-11-13 03:16, 33m
   section Batch 8
   R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 03:49, 33m
   R5d Register-from-email flow, keywords :r5d, 2026-11-13 04:22, 33m
