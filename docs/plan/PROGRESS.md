@@ -24,8 +24,8 @@
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
 | 3 | ✅B10 ✅N01 ✅N02 ⬜N03 ⬜N04 | 3/5 | `██████░░░░` |
-| 4 | ⬜D05 ⬜R5a ⬜F08 | 0/3 | `░░░░░░░░░░` |
-| 5 | ⬜D01 ⬜D02 ⬜D03 ⬜D04 | 0/4 | `░░░░░░░░░░` |
+| 4 | ⬜D05 ⬜D01 ⬜R5a ⬜F08 | 0/4 | `░░░░░░░░░░` |
+| 5 | ⬜D02 ⬜D03 ⬜D04 | 0/3 | `░░░░░░░░░░` |
 | 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
 | 8 | ⬜R5c ⬜R5d ⬜R5b | 0/3 | `░░░░░░░░░░` |
@@ -132,9 +132,9 @@ flowchart LR
   F05 --> N03
   N03 --> N04
   F04 --> D05
+  F02 --> D01
   N01 --> R5a
   F04 --> F08
-  F02 --> D01
   F04 --> D02
   F04 --> D03
   F04 --> D04
@@ -193,7 +193,7 @@ flowchart LR
   classDef critical stroke:#dc3545,stroke-width:3px
   class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02 done
   class L02 inprogress
-  class N03,N04,D05,R5a,F08,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class N03,N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
@@ -235,10 +235,10 @@ gantt
   N04 Shared UI components (pills, date input…) :crit, n04, 2026-11-12 19:05, 33m
   section Batch 4
   D05 Tables → utf8mb4 :d05, 2026-11-12 19:38, 19m
-  R5a Email service, EML cache, charsets :r5a, 2026-11-12 19:57, 66m
-  F08 Attachment names fit 255 bytes (Linux/Docker) :f08, 2026-11-12 21:03, 19m
+  D01 Subject/summary → TEXT :d01, 2026-11-12 19:57, 19m
+  R5a Email service, EML cache, charsets :r5a, 2026-11-12 20:16, 66m
+  F08 Attachment names fit 255 bytes (Linux/Docker) :f08, 2026-11-12 21:22, 19m
   section Batch 5
-  D01 Subject/summary → TEXT :d01, 2026-11-12 21:22, 19m
   D02 Assignments table (replace d14,e10 text) :d02, 2026-11-12 21:41, 33m
   D03 Attachment size/hash/deleted_by :d03, 2026-11-12 22:14, 19m
   D04 Integer dates → DATE columns :d04, 2026-11-12 22:33, 33m
@@ -306,9 +306,9 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ⬜ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | 0.0 |  |
 | ⬜ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 |  |
 | ⬜ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
+| ⬜ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 |  |
 | ⬜ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 3.1 | 4.2 | 1.1 |  |
 | ⬜ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 |  |
-| ⬜ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 |  |
 | ⬜ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 |  |
 | ⬜ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 3.8 | 4.2 | 3.0 |  |
 | ⬜ | **D04** | Integer dates → DATE columns | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 6.1 | 6.7 | 5.3 |  |

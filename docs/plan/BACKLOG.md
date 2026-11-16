@@ -89,7 +89,7 @@ Written as small reusable services so the rebuilt modules reuse them instead of 
 
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
-| D01 | `thema`, `in_perilipsi`, `out_perilipsi` VARCHAR(255) → TEXT | DATA | P1 | S | F02 |
+| D01 | `thema`, `in_perilipsi`, `out_perilipsi` VARCHAR(255) → TEXT. 🔎 Owner (2026-11-16): an e-mail with a subject over 255 characters is not registered (MySQL 1406 "Data too long for column 'thema'"), the inbox just reloads; the error shown is the raw SQL with the e-mail's data. Replace `test_known_bug_*subject_over_255*` in `StoreFromEmailTest`; also check `in_arxi_ekdosis` (long sender names) and show a clear message, never the SQL. Moved to Batch 4 | DATA/BUG | P1 | S | F02 |
 | D02 | 🔎 Assignments stored as text `"d14,e10,"` searched with `LIKE` → proper `protocol_assignments` table (user, type d/e, done date); backfill; enables E06 and fast, correct filtering | DATA | P1 | M | F04 |
 | D03 | Attachment metadata: size, SHA-256 hash, `deleted_by`; backfill command (for U05, A05, T01) | DATA | P2 | S | F04 |
 | D05 | 🔎 (from F03) Convert tables from `utf8` (3-byte) to `utf8mb4` so emoji/symbols can be stored without errors 👤 | DATA | P1 | S | F04 |
@@ -168,10 +168,10 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 1. **Batch 1:** F01 → F03 → F02 → S00 → B03 → B08 → S02 → A02
 2. **Batch 2:** B09 → F04 → L01 👤 → L02 👤 → F05 → S04 → B04 → B07 → F06 (added 2026-11-15)
 3. **Batch 3:** N01 → N02 → N03 → N04
-4. **Batch 4** (moved earlier by the owner, 2026-11-15): D05 👤 → R5a 📧 → F08 (added 2026-11-16) — emoji e-mails can't be registered; the
+4. **Batch 4** (moved earlier by the owner, 2026-11-15): D05 👤 → D01 👤 (moved from Batch 5: long subjects fail, 2026-11-16) → R5a 📧 → F08 (added 2026-11-16) — emoji e-mails can't be registered; the
    inbox downloads every e-mail in full on each visit (main remaining timeout cause, see B07). R5a plugs its cache
    into the **current** inbox page; the new inbox screen stays R5c.
-5. **Batch 5:** D01 → D02 👤 → D03 👤 → D04 👤
+5. **Batch 5:** D02 👤 → D03 👤 → D04 👤
 6. **Batch 6:** R1a → R1b → R1c → R2 → R4a → R4b
 7. **Batch 7:** R3a → R3b → R3c
 8. **Batch 8:** R5c → R5d → R5b 📧

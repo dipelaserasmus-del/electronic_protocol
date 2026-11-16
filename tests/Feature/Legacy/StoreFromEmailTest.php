@@ -97,6 +97,56 @@ class StoreFromEmailTest extends FeatureTestCase
         $this->assertSame(0, Protocol::count());
     }
 
+    /**
+     * Reported by the owner (2026-11-16): a subject longer than 255 characters (here 280, invented) is not registered;
+     * the inbox just reloads with the e-mail still there. MySQL strict mode refuses the INSERT
+     * ("Data too long for column 'thema'"), the controller catches it and redirects back.
+     * The error text shown is the raw database message, which contains the whole SQL with the e-mail's data.
+     * Fixing task (D01, subject → TEXT) replaces these with tests that the e-mail is registered.
+     */
+    public function test_known_bug_email_with_subject_over_255_characters_is_not_registered(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->sampleEml($this->encodedWords(self::longSubject())));
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID])
+            ->assertRedirect('/viewEmails')
+            ->assertSessionHas('notification.alert-type', 'error');
+
+        $this->assertSame(0, Protocol::count(), 'nothing registered');
+        $this->assertStringContainsString('Data too long', session('notification.message'),
+            'raw database error (with the SQL) shown to the user');
+    }
+
+    /** Same failure through the inbox form, which posts the subject in the "thema" field (the owner's case). */
+    public function test_known_bug_subject_over_255_characters_posted_by_the_inbox_form_is_not_registered(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, $this->sampleEml());
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'thema' => self::longSubject()])
+            ->assertRedirect('/viewEmails');
+
+        $this->assertSame(0, Protocol::count());
+    }
+
+    /** Invented Greek subject of 280 characters. */
+    private static function longSubject(): string
+    {
+        $s = trim(str_repeat('Πρόσκληση εκδήλωσης ενδιαφέροντος για επιμορφωτικό πρόγραμμα ', 5));
+        return mb_substr($s, 0, 280);
+    }
+
+    /** RFC 2047 UTF-8 B-encoded words (each ≤ 75 characters), as mail programs split a long subject. */
+    private function encodedWords(string $text): string
+    {
+        $words = [];
+        foreach (mb_str_split($text, 20) as $chunk) {
+            $words[] = '=?UTF-8?B?'.base64_encode($chunk).'?=';
+        }
+        return implode("\r\n ", $words);
+    }
+
     private function putEml(int $userId, string $eml): void
     {
         $this->emlDir = 'tmp/u'.$userId.'/';
@@ -105,10 +155,10 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /** Invented message in the legacy Greek encodings that trip the current inbox. */
-    private function sampleEml(): string
+    private function sampleEml(?string $subjectHeader = null): string
     {
         $iso = fn (string $s) => mb_convert_encoding($s, 'ISO-8859-7', 'UTF-8');
-        $subject = '=?ISO-8859-7?Q?'.str_replace(' ', '_', quoted_printable_encode($iso('Πρόσκληση σε σύσκεψη'))).'?=';
+        $subject = $subjectHeader ?? '=?ISO-8859-7?Q?'.str_replace(' ', '_', quoted_printable_encode($iso('Πρόσκληση σε σύσκεψη'))).'?=';
         $from = '=?UTF-8?B?'.base64_encode('Γραφείο Σχολικών Δραστηριοτήτων').'?=';
         $text = quoted_printable_encode($iso("  Καλημέρα σας, σας προσκαλούμε στη σύσκεψη της Πέμπτης.\r\n\r\n"));
         $html = base64_encode('<p>Καλημέρα σας, σας προσκαλούμε στη <b>σύσκεψη</b> της Πέμπτης.</p>');
