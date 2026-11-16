@@ -47,7 +47,8 @@ version your server runs, so that the update won't break the live app.
 3. **Before the next `git pull` on the server:** back up `.env` (it's no longer in the repository) and the database.
 4. **Fixes reach your users only after you deploy them.** Batches 1–2 fix the e-mail 500 errors, numbering,
    access control and more. If you want, ask me: **"write a production update guide"**.
-5. **After deploying Batch 1:** run `php artisan migrate`, and check the user list for administrator accounts
+5. **After deploying Batch 1:** run `php artisan migrate:adopt-legacy` once (your database was installed without
+   Laravel's migration records), then `php artisan migrate`, and check the user list for administrator accounts
    you don't recognise. Until Batch 1 is deployed, anyone could register as an administrator.
 
 ## Whenever it happens

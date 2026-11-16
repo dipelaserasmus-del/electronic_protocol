@@ -57,6 +57,7 @@ run "real up"                       "compose -p electronic-protocol-real" real u
 run "real load: no dump → message"  -                                    real help
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"
 run "real load (.sql.gz)"           "artisan migrate --force"            real load
+run "real load adopts old backups"  "artisan migrate:adopt-legacy"       real load
 run "real down"                     "compose -p electronic-protocol-real" real down
 
 # no dump → must exit with a clear message (non-zero)

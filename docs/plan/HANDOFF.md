@@ -23,7 +23,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
 | Production server facts | Asked 2026-11-15 (OWNER-TODO): OS, PHP, php-imap, MySQL, web server, update method, what is deployed. Needed before N01. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
-| After deploying Batch 1 | Owner: run `php artisan migrate`; check `users` for unknown admin accounts. |
+| After deploying Batch 1 | Owner: run `php artisan migrate:adopt-legacy` once (production has no `migrations` table, F07), then `php artisan migrate`; check `users` for unknown admin accounts. |
 
 ## Decisions log (short)
 - Module-by-module rebuild, Livewire + Bootstrap 5, MySQL only (BACKLOG "Decisions").
@@ -49,6 +49,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 | F07 | #24 | production backup has no `migrations` table → `migrate:adopt-legacy` records existing tables; `real load` runs it before `migrate` |
 | 2026-11-15 | F06 | #23 | nginx re-resolves `app` (Docker DNS, 5 s): 502 after Docker Desktop restart on the Mac; `tests/shell/nginx-reconnect.test.sh` in CI e2e job |
 | 2026-11-15 | Plan change + owner list | #22 | D05, R5a → new Batch 4 (later batches +1); `OWNER-TODO.md` |
 | 2026-11-12 | F03, F01, F02, S00, B03, B08, S02, A02 | #2–#9 | see `docs/reports/BATCH-1.md` |

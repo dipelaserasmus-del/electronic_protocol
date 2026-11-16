@@ -83,6 +83,8 @@ real_cmd() {
         exit 1
       fi
       rm -f "$importlog"
+      # a backup of an installation made without the migrations table: record its existing tables first
+      in_real php artisan migrate:adopt-legacy
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
