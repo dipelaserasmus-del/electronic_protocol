@@ -1,9 +1,9 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-16 (after N02).
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-16 (after N03).
 
 ## ▶ Your next message
-Nothing needed: Batch 3 is running (N01, N02 done; N03 → N04 next). When it finishes I'll update this list.
+Nothing needed: Batch 3 is running (N01, N02, N03 done; N04 next). When it finishes I'll update this list.
 
 **Registration (security):** the code on your server still lets anyone who can reach it create an **administrator**
 account (fixed in S00, but you deploy only at the end). The one-line Apache rule that refuses registrations is in

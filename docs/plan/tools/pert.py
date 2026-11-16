@@ -87,7 +87,8 @@ def cpm(tasks, remaining_only):
     # critical path: walk from a zero-slack start through zero-slack successors
     crit = {i for i in tasks if abs(slack[i]) < 1e-9 and dur[i] > 0}
     path, cur = [], None
-    starts = sorted((i for i in crit if not any(d in crit for d in tasks[i]["deps"])), key=lambda i: es[i])
+    # ties (several equally long paths) are broken by task ID: set order varies between runs (hash seed)
+    starts = sorted((i for i in crit if not any(d in crit for d in tasks[i]["deps"])), key=lambda i: (es[i], i))
     cur = starts[0] if starts else None
     while cur:
         path.append(cur)

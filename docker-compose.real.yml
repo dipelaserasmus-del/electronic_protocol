@@ -9,6 +9,7 @@ services:
     container_name: ep-real-app
     environment:
       APP_ENV: real          # Laravel reads .env.real (created from .env.real.example)
+      ASSETS_AUTO_BUILD: "0"   # ./dev.sh builds the frontend as your user (files stay yours)
       APP_CONFIG_CACHE: /tmp/ep-real-config.php
       APP_ROUTES_CACHE: /tmp/ep-real-routes.php
       APP_SERVICES_CACHE: /tmp/ep-real-services.php
