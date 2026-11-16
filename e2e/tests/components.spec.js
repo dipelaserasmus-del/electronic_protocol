@@ -80,6 +80,29 @@ test('confirm dialog: Άκυρο keeps the page, the confirm button goes ahead',
   await expect(page).toHaveURL(/#deleted$/);
 });
 
+test('confirm dialog: a form\'s own submit handler (AJAX, Livewire) runs only after Ναι, once', async ({ page }) => {
+  await page.evaluate(() => {
+    const form = document.createElement('form');
+    form.id = 'js-form';
+    form.dataset.confirm = 'Να σταλεί;';
+    form.innerHTML = '<button type="submit">Αποστολή</button>';
+    window.jsFormCalls = 0;
+    form.addEventListener('submit', e => { e.preventDefault(); window.jsFormCalls++; });   // like wire:submit
+    document.querySelector('main, body').append(form);
+  });
+  const dialog = page.locator('#app-confirm');
+  await page.locator('#js-form').getByRole('button', { name: 'Αποστολή' }).click();
+  await expect(dialog).toBeVisible();
+  expect(await page.evaluate(() => window.jsFormCalls)).toBe(0);   // nothing sent while the question is open
+  await dialog.getByRole('button', { name: 'Άκυρο' }).click();
+  await expect(dialog).toBeHidden();
+  expect(await page.evaluate(() => window.jsFormCalls)).toBe(0);
+
+  await page.locator('#js-form').getByRole('button', { name: 'Αποστολή' }).click();
+  await dialog.getByRole('button', { name: 'Ναι' }).click();
+  await expect.poll(() => page.evaluate(() => window.jsFormCalls)).toBe(1);
+});
+
 test('toasts show text, never HTML', async ({ page }) => {
   await page.locator('#actions').getByRole('button', { name: 'Αποθήκευση' }).click();
   const toast = page.locator('#app-toasts .toast');

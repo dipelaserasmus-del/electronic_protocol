@@ -141,12 +141,16 @@ document.addEventListener('click', e => {
     }, el.dataset.confirmYes);
 }, true);
 
+// capture phase: runs before the form's own submit handlers (AJAX, Livewire wire:submit), which only see the
+// re-submitted event after "Ναι"
 document.addEventListener('submit', e => {
     const form = e.target;
-    if (!form.matches('form[data-confirm]') || form.dataset.confirmed) return;
+    if (!form.matches?.('form[data-confirm]') || form.dataset.confirmed) return;
     e.preventDefault();
-    askConfirm(form.dataset.confirm, () => { form.dataset.confirmed = '1'; form.requestSubmit(e.submitter ?? undefined); delete form.dataset.confirmed; }, form.dataset.confirmYes);
-});
+    e.stopImmediatePropagation();
+    const submitter = e.submitter ?? undefined;
+    askConfirm(form.dataset.confirm, () => { form.dataset.confirmed = '1'; form.requestSubmit(submitter); delete form.dataset.confirmed; }, form.dataset.confirmYes);
+}, true);
 
 /* ---------- start ---------- */
 function init() {
