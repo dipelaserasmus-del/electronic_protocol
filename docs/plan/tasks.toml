@@ -50,7 +50,7 @@ tasks = [
   { id = "D05", title = "Tables → utf8mb4", phase = "D", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 34 },
   { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "done", pr = 35 },
   { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 4, size = "L", deps = ["N01"], status = "done", pr = 36 },
-  { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "todo" },
+  { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 37 },
 
   # ---------------- Batch 5 ----------------
   { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "todo" },

@@ -260,36 +260,45 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /**
-     * F08: names are cut at 120 characters, but Linux (Docker, also on Windows via WSL 2) allows 255 *bytes* per file
-     * name and a Greek letter takes 2. A long Greek name without spaces + the "num-date_key_" prefix doesn't fit.
-     * Before R5a the attachment was recorded without its file and registration reported success; since R5a the
-     * registration is refused as a whole (nothing left behind, e-mail stays in the inbox). F08 makes the name fit.
+     * F08 (was: known_bug_long_greek_attachment_name_can_not_be_registered_on_linux; before R5a: "…is recorded but not
+     * saved"). Linux allows 255 *bytes* per file name and a Greek letter takes 2: a long Greek name without spaces +
+     * the "num-date_key_" prefix didn't fit. The stored name is now cut by bytes, keeping the extension; the name
+     * shown in the app stays whole.
      */
-    public function test_known_bug_long_greek_attachment_name_can_not_be_registered_on_linux(): void
+    public function test_long_greek_attachment_name_is_registered_with_a_shortened_file_name(): void
     {
+        $name = str_repeat('Αίτηση', 21).'.pdf';   // 130 characters, 256 bytes
         $user = $this->writer();
-        $this->putEml($user->id, $this->emlWithAttachmentName(str_repeat('Αίτηση', 21).'.pdf'));
+        $this->putEml($user->id, $this->emlWithAttachmentName($name));
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on'])
-            ->assertRedirect('/viewEmails');
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
 
-        $this->assertSame(0, Protocol::count());
-        $this->assertSame(0, Attachment::count());
-        $this->assertStringContainsString('δεν καταχωρίστηκε', session('notification.message'));
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        $this->assertSame($name, $pdf->name, 'shown with its whole name');
+        $file = basename($pdf->savedPath);
+        $this->assertLessThanOrEqual(255, strlen($file));
+        $this->assertTrue(mb_check_encoding($file, 'UTF-8'), 'no letter cut in half');
+        $this->assertStringEndsWith('.pdf', $file);
+        $this->assertSame("%PDF-1.4\nfake\n%%EOF\n", Storage::get($pdf->savedPath));
     }
 
-    /** F08: a name of only illegal characters loses its extension; an attachment without a name gets an empty one. */
-    public function test_known_bug_attachment_names_without_usable_characters(): void
+    /**
+     * F08 (was: known_bug_attachment_names_without_usable_characters): a name of only illegal characters lost its
+     * extension ("pdf"), an attachment without a name got an empty one. Now both are "συνημμένο.pdf".
+     */
+    public function test_attachment_names_without_usable_characters(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName('???.pdf'));
         $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
-        $this->assertSame('pdf', Attachment::where('mimeType', 'application/pdf')->sole()->name);
+        $this->assertSame('συνημμένο.pdf', Attachment::where('mimeType', 'application/pdf')->sole()->name);
 
         Attachment::query()->delete();
         $this->putEml($user->id, $this->emlWithAttachmentName(null));
         $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
-        $this->assertSame('', Attachment::where('mimeType', 'application/pdf')->sole()->name);
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        $this->assertSame('συνημμένο.pdf', $pdf->name, 'extension from the attachment type');
+        $this->assertStringEndsWith('_0_συνημμένο.pdf', $pdf->savedPath);
     }
 
     /** Invented plain message with one small PDF; null = attachment without a file name. */
