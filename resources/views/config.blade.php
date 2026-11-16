@@ -81,6 +81,18 @@
                                             title='Ελέγχονται πρωτόκολλα με ημερομηνία στο διάστημα αυτό'>
                                     </div>
                                 </div>
+                                {{-- R4b --}}
+                                <div class="row">
+                                    <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
+                                        Κάδος συνημμένων: ημέρες μέχρι την οριστική διαγραφή (0 = μέχρι να αδειάσει με το χέρι)
+                                    </div>
+                                    <div class="col-md-2 col-sm-2  " id="trashRetentionDaysdiv">
+                                        <input id="trashRetentionDays" type="text" class="form-control text-center"
+                                            name="trashRetentionDays" placeholder="30"
+                                            value="{{ $settings['trashRetentionDays'] ?? '' }}"
+                                            title='Κενό = 30 ημέρες'>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="panel panel-default col-md-12 col-sm-12  ">

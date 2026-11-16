@@ -50,6 +50,7 @@ final class Navigation
                 ['label' => 'Χρήστες', 'url' => url('/users')],
                 ['label' => 'Backup', 'url' => url('/backups')],
                 ['label' => 'Εκκαθάριση', 'url' => url('/arxeio')],
+                ['label' => 'Κάδος', 'url' => url('/trash')],
                 ['label' => 'Ρυθμίσεις', 'url' => url('/settings')],
             ]];
         }

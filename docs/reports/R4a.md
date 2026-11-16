@@ -62,6 +62,10 @@ They are served safely by the rules above.
   ![program refused, PDF kept](img/R4a/r4a-refused-upload.png)
 - Full suites: PHPUnit 321, browser 39/39.
 
+## Review finding (Codex), fixed with a test
+- A full Windows program renamed to `.pdf` was accepted: its real type
+  (`application/vnd.microsoft.portable-executable`) is refused now, tested with a real program header.
+
 ## Owner actions
 1. Nothing to do. If a file type you need is refused, send me its extension (e.g. `.dwg`) and I'll check it.
 2. Final deployment: nothing extra.

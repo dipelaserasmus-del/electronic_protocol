@@ -150,8 +150,11 @@ class ProtocolFormTest extends FeatureTestCase
             ->call('deleteProtocol')->assertRedirect(url('/home/list'));
 
         $this->assertNull(Protocol::find($p->id));
-        $this->assertSame(0, Attachment::withTrashed()->count());
+        // R4b: its files wait in the trash, labelled with the protocol (before: deleted at once)
+        $trashed = Attachment::onlyTrashed()->findOrFail($a->id);
+        $this->assertSame("{$p->protocolnum}/{$p->etos} · {$p->thema}", $trashed->protocol_label);
         Storage::assertMissing($path);
+        Storage::assertExists($trashed->savedPath);
     }
 
     public function test_page_offers_values_while_typing(): void

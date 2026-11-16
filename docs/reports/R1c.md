@@ -51,6 +51,11 @@ fields three at a time. Each file had to be picked through its own field. The ow
   ![saved](img/R1c/r1c-saved.png)
 - Full suites: PHPUnit 307, browser 35/35.
 
+## Review finding (Codex), fixed
+- Saving right after dropping a file could save the protocol without it (the save buttons didn't wait for that
+  upload). Both buttons now wait, and the form refuses to submit meanwhile; browser test *saving right after a drop
+  waits for the upload*.
+
 ## Owner actions
 1. Optional, after `git pull` and *Demo: start*: open *Νέο*, drag a PDF from a folder onto the page, and leave the
    subject empty.

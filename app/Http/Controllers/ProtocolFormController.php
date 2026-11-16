@@ -31,4 +31,21 @@ class ProtocolFormController extends Controller
         abort_if(Auth::user()->cannot('view', $protocol), 404);   // S02 (also before a copy)
         return view('protocols.form', ['protocol' => $protocol, 'copy' => (bool) $copyAsNew, 'prefillNum' => null]);
     }
+
+    /** R4b: the attachments' trash (administrators) */
+    public function trash()
+    {
+        abort_unless(Auth::user()->role?->role === 'Διαχειριστής', 403);
+        return view('trash');
+    }
+
+    /** R4b: a file in the trash (administrators), with the same safe headers as any attachment (R4a) */
+    public function trashDownload(int $attachment)
+    {
+        abort_unless(Auth::user()->role?->role === 'Διαχειριστής', 403);
+        $a = \App\Models\Attachment::onlyTrashed()->findOrFail($attachment);
+        $path = app(\App\Services\Attachments\Trash::class)->fileInTrash($a);   // only what is in trash/
+        abort_if($path === null, 404);
+        return \App\Support\SafeFile::download(\Illuminate\Support\Facades\Storage::path($path), $a->name ?: basename($path), $a->mimeType);
+    }
 }

@@ -71,7 +71,9 @@ class ConfigController extends Controller implements HasMiddleware
             'minutesRefreshInterval' => 'required|numeric',
             'gapCheckFromNumber' => 'nullable|integer|min:1',
             'gapCheckMonths' => 'nullable|integer|min:1|max:24',
+            'trashRetentionDays' => 'nullable|integer|min:0|max:3650',
         ], [
+            'trashRetentionDays.*' => 'Οι ημέρες του κάδου είναι από 0 (μέχρι να αδειάσει με το χέρι) έως 3650.',
             'gapCheckFromNumber.*' => 'Ο αριθμός έναρξης ελέγχου κενών πρέπει να είναι θετικός ακέραιος.',
             'gapCheckMonths.*' => 'Οι μήνες ελέγχου κενών πρέπει να είναι από 1 έως 24.',
         ]);
@@ -186,18 +188,11 @@ class ConfigController extends Controller implements HasMiddleware
         $arxeiaNumTrash = Attachment::whereNotNull('deleted_at')->count();
         $arxeiaTrash = Attachment::whereNotNull('deleted_at')->get();
 
+        // R4b: through the trash service (path recorded for restore; nothing overwritten in trash/)
+        $trash = app(\App\Services\Attachments\Trash::class);
         foreach ($arxeia as $arxeio) {
-            $savedPath = $arxeio->savedPath;
-            $trashPath = str_replace('arxeio', 'trash', $savedPath);
-            if (Storage::exists($savedPath)) {
-                Storage::move($savedPath, $trashPath);
-            }
-            Attachment::where('savedPath', $savedPath)->update(['savedPath' => $trashPath]);
+            $trash->trash($arxeio, Auth::user());
         }
-
-        $expired = Attachment::whereNotNull('expires')->where('expires', '<', Carbon::today()->toDateString());
-        (clone $expired)->update(['deleted_by' => Auth::id()]);   // D03: a query delete skips the model events
-        $expired->delete();
 
         $notification = array(
             'message' => "Διαγράφηκαν $arxeianum αρχεία.",
@@ -210,9 +205,9 @@ class ConfigController extends Controller implements HasMiddleware
 
     public function delDeleted()
     {
-        Attachment::onlyTrashed()->forceDelete();
-        Storage::deleteDirectory('trash');
-        Storage::makeDirectory('trash');
+        // R4b: empty the trash: each file and row (before: the whole trash/ folder was deleted)
+        $trash = app(\App\Services\Attachments\Trash::class);
+        Attachment::onlyTrashed()->orderBy('id')->chunkById(200, fn ($rows) => $rows->each(fn ($a) => $trash->purge($a)));
         return back();
     }
 }
