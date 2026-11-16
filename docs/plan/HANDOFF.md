@@ -20,7 +20,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   guide: ~~which machine~~ **same Windows 11 PC, Docker Desktop + WSL 2** (owner, 2026-11-16).
 - **Batch 4 = D05 → R5a**, moved earlier by the owner on 2026-11-15. Needs: L01 done ✅ (D05 is verified on real
   data locally, Fedora) and e-mails from the owner for R5a. R5a plugs its cache into the current inbox page.
-- **L02 (real data on the Mac) postponed by the owner (2026-11-16)**; not blocking anything.
+- **L02 done (2026-11-16 19:47):** the Mac loads the real data (owner confirmed). Batch 2 is complete.
 - Owner's own list: [`OWNER-TODO.md`](../../OWNER-TODO.md). Update it at the end of every batch.
 - Owner says "run batch N" to start a batch. **Claude completes the whole PR procedure on its own** (commit, push,
   answer reviews, merge on green CI).
@@ -30,7 +30,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
 | Real emails for tests | **Received 2026-11-16: 6 private e-mails in `local-data/emails/`** (owner: Claude may read them locally, never publish; see CLAUDE.md). Structural notes in `local-data/emails/NOTES-claude.md` (git-ignored). Covers: ISO-8859-7 Outlook mail with a 255-char subject, emoji (fails today, D05), winmail.dat-only read receipt (R5b), 21 MB mail with 4 attachments, long RFC 2231 file names. Long subject answered (2026-11-16): subject > 255 chars (posted by the inbox form) → MySQL 1406 on `thema`, inbox just reloads; reproduced by `test_known_bug_*subject_over_255*`; **D01 moved into Batch 4**. Owner's .eml #1 is cut at 255 by Outlook, so it doesn't reproduce it. **Also 2026-11-16:** new private e-mail shows `??` in the sender: name split inside a Greek letter across encoded words (R5a); attachment names probed: long/illegal/`../` handled, but emoji → protocol without attachment + e-mail left in inbox (D05/R5a), long Greek name without spaces → recorded but not written on Linux (F08), empty/extension-less names (F08). All pinned as `known_bug_` tests in `StoreFromEmailTest`. |
-| `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 postponed by the owner (2026-11-16):** Mac demo app works; real data on the Mac still to do. Guides: `docs/VSCODE-MACOS.md`, `docs/LOCAL-SETUP.md`. Owner replies "L02 works" → mark done in tasks.toml. |
+| `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 done (2026-11-16 19:47):** Mac real copy loads (owner confirmed); its file copy is only a small part, so most attachment rows have no file there (expected). The first try failed only because the Mac checkout was 16 PRs behind (before F07). |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
 | Production server facts | **Answered 2026-11-16:** Windows 11, XAMPP 3.3.0 (Apache), PHP 8.1.25 ZTS x64, php-imap on, MariaDB 10.4.32. Will be replaced by the Docker stack on the same Windows 11 PC (Docker Desktop + WSL 2). |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
@@ -38,6 +38,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Open registration in production (S00) | Not deployed by owner decision. Web-server rules (Apache/nginx) given in `docs/BLOCK-REGISTRATION.md`; owner chose **not to apply them yet** (2026-11-16). Remind at the final deployment (remove the rule before `git pull`). |
 
 ## Decisions log (short)
+- **The Mac is secondary** (owner, 2026-11-16): its checkout is often stale. On the Mac, `git fetch` and pull `master`, then re-read this file, `PROGRESS.md` and `OWNER-TODO.md` before advising or starting work.
 - No changes on the production server until the migration, also not the Apache security rules; date stamps in our md files include the time, Greek time (owner, 2026-11-16).
 - Private e-mails: Claude may read `local-data/emails/` locally, never publish anything from them (2026-11-16).
 - Module-by-module rebuild, Livewire + Bootstrap 5, MySQL only (BACKLOG "Decisions").
@@ -65,6 +66,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 19:47 | L02 done | #41 | owner loaded the real data on the Mac (after updating it past F07); tracker + owner list |
 | 2026-11-16 17:00 | D04 | #40 | protocols `protocoldate`, `in_date`, `out_date`, `diekp_eos`, `diekp_date` + attachments `expires` → DATE; invalid old values → `legacy_invalid_dates` + NULL (invalid `protocoldate` stops the migration); `App\Casts\LegacyYmdDate` keeps showing Ymd integers to the legacy code (Z01: replace with `date`), `Protocol::dateOf()` for new code; date comparisons in queries use `Y-m-d` |
 | 2026-11-16 15:55 | D03 | #39 | `attachments.size`, `sha256` (indexed), `deleted_by`; measured on save (`Attachment` model), `deleted_by` on soft delete + in *Διαγραφή ληγμένων*; `attachments:fill-metadata` (existing files, counts only; also in `real load`); migrations on legacy tables must be idempotent (`AdoptLegacySchemaTest` re-runs them) |
 | 2026-11-16 15:35 | D02 | #38 | `protocol_assignments` (protocol, user, type d/e) + backfill; `App\Support\Assignments` (parse/sync/backfill), Protocol scopes `assignedTo`/`assignedFor`/`ownOrAssigned`; text column still written by the old form, synced on save (model event + after the edit query); fixed: search by assignee missed `d14,e10`, no name in results, *Κενό* missed `''` |
