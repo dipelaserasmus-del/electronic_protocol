@@ -70,7 +70,7 @@ final class SafeFile
         $parts = array_map('strtolower', array_slice(explode('.', $name), 1));   // every extension: "a.pdf.exe"
         // the content too: a program or a web page renamed to .pdf
         $sniffed = (string) (new \finfo(FILEINFO_MIME_TYPE))->file((string) $file->getRealPath());
-        if (array_intersect($parts, $blocked) || preg_match('~^(application/x-(dosexec|msdownload|executable|sharedlib|mach-binary|elf|pie-executable)|text/html|image/svg)~', $sniffed)) {
+        if (array_intersect($parts, $blocked) || preg_match('~^(application/x-(dosexec|msdownload|executable|sharedlib|mach-binary|elf|pie-executable|msi|ms-installer|ms-shortcut)|application/vnd\.microsoft\.portable-executable|text/html|image/svg)~', $sniffed)) {
             return "Το «{$name}» δεν επιτρέπεται: είδος αρχείου που μπορεί να εκτελέσει κώδικα.";
         }
         return null;

@@ -78,6 +78,9 @@ class SafeFileTest extends FeatureTestCase
             UploadedFile::fake()->createWithContent('σελίδα.html', '<html><body>x</body></html>'),
             UploadedFile::fake()->createWithContent('εικόνα.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>'),
             UploadedFile::fake()->createWithContent('έγγραφο.pdf', $exe),   // renamed program: the content says so
+            // a full Windows program header (review of R4a: finfo calls it vnd.microsoft.portable-executable)
+            UploadedFile::fake()->createWithContent('τιμολόγιο.pdf', 'MZ' . str_repeat("\0", 58) . pack('V', 0x40) . "PE\0\0"
+                . pack('vvVVVvv', 0x8664, 1, 0, 0, 0, 0xF0, 0x22) . pack('v', 0x20B) . str_repeat("\0", 300)),
         ];
         foreach ($cases as $file) {
             $this->assertStringContainsString('δεν επιτρέπεται', (string) SafeFile::refuse($file), $file->getClientOriginalName());
