@@ -96,4 +96,32 @@ class ProtocolListTest extends FeatureTestCase
             ->assertSee('Σύνολο: 3')->assertSee('Εμφάνιση')->assertDontSee('Showing');   // Greek pagination text
         $this->actingAs($this->admin())->get('/home/list?page=2')->assertSee('Σελίδα 1');
     }
+
+    /** Review of R2: the menu's per-user link /home/list/a/{id} lists what that user registered. */
+    public function test_menu_link_lists_what_a_user_registered(): void
+    {
+        [$a, $b] = [$this->writer(), $this->writer()];
+        Protocol::factory()->number(1)->create(['thema' => 'Γραμμένο από Α', 'user_id' => $a->id]);
+        Protocol::factory()->number(2)->create(['thema' => 'Γραμμένο από Β', 'user_id' => $b->id]);
+
+        $this->actingAs($this->admin())->get("/home/list/a/{$a->id}")->assertOk()
+            ->assertSee('Γραμμένο από Α')->assertDontSee('Γραμμένο από Β')->assertSee($a->name . ' · Καταχωρίσεις');
+    }
+
+    /** Review of R2: after changing the filter on an old address, a reload keeps the new choice. */
+    public function test_query_string_wins_over_the_old_path(): void
+    {
+        $me = $this->writer();
+        Protocol::factory()->number(1)->assignedTo(null, $me)->create(['thema' => 'Για ενημέρωση']);
+        Protocol::factory()->number(2)->assignedTo($me)->create(['thema' => 'Για διεκπεραίωση']);
+
+        $this->actingAs($me)->get('/home/list/d?filter=e')->assertSee('Για ενημέρωση')->assertDontSee('Για διεκπεραίωση');
+        $this->actingAs($me)->get('/home/list/d')->assertSee('Για διεκπεραίωση')->assertDontSee('Για ενημέρωση');
+    }
+
+    public function test_related_links_are_above_the_row_link(): void
+    {
+        Protocol::factory()->number(1)->create(['sxetiko' => '3/2025']);
+        $this->actingAs($this->admin())->get('/home/list')->assertSee('?find=1" class="position-relative z-2"', false);
+    }
 }

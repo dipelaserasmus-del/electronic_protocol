@@ -104,7 +104,7 @@
                                 @if ($p->sxetiko)
                                     <div><span class="fw-semibold">Σχετικοί:</span>
                                         @foreach (array_map('trim', explode(',', $p->sxetiko)) as $ref)
-                                            @if (preg_match('~^(\d+)/(\d{4})$~', $ref, $m))<a href="{{ url('/goto/'.$m[2].'/'.$m[1]) }}?find=1">{{ $ref }}</a>@else{{ $ref }}@endif@if (! $loop->last), @endif
+                                            @if (preg_match('~^(\d+)/(\d{4})$~', $ref, $m))<a href="{{ url('/goto/'.$m[2].'/'.$m[1]) }}?find=1" class="position-relative z-2">{{ $ref }}</a>@else{{ $ref }}@endif@if (! $loop->last), @endif
                                         @endforeach
                                     </div>
                                 @endif

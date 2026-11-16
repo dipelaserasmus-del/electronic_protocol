@@ -18,16 +18,19 @@ test('filters, sorting and the sticky header (R2)', async ({ page }) => {
   await expect(page).toHaveURL(/user=all/);
   await evidence(page, 'r2-filter-all-users');
 
-  // sorting by subject, ascending then descending
-  await page.locator('[data-filter=all]').click();
+  // sorting by subject: a subject that sorts after all others is first descending, not first ascending
+  // (checked on a marker, not on the whole order: the database's Greek collation is not the browser's)
+  const marker = `ωωω R2 ταξινόμηση ${Date.now()}`;
+  await page.goto('/home');
+  await fillProtocol(page, { thema: marker, fakelos: 'first' });
+  await saveProtocol(page);
+  await page.goto('/home/list');
   await page.locator('[data-sort=thema]').click();
   await expect(page.locator('[data-sort=thema]')).toHaveAttribute('aria-sort', 'ascending');
-  const subjects = await page.locator('.protocol-row td:nth-child(3) > div:first-child').allInnerTexts();
-  const sorted = [...subjects].sort((a, b) => a.localeCompare(b, 'el'));
-  expect(subjects.slice(0, 3).map((s) => s.trim() === '' ? '' : s[0].toLowerCase()))
-    .toEqual(sorted.slice(0, 3).map((s) => s.trim() === '' ? '' : s[0].toLowerCase()));
+  await expect(page.locator('.protocol-row').first()).not.toContainText(marker);
   await page.locator('[data-sort=thema]').click();
   await expect(page.locator('[data-sort=thema]')).toHaveAttribute('aria-sort', 'descending');
+  await expect(page.locator('.protocol-row').first()).toContainText(marker);
 
   // header stays visible under the top bar while scrolling
   await page.mouse.wheel(0, 2500);

@@ -27,8 +27,11 @@ class ProtocolList extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    /** '' all, 'm' mine (registered by me or assigned to me), 'd' to handle, 'e' to inform, 'f' handled */
-    public const FILTERS = ['' => 'Όλα', 'm' => 'Δικά μου', 'd' => 'προς Διεκπεραίωση', 'e' => 'προς Ενημέρωση', 'f' => 'Διεκπεραιώθηκε'];
+    /**
+     * '' all, 'm' mine (registered by me or assigned to me), 'a' registered by (the menu's per-user link
+     * /home/list/a/{id}), 'd' to handle, 'e' to inform, 'f' handled
+     */
+    public const FILTERS = ['' => 'Όλα', 'm' => 'Δικά μου', 'a' => 'Καταχωρίσεις', 'd' => 'προς Διεκπεραίωση', 'e' => 'προς Ενημέρωση', 'f' => 'Διεκπεραιώθηκε'];
 
     /** Columns that can be sorted (all are columns of protocols, except the assignee) */
     public const SORTS = [
@@ -55,8 +58,11 @@ class ProtocolList extends Component
     /** $routeFilter / $routeUser: from the old addresses /home/list/{filter}/{userId} ('a' = all users) */
     public function mount(?string $routeFilter = null, ?string $routeUser = null): void
     {
-        if ($routeFilter !== null) {
+        // the address's path gives the defaults; a query string (changed on the page, then reloaded or bookmarked) wins
+        if ($routeFilter !== null && ! request()->query->has('filter')) {
             $this->filter = $routeFilter;
+        }
+        if ($routeFilter !== null && ! request()->query->has('user')) {
             $this->who = $routeUser === null ? 'me' : ($routeUser === 'a' ? 'all' : $routeUser);
         }
         $this->normalise();
@@ -122,6 +128,7 @@ class ProtocolList extends Component
         }
         match ($this->filter) {
             'm' => $for === null ? null : $q->ownOrAssigned($for),
+            'a' => $for === null ? null : $q->where('user_id', $for),
             'd' => ($for === null ? $q->assignedFor('d') : $q->assignedTo($for, 'd'))->whereNull('diekp_date'),
             'e' => $for === null ? $q->assignedFor('e') : $q->assignedTo($for, 'e'),
             'f' => ($for === null ? $q->assignedFor('d') : $q->assignedTo($for, 'd'))->whereNotNull('diekp_date'),
