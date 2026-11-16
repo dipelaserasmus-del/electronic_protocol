@@ -58,3 +58,25 @@ test('click into the suggested subject to edit it (R1c)', async ({ page }) => {
   await saveProtocol(page);
   await expect(subject).toHaveValue('Αίτηση μετάθεσης (εκπαιδευτικού)');
 });
+
+test('saving right after a drop waits for the upload (R1c review)', async ({ page }) => {
+  const name = `R1c-βιαστικό-${Date.now()}.pdf`;
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R1c βιαστική αποθήκευση ${Date.now()}`, fakelos: 'first' });
+  const dt = await page.evaluateHandle((name) => {
+    const dt = new DataTransfer();
+    dt.items.add(new File(['%PDF-1.4\n' + ' '.repeat(3 * 1024 * 1024)], name, { type: 'application/pdf' }));
+    return dt;
+  }, name);
+  await page.dispatchEvent('main', 'dragenter', { dataTransfer: dt });
+  await page.dispatchEvent('main', 'drop', { dataTransfer: dt });
+  // click save at once, several times while the upload may still be running
+  for (let i = 0; i < 5; i++) {
+    await page.locator('#protocol-form button[type=submit]').first().click({ force: true, trial: false, timeout: 1000 }).catch(() => {});
+    if (/\/home\/\d+$/.test(page.url())) break;
+    await page.waitForTimeout(300);
+  }
+  await page.waitForURL(/\/home\/\d+$/);
+  await expect(page.locator('#attachments .attachment-row', { hasText: name })).toBeVisible();
+});

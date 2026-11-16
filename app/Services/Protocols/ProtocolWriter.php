@@ -66,6 +66,11 @@ final class ProtocolWriter
     public function create(User $user, array $input, array $attachments = []): SaveResult
     {
         $access = ProtocolAccess::for($user, new Protocol());
+        // readers may not register protocols (review of R1b: the form's save could be called directly; the old POST
+        // route had the writer middleware)
+        if (! $access->canSave) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Δεν επιτρέπεται η καταχώριση πρωτοκόλλου.');
+        }
         $v = $this->clean($input);
         $record = $this->pick($v, $access, null);
         $assignments = $access->canAssign ? $v['assignments'] : [];
@@ -605,7 +610,25 @@ final class ProtocolWriter
         }
     }
 
-    /** "Απόδειξη παραλαβής" to the sender's e-mail, noted in Παρατηρήσεις (legacy rule, new protocols). */
+    /**
+     * R1b: send (or send again) the receipt of an existing protocol by e-mail, as the old form's button did. Users who
+     * may see the protocol, except readers (the old route had the writer middleware).
+     */
+    public function emailReceipt(User $user, Protocol $protocol, ?string $to): SaveResult
+    {
+        if (\App\Policies\ProtocolPolicy::role($user) === \App\Policies\ProtocolPolicy::READER || \Illuminate\Support\Facades\Gate::forUser($user)->denies('view', $protocol)) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Δεν επιτρέπεται η αποστολή απόδειξης.');
+        }
+        $to = TextInput::clean($to);
+        if ($to === null || ! filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            throw ValidationException::withMessages(['receipt_email' => 'Μη έγκυρη διεύθυνση email.']);
+        }
+        $result = new SaveResult($protocol);
+        $this->sendReceipt($result, $to);
+        return $result;
+    }
+
+    /** "Απόδειξη παραλαβής" to the sender's e-mail, noted in Παρατηρήσεις (legacy rule). */
     private function sendReceipt(SaveResult $result, ?string $to): void
     {
         if ($to === null) {

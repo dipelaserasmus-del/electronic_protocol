@@ -16,6 +16,7 @@ use App\Support\DateInput;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -35,7 +36,10 @@ class ProtocolForm extends Component
         'in_arxi_ekdosis', 'in_paraliptis', 'in_perilipsi', 'diekp_eos', 'diekp_date', 'sxetiko', 'out_to', 'out_date',
         'out_perilipsi', 'keywords', 'paratiriseis', 'keep', 'reply_to_email'];
 
+    /** Locked: the browser can't point the form at another protocol (it would show it without the access check) */
+    #[Locked]
     public ?int $protocolId = null;
+    #[Locked]
     public ?int $copyOf = null;
 
     /** @var array<string, string> the form's fields, as typed */
@@ -55,6 +59,8 @@ class ProtocolForm extends Component
     /** R1c: files just chosen or dropped on the window; added to $uploads (choosing again never drops earlier ones) */
     public $picked = [];
     public string $newAda = '';
+    /** R1b: receipt by e-mail for a protocol already saved */
+    public string $receiptEmail = '';
 
     public function mount(?Protocol $protocol = null, bool $copy = false, ?int $prefillNum = null): void
     {
@@ -96,7 +102,12 @@ class ProtocolForm extends Component
 
     private function protocol(): Protocol
     {
-        return $this->protocolId ? Protocol::with('assignments', 'attachments')->findOrFail($this->protocolId) : new Protocol();
+        if (! $this->protocolId) {
+            return new Protocol();
+        }
+        $protocol = Protocol::with('assignments', 'attachments')->findOrFail($this->protocolId);
+        abort_if(Auth::user()->cannot('view', $protocol), 404);   // on every request, not only when the page opened
+        return $protocol;
     }
 
     private function activeYear(): int
@@ -147,6 +158,22 @@ class ProtocolForm extends Component
             return null;
         }
         return $this->done($result, $this->protocolId ? 'Οι αλλαγές αποθηκεύτηκαν.' : "Καταχωρίστηκε με αριθμό {$result->protocol->protocolnum}/{$result->protocol->etos}.");
+    }
+
+    public function sendReceipt(ProtocolWriter $writer): void
+    {
+        try {
+            $result = $writer->emailReceipt(Auth::user(), $this->protocol(), $this->receiptEmail);
+        } catch (AuthorizationException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            return;
+        }
+        if ($result->warnings) {
+            $this->dispatch('toast', message: $result->warnings[0], type: 'error');
+            return;
+        }
+        $this->receiptEmail = '';
+        $this->dispatch('toast', message: 'Στάλθηκε η απόδειξη: ' . ($result->messages[0] ?? ''), type: 'success');
     }
 
     public function assignOnly(ProtocolWriter $writer)
@@ -306,6 +333,7 @@ class ProtocolForm extends Component
             'attachments' => $protocol->exists ? $protocol->attachments : collect(),
             'canComplete' => $protocol->exists && ! $access->canSave && $access->doneDate && $user->can('complete', $protocol),
             'isReader' => $isReader,
+            'canEmailReceipt' => $protocol->exists && ! $isReader,
             'putStamp' => (bool) Config::getConfigValueOf('putStamp'),
             'diavgeiaUrl' => Config::getConfigValueOf('diavgeiaUrl'),
             'suggestedSubject' => trim((string) $this->form['thema']) === '' ? $this->suggestedSubject() : null,

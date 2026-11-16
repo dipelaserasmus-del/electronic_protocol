@@ -3,7 +3,9 @@
     $tone = ['new' => 'primary', 'edit' => 'success', 'readonly' => 'secondary', 'admin' => 'danger'][$access->tone] ?? 'primary';
     $e = fn (string $f) => $errors->first($f) ?: null;
 @endphp
-<form wire:submit="save" class="protocol-form" id="protocol-form" novalidate>
+{{-- progress: upload in progress (0–100) or null; the save buttons wait for it (review of R1c) --}}
+<form wire:submit="save" class="protocol-form" id="protocol-form" novalidate x-data="{ progress: null }"
+      x-on:submit.capture="if (progress !== null) { $event.preventDefault(); $event.stopImmediatePropagation() }">
     <div class="card shadow-sm mb-3 border-{{ $tone }}">
         <div class="card-header bg-{{ $tone }}-subtle d-flex flex-wrap align-items-center gap-3">
             <h1 class="h4 mb-0 me-auto">{{ $title }}</h1>
@@ -76,7 +78,7 @@
 
             <x-pill-actions class="mt-3">
                 @if ($access->canSave)
-                    <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save,uploads">Αποθήκευση</x-pill>
+                    <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">Αποθήκευση</x-pill>
                 @endif
                 @if ($protocol->exists && $access->canAssign && ! $access->canSave)
                     <x-pill variant="primary" wire:click="assignOnly">Ανάθεση</x-pill>
@@ -220,7 +222,7 @@
             {{-- attachments (R1c): open on new and copy, files can be dropped anywhere on the window --}}
             <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title"
                 @if ($access->canSave)
-                     x-data="{ over: false, depth: 0, progress: null,
+                     x-data="{ over: false, depth: 0,
                                hasFiles(e) { return [...(e.dataTransfer?.types || [])].includes('Files') } }"
                      x-on:dragenter.window="if (hasFiles($event)) { $event.preventDefault(); depth++; over = true }"
                      x-on:dragover.window="if (hasFiles($event)) $event.preventDefault()"
@@ -312,6 +314,22 @@
                 </div>
             </section>
 
+            @if ($canEmailReceipt)
+                <section class="card shadow-sm mb-3" aria-labelledby="receipt-title">
+                    <h2 class="card-header h6 mb-0" id="receipt-title">Απόδειξη παραλαβής με email</h2>
+                    <div class="card-body">
+                        <label for="f-receipt" class="form-label small fw-semibold mb-1">Διεύθυνση email</label>
+                        <div class="input-group">
+                            <input id="f-receipt" type="email" class="form-control @if ($e('receipt_email')) is-invalid @endif"
+                                   wire:model="receiptEmail" autocomplete="off">
+                            <button type="button" class="btn btn-outline-primary" wire:click="sendReceipt" wire:loading.attr="disabled" wire:target="sendReceipt">Αποστολή</button>
+                            @if ($e('receipt_email'))<div class="invalid-feedback">{{ $e('receipt_email') }}</div>@endif
+                        </div>
+                        <div class="form-text">Στέλνεται η απόδειξη του πρωτοκόλλου και σημειώνεται στις Παρατηρήσεις.</div>
+                    </div>
+                </section>
+            @endif
+
             @if (! $protocol->exists && $access->canSave)
                 <fieldset class="card shadow-sm mb-3">
                     <legend class="card-header h6 mb-0 w-100">Απόδειξη παραλαβής</legend>
@@ -325,7 +343,7 @@
 
     @if ($access->canSave)
         <div class="d-flex justify-content-end mb-4">
-            <button type="submit" class="btn btn-primary rounded-pill px-4" wire:loading.attr="disabled" wire:target="save,uploads">Αποθήκευση</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4" wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">Αποθήκευση</button>
         </div>
     @endif
 </form>

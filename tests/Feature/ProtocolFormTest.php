@@ -178,4 +178,39 @@ class ProtocolFormTest extends FeatureTestCase
             $this->assertMatchesRegularExpression('/tabindex="-1"|type="checkbox"/', $tag, "focusable before the date: $tag");
         }
     }
+
+    /** The browser can't switch the form to a protocol the user may not see. */
+    public function test_the_form_can_not_be_pointed_at_another_protocol(): void
+    {
+        $this->setting('limitProtocolAccessList', 1);
+        $writer = $this->writer();
+        $mine = Protocol::factory()->number(1)->create(['user_id' => $writer->id]);
+        Protocol::factory()->number(2)->create(['thema' => 'Απόρρητο']);
+
+        $this->expectException(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
+        Livewire::actingAs($writer)->test(ProtocolForm::class, ['protocol' => $mine])->set('protocolId', $mine->id + 1);
+    }
+
+    /** Review of R1b: a reader calling the form's save directly can't register a protocol. */
+    public function test_reader_can_not_register_through_the_form(): void
+    {
+        Livewire::actingAs($this->reader())->test(ProtocolForm::class)
+            ->set('form.thema', 'Από αναγνώστη')->call('save')->assertDispatched('toast', type: 'error');
+        $this->assertSame(0, Protocol::count());
+        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        app(\App\Services\Protocols\ProtocolWriter::class)->create($this->reader(), $this->protocolForm());
+    }
+
+    /** Review of R1b: the receipt can be sent (again) for a protocol already saved. */
+    public function test_receipt_is_sent_for_an_existing_protocol(): void
+    {
+        $p = Protocol::factory()->number(4)->create();
+        Livewire::actingAs($this->writer())->test(ProtocolForm::class, ['protocol' => $p])
+            ->set('receiptEmail', 'λάθος')->call('sendReceipt')->assertHasErrors('receipt_email')
+            ->set('receiptEmail', 'sender@example.test')->call('sendReceipt')->assertHasNoErrors()->assertDispatched('toast', type: 'success');
+
+        $this->assertCount(1, $this->sentMails());
+        $this->assertStringContainsString('απόδειξη παραλαβής σε sender@example.test', $p->fresh()->paratiriseis);
+        Livewire::actingAs($this->reader())->test(ProtocolForm::class, ['protocol' => $p])->assertDontSee('id="f-receipt"', false);
+    }
 }
