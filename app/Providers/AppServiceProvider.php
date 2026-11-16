@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Models\Config;
+use App\Models\Protocol;
+use App\Policies\ProtocolPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -29,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Gate::policy(Protocol::class, ProtocolPolicy::class);
+
         Paginator::useBootstrap();
 
         error_reporting(E_ALL ^ E_NOTICE);

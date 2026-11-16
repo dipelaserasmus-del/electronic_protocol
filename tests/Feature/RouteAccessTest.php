@@ -56,6 +56,12 @@ class RouteAccessTest extends FeatureTestCase
         }
     }
 
+    /** Was RedirectIfAuthenticated + RouteServiceProvider::HOME; now redirectUsersTo() in bootstrap/app.php. */
+    public function test_logged_in_user_opening_login_lands_on_the_protocol_list(): void
+    {
+        $this->actingAs($this->writer())->get('/login')->assertRedirect('/home/list');
+    }
+
     /** "METHOD uri" => sorted, de-duplicated middleware of every route served by app controllers / closures. */
     private function routeMiddleware(): array
     {

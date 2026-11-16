@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use DB;
 use Illuminate\Support\Facades\Gate;
 use URL;
@@ -58,7 +61,7 @@ use Yasapurnama\DocumentWatermark\WatermarkFactory;
 
 */
 
-class ProtocolController extends Controller
+class ProtocolController extends Controller implements HasMiddleware
 {
     protected $protocolfields = [
         'fakelos' => 'Φάκελος',
@@ -88,18 +91,15 @@ class ProtocolController extends Controller
         'diekp_date' => 'Ημνία Διεκπ.'
     ];
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('auth');
-        $this->middleware('web');
-        $this->middleware('writer:home/list', ['except' => ['index', 'indexList', 'getFileInputs', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about', 'setDiekpDate']]);
-        $this->middleware('email', ['only' => ['viewEmails', 'setEmailRead', 'storeFromEmail']]);
-        $this->middleware('limitList', ['only' => ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']]);
+        return [
+            'auth',
+            new Middleware('writer:home/list', except: ['index', 'indexList', 'getFileInputs', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about', 'setDiekpDate']),
+            new Middleware('email', only: ['viewEmails', 'setEmailRead', 'storeFromEmail']),
+            new Middleware('limitList', only: ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']),
+        ];
     }
 
     private function diekperaiosiConcatRawStr()

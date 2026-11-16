@@ -53,6 +53,22 @@ class ErrorPagesTest extends FeatureTestCase
         $this->assertSame('/__boom', parse_url($entry->context['url'], PHP_URL_PATH));
     }
 
+    /** Found in N02: reporting an error from artisan / a scheduled job (no web request) crashed the handler itself. */
+    public function test_errors_outside_a_web_request_are_logged_with_a_reference_code(): void
+    {
+        $logged = [];
+        Log::listen(function ($event) use (&$logged) { $logged[] = $event; });
+        $this->app->forgetInstance('request');
+        $this->app->offsetUnset('request');
+
+        report(new \RuntimeException('console failure abc'));
+
+        $entry = collect($logged)->first(fn ($e) => str_contains($e->message, 'console failure abc'));
+        $this->assertNotNull($entry, 'the original error is logged');
+        $this->assertMatchesRegularExpression('/^E-[A-Z0-9]{6}$/', $entry->context['error_id']);
+        $this->assertArrayNotHasKey('url', $entry->context, 'no request, so no URL');
+    }
+
     public function test_ajax_requests_get_json_with_the_reference_code(): void
     {
         $this->actingAs($this->writer())->postJson('/__boom-json')

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use DB;
 use Auth;
 use Validator;
@@ -9,18 +12,15 @@ use App\Models\Config;
 use App\Models\Keepvalue;
 use Illuminate\Http\Request;
 
-class KeepvalueController extends Controller
+class KeepvalueController extends Controller implements HasMiddleware
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('auth');
-        $this->middleware('web');
-        $this->middleware('admin:keep', ['except' => ['index']]);
+        return [
+            'auth',
+            new Middleware('admin:keep', except: ['index']),
+        ];
     }
 
 

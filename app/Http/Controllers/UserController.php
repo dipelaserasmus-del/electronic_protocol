@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
 use Auth;
 use App\Models\Role;
 use App\Models\User;
@@ -9,18 +12,15 @@ use App\Models\Config;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
+    public static function middleware(): array
     {
-        $this->middleware('auth');
-        $this->middleware('web');
-        $this->middleware('admin:home');
+        return [
+            'auth',
+            'admin:home',
+        ];
     }
 
     /**
