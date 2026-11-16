@@ -8,8 +8,11 @@
 ## What was wrong
 1. **Slow inbox / timeouts.** Every visit to *Εισερχόμενα Email* downloaded every e-mail of the page in full from
    the mail server (with a 21 MB e-mail on the page, every time), then parsed each one twice.
-2. **`??` in sender names** (owner, 2026-11-16). Some mail programs (Horde webmail) split a long name into encoded
-   words in the middle of a 2-byte Greek letter. Both decoders decoded each word on its own → two invalid halves → `??`.
+2. **`??` in sender names and attachment names** (owner, 2026-11-16). Some mail programs (Horde webmail) split a
+   long name in the middle of a 2-byte Greek letter: sender names into RFC 2047 encoded words, attachment names into
+   RFC 2231 continuations (`filename*0*=…%CE; filename*1*=%91…`). Decoding each piece on its own → two invalid halves
+   → `??`. (Two of the owner's private e-mails had it in an attachment name; checked locally, nothing from them is
+   in the repository.)
 3. **Half-registered e-mails.** When an attachment could not be saved, the protocol stayed (without that attachment),
    an error was shown and the e-mail stayed in the inbox, so registering it again made a second protocol.
 4. 🔒 **Security finding: inbox e-mails could be downloaded without logging in.** The inbox saved each e-mail as
@@ -33,9 +36,11 @@
   (a lock); whoever waited finds the e-mails already there.
 - **`Mailbox` / `ImapMailbox` / `MailboxConnector`**: the only code that talks to the IMAP server for the list (the
   move after registration still uses B07's `MessageMover`). Tests use an in-memory mailbox.
-- **Charsets** (`App\Support\Mail\EncodedWords`): adjacent encoded words with the same charset are decoded together.
-  `HeaderDecoder` (inbox list) uses it, and `MailParser` rejoins them in the message's headers before mail-mime-parser
-  reads it. The e-mail stored with the protocol stays byte for byte as received.
+- **Charsets** (`App\Support\Mail\EncodedWords`, `MailParser`): adjacent encoded words with the same charset are
+  decoded together (`HeaderDecoder`, inbox list), and before mail-mime-parser reads an e-mail, `MailParser` joins split
+  encoded words and RFC 2231 continuations in the headers of the message **and of every MIME part** (also nested).
+  The e-mail stored with the protocol stays byte for byte as received; the body is never touched (0.07 s for a 20 MB
+  e-mail).
 - **All-or-nothing registration:** every file write is checked; if one fails, the files already written, the
   attachment rows and the protocol are removed. Message: *"…Το email δεν καταχωρίστηκε και παραμένει στα
   εισερχόμενα. Κωδικός σφάλματος: E-XXXXXX"*. Registering it again then makes exactly one protocol. (If someone else
@@ -62,18 +67,24 @@
   registration with a message (before: recorded without its file, "success").
 - `tests/Unit/EncodedWordsTest.php` (8): B and Q words split inside a letter, ISO-8859-7 and Windows-1253, mixed
   charsets, text around the words, rejoined words hold whole characters and stay ≤ 75 characters, the body is never
-  touched, e-mails without such runs pass through byte for byte. `ImapMailboxTest`: header + body joined with one
-  empty line.
+  touched, e-mails without such runs pass through byte for byte. `MailParserTest` (3): attachment name with a letter
+  cut between RFC 2231 sections (also in a nested multipart; plain-text sections and other parameters kept); 2 of 3
+  fail with the parser before this change. `ImapMailboxTest`: header + body joined with one empty line.
+  `StoreFromEmailTest::test_attachment_name_cut_inside_a_letter_is_saved_correctly` (new synthetic e-mail 10).
+- The owner's 9 private e-mails, locally: attachment names with `?` before → after: two e-mails 2 → 0, all others
+  0 → 0; the text of all 9 unchanged; the e-mail with emoji everywhere parses without loss.
 - **Browser, real mock mail server** (`e2e/tests/inbox.spec.js`, new synthetic e-mail
   *09-sender-split-inside-letter*): the sender shows without `??`; the HTML preview loads through the new route in a
-  sandbox and is sized to its content; not logged in → no preview; `/tmp/u1/<uid>.eml` → 404. This test found a bug
+  sandbox and is sized to its content; not logged in → no preview; `/tmp/u1/<uid>.eml` → 404; e-mail 10's
+  attachment is listed and downloaded with its correct Greek name. This test found a bug
   the in-memory tests could not: the server returns the header without its closing empty line, so the body was glued
   to the headers (fixed, `ImapMailboxTest`).
 
   ![split sender name shown correctly](img/R5a/r5a-split-sender.png)
+  ![split attachment name shown correctly](img/R5a/r5a-split-attachment-name.png)
 - Speed (dev stack, mock server, 16 e-mails / 43 MB on one page): first visit 3.5 s, then 0.2 s. Against a remote
   mail server the first visit costs what every visit used to cost; later visits only ask for the list.
-- Full suites: PHPUnit 211, browser 23/23.
+- Full suites: PHPUnit 215, browser 24/24.
 
 ## Owner actions
 1. **Recommended now (security):** apply the one Apache line in

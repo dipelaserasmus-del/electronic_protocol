@@ -43,3 +43,16 @@ test('HTML preview comes from a logged-in route in a sandbox; no public copies (
     expect((await request.get(`/tmp/u1/${uid}.${ext}`)).status()).toBe(404);
   }
 });
+
+test('attachment name cut inside a Greek letter is shown and downloaded correctly (R5a)', async ({ page }) => {
+  await login(page, 'admin');
+  const panel = await findEmail(page, 'Διαβιβαστικό αίτησης άδειας');   // synthetic e-mail 10
+  const link = panel.getByRole('link', { name: 'ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf' });
+  await expect(link).toBeVisible();
+  expect(await panel.innerText()).not.toContain('??');
+  const file = await page.request.get(await link.getAttribute('href'));
+  expect(file.status()).toBe(200);
+  expect(decodeURIComponent(file.headers()['content-disposition'])).toContain('ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf');
+  await panel.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5a-split-attachment-name', { clip: await panel.boundingBox() });   // this e-mail only
+});

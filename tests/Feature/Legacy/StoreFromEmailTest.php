@@ -174,6 +174,23 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /**
+     * R5a, owner's e-mail (2026-11-16): an attachment name written as RFC 2231 continuations with a Greek letter cut
+     * between two of them (Horde webmail) was saved as "ΑΔΕ??ΑΣ". Synthetic e-mail 10 has the same structure.
+     */
+    public function test_attachment_name_cut_inside_a_letter_is_saved_correctly(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, file_get_contents(base_path('tests/fixtures/emails/synthetic/10-attachment-name-split-inside-letter.eml')));
+
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        // decoded name 'ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf'; the file-name filter turns ( ) into - as always
+        $this->assertSame('ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ -1-.pdf', $pdf->name);
+        $this->assertTrue(Storage::exists($pdf->savedPath));
+    }
+
+    /**
      * R5a: registration is all-or-nothing. Here the attachment can't be written (a folder is in the way of its file
      * name), after the e-mail itself was written: before, the protocol stayed without its attachment while the e-mail
      * stayed in the inbox, so registering it again made a second protocol. Now nothing is left behind.
