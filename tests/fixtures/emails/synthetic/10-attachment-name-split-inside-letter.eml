@@ -1,0 +1,42 @@
+Return-Path: <gramm@example.test>
+Message-ID: <syn10@synthetic.test>
+Date: Mon, 02 Nov 2026 16:15:00 +0000
+From: =?UTF-8?B?zpPPgc6xzrzOvM6xz4TOtc6vzrEgzpM=?=
+ =?UTF-8?B?z4XOvM69zrHPg86vzr/PhSDOlM6/zro=?=
+ =?UTF-8?B?zrnOvM6uz4I=?= <gramm@example.test>
+To: Γραμματεία Σχολείου <protocol@school.test>
+Subject: =?UTF-8?B?zpTOuc6xzrLOuc6yzrHPg8+EzrnOus+M?=
+ =?UTF-8?B?IM6xzq/PhM63z4POt8+CIM6szrTOtQ==?=
+ =?UTF-8?B?zrnOsc+CIM61zrrPgM6xzrnOtM61z4U=?=
+ =?UTF-8?B?z4TOuc66zr/PjQ==?=
+MIME-Version: 1.0
+X-Synthetic-Case: attachment-name-split-inside-letter
+Content-Type: multipart/mixed; boundary="b_d441257a8e2dfbe273e3ec016ff98852"
+
+This is a multi-part message in MIME format.
+--b_d441257a8e2dfbe273e3ec016ff98852
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+
+Σας διαβιβάζουμε την αίτηση.
+
+--b_d441257a8e2dfbe273e3ec016ff98852
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*0*=utf-8''%CE%91%CE%99%CE%A4%CE%97%CE%A3%CE%97%20%CE%91%CE%94%CE%95%CE;
+ filename*1*=%99%CE%91%CE%A3%20%CE%95%CE%9A%CE%A0%CE%91%CE%99%CE%94%CE%95;
+ filename*2*=%CE%A5%CE%A4%CE%99%CE%9A%CE%9F%CE%A5%20%CE%94%CE%9F%CE%9A%CE;
+ filename*3*=%99%CE%9C%CE%97%20%28%31%29%2E%70%64%66
+
+JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIg
+NzkyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4g
+Pj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0NCA+PgpzdHJlYW0KQlQgL0YxIDE4IFRm
+IDUwIDc1MCBUZCAoQWl0aXNpIGFkZWlhcykgVGogRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2Jq
+Cjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UeXBlMSAvQmFzZUZvbnQgL0hlbHZldGljYSA+Pgpl
+bmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAw
+MDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjQxIDAwMDAwIG4g
+CjAwMDAwMDAzMzUgMDAwMDAgbiAKdHJhaWxlciA8PCAvU2l6ZSA2IC9Sb290IDEgMCBSID4+CnN0
+YXJ0eHJlZgo0MDUKJSVFT0YK
+--b_d441257a8e2dfbe273e3ec016ff98852--

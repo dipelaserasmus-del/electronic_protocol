@@ -10,14 +10,12 @@ use Tests\Feature\FeatureTestCase;
 /**
  * Characterization of "register an e-mail" (ProtocolController::storeFromEmail), the only user of
  * zbateson/mail-mime-parser. Written before upgrading that library (N01) so the upgrade can't silently
- * change what gets stored. The inbox page saves each message as tmp/u<user id>/<uid>.eml (relative to the
- * working directory) and storeFromEmail parses it from there.
+ * change what gets stored. The inbox page leaves each message in the mail cache (R5a; before: public/tmp) and
+ * remembers in the session which mailbox it showed; storeFromEmail reads the message from there.
  */
 class StoreFromEmailTest extends FeatureTestCase
 {
     private const UID = 4711;
-
-    private string $emlDir;
 
     protected function setUp(): void
     {
@@ -26,16 +24,6 @@ class StoreFromEmailTest extends FeatureTestCase
         // the final step moves the message on the IMAP server; point it at a closed local port so it fails at once
         config(['imap.accounts.default.host' => '127.0.0.1', 'imap.accounts.default.port' => 1,
             'imap.accounts.default.encryption' => false, 'imap.options.fetch_timeout' => 1]);
-    }
-
-    protected function tearDown(): void
-    {
-        if (isset($this->emlDir)) {
-            @unlink($this->emlDir.self::UID.'.eml');
-            @rmdir($this->emlDir);
-            @rmdir(dirname($this->emlDir)); // tmp/, only if empty
-        }
-        parent::tearDown();
     }
 
     public function test_email_is_registered_with_decoded_headers_body_and_attachment(): void
@@ -162,12 +150,13 @@ class StoreFromEmailTest extends FeatureTestCase
     }
 
     /**
-     * Owner (2026-11-16): the sender's name shows "??" in the inbox form and the sender line. Some mail programs
-     * (here: Horde webmail) split a long name into encoded words in the middle of a 2-byte Greek letter; decoding
-     * each word on its own yields two invalid halves → "??". Both decoders (mail-mime-parser for the form and the
-     * saved protocol, App\Support\Imap\HeaderDecoder for the inbox list) do it. Fix: R5a (join the words first).
+     * R5a (was: known_bug_sender_name_split_inside_a_greek_letter_becomes_question_marks). Owner (2026-11-16): the
+     * sender's name showed "??". Some mail programs (here: Horde webmail) split a long name into encoded words in the
+     * middle of a 2-byte Greek letter; decoding each word on its own gave two invalid halves. Both decoders
+     * (mail-mime-parser for the form and the saved protocol, HeaderDecoder for the inbox list) now decode adjacent
+     * words together. The stored .eml stays exactly as received.
      */
-    public function test_known_bug_sender_name_split_inside_a_greek_letter_becomes_question_marks(): void
+    public function test_sender_name_split_inside_a_greek_letter_is_decoded(): void
     {
         $name = 'Γραφείο Σχολικών Δραστηριοτήτων';
         $cut = strpos($name, 'ί') + 1;   // inside the 2-byte letter ί
@@ -177,8 +166,60 @@ class StoreFromEmailTest extends FeatureTestCase
 
         $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
 
-        $this->assertSame('Γραφε??ο Σχολικών Δραστηριοτήτων <grafeio@example.org>', Protocol::firstOrFail()->in_arxi_ekdosis);
-        $this->assertSame('Γραφε??ο Σχολικών Δραστηριοτήτων', \App\Support\Imap\HeaderDecoder::toUtf8($from), 'inbox list too');
+        $p = Protocol::firstOrFail();
+        $this->assertSame('Γραφείο Σχολικών Δραστηριοτήτων <grafeio@example.org>', $p->in_arxi_ekdosis);
+        $this->assertSame('Γραφείο Σχολικών Δραστηριοτήτων', \App\Support\Imap\HeaderDecoder::toUtf8($from), 'inbox list too');
+        $eml = Attachment::where('protocol_id', $p->id)->where('mimeType', 'message/rfc822')->sole();
+        $this->assertStringContainsString('From: '.$from, Storage::get($eml->savedPath), 'stored e-mail unchanged');
+    }
+
+    /**
+     * R5a, owner's e-mail (2026-11-16): an attachment name written as RFC 2231 continuations with a Greek letter cut
+     * between two of them (Horde webmail) was saved as "ΑΔΕ??ΑΣ". Synthetic e-mail 10 has the same structure.
+     */
+    public function test_attachment_name_cut_inside_a_letter_is_saved_correctly(): void
+    {
+        $user = $this->writer();
+        $this->putEml($user->id, file_get_contents(base_path('tests/fixtures/emails/synthetic/10-attachment-name-split-inside-letter.eml')));
+
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+
+        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
+        // decoded name 'ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf'; the file-name filter turns ( ) into - as always
+        $this->assertSame('ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ -1-.pdf', $pdf->name);
+        $this->assertTrue(Storage::exists($pdf->savedPath));
+    }
+
+    /**
+     * R5a: registration is all-or-nothing. Here the attachment can't be written (a folder is in the way of its file
+     * name), after the e-mail itself was written: before, the protocol stayed without its attachment while the e-mail
+     * stayed in the inbox, so registering it again made a second protocol. Now nothing is left behind.
+     */
+    public function test_attachment_that_cannot_be_saved_leaves_nothing_behind(): void
+    {
+        $next = app(\App\Services\ProtocolNumbering::class)->next((int) now()->year);
+        $blocked = 'arxeio/Φ.1/'.$next.'-'.now()->format('Ymd').'_0_Πρόσκληση.pdf';
+        Storage::makeDirectory($blocked);
+        $user = $this->writer();
+        $this->putEml($user->id, $this->sampleEml());
+
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'fakelos'.self::UID => 'Φ.1', 'chk'.self::UID.'-0' => 'on'])
+            ->assertRedirect('/viewEmails')
+            ->assertSessionHas('notification.alert-type', 'error');
+
+        $this->assertSame(0, Protocol::count(), 'no protocol');
+        $this->assertSame(0, Attachment::withTrashed()->count(), 'no attachment rows, not even in the trash (review finding)');
+        $this->assertSame([], Storage::allFiles('arxeio'), 'the e-mail file written first is removed again');
+        $message = session('notification.message');
+        $this->assertStringContainsString('δεν καταχωρίστηκε', $message);
+        $this->assertStringContainsString('παραμένει στα εισερχόμενα', $message);
+        $this->assertMatchesRegularExpression('/E-[A-Z0-9]{6}/', $message);
+
+        // the e-mail can be registered once the problem is gone: exactly one protocol
+        Storage::deleteDirectory($blocked);
+        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'fakelos'.self::UID => 'Φ.1', 'chk'.self::UID.'-0' => 'on']);
+        $this->assertSame(1, Protocol::count());
+        $this->assertSame(2, Attachment::count());
     }
 
     /**
@@ -220,20 +261,21 @@ class StoreFromEmailTest extends FeatureTestCase
 
     /**
      * F08: names are cut at 120 characters, but Linux (Docker, also on Windows via WSL 2) allows 255 *bytes* per file
-     * name and a Greek letter takes 2. A long Greek name without spaces + the "num-date_key_" prefix doesn't fit: the
-     * attachment is recorded, the file is not written, and registration reports success (the e-mail leaves the inbox).
+     * name and a Greek letter takes 2. A long Greek name without spaces + the "num-date_key_" prefix doesn't fit.
+     * Before R5a the attachment was recorded without its file and registration reported success; since R5a the
+     * registration is refused as a whole (nothing left behind, e-mail stays in the inbox). F08 makes the name fit.
      */
-    public function test_known_bug_long_greek_attachment_name_is_recorded_but_not_saved_on_linux(): void
+    public function test_known_bug_long_greek_attachment_name_can_not_be_registered_on_linux(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName(str_repeat('Αίτηση', 21).'.pdf'));
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on'])
+            ->assertRedirect('/viewEmails');
 
-        $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
-        $this->assertGreaterThan(255, strlen(basename($pdf->savedPath)), 'file name over 255 bytes');
-        $this->assertFalse(Storage::exists($pdf->savedPath), 'recorded, but no file');
-        $this->assertStringNotContainsString('συνημμένων', (string) session('notification.message'), 'no error about attachments');
+        $this->assertSame(0, Protocol::count());
+        $this->assertSame(0, Attachment::count());
+        $this->assertStringContainsString('δεν καταχωρίστηκε', session('notification.message'));
     }
 
     /** F08: a name of only illegal characters loses its extension; an attachment without a name gets an empty one. */
@@ -279,11 +321,11 @@ class StoreFromEmailTest extends FeatureTestCase
         return implode("\r\n ", $words);
     }
 
+    /** What the inbox page leaves behind: the message in the mail cache and the mailbox in the session. */
     private function putEml(int $userId, string $eml): void
     {
-        $this->emlDir = 'tmp/u'.$userId.'/';
-        @mkdir($this->emlDir, 0777, true);
-        file_put_contents($this->emlDir.self::UID.'.eml', $eml);
+        app(\App\Services\Mail\MailCache::class)->put('test/INBOX', '1001', self::UID, $eml);
+        $this->withSession(['inbox' => ['mailbox' => 'test/INBOX', 'uidValidity' => '1001']]);
     }
 
     /** Invented message in the legacy Greek encodings that trip the current inbox. */

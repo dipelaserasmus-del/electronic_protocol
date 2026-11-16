@@ -64,10 +64,10 @@
 
                     @if ($aMessageCount)
                         @php $num = 1; @endphp
-                        @foreach ($aSortedMessage as $oMessage)
+                        @foreach ($messages as $inboxMessage)
                             @php
-                                $Uid = $oMessage->getUid();
-                                $mailMessage = ZBateson\MailMimeParser\Message::from($oMessage->getHeader()->raw . $oMessage->getRawBody(), true);
+                                $Uid = $inboxMessage->uid;
+                                $mailMessage = $inboxMessage->mail;
                             @endphp
                             <div class="panel panel-default col-md-12 col-sm-12  ">
                                 <form name="frm{{ $Uid }}" id="frm{{ $Uid }}" class="form-horizontal"
@@ -434,19 +434,19 @@
                         @php
                             $uid = $Uid;
                         @endphp
-                        @if (array_key_exists($uid, $emailFilePaths) && file_exists('tmp/' . $emailFilePaths[$uid]))
+                        @if ($inboxMessage->hasHtml())
                             <div class="row bg-info">
                                 <div class="col-md-3 col-sm-3 form-control-static ">Σώμα email ως HTML</div>
                                 <div
                                     class="col-md-4 col-sm-4 col-md-offset-5 col-sm-offset-5 form-control-static text-right">
-                                    <a href="{{ asset('tmp/' . $emailFilePaths[$uid]) }}" target="_blank">Προβολή
+                                    <a href="{{ url('/viewEmailHtml/' . $Uid) }}" target="_blank">Προβολή
                                         εξωτερικά</a>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-12 col-sm-12  ">
-                                    <iframe id="ifr{{ $Uid }}"
-                                        src="{{ asset('tmp/' . $emailFilePaths[$uid]) }}" width="100%"
+                                    <iframe id="ifr{{ $Uid }}" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                                        src="{{ url('/viewEmailHtml/' . $Uid) }}" width="100%"
                                         frameBorder="0"
                                         onload="this.style.height=(this.contentWindow.document.body.scrollHeight+10)+'px';">></iframe>
                                 </div>
@@ -538,11 +538,8 @@
             }
             var alwaysShowFakelosInViewEmails = {{ $alwaysShowFakelosInViewEmails ? 'true' : 'false' }}
             var emailHasAttachments = []
-            @foreach ($aMessage as $oMessage)
-                @php
-                    $chkMessage = ZBateson\MailMimeParser\Message::from($oMessage->getHeader()->raw . $oMessage->getRawBody(), true);
-                @endphp
-                emailHasAttachments[{{ $oMessage->getUid() }}] = {{ $chkMessage->getAttachmentCount() ? 'true' : 'false' }}
+            @foreach ($messages as $inboxMessage)
+                emailHasAttachments[{{ $inboxMessage->uid }}] = {{ $inboxMessage->mail->getAttachmentCount() ? 'true' : 'false' }}
             @endforeach
 
             if (emailHasAttachments[uid] || alwaysShowFakelosInViewEmails) {

@@ -196,6 +196,13 @@
     ],
     "GET viewEmailAttachment/{messageUid}/{attachmentKey}": [
         "auth",
+        "email",
+        "web",
+        "writer:home/list"
+    ],
+    "GET viewEmailHtml/{messageUid}": [
+        "auth",
+        "email",
         "web",
         "writer:home/list"
     ],

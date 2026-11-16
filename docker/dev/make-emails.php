@@ -150,6 +150,10 @@ function attachment(string $mime, string $bytes, string $utf8Name, string $style
         'rfc2231' => "filename*=UTF-8''" . rawurlencode($utf8Name),
         // RFC 2047 inside quotes (Outlook / older clients), Windows-1253
         'rfc2047-1253' => 'filename="' . b64h(enc($utf8Name, 'Windows-1253'), 'Windows-1253') . '"',
+        // Horde webmail: RFC 2231 continuations of 20 bytes, which can cut a Greek letter in two (R5a)
+        'rfc2231-split' => implode(";\r\n ", array_map(
+            fn ($i, $chunk) => "filename*$i*=" . ($i === 0 ? "utf-8''" : '') . implode('', array_map(fn ($c) => sprintf('%%%02X', ord($c)), str_split($chunk))),
+            array_keys(str_split($utf8Name, 20)), str_split($utf8Name, 20))),
         // plain ASCII
         default => 'filename="' . $utf8Name . '"',
     };
@@ -260,6 +264,30 @@ $cases[] = [
     'from' => 'Παλαιό Σύστημα <oldsystem@example.test>',
     'subject' => 'Αίτηση γονέα για βεβαίωση φοίτησης',
     'parts' => [['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Παρακαλώ για τη χορήγηση βεβαίωσης φοίτησης.\n"]],
+];
+
+// 9. Sender name split *inside* a 2-byte Greek letter across two encoded words (Horde webmail does this;
+//    decoding each word on its own gave "??" in the name, R5a)
+$name = 'Σύλλογος Διδασκόντων Γυμνασίου Δοκιμής';
+$cut = strpos($name, 'ί') + 1;
+$cases[] = [
+    'case' => 'sender-split-inside-letter',
+    'fromAddr' => 'syllogos@example.test',
+    'from' => '=?utf-8?b?' . base64_encode(substr($name, 0, $cut)) . "?=\r\n =?utf-8?b?" . base64_encode(substr($name, $cut)) . '?= <syllogos@example.test>',
+    'subject' => b64h('Ενημέρωση για τη συνέλευση του συλλόγου'),
+    'parts' => [['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Σας ενημερώνουμε για τη γενική συνέλευση.\n"]],
+];
+
+// 10. Attachment name in RFC 2231 continuations cut inside a Greek letter (Horde webmail; "??" in the name, R5a)
+$cases[] = [
+    'case' => 'attachment-name-split-inside-letter',
+    'fromAddr' => 'gramm@example.test',
+    'from' => b64h('Γραμματεία Γυμνασίου Δοκιμής') . ' <gramm@example.test>',
+    'subject' => b64h('Διαβιβαστικό αίτησης άδειας εκπαιδευτικού'),
+    'parts' => [
+        ['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Σας διαβιβάζουμε την αίτηση.\n"],
+        attachment('application/pdf', minimalPdf('Aitisi adeias'), 'ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf', 'rfc2231-split'),
+    ],
 ];
 
 $written = [];

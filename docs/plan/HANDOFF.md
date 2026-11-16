@@ -3,7 +3,7 @@
 Read this first when (re)starting work. Update it at the end of every task.
 
 ## Current state — 2026-11-16 (Batch 4 running)
-- **Batch 4 running:** D05 (#34), D01 (#35) done. **Next: R5a** → F08. 194 PHPUnit tests, 21 browser tests.
+- **Batch 4 running:** D05 (#34), D01 (#35), R5a (#36) done. **Next: F08.** 216 PHPUnit tests, 24 browser tests. R5a found that inbox e-mails in `public/tmp` are downloadable without login on the current server: owner mitigation `docs/BLOCK-PUBLIC-EMAIL-COPIES.md`.
 - **Batch 3 complete** (N01 #27, N02 #28, N03 #31, N04 #33; plus #26, #29, #30, #32 plan/known-bug PRs). Summary: [`docs/reports/BATCH-3.md`](../reports/BATCH-3.md). 186 PHPUnit tests, 18 browser tests.
 - **Batch 2 complete** (PRs #14–#21), plus F06 (#23), F07 (#24), B10 (#25). `master` CI green, branch-protected
   (all 9 CI jobs required, admins included, no force push). 127 PHPUnit tests, 9 browser tests.
@@ -63,6 +63,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 | R5a | #36 | `App\Services\Mail\{Inbox,MailCache,Mailbox,ImapMailbox,MailboxConnector}`: UID list + one fetch for missing, cache `storage/app/mail-cache/<mailbox>/<UIDVALIDITY>/<UID>.eml` (lock, expiry = still in inbox); `EncodedWords` joins split encoded words, `MailParser` also joins RFC 2231 continuations in every part header (owner's sick-leave e-mail, 2026-11-16); `MailParser::parse` everywhere; registration all-or-nothing; no `public/tmp` copies (were public!), `/viewEmailHtml` sandboxed; tests: `FakeMailbox` (`tests/Support`) |
 | 2026-11-16 | D01 | #35 | `thema`, `in_arxi_ekdosis`, `in_perilipsi`, `out_perilipsi` → TEXT; `Protocol::LONG_TEXT_MAX` (16000) in form checks; e-mail registration error shows `E-XXXXXX`, never the SQL |
 | 2026-11-16 | D05 | #34 | connection + all tables → utf8mb4 (`utf8mb4_general_ci`: searches/unique keys as before); legacy COMPACT tables → DYNAMIC; migration irreversible (backup); N04 review fix (confirm dialog in capture phase) merged with #33 |
 | 2026-11-16 | N04 | #33 | `<x-date-input>`, `<x-pill-actions>`, `<x-file-badge>`, `<x-notice>`, toasts, `data-confirm` dialog; date rules in PHP + JS checked against one shared case list; `/dev/ui` (dev/test only) |
