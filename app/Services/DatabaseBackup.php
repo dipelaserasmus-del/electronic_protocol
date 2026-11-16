@@ -136,18 +136,53 @@ class DatabaseBackup
         return str_contains($tail, '-- Dump completed');
     }
 
-    private function gzip(string $source, string $target): void
+    /**
+     * Compresses $source into $target and proves the result: every write must be complete, and the finished file
+     * must decompress to exactly the source's size (zlib buffers, so a full disk can otherwise go unnoticed).
+     */
+    public function gzip(string $source, string $target): void
     {
-        $in = fopen($source, 'rb');
-        $out = gzopen($target, 'wb6');
+        $failed = new RuntimeException('Δεν ήταν δυνατή η εγγραφή του αρχείου backup (γεμάτος δίσκος ή δικαιώματα;).');
+        $in = @fopen($source, 'rb');
+        $out = @gzopen($target, 'wb6');
         if (! $in || ! $out) {
-            throw new RuntimeException('Δεν ήταν δυνατή η εγγραφή του αρχείου backup.');
+            throw $failed;
         }
-        while (! feof($in)) {
-            gzwrite($out, fread($in, 1 << 20));
+        try {
+            while (! feof($in)) {
+                $chunk = fread($in, 1 << 20);
+                if ($chunk === false || ($chunk !== '' && @gzwrite($out, $chunk) !== strlen($chunk))) {
+                    throw $failed;
+                }
+            }
+        } finally {
+            fclose($in);
+            $closed = @gzclose($out);
         }
-        fclose($in);
-        gzclose($out);
+        $expected = filesize($source);
+        if (! $closed || $this->gunzippedSize($target, $expected) !== $expected) {
+            throw $failed;
+        }
+    }
+
+    /** Size of the decompressed content (reading stops past $limit), or -1 if it cannot be read. */
+    private function gunzippedSize(string $file, int $limit): int
+    {
+        $fh = @gzopen($file, 'rb');
+        if (! $fh) {
+            return -1;
+        }
+        $size = 0;
+        while (! gzeof($fh) && $size <= $limit) {
+            $chunk = @gzread($fh, 1 << 20);
+            if ($chunk === false || $chunk === '') {
+                break;
+            }
+            $size += strlen($chunk);
+        }
+        gzclose($fh);
+
+        return $size;
     }
 
     private function firstLine(string $text): string

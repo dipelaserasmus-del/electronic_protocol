@@ -84,6 +84,40 @@ class BackupTest extends FeatureTestCase
         $this->assertSame([], $this->backupFiles());
     }
 
+    /** Codex review on #25: a full disk made gzwrite() fail silently and the backup was still reported as created. */
+    public function test_compression_to_a_full_disk_fails_instead_of_reporting_success(): void
+    {
+        if (! is_writable('/dev/full')) {
+            $this->markTestSkipped('/dev/full is not available here');
+        }
+        $source = tempnam(sys_get_temp_dir(), 'dump');
+        file_put_contents($source, str_repeat("INSERT INTO t VALUES (1);\n", 50000)."-- Dump completed\n");
+        try {
+            $this->expectException(\RuntimeException::class);
+            (new DatabaseBackup)->gzip($source, '/dev/full');
+        } finally {
+            unlink($source);
+        }
+    }
+
+    public function test_compression_of_a_multi_megabyte_dump_is_verified_and_kept(): void
+    {
+        $source = tempnam(sys_get_temp_dir(), 'dump');
+        $target = $source.'.gz';
+        $lines = '';
+        for ($i = 0; $i < 60000; $i++) {
+            $lines .= "INSERT INTO t VALUES ($i, '".md5((string) $i)."');\n";   // ~3 MB, several 1 MB chunks
+        }
+        file_put_contents($source, $lines);
+        try {
+            (new DatabaseBackup)->gzip($source, $target);
+            $this->assertSame($lines, gzdecode(file_get_contents($target)));
+        } finally {
+            @unlink($source);
+            @unlink($target);
+        }
+    }
+
     public function test_backup_pages_are_for_admins_only(): void
     {
         $this->actingAs($this->writer())->get('/backup')->assertRedirect();
