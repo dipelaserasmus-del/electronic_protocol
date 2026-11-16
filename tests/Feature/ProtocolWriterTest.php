@@ -285,6 +285,68 @@ class ProtocolWriterTest extends FeatureTestCase
         $this->assertSame(0, ProtocolAssignment::count());
     }
 
+    /** Review of R1a: an old assignment to a user deleted since (kept, D02) must not block the others' saves. */
+    public function test_assignment_to_a_deleted_user_does_not_block_saving(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $handler = $this->writer();
+        $p = Protocol::factory()->number(1)->assignedTo($handler)->create();
+        ProtocolAssignment::create(['protocol_id' => $p->id, 'user_id' => 999999, 'type' => 'e']);
+
+        $this->writer_()->update($handler, $p->fresh(), $this->protocolForm(['out_to' => 'Δήμος', 'out_date' => '06/01/2026']));
+
+        $this->assertSame('Δήμος', $p->fresh()->out_to);
+        $this->assertSame("d{$handler->id},e999999", $p->fresh()->diekperaiosi, 'kept as it was');
+    }
+
+    /** Review of R1a: the number and year are checked as typed, before becoming integers. */
+    public function test_number_and_year_must_be_whole_numbers_as_typed(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $admin = $this->admin();
+        $p = Protocol::factory()->number(3)->create();
+        foreach ([['protocolnum' => '12.5'], ['protocolnum' => '12', 'etos' => '2026x'], ['protocolnum' => '1e2']] as $bad) {
+            try {
+                $this->writer_()->create($admin, $this->protocolForm($bad + ['protocolnum_proposed' => '4']));
+                $this->fail('accepted ' . json_encode($bad));
+            } catch (ValidationException $e) {
+                $this->assertNotEmpty(array_intersect(['protocolnum', 'etos'], array_keys($e->errors())));
+            }
+            try {
+                $this->writer_()->update($admin, $p->fresh(), $this->protocolForm($bad + ['etos' => $bad['etos'] ?? (string) $p->etos]));
+                $this->fail('update accepted ' . json_encode($bad));
+            } catch (ValidationException $e) {
+                $this->assertNotEmpty(array_intersect(['protocolnum', 'etos'], array_keys($e->errors())));
+            }
+        }
+        $this->assertSame([3], Protocol::pluck('protocolnum')->all());
+    }
+
+    /** Review of R1a: after the protocol is saved, a failure is a warning on it, never "register it again". */
+    public function test_failure_after_saving_leads_to_the_saved_protocol_with_a_warning(): void
+    {
+        Attachment::creating(fn () => throw new \RuntimeException('disk full'));
+
+        $response = $this->actingAs($this->writer())->from('/home')->post('/home', $this->protocolForm(['ada1' => 'ΑΔΑ-1']));
+
+        $p = Protocol::firstOrFail();
+        $response->assertRedirect("home/{$p->id}");
+        $this->assertSame('warning', session('notification')['alert-type']);
+        $this->assertStringContainsString('Το πρωτόκολλο αποθηκεύτηκε', session('notification')['message']);
+        $this->assertSame(1, Protocol::count());
+    }
+
+    public function test_ada_longer_than_its_column_is_refused_before_saving(): void
+    {
+        try {
+            $this->writer_()->create($this->writer(), $this->protocolForm(), [['file' => null, 'ada' => str_repeat('Α', 256)]]);
+            $this->fail('accepted');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('ada', $e->errors());
+        }
+        $this->assertSame(0, Protocol::count());
+    }
+
     public function test_with_checks_on_an_empty_protocol_needs_the_setting(): void
     {
         $writer = $this->writer();

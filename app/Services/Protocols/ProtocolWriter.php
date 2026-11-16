@@ -78,7 +78,8 @@ final class ProtocolWriter
         $posted = (int) ($input['protocolnum'] ?? 0);   // safe numbering off: the number the form showed (legacy rule)
         $chosen = $manual ? $posted : (Config::getConfigValueOf('safeNewProtocolNum') ? null : ($posted ?: null));
 
-        $this->validate($v, $record, $assignments, $access, null, $etos, $manual ? $posted : null);
+        $raw = $this->rawNumberErrors($input, $access->number, $manual);
+        $this->validate($v, $record, $assignments, $assignments, $access, null, $etos, $manual ? $posted : null, $raw, $attachments);
 
         $data = $this->toColumns($record) + ['user_id' => $user->id, 'etos' => $etos];
         $replaced = false;
@@ -109,10 +110,38 @@ final class ProtocolWriter
         if ($replaced) {
             $result->messages[] = "Αντικαταστάθηκε το «" . self::PLACEHOLDER . "» πρωτόκολλο {$protocol->protocolnum}/{$protocol->etos}.";
         }
-        $this->afterSave($result, $v, [], $assignments, $attachments, $user);
-        $this->sendReceipt($result, $v['reply_to_email']);
+        // the protocol is saved: from here on a failure is a warning on the saved protocol, never a reason to register
+        // it again (review of R1a: a retry created a second protocol)
+        $this->afterCommit($result, fn () => $this->afterSave($result, $v, [], $assignments, $attachments, $user));
+        $this->afterCommit($result, fn () => $this->sendReceipt($result, $v['reply_to_email']));
 
         return $result;
+    }
+
+    private function afterCommit(SaveResult $result, callable $step): void
+    {
+        try {
+            $step();
+        } catch (\Throwable $e) {
+            report($e);
+            $result->warnings[] = 'Το πρωτόκολλο αποθηκεύτηκε, αλλά κάτι από τα υπόλοιπα (συνημμένα, email) απέτυχε: ελέγξτε το και επαναλάβετε μόνο ό,τι λείπει.';
+        }
+    }
+
+    /**
+     * Number and year as typed, before they become integers (review of R1a: "12.5" or "2026x" were cast to 12 / 2026).
+     * @return array<string, string>
+     */
+    private function rawNumberErrors(array $input, bool $mayChoose, bool $numberChosen): array
+    {
+        $errors = [];
+        if ($numberChosen && ! preg_match('/^\d+$/', trim((string) ($input['protocolnum'] ?? '')))) {
+            $errors['protocolnum'] = 'Ο Αρ. Πρωτοκόλλου πρέπει να είναι θετικός ακέραιος.';
+        }
+        if ($mayChoose && ! preg_match('/^\d{4}$/', trim((string) ($input['etos'] ?? '')))) {
+            $errors['etos'] = 'Το έτος πρέπει να είναι τετραψήφιος αριθμός.';
+        }
+        return $errors;
     }
 
     /**
@@ -137,7 +166,10 @@ final class ProtocolWriter
         $etos = $access->number ? $v['etos'] : (int) $protocol->etos;
         $num = $access->number ? (int) ($input['protocolnum'] ?? 0) : (int) $protocol->protocolnum;
 
-        $this->validate($v, $record, $assignments, $access, $protocol, $etos, $access->number ? $num : null);
+        $key = fn ($a) => $a['type'] . $a['user_id'];
+        $added = array_values(array_filter($assignments, fn ($a) => ! in_array($key($a), array_map($key, $before), true)));
+        $raw = $this->rawNumberErrors($input, $access->number, $access->number);
+        $this->validate($v, $record, $assignments, $added, $access, $protocol, $etos, $access->number ? $num : null, $raw, $attachments);
         if ($protocol->attachments()->exists() && ! $record['fakelos']) {
             throw ValidationException::withMessages(['fakelos' => 'Ο Φάκελος πρωτοκόλλου με συνημμένα αρχεία δεν μπορεί να είναι κενός. Για να γίνει αυτό, διαγράψτε πρώτα τα συνημμένα.']);
         }
@@ -159,9 +191,9 @@ final class ProtocolWriter
 
         $result = new SaveResult($protocol->fresh());
         if ($oldFolder !== (string) $result->protocol->fakelos) {
-            $this->moveFiles($result, $oldFolder);
+            $this->afterCommit($result, fn () => $this->moveFiles($result, $oldFolder));
         }
-        $this->afterSave($result, $v, $before, $assignments, $attachments, $user);
+        $this->afterCommit($result, fn () => $this->afterSave($result, $v, $before, $assignments, $attachments, $user));
 
         return $result;
     }
@@ -228,9 +260,13 @@ final class ProtocolWriter
     }
 
     /** @param int|null $num the number the user chose (null: given by the application) */
-    private function validate(array $v, array $record, array $assignments, ProtocolAccess $access, ?Protocol $protocol, int $etos, ?int $num): void
+    /**
+     * @param list<array{user_id:int, type:string}> $newAssignments  the ones this save adds: only they must be
+     *        existing users (an old assignment to a user deleted since is kept, D02; review of R1a)
+     * @param array<string, string> $errors  found before (number/year as typed)
+     */
+    private function validate(array $v, array $record, array $assignments, array $newAssignments, ProtocolAccess $access, ?Protocol $protocol, int $etos, ?int $num, array $errors = [], array $attachments = []): void
     {
-        $errors = [];
         foreach (self::DATES as $f) {
             if (($record[$f] ?? null) === self::INVALID) {
                 $errors[$f] = 'Η ημερομηνία δεν είναι έγκυρη (ηη/μμ/εεεε).';
@@ -239,10 +275,10 @@ final class ProtocolWriter
         if (! $record['protocoldate']) {
             $errors['protocoldate'] = 'Συμπληρώστε την ημερομηνία πρωτοκόλλου.';
         }
-        if ($access->number && ($etos < 1000 || $etos > 9999)) {
+        if ($access->number && ($etos < 1000 || $etos > 9999) && ! isset($errors['etos'])) {
             $errors['etos'] = 'Το έτος πρέπει να είναι τετραψήφιος αριθμός.';
         }
-        if ($num !== null && $num < 1) {
+        if ($num !== null && $num < 1 && ! isset($errors['protocolnum'])) {
             $errors['protocolnum'] = 'Ο Αρ. Πρωτοκόλλου πρέπει να είναι θετικός ακέραιος.';
         }
         foreach (self::SHORT as $f) {
@@ -265,7 +301,12 @@ final class ProtocolWriter
         if ($v['reply_to_email'] !== null && ! filter_var($v['reply_to_email'], FILTER_VALIDATE_EMAIL)) {
             $errors['reply_to_email'] = 'Μη έγκυρη διεύθυνση email.';
         }
-        if ($assignments && User::whereIn('id', array_column($assignments, 'user_id'))->count() < count(array_unique(array_column($assignments, 'user_id')))) {
+        foreach ($attachments as $row) {
+            if (mb_strlen((string) TextInput::clean($row['ada'] ?? null)) > 255) {
+                $errors['ada'] = 'Ο ΑΔΑ είναι έως 255 χαρακτήρες.';
+            }
+        }
+        if ($newAssignments && User::whereIn('id', array_column($newAssignments, 'user_id'))->count() < count(array_unique(array_column($newAssignments, 'user_id')))) {
             $errors['diekperaiosi'] = 'Άγνωστος χρήστης στην ανάθεση.';
         }
 
