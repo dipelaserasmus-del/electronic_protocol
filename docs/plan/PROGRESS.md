@@ -7,15 +7,15 @@
 
 | | |
 |---|---|
-| Tasks done | **18 / 56** `██████████░░░░░░░░░░░░░░░░░░░░` 32% |
-| Effort done (PERT) | **8.2 / 27.9 h** `█████████░░░░░░░░░░░░░░░░░░░░░` 29% |
-| Remaining effort, one agent in sequence | **19.7 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
-| Remaining critical path (if work could run in parallel) | 5.3 h ± 0.4 |
+| Tasks done | **19 / 56** `██████████░░░░░░░░░░░░░░░░░░░░` 34% |
+| Effort done (PERT) | **8.7 / 27.9 h** `█████████░░░░░░░░░░░░░░░░░░░░░` 31% |
+| Remaining effort, one agent in sequence | **19.2 h ± 0.7** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Remaining critical path (if work could run in parallel) | 4.7 h ± 0.3 |
 | In progress | L02 |
-| Next task | **N01** — PHP + Composer upgrade, drop ext-imap |
+| Next task | **N02** — Laravel structure modernization |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
-**Critical path (remaining):** N01 → N02 → N03 → N04 → R3a → R3b → R3c → Z01 → Z02 → Z03
+**Critical path (remaining):** N02 → N03 → N04 → R3a → R3b → R3c → Z01 → Z02 → Z03
 
 ## Batches
 
@@ -23,7 +23,7 @@
 |---|---|---|---|
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
-| 3 | ✅B10 ⬜N01 ⬜N02 ⬜N03 ⬜N04 | 1/5 | `██░░░░░░░░` |
+| 3 | ✅B10 ✅N01 ⬜N02 ⬜N03 ⬜N04 | 2/5 | `████░░░░░░` |
 | 4 | ⬜D05 ⬜R5a | 0/2 | `░░░░░░░░░░` |
 | 5 | ⬜D01 ⬜D02 ⬜D03 ⬜D04 | 0/4 | `░░░░░░░░░░` |
 | 6 | ⬜R1a ⬜R1b ⬜R1c ⬜R2 ⬜R4a ⬜R4b | 0/6 | `░░░░░░░░░░` |
@@ -189,11 +189,11 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10 done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01 done
   class L02 inprogress
-  class N01,N02,N03,N04,D05,R5a,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class N02,N03,N04,D05,R5a,D01,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
-  class N01,N02,N03,N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
+  class N02,N03,N04,R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
 
 ## Timeline (one agent, execution order)
@@ -227,7 +227,7 @@ gantt
   B07 Diagnose timeouts / 500s :done, b07, 2026-11-12 16:34, 33m
   section Batch 3
   B10 Backup creates complete dumps (mysqldump errors shown) :done, b10, 2026-11-12 17:07, 19m
-  N01 PHP + Composer upgrade, drop ext-imap :crit, n01, 2026-11-12 17:26, 33m
+  N01 PHP + Composer upgrade, drop ext-imap :done, n01, 2026-11-12 17:26, 33m
   N02 Laravel structure modernization :crit, n02, 2026-11-12 17:59, 33m
   N03 Vite + Bootstrap 5 + Livewire, top nav layout :crit, n03, 2026-11-12 18:32, 33m
   N04 Shared UI components (pills, date input…) :crit, n04, 2026-11-12 19:05, 33m
@@ -298,7 +298,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **B04** | Descriptive error pages | — | 0.3 | 0.1 | 0.0 | 0.3 | 5.8 | 6.1 | 5.8 | #19 |
 | ✅ | **B07** | Diagnose timeouts / 500s | F03, B04 | 0.5 | 0.1 | 0.5 | 1.1 | 6.1 | 6.7 | 5.6 | #20 |
 | ✅ | **B10** | Backup creates complete dumps (mysqldump errors shown) | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #25 |
-| ⬜ | **N01** 🔴 | PHP + Composer upgrade, drop ext-imap | F01, F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 1.4 | 2.0 | 0.0 |  |
+| ✅ | **N01** 🔴 | PHP + Composer upgrade, drop ext-imap | F01, F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 1.4 | 2.0 | 0.0 |  |
 | ⬜ | **N02** 🔴 | Laravel structure modernization | N01 | 0.5 | 0.1 | 2.0 | 2.5 | 2.0 | 2.5 | 0.0 |  |
 | ⬜ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | 0.0 |  |
 | ⬜ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 |  |

@@ -11,9 +11,11 @@ Read this first when (re)starting work. Update it at the end of every task.
   deployment (see `OWNER-TODO.md`). Consequence: S00 (open admin registration) stays exploitable in production;
   the old code ignores `storage/conf/.denyregister`. Mitigation without deploying code: a web-server rule that refuses
   `POST /register`: `docs/BLOCK-REGISTRATION.md` (owner has it, not applied yet).
-- **Next:** Batch 3 → `N01` (PHP/Composer upgrade, drop ext-imap) → `N02` → `N03` → `N04`.
-  **Before N01, get the production server's OS/PHP/MySQL versions** (asked in `OWNER-TODO.md`): no deploy until the
-  end, but the final deploy must run on that server (or the server is upgraded then), so N01 picks its target from it.
+- **Batch 3 in progress.** N01 done (#PR). **Next: `N02`** (Laravel structure) → `N03` → `N04`.
+- **Production target (owner, 2026-11-16): the Docker stack** after the rebuild (today: Windows 11 + XAMPP, Apache,
+  PHP 8.1.25, MariaDB 10.4.32, php-imap). No XAMPP/MariaDB compatibility work. The owner migrates the old DB + files;
+  path = `./dev.sh real load` (MariaDB dump → MySQL 8.4 + `migrate:adopt-legacy`). Still to ask before the deployment
+  guide: which machine runs Docker (same Windows PC with Docker Desktop/WSL 2, or another).
 - **Batch 4 = D05 → R5a**, moved earlier by the owner on 2026-11-15. Needs: L01 done ✅ (D05 is verified on real
   data locally, Fedora) and e-mails from the owner for R5a. R5a plugs its cache into the current inbox page.
 - **L02 (real data on the Mac) postponed by the owner (2026-11-16)**; not blocking anything.
@@ -28,7 +30,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Real emails for tests | Owner will provide some public-safe `.eml` files; **needed before Batch 4 (R5a)**, also R5b/R5c/R5d. Ask public (commit) vs private (`local-data/emails/`, owner runs checks). |
 | `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 postponed by the owner (2026-11-16):** Mac demo app works; real data on the Mac still to do. Guides: `docs/VSCODE-MACOS.md`, `docs/LOCAL-SETUP.md`. Owner replies "L02 works" → mark done in tasks.toml. |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
-| Production server facts | Asked 2026-11-15 (OWNER-TODO): OS, PHP, php-imap, MySQL, web server, update method, what is deployed. Needed before N01. |
+| Production server facts | **Answered 2026-11-16:** Windows 11, XAMPP 3.3.0 (Apache), PHP 8.1.25 ZTS x64, php-imap on, MariaDB 10.4.32. Will be replaced by the Docker stack. Open: which machine runs Docker. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
 | Final deployment (all tasks done) | Owner: back up DB + `.env`; `php artisan migrate:adopt-legacy` once (no `migrations` table, F07), then `php artisan migrate`; check `users` for unknown admin accounts; `which mysqldump`, press Backup once (B10). Claude writes a deployment guide before then. |
 | Open registration in production (S00) | Not deployed by owner decision. Web-server rules (Apache/nginx) given in `docs/BLOCK-REGISTRATION.md`; owner chose **not to apply them yet** (2026-11-16). Remind at the final deployment (remove the rule before `git pull`). |
@@ -57,6 +59,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-16 | N01 | #PR | mail-mime-parser 4, PHPUnit 13, `php ^8.4.1` + platform pin, watermark pinned (next commit swaps `markpdf` binaries); `StoreFromEmailTest` characterizes e-mail registration. Production → Docker (owner) |
 | 2026-11-16 | B10 | #25 | Backup: mysqldump without shell, errors shown, `--no-tablespaces`, safe file names; stray bytes in `config/imapFolders.php` broke every download; `real load` reads `.zip`. Also L01 done, `master` branch protection (all CI jobs required, admins included) |
 | 2026-11-16 | F07 | #24 | production backup has no `migrations` table → `migrate:adopt-legacy` records existing tables; `real load` runs it before `migrate` |
 | 2026-11-15 | F06 | #23 | nginx re-resolves `app` (Docker DNS, 5 s): 502 after Docker Desktop restart on the Mac; `tests/shell/nginx-reconnect.test.sh` in CI e2e job |
