@@ -2,14 +2,21 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-15
-- **Batch 2 complete** and merged (PRs #14–#20, report + L02 in #21), `master` CI green. 114 PHPUnit tests, 8 browser tests.
+## Current state — 2026-11-16
+- **Batch 2 complete** (PRs #14–#21), plus F06 (#23), F07 (#24), B10 (#25). `master` CI green, branch-protected
+  (all 9 CI jobs required, admins included, no force push). 127 PHPUnit tests, 9 browser tests.
   Summary: [`docs/reports/BATCH-2.md`](../reports/BATCH-2.md).
+- **Owner decision (2026-11-16): no deployment to production until all tasks are completed and verified.**
+  So the production server keeps the old code; owner actions "after deploying" are collected for one final
+  deployment (see `OWNER-TODO.md`). Consequence: S00 (open admin registration) stays exploitable in production;
+  the old code ignores `storage/conf/.denyregister`. Mitigation without deploying code: a web-server rule that refuses
+  `POST /register`: `docs/BLOCK-REGISTRATION.md` (owner has it, not applied yet).
 - **Next:** Batch 3 → `N01` (PHP/Composer upgrade, drop ext-imap) → `N02` → `N03` → `N04`.
-  **Before N01, get the production server's PHP/MySQL versions** (asked in `OWNER-TODO.md`) so the upgrade can't
-  break production.
-- **Batch 4 = D05 → R5a**, moved earlier by the owner on 2026-11-15. Needs: L01/L02 done (D05 is verified on real
-  data locally) and e-mails from the owner for R5a. R5a plugs its cache into the current inbox page.
+  **Before N01, get the production server's OS/PHP/MySQL versions** (asked in `OWNER-TODO.md`): no deploy until the
+  end, but the final deploy must run on that server (or the server is upgraded then), so N01 picks its target from it.
+- **Batch 4 = D05 → R5a**, moved earlier by the owner on 2026-11-15. Needs: L01 done ✅ (D05 is verified on real
+  data locally, Fedora) and e-mails from the owner for R5a. R5a plugs its cache into the current inbox page.
+- **L02 (real data on the Mac) postponed by the owner (2026-11-16)**; not blocking anything.
 - Owner's own list: [`OWNER-TODO.md`](../../OWNER-TODO.md). Update it at the end of every batch.
 - Owner says "run batch N" to start a batch. **Claude completes the whole PR procedure on its own** (commit, push,
   answer reviews, merge on green CI).
@@ -19,11 +26,12 @@ Read this first when (re)starting work. Update it at the end of every task.
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
 | Real emails for tests | Owner will provide some public-safe `.eml` files; **needed before Batch 4 (R5a)**, also R5b/R5c/R5d. Ask public (commit) vs private (`local-data/emails/`, owner runs checks). |
-| `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02:** Mac demo app works (2026-11-15); still to do: real data on the Mac. Fedora (GNOME, SELinux, Docker) moving from Flatpak to the **RPM VS Code**, plus a **Mac**. Guides: `docs/VSCODE-FEDORA.md`, `docs/VSCODE-MACOS.md`, then `docs/LOCAL-SETUP.md`. Owner replies "L01/L02 works" or the output of `./dev.sh doctor` → mark both done in tasks.toml. |
+| `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 postponed by the owner (2026-11-16):** Mac demo app works; real data on the Mac still to do. Guides: `docs/VSCODE-MACOS.md`, `docs/LOCAL-SETUP.md`. Owner replies "L02 works" → mark done in tasks.toml. |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
 | Production server facts | Asked 2026-11-15 (OWNER-TODO): OS, PHP, php-imap, MySQL, web server, update method, what is deployed. Needed before N01. |
 | Knowledge base | Owner declined (2026-11-13): extra complexity for small gain. Claude may re-suggest it later if it becomes clearly useful. |
-| After deploying Batch 1 | Owner: run `php artisan migrate:adopt-legacy` once (production has no `migrations` table, F07), then `php artisan migrate`; check `users` for unknown admin accounts. |
+| Final deployment (all tasks done) | Owner: back up DB + `.env`; `php artisan migrate:adopt-legacy` once (no `migrations` table, F07), then `php artisan migrate`; check `users` for unknown admin accounts; `which mysqldump`, press Backup once (B10). Claude writes a deployment guide before then. |
+| Open registration in production (S00) | Not deployed by owner decision. Web-server rules (Apache/nginx) given in `docs/BLOCK-REGISTRATION.md`; owner chose **not to apply them yet** (2026-11-16). Remind at the final deployment (remove the rule before `git pull`). |
 
 ## Decisions log (short)
 - Module-by-module rebuild, Livewire + Bootstrap 5, MySQL only (BACKLOG "Decisions").
