@@ -20,10 +20,9 @@ should show without `??`, and e-mails with emoji or very long subjects should re
 ## When you have time
 1. **Attachment names (optional, no server needed):** on your Fedora copy, `./dev.sh real check-names` and send me
    only the 3 numbers it prints (details in [F08](docs/reports/F08.md)).
-2. **L02, real data on the Mac** (postponed, blocks nothing): `git pull`, then *Real data: load*. Reply **"L02 works"**.
 
 ## Final deployment (when all tasks are completed and verified)
-3. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
+2. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
    back up the database and the files; check the attachment file names on the server
    (`php tools\check-attachment-names.php …`, F08); load the database (`migrate:adopt-legacy`,
    then `migrate`, which also converts to utf8mb4 and long subjects);
@@ -36,7 +35,7 @@ should show without `??`, and e-mails with emoji or very long subjects should re
    Until then, export the database with **phpMyAdmin** (the Backup button on the server creates empty files).
 
 ## Whenever it happens
-4. **Date reset on save (B03d, on hold):** when the date or number changes by itself again, write down the screen, your
+3. **Date reset on save (B03d, on hold):** when the date or number changes by itself again, write down the screen, your
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
@@ -44,7 +43,7 @@ should show without `??`, and e-mails with emoji or very long subjects should re
 - Your e-mails in `local-data/emails/` (now 9, incl. the sick-leave and emoji ones of 2026-11-16): I read them only on this computer; nothing from them is published. Tests copy only their structure.
 - Production will run the Docker stack after the rebuild (replaces XAMPP); on the same Windows 11 PC (Docker Desktop); you migrate the old database and files (2026-11-16).
 - No deployment to production until all tasks are completed and verified (2026-11-16).
-- L02 postponed (2026-11-16).
+- L02 done: real data loads on the Mac too (2026-11-16). The Mac is secondary: I bring its code up to date before working there.
 - Knowledge base: declined; I may suggest it again if it becomes clearly useful.
 - `.env` / `APP_KEY`: random and can be recreated; I handle it as needed.
 - I complete pull requests on my own (commit, push, reviews, merge on green CI).

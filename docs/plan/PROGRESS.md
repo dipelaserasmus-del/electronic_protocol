@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Tasks done | **28 / 57** `███████████████░░░░░░░░░░░░░░░` 49% |
-| Effort done (PERT) | **13.3 / 28.3 h** `██████████████░░░░░░░░░░░░░░░░` 47% |
-| Remaining effort, one agent in sequence | **14.9 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **29 / 57** `███████████████░░░░░░░░░░░░░░░` 51% |
+| Effort done (PERT) | **13.7 / 28.3 h** `███████████████░░░░░░░░░░░░░░░` 48% |
+| Remaining effort, one agent in sequence | **14.6 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.1 h ± 0.3 |
-| In progress | L02 |
+| In progress | — |
 | Next task | **D04** — Integer dates → DATE columns |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
@@ -22,7 +22,7 @@
 | Batch | Tasks | Done | Progress |
 |---|---|---|---|
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
-| 2 | ✅B09 ✅F04 ✅L01 🔄L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 9/10 | `█████████░` |
+| 2 | ✅B09 ✅F04 ✅L01 ✅L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 10/10 | `██████████` |
 | 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
 | 4 | ✅D05 ✅D01 ✅R5a ✅F08 | 4/4 | `██████████` |
 | 5 | ✅D02 ✅D03 ⬜D04 | 2/3 | `███████░░░` |
@@ -191,8 +191,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03 done
-  class L02 inprogress
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03 done
   class D04,R1a,R1b,R1c,R2,R4a,R4b,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R1a,R1b,R1c,Z01,Z02,Z03 critical
@@ -220,7 +219,7 @@ gantt
   B09 Fix all outgoing email (500s) :done, b09, 2026-11-12 13:29, 19m
   F04 Real-data loader (owner runs it) :done, f04, 2026-11-12 13:48, 19m
   L01 Owner's VS Code + local stack with real data :done, l01, 2026-11-12 14:07, 19m
-  L02 Two computers  macOS guide, RPM VS Code, switching :active, l02, 2026-11-12 14:26, 19m
+  L02 Two computers  macOS guide, RPM VS Code, switching :done, l02, 2026-11-12 14:26, 19m
   F05 Playwright evidence tooling :done, f05, 2026-11-12 14:45, 33m
   F06 nginx finds a recreated app container (no 502) :done, f06, 2026-11-12 15:18, 19m
   F07 real load  adopt a backup without migrations table :done, f07, 2026-11-12 15:37, 19m
@@ -293,7 +292,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 6.4 | 6.7 | 4.9 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
 | ✅ | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.0 | 6.4 | 5.2 | #16 |
-| 🔄 | **L02** | Two computers: macOS guide, RPM VS Code, switching | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 |  |
+| ✅ | **L02** | Two computers: macOS guide, RPM VS Code, switching | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 | #21 |
 | ✅ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 | #17 |
 | ✅ | **F06** | nginx finds a recreated app container (no 502) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 6.4 | 6.7 | 5.8 | #23 |
 | ✅ | **F07** | real load: adopt a backup without migrations table | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 6.4 | 6.7 | 5.2 | #24 |
