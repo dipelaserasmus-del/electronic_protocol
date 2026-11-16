@@ -192,13 +192,6 @@ class ProtocolStoreTest extends FeatureTestCase
             ->assertSessionHasErrors('protocoldate');
     }
 
-    public function test_subject_over_255_characters_is_rejected(): void
-    {
-        $this->actingAs($this->writer())->from('/home')
-            ->post('/home', $this->protocolForm(['protocolnum' => 1, 'thema' => str_repeat('α', 256)]))
-            ->assertSessionHasErrors('thema');
-    }
-
     public function test_incoming_fields_require_each_other(): void
     {
         $this->actingAs($this->writer())->from('/home')
@@ -246,6 +239,51 @@ class ProtocolStoreTest extends FeatureTestCase
         ]));
 
         $this->assertSame('Νέο', $p->fresh()->thema);
+    }
+
+    /** D01: subject, sender and summaries longer than 255 characters are saved in full, with checks on or off. */
+    public function test_long_subject_sender_and_summaries_are_saved_in_full(): void
+    {
+        $long = fn (string $word) => trim(str_repeat("$word ", 400));   // ≥ 2,400 characters
+        $user = $this->writer();
+        foreach ([1, 0] as $validate) {
+            Protocol::query()->delete();
+            $this->setting('protocolValidate', $validate);
+            $this->actingAs($user)->post('/home', $this->protocolForm([
+                'protocolnum' => 1, 'thema' => $long('Θέμα'),
+                'in_num' => '12', 'in_date' => '02/03/'.now()->year, 'in_topos_ekdosis' => 'Αθήνα',
+                'in_arxi_ekdosis' => $long('Αρχή'), 'in_paraliptis' => 'Γραμματεία', 'in_perilipsi' => $long('Περίληψη'),
+                'out_date' => '03/03/'.now()->year, 'out_to' => 'Διεύθυνση', 'out_perilipsi' => $long('Απάντηση'),
+            ]))->assertSessionHasNoErrors();
+
+            $p = Protocol::firstOrFail();
+            $this->assertSame($long('Θέμα'), $p->thema, "protocolValidate=$validate");
+            $this->assertSame($long('Αρχή'), $p->in_arxi_ekdosis);
+            $this->assertSame($long('Περίληψη'), $p->in_perilipsi);
+            $this->assertSame($long('Απάντηση'), $p->out_perilipsi);
+        }
+
+        // editing keeps it too
+        $this->actingAs($user)->post("/home/{$p->id}", $this->protocolForm([
+            'protocolnum' => 1, 'protocoldate' => \Carbon\Carbon::createFromFormat('Ymd', $p->protocoldate)->format('d/m/Y'),
+            'thema' => $long('Νέο'),
+        ]));
+        $this->assertSame($long('Νέο'), $p->fresh()->thema);
+    }
+
+    /**
+     * D01 (was: test_subject_over_255_characters_is_rejected, the VARCHAR(255) limit): with the checks on, a subject
+     * over the TEXT limit gets a validation message instead of a database error.
+     */
+    public function test_subject_over_the_text_limit_is_refused_with_a_message(): void
+    {
+        $this->setting('protocolValidate', 1);
+
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm([
+            'protocolnum' => 1, 'thema' => str_repeat('α', Protocol::LONG_TEXT_MAX + 1),
+        ]))->assertSessionHasErrors('thema');
+
+        $this->assertSame(0, Protocol::count());
     }
 
     public function test_copy_as_new_clears_number_and_date(): void

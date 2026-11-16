@@ -703,10 +703,12 @@ class ProtocolController extends Controller implements HasMiddleware
 
 
             $validator = Validator::make(request()->all(), [
-                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:255',
+                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:' . Protocol::LONG_TEXT_MAX,
                 'in_date' => 'required_with:in_num,in_topos_ekdosis,in_arxi_ekdosis',
                 'in_topos_ekdosis' => 'required_with:in_num,in_date,in_arxi_ekdosis|max:255',
-                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:255',
+                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:' . Protocol::LONG_TEXT_MAX,
+                'in_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
+                'out_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
                 'in_paraliptis' => 'required_with:in_num,in_date,in_arxi_ekdosis,in_topos_ekdosis|max:255',
                 'out_date' => 'required_with:out_to,out_perilipsi',
                 'out_to' => 'required_with:out_date,out_perilipsi|max:255',
@@ -963,10 +965,12 @@ class ProtocolController extends Controller implements HasMiddleware
         // αν είναι true (1)
         if ($protocolValidate) {
             $validator = Validator::make(request()->all(), [
-                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:255',
+                'thema' => 'nullable|required_with:fakelos,in_num,in_date,in_topos_ekdosis,in_arxi_ekdosis,in_paraliptis,in_perilipsi,diekperaiosi,out_date,diekp_date,sxetiko,out_to,out_perilipsi,keywords,paratiriseis|max:' . Protocol::LONG_TEXT_MAX,
                 'in_date' => 'required_with:in_num,in_topos_ekdosis,in_arxi_ekdosis',
                 'in_topos_ekdosis' => 'required_with:in_num,in_date,in_arxi_ekdosis|max:255',
-                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:255',
+                'in_arxi_ekdosis' => 'required_with:in_num,in_date,in_topos_ekdosis|max:' . Protocol::LONG_TEXT_MAX,
+                'in_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
+                'out_perilipsi' => 'nullable|max:' . Protocol::LONG_TEXT_MAX,
                 'in_paraliptis' => 'required_with:in_num,in_date,in_arxi_ekdosis,in_topos_ekdosis|max:255',
                 'out_date' => 'required_with:out_to,out_perilipsi',
                 'out_to' => 'required_with:out_date,out_perilipsi|max:255',
@@ -2114,6 +2118,9 @@ class ProtocolController extends Controller implements HasMiddleware
                 $in_arxi_ekdosis .= $mailMessage->getHeader(HeaderConsts::FROM)->getAddresses()[0]->getEmail();
             }
         }
+        // D01: θέμα και αρχή έκδοσης από το email χωράνε στις στήλες TEXT
+        $thema = $thema === null ? null : mb_substr($thema, 0, Protocol::LONG_TEXT_MAX);
+        $in_arxi_ekdosis = $in_arxi_ekdosis === null ? null : mb_substr($in_arxi_ekdosis, 0, Protocol::LONG_TEXT_MAX);
         // άλλα πεδία
         $in_topos_ekdosis = isset($data["in_topos_ekdosis"]) ? $data["in_topos_ekdosis"] : "";
         $in_paraliptis = isset($data["in_paraliptis"]) ? $data["in_paraliptis"] : Auth::user()->name;
@@ -2151,9 +2158,9 @@ class ProtocolController extends Controller implements HasMiddleware
         } catch (\Throwable $e) {
             // σε λάθος γράφω στο log
             report($e);
-            // ειδοποιώ τον χρήστη
+            // ειδοποιώ τον χρήστη με τον κωδικό αναφοράς του log (D01: ποτέ το μήνυμα της βάσης, περιέχει το SQL με τα δεδομένα)
             $notification = array(
-                'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση του email στο Πρωτόκολλο<br>Παρακαλώ επαναλάβετε την καταχώριση.' . $e->getMessage(),
+                'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση του email στο Πρωτόκολλο.<br>Το email δεν καταχωρίστηκε και παραμένει στα εισερχόμενα.<br>Κωδικός σφάλματος: ' . \App\Exceptions\Handler::errorId(),
                 'alert-type' => 'error'
             );
             session()->flash('notification', $notification);

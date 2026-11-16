@@ -55,3 +55,18 @@ test('register an e-mail with emoji: the protocol keeps them (D05)', async ({ pa
   await expect(page.locator('[name=in_arxi_ekdosis]')).toHaveValue('Ομάδα "Δοκιμών" & Συνεργάτες <oteam@example.test>');
   await evidence(page, 'd05-emoji-protocol', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
 });
+
+test('register an e-mail with a 300-character subject: saved in full (D01)', async ({ page }) => {
+  await login(page, 'admin');
+  const { message, before } = await register(page, 'ΠΥΣΠΕ Δοκιμής');   // synthetic e-mail 07-long-subject-plain-only
+
+  expect(message).toContain('Το email καταχωρίστηκε');   // before D01: the inbox just reloaded, nothing registered
+  expect(await inboxCount(page)).toBe(before - 1);
+
+  const [, num, year] = message.match(/Αρ\.Πρωτ: (\d+) \/ \d\d-\d\d-(\d{4})/);
+  await page.goto(`/goto/${year}/${num}?find=1`);
+  const thema = await page.locator('[name=thema]').inputValue();
+  expect(thema.length).toBe(300);
+  expect(thema).toMatch(/^Ενημέρωση για τη διαδικασία υποβολής αιτήσεων μετάθεσης/);
+  await evidence(page, 'd01-long-subject-protocol', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
+});
