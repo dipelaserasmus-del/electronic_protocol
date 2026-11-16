@@ -297,7 +297,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **S04** | Remove committed .env / APP_KEY | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #18 |
 | ✅ | **B04** | Descriptive error pages | — | 0.3 | 0.1 | 0.0 | 0.3 | 5.8 | 6.1 | 5.8 | #19 |
 | ✅ | **B07** | Diagnose timeouts / 500s | F03, B04 | 0.5 | 0.1 | 0.5 | 1.1 | 6.1 | 6.7 | 5.6 | #20 |
-| ✅ | **B10** | Backup creates complete dumps (mysqldump errors shown) | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 |  |
+| ✅ | **B10** | Backup creates complete dumps (mysqldump errors shown) | — | 0.3 | 0.1 | 0.0 | 0.3 | 6.4 | 6.7 | 6.4 | #25 |
 | ⬜ | **N01** 🔴 | PHP + Composer upgrade, drop ext-imap | F01, F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 1.4 | 2.0 | 0.0 |  |
 | ⬜ | **N02** 🔴 | Laravel structure modernization | N01 | 0.5 | 0.1 | 2.0 | 2.5 | 2.0 | 2.5 | 0.0 |  |
 | ⬜ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | 0.0 |  |
