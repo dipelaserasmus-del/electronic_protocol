@@ -45,7 +45,9 @@ final class MailCache
 
     /**
      * Expiry: keep only the messages that are still in the folder ($uids) under the current UIDVALIDITY; messages
-     * registered, moved or deleted meanwhile and every older UIDVALIDITY are removed.
+     * registered, moved or deleted meanwhile and every older UIDVALIDITY are removed. Run it under the mailbox's lock
+     * (Inbox does). It never removes what another request may be writing or has just added: files being written
+     * (".part", unless left over for an hour) and UIDs newer than the list it was given (new mail; UIDs only grow).
      *
      * @param list<int> $uids
      */
@@ -57,9 +59,18 @@ final class MailCache
                 $this->disk()->deleteDirectory($dir);
             }
         }
-        $keep = array_flip(array_map(fn (int $uid) => "$uid.eml", $uids));
+        $keep = array_flip($uids);
+        $newest = $uids === [] ? 0 : max($uids);
         foreach ($this->disk()->files($base.'/'.$this->safe($uidValidity)) as $file) {
-            if (! isset($keep[basename($file)])) {
+            $name = basename($file);
+            if (str_ends_with($name, '.part')) {
+                if ($this->disk()->lastModified($file) < time() - 3600) {
+                    $this->disk()->delete($file);   // left by a request that died while writing
+                }
+                continue;
+            }
+            $uid = (int) basename($name, '.eml');
+            if (! isset($keep[$uid]) && $uid <= $newest) {
                 $this->disk()->delete($file);
             }
         }

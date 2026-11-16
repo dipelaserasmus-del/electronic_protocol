@@ -84,7 +84,11 @@
   ![split attachment name shown correctly](img/R5a/r5a-split-attachment-name.png)
 - Speed (dev stack, mock server, 16 e-mails / 43 MB on one page): first visit 3.5 s, then 0.2 s. Against a remote
   mail server the first visit costs what every visit used to cost; later visits only ask for the list.
-- Full suites: PHPUnit 215, browser 24/24.
+- Review fixes (Codex, PR #36): expiry now runs under the same lock as downloads and never removes a file being
+  written or a UID newer than its own list (`test_expiry_leaves_files_of_concurrent_requests_alone`); a rolled-back
+  registration deletes its attachment rows for good, not into the archive's trash (`withTrashed()` count 0). Both
+  tests fail on the reviewed code.
+- Full suites: PHPUnit 216, browser 24/24.
 
 ## Owner actions
 1. **Recommended now (security):** apply the one Apache line in

@@ -208,7 +208,7 @@ class StoreFromEmailTest extends FeatureTestCase
             ->assertSessionHas('notification.alert-type', 'error');
 
         $this->assertSame(0, Protocol::count(), 'no protocol');
-        $this->assertSame(0, Attachment::count(), 'no attachment rows');
+        $this->assertSame(0, Attachment::withTrashed()->count(), 'no attachment rows, not even in the trash (review finding)');
         $this->assertSame([], Storage::allFiles('arxeio'), 'the e-mail file written first is removed again');
         $message = session('notification.message');
         $this->assertStringContainsString('δεν καταχωρίστηκε', $message);

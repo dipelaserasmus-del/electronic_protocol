@@ -33,9 +33,7 @@ final class Inbox
         $page = max(1, $page);
         $uids = array_slice($ordered, ($page - 1) * $perPage, $perPage);
 
-        $raw = $this->load($mailbox, $validity, $uids);
-        // expiry: drop what is no longer in the folder (registered, moved, deleted) and older UIDVALIDITYs
-        $this->cache->keepOnly($mailbox->id(), $validity, $all);
+        $raw = $this->load($mailbox, $validity, $uids, $all);
 
         $messages = [];
         foreach ($uids as $uid) {
@@ -59,21 +57,30 @@ final class Inbox
         return $this->cache->get($mailboxId, $uidValidity, $uid);
     }
 
-    /** @param list<int> $uids @return array<int, string> */
-    private function load(Mailbox $mailbox, string $validity, array $uids): array
+    /**
+     * Downloads what is missing and expires the rest, under the mailbox's lock (one request at a time per mailbox).
+     *
+     * @param list<int> $uids the page @param list<int> $all every UID in the folder @return array<int, string>
+     */
+    private function load(Mailbox $mailbox, string $validity, array $uids, array $all): array
     {
         $missing = fn () => array_values(array_filter($uids, fn (int $uid) => ! $this->cache->has($mailbox->id(), $validity, $uid)));
 
-        if ($missing() !== []) {
-            $download = function () use ($mailbox, $validity, $missing) {
-                foreach ($mailbox->fetchRaw($missing()) as $uid => $raw) {   // again: another user may have done it
+        $work = function () use ($mailbox, $validity, $missing, $all) {
+            if (($todo = $missing()) !== []) {   // again inside the lock: another user may have done it meanwhile
+                foreach ($mailbox->fetchRaw($todo) as $uid => $raw) {
                     $this->cache->put($mailbox->id(), $validity, (int) $uid, $raw);
                 }
-            };
-            try {
-                Cache::lock($this->cache->lockName($mailbox->id()), self::LOCK_WAIT * 2)->block(self::LOCK_WAIT, $download);
-            } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
-                $download();
+            }
+            // expiry: drop what is no longer in the folder (registered, moved, deleted) and older UIDVALIDITYs
+            $this->cache->keepOnly($mailbox->id(), $validity, $all);
+        };
+        try {
+            Cache::lock($this->cache->lockName($mailbox->id()), self::LOCK_WAIT * 2)->block(self::LOCK_WAIT, $work);
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+            // another request holds the lock too long: download what this page needs, skip expiry (next visit does it)
+            foreach ($mailbox->fetchRaw($missing()) as $uid => $raw) {
+                $this->cache->put($mailbox->id(), $validity, (int) $uid, $raw);
             }
         }
 

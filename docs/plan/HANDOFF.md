@@ -3,7 +3,7 @@
 Read this first when (re)starting work. Update it at the end of every task.
 
 ## Current state — 2026-11-16 (Batch 4 running)
-- **Batch 4 running:** D05 (#34), D01 (#35), R5a (#36) done. **Next: F08.** 215 PHPUnit tests, 24 browser tests. R5a found that inbox e-mails in `public/tmp` are downloadable without login on the current server: owner mitigation `docs/BLOCK-PUBLIC-EMAIL-COPIES.md`.
+- **Batch 4 running:** D05 (#34), D01 (#35), R5a (#36) done. **Next: F08.** 216 PHPUnit tests, 24 browser tests. R5a found that inbox e-mails in `public/tmp` are downloadable without login on the current server: owner mitigation `docs/BLOCK-PUBLIC-EMAIL-COPIES.md`.
 - **Batch 3 complete** (N01 #27, N02 #28, N03 #31, N04 #33; plus #26, #29, #30, #32 plan/known-bug PRs). Summary: [`docs/reports/BATCH-3.md`](../reports/BATCH-3.md). 186 PHPUnit tests, 18 browser tests.
 - **Batch 2 complete** (PRs #14–#21), plus F06 (#23), F07 (#24), B10 (#25). `master` CI green, branch-protected
   (all 9 CI jobs required, admins included, no force push). 127 PHPUnit tests, 9 browser tests.

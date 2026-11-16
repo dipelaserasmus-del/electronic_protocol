@@ -2531,7 +2531,8 @@ class ProtocolController extends Controller implements HasMiddleware
             foreach ($writtenFiles as $path) {
                 Storage::delete($path);
             }
-            Attachment::where('protocol_id', $protocol->id)->delete();
+            // Attachment έχει SoftDeletes: οριστική διαγραφή, αλλιώς μένουν «φαντάσματα» στον κάδο του αρχείου
+            Attachment::withTrashed()->where('protocol_id', $protocol->id)->forceDelete();
             $protocol->delete();
         } catch (\Throwable $e) {
             report($e);

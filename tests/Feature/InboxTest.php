@@ -66,6 +66,30 @@ class InboxTest extends FeatureTestCase
         $this->assertSame([], array_filter($this->cachedFiles(), fn ($f) => str_contains($f, '/1001/')), 'old UIDVALIDITY removed');
     }
 
+    /**
+     * Review finding on R5a: expiry must not remove what another request is writing (".part") or has just added (a
+     * UID newer than this request's list); it now runs under the download lock and leaves both alone.
+     */
+    public function test_expiry_leaves_files_of_concurrent_requests_alone(): void
+    {
+        $cache = app(\App\Services\Mail\MailCache::class);
+        $cache->put('test/INBOX', '1001', 1, 'one');
+        $cache->put('test/INBOX', '1001', 2, 'two (registered meanwhile)');
+        $cache->put('test/INBOX', '1001', 9, 'nine (arrived after this list)');
+        $dir = 'mail-cache/'.basename(dirname(Storage::disk('local')->allFiles('mail-cache')[0], 2)).'/1001';
+        Storage::disk('local')->put("$dir/5.eml.abcd.part", 'being written');
+        Storage::disk('local')->put("$dir/6.eml.dead.part", 'left by a crashed request');
+        touch(Storage::disk('local')->path("$dir/6.eml.dead.part"), time() - 7200);
+
+        $cache->keepOnly('test/INBOX', '1001', [1, 3]);
+
+        $this->assertNotNull($cache->get('test/INBOX', '1001', 1));
+        $this->assertNull($cache->get('test/INBOX', '1001', 2), 'no longer in the inbox');
+        $this->assertNotNull($cache->get('test/INBOX', '1001', 9), 'newer than the list: kept');
+        $this->assertTrue(Storage::disk('local')->exists("$dir/5.eml.abcd.part"), 'being written: kept');
+        $this->assertFalse(Storage::disk('local')->exists("$dir/6.eml.dead.part"), 'hour-old leftover removed');
+    }
+
     public function test_page_shows_decoded_greek_and_writes_nothing_to_public_tmp(): void
     {
         $user = $this->writer();
