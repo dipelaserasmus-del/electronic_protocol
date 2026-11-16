@@ -198,6 +198,99 @@ final class ProtocolWriter
         return $result;
     }
 
+    /**
+     * R1b: "Διεκπεραιώθηκε": the done date, by anyone the policy allows (also a reader assigned for διεκπεραίωση,
+     * who can't save the form). Noted in Παρατηρήσεις, as the legacy button did.
+     */
+    public function markDone(User $user, Protocol $protocol, string $date): void
+    {
+        \Illuminate\Support\Facades\Gate::forUser($user)->authorize('complete', $protocol);
+        $day = DateInput::expand($date);
+        if (! $day) {
+            throw ValidationException::withMessages(['diekp_date' => 'Η ημερομηνία δεν είναι έγκυρη (ηη/μμ/εεεε).']);
+        }
+        $note = Carbon::now()->format('d/m/Y H:i:s') . ' διεκπεραιώθηκε από ' . $user->name;
+        $protocol->forceFill([
+            'user_id' => $user->id,
+            'diekp_date' => CarbonImmutable::createFromFormat('!' . DateInput::FORMAT, $day)->format('Y-m-d'),
+            'paratiriseis' => ($protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '') . $note,
+        ])->save();
+    }
+
+    /**
+     * R1b: change only the assignments and the deadline ("Ανάθεση"), for administrators and assigners also when the
+     * rest of the protocol is locked for them. The done date is cleared, as the legacy button did.
+     *
+     * @param list<string>|string $assignments  ["d14", "e10"] or "d14,e10"
+     */
+    public function assign(User $user, Protocol $protocol, array|string $assignments, ?string $deadline): SaveResult
+    {
+        \Illuminate\Support\Facades\Gate::forUser($user)->authorize('assign', $protocol);
+        $rows = Assignments::parse(is_array($assignments) ? implode(',', $assignments) : $assignments);
+        if (! $rows) {
+            throw ValidationException::withMessages(['diekperaiosi' => 'Επιλέξτε σε ποιον ανατίθεται.']);
+        }
+        if (User::whereIn('id', array_column($rows, 'user_id'))->count() < count(array_unique(array_column($rows, 'user_id')))) {
+            throw ValidationException::withMessages(['diekperaiosi' => 'Άγνωστος χρήστης στην ανάθεση.']);
+        }
+        $raw = TextInput::clean($deadline);
+        $day = $raw === null ? null : DateInput::expand($raw);
+        if ($raw !== null && ! $day) {
+            throw ValidationException::withMessages(['diekp_eos' => 'Η ημερομηνία δεν είναι έγκυρη (ηη/μμ/εεεε).']);
+        }
+        $before = $protocol->assignments->map(fn ($a) => ['user_id' => (int) $a->user_id, 'type' => $a->type])->all();
+        $protocol->forceFill([
+            'diekp_eos' => $day ? CarbonImmutable::createFromFormat('!' . DateInput::FORMAT, $day)->format('Y-m-d') : null,
+            'diekp_date' => null,
+        ]);
+        $protocol->diekperaiosi = Assignments::asText($rows);
+        $protocol->save();
+
+        // the explicit "Ανάθεση" always notifies the users it adds (legacy button), whatever the save setting
+        $result = new SaveResult($protocol->fresh());
+        $old = array_map(fn ($a) => $a['type'] . $a['user_id'], $before);
+        foreach ($rows as $a) {
+            if (! in_array($a['type'] . $a['user_id'], $old, true) && ($line = $this->assignmentMail->send($result->protocol, $a['user_id'], $a['type'], $user))) {
+                $result->messages[] = $line;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * R1b: delete a protocol (administrators; the form offers it with "Έλεγχοι καταχώρισης" OFF). Its files are
+     * removed with it, as before (R4b will keep them in the trash for a while).
+     */
+    public function delete(User $user, Protocol $protocol): void
+    {
+        \Illuminate\Support\Facades\Gate::forUser($user)->authorize('delete', $protocol);
+        foreach (Attachment::withTrashed()->where('protocol_id', $protocol->id)->get() as $attachment) {
+            if ($path = $attachment->storedFilePath()) {
+                Storage::delete($path);
+            }
+            $attachment->forceDelete();
+        }
+        $protocol->delete();
+    }
+
+    /** R1b: an attachment to the trash (file to trash/, row soft-deleted; legacy rule until R4b). */
+    public function removeAttachment(User $user, Attachment $attachment): void
+    {
+        $protocol = $attachment->protocol;
+        if (! $protocol || ! ProtocolAccess::for($user, $protocol)->canSave || \Illuminate\Support\Facades\Gate::forUser($user)->denies('update', $protocol)) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Δεν επιτρέπεται η διαγραφή αυτού του συνημμένου.');
+        }
+        $path = (string) $attachment->savedPath;
+        $trash = str_replace('arxeio', 'trash', $path);
+        if ($path !== '' && Storage::exists($path)) {
+            if (Storage::exists($trash)) {
+                Storage::delete($trash);
+            }
+            Storage::move($path, $trash);
+        }
+        $attachment->delete();
+    }
+
     public static function isPlaceholder(Protocol $p): bool
     {
         $t = mb_strtoupper(trim((string) $p->thema, " \t\n.!-*"));

@@ -83,7 +83,7 @@ class ErrorPagesTest extends FeatureTestCase
         $hidden = Protocol::factory()->number(1)->create();
 
         $this->actingAs($this->writer())->get("/home/{$hidden->id}")->assertNotFound()->assertSee('Η σελίδα δεν βρέθηκε');
-        $this->actingAs($this->writer())->get('/delprotocol/' . $hidden->id)->assertForbidden()->assertSee('Δεν επιτρέπεται');
+        $this->actingAs($this->writer())->post('/home/' . $hidden->id, $this->protocolForm())->assertForbidden()->assertSee('Δεν επιτρέπεται');
     }
 
     public function test_expired_form_shows_page_expired_explanation(): void

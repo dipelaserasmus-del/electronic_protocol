@@ -117,7 +117,7 @@ class NumberGapsTest extends FeatureTestCase
 
         $this->actingAs($admin)->get('/home/list')->assertSee('/home?num=3', false);
         $this->actingAs($admin)->get('/home?num=3')->assertSee('value="3"', false)
-            ->assertSee('name="protocolnum_proposed" value="5"', false);
+            ->assertSee('placeholder="5"', false);   // R1b: the next free number is shown as a hint
     }
 
     public function test_filling_the_gap_saves_the_chosen_number(): void

@@ -115,7 +115,9 @@ class ProtocolAccessTest extends FeatureTestCase
     {
         $p = Protocol::factory()->number(1)->create();
 
-        $this->actingAs($this->writer())->get("/delprotocol/{$p->id}")->assertForbidden();
+        // R1b: deleting is an action of the form (was GET /delprotocol)
+        \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])
+            ->call('deleteProtocol')->assertForbidden();
 
         $this->assertNotNull(Protocol::find($p->id));
     }
@@ -124,7 +126,8 @@ class ProtocolAccessTest extends FeatureTestCase
     {
         $p = Protocol::factory()->number(1)->create();
 
-        $this->actingAs($this->reader())->get("/delprotocol/{$p->id}");
+        \Livewire\Livewire::actingAs($this->reader())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])
+            ->call('deleteProtocol')->assertForbidden();
 
         $this->assertNotNull(Protocol::find($p->id));
     }

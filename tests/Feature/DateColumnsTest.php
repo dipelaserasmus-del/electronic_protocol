@@ -104,7 +104,9 @@ class DateColumnsTest extends FeatureTestCase
     {
         Protocol::factory()->number(1)->create(['in_num' => 'Φ.7/123', 'in_date' => 20260305]);
 
-        $this->actingAs($this->writer())->post('/checkInNum', ['in_date' => '05/03/2026', 'in_num' => 'Φ.7/123', 'id' => ''])
-            ->assertOk()->assertContent('1');
+        // R1b: a notice next to the field (was the checkInNum call + YES/NO dialog)
+        \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\ProtocolForm::class)
+            ->set('form.in_num', 'Φ.7/123')->set('form.in_date', '05/03/2026')->assertSee('id="notice-in_num"', false)
+            ->set('form.in_date', '06/03/2026')->assertDontSee('id="notice-in_num"', false);
     }
 }

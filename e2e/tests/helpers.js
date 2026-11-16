@@ -43,4 +43,34 @@ async function setSetting(page, name, value) {
   return previous;
 }
 
-module.exports = { login, evidence, toasts, setSetting };
+/**
+ * R1b protocol form (Livewire): fill fields by name (form.<name> → #f-<name>), e.g.
+ * fillProtocol(page, { thema: 'x', fakelos: 'first', in_date: '03/01/2025' }). fakelos: 'first' picks the first
+ * folder. Each field is left with Tab, which sends it to the server (wire:model.blur).
+ */
+async function fillProtocol(page, fields) {
+  for (const [name, value] of Object.entries(fields)) {
+    const field = page.locator(`#f-${name}`);
+    if ((await field.evaluate((el) => el.tagName)) === 'SELECT') {
+      if (value === 'first') await field.selectOption({ index: 1 });
+      else await field.selectOption(value);
+    } else {
+      await field.fill(value);
+      await field.press('Tab');
+    }
+  }
+}
+
+/** Save the protocol form and wait for the saved protocol's page (or for the form to show its messages). */
+async function saveProtocol(page, { expectSaved = true } = {}) {
+  await page.locator('#protocol-form button[type=submit]').first().click();
+  if (expectSaved) await page.waitForURL(/\/home\/\d+$/);
+  else await page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+}
+
+/** The message shown at the top of the rebuilt pages after a save. */
+async function notice(page) {
+  return (await page.locator('main > .alert').allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
+}
+
+module.exports = { login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice };

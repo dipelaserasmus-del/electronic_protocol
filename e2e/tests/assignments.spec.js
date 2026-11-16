@@ -2,26 +2,16 @@
 // for ενημέρωση is found by searching the first user's name (before: not found, because the search compared the
 // whole text "d3,e4" with "d3"), and it shows in both users' lists.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
 
 test('protocol assigned to a writer (διεκπεραίωση) and a reader (ενημέρωση): search and both lists (D02)', async ({ page }) => {
   const subject = `D02 ανάθεση ${Date.now()}`;
   await login(page, 'admin');
   await page.goto('/home');
-  await page.fill('#thema', subject);
-  await page.evaluate(() => {   // bootstrap-select hides the real <select>s
-    const f = document.querySelector('select[name=fakelos]');
-    f.value = f.options[1].value;
-    f.dispatchEvent(new Event('change', { bubbles: true }));
-    const s = document.querySelector('#diekperaiosi');
-    for (const o of s.options) {
-      o.selected = (o.value.startsWith('d') && o.text.includes('Συγγραφέας Δοκιμών'))
-        || (o.value.startsWith('e') && o.text.includes('Αναγνώστης Δοκιμών'));
-    }
-    s.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-  await page.evaluate(() => formSubmit());
-  await page.waitForURL(/\/home\/\d+$/);
+  await fillProtocol(page, { thema: subject, fakelos: 'first' });
+  await page.locator('#f-handle').selectOption({ label: 'Συγγραφέας Δοκιμών' });
+  await page.locator('#f-inform').selectOption({ label: 'Αναγνώστης Δοκιμών' });
+  await saveProtocol(page);
 
   // search by the assignee's name
   await page.goto('/find');

@@ -77,7 +77,8 @@ class AttachmentMetadataTest extends FeatureTestCase
         $p = Protocol::factory()->number(1)->create(['user_id' => $writer->id, 'thema' => '']);   // open to writers
         $a = Attachment::factory()->withFile()->create(['protocol_id' => $p->id]);
 
-        $this->actingAs($writer)->get("/attach/del/{$a->id}")->assertOk();
+        \Livewire\Livewire::actingAs($writer)->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])
+            ->call('removeAttachment', $a->id);   // R1b form (was GET /attach/del)
 
         $trashed = Attachment::withTrashed()->findOrFail($a->id);
         $this->assertTrue($trashed->trashed());
