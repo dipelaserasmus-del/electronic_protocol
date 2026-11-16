@@ -262,6 +262,18 @@ $cases[] = [
     'parts' => [['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Παρακαλώ για τη χορήγηση βεβαίωσης φοίτησης.\n"]],
 ];
 
+// 9. Sender name split *inside* a 2-byte Greek letter across two encoded words (Horde webmail does this;
+//    decoding each word on its own gave "??" in the name, R5a)
+$name = 'Σύλλογος Διδασκόντων Γυμνασίου Δοκιμής';
+$cut = strpos($name, 'ί') + 1;
+$cases[] = [
+    'case' => 'sender-split-inside-letter',
+    'fromAddr' => 'syllogos@example.test',
+    'from' => '=?utf-8?b?' . base64_encode(substr($name, 0, $cut)) . "?=\r\n =?utf-8?b?" . base64_encode(substr($name, $cut)) . '?= <syllogos@example.test>',
+    'subject' => b64h('Ενημέρωση για τη συνέλευση του συλλόγου'),
+    'parts' => [['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Σας ενημερώνουμε για τη γενική συνέλευση.\n"]],
+];
+
 $written = [];
 foreach ($cases as $i => $c) {
     $c['id'] = 'syn' . ($i + 1);

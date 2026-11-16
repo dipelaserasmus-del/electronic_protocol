@@ -97,7 +97,7 @@ class ProtocolController extends Controller implements HasMiddleware
         return [
             'auth',
             new Middleware('writer:home/list', except: ['index', 'indexList', 'getFileInputs', 'gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about', 'setDiekpDate']),
-            new Middleware('email', only: ['viewEmails', 'setEmailRead', 'storeFromEmail']),
+            new Middleware('email', only: ['viewEmails', 'setEmailRead', 'storeFromEmail', 'viewEmailAttachment', 'viewEmailHtml']),
             new Middleware('limitList', only: ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']),
         ];
     }
@@ -1885,24 +1885,17 @@ class ProtocolController extends Controller implements HasMiddleware
             $forbidenChangeDiekperaiosiSelect = null;
         }
 
-        // παίρνω τα ΠΡΩΤΑ ή ΤΕΛΕΥΤΑΙΑ μηνύματα  με βάση τις ρυθμίσεις
-        // emailFetchOrderDesc == 1 => ΤΕΛΕΥΤΑΙΑ
-        if ($emailFetchOrderDesc) {
-            config(['imap.options.fetch_order' => 'desc']);
-        }
-
-
-        // φορτώνω τον πελάτη (λογαριασμό)
-        $oClient = Client::account($defaultImapEmail);
+        // R5a: λίστα UID από τον server, κάθε email κατεβαίνει μία φορά (cache) αντί για όλα σε κάθε επίσκεψη
         try {
-            //σύνδεση στον IMAP Server
-            $oClient->connect();
+            $mailbox = $this->openInbox($defaultImapEmail);
+            $inboxPage = app(\App\Services\Mail\Inbox::class)->page($mailbox, Carbon::now()->subDays((int) $daysToCheckEmailBack)->startOfDay(),
+                (int) $imap_page, (int) $emailNumFetch, (bool) $emailFetchOrderDesc);
         } catch (\Throwable $e) {
             // σε λάθος ενημερώνω το log
             report($e);
             // ενημερώνω το χρήστη
             $notification = array(
-                'message' => "Η σύνδεση με τον λογαριασμό email απέτυχε.<br>Ελέγξτε τις ρυθμίσεις.",
+                'message' => "Η σύνδεση με τον λογαριασμό email απέτυχε.<br>Ελέγξτε τις ρυθμίσεις.<br>Κωδικός σφάλματος: " . \App\Exceptions\Handler::errorId(),
                 'alert-type' => 'error'
             );
             session()->flash('notification', $notification);
@@ -1914,66 +1907,21 @@ class ProtocolController extends Controller implements HasMiddleware
         // γεμίζω τη λίστα με τη διατήρηση αρχείων
         $years = Keepvalue::whereNotNull('keep')->select('keep')->distinct()->orderby('keep', 'asc')->get();
         $words = Keepvalue::whereNotNull('keep_alt')->select('keep_alt')->distinct()->orderby('keep_alt', 'asc')->get();
-        // σύνδεση στον φάκελο INBOX
-        \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
-        // επιλέγω τον φάκελο INBOX
-        $oFolder = \App\Support\Imap\MessageMover::ensureFolder($oClient, config('imapFolders.inbox'));
-        // σειρά ταξινόμησης μηνυμάτων στον imap server πριν τα κατεβάσω
-        // παίρνω τον αριθμό των μηνυμάτων από sinceDate και μετά
-        $aMessageNum = $oFolder->query()->since($sinceDate)->count();
-        // παίρνω τα μηνύματα από sinceDate και μετά
-        $aMessage = $oFolder->query()->since($sinceDate)->paginate($per_page = $emailNumFetch, $page = $imap_page, $page_name = 'imap_page');
-        $aMessageCount = $aMessage->count();
 
-        if ($emailFetchOrderDesc) {
-            $aSortedMessage = $aMessage->sortByDesc(function ($oMessage) {
-                return Carbon::parse($oMessage->getDate())->timezone('UTC');
-            });
-        } else {
-            $aSortedMessage = $aMessage->sortBy(function ($oMessage) {
-                return Carbon::parse($oMessage->getDate())->timezone('UTC');
-            });
+        $aMessage = $inboxPage->paginator;
+        $messages = $inboxPage->messages;
+        $aMessageNum = $inboxPage->total;
+        $aMessageCount = count($messages);
+
+        // τα email που βλέπει ο χρήστης: η καταχώριση και τα συνημμένα τα διαβάζουν από το cache με αυτά τα στοιχεία
+        session()->put('inbox', ['mailbox' => $mailbox->id(), 'uidValidity' => $inboxPage->uidValidity]);
+        // παλιά αντίγραφα στο public/tmp/u<id> (πριν το R5a, όλων των χρηστών) ήταν προσβάσιμα χωρίς σύνδεση: τα διαγράφω
+        foreach (Storage::disk('tmp')->directories() as $oldCopies) {
+            if (preg_match('/^u\d+$/', $oldCopies)) Storage::disk('tmp')->deleteDirectory($oldCopies);
         }
 
-        // διαγραφή τυχόν προηγούμενα αποθηκευμένων email.html
-        Storage::disk('tmp')->deleteDirectory('u' . Auth()->user()->id);
-
-        $emailFilePaths = array();
-        // για κάθε μήνυμα
-        foreach ($aMessage as $oMessage) {
-            $contentRaw = null;
-            try {
-                $contentRaw = $oMessage->getHeader()->raw . $oMessage->getRawBody();
-            } catch (\Throwable $e) {
-                continue;
-            }
-            if (!$contentRaw) continue;
-            //info($contentRaw);
-            $mailMessage = Message::from($contentRaw, false);
-            $Uid = $oMessage->getUid();
-            $dir = 'u' . Auth()->user()->id;
-            // αν έχει σώμα html το αποθηκεύω
-            if (strlen($mailMessage->getHtmlContent())) {
-                // περιεχόμενο HTML
-                $content = $mailMessage->getHtmlContent();
-                // αντικαθιστώ οτιδήποτε μετά το charset= με utf-8
-                $content = preg_replace('/charset=[\s\S]+?"/', 'charset=utf-8"', $content);
-                // φτιάχνω φάκελο και όνομα αρχείου /tmp/$Uid.html
-                $filenameToStore = "$Uid.html";
-                $savedPath = "$dir/$filenameToStore";
-                // αποθηκεύω το email στο /public/tmp
-                Storage::disk('tmp')->put($savedPath, $content);
-                // κρατάω σε πίνακα το path
-                $emailFilePaths[$Uid] = $savedPath;
-            }
-            // αποθηκεύω το email σαν eml για να μη το ξανακατεβάζω
-            $filenameToStore = "$Uid.eml";
-            $savedPath = "$dir/$filenameToStore";
-            // αποθηκεύω το email στο /public/tmp/u[id χρήστη]
-            Storage::disk('tmp')->put($savedPath, $contentRaw);
-        }
         session()->put('imap_page', $imap_page);
-        return view('viewEmails', compact('aMessage', 'aSortedMessage', 'aMessageNum', 'aMessageCount', 'defaultImapEmail', 'fakeloi', 'allowUserChangeKeepSelect', 'years', 'words', 'alwaysShowFakelosInViewEmails', 'forbidenChangeDiekperaiosiSelect', 'writers_admins', 'emailFilePaths', 'alwaysSendReceitForEmails', 'allowListValuesMatchingInput', 'imap_page', 'timeZone', 'emailFetchOrderDesc', 'protocolValidate'));
+        return view('viewEmails', compact('aMessage', 'messages', 'aMessageNum', 'aMessageCount', 'defaultImapEmail', 'fakeloi', 'allowUserChangeKeepSelect', 'years', 'words', 'alwaysShowFakelosInViewEmails', 'forbidenChangeDiekperaiosiSelect', 'writers_admins', 'alwaysSendReceitForEmails', 'allowListValuesMatchingInput', 'imap_page', 'timeZone', 'emailFetchOrderDesc', 'protocolValidate'));
     }
 
     // εμφάνιση του συνημμένου αρχείου
@@ -1981,18 +1929,22 @@ class ProtocolController extends Controller implements HasMiddleware
     {
         $mailMessage = $this->readSavedEmailFromFile($messageUid);
         // αν είναι null σταματάω
-        if (!$mailMessage) return;
+        if (!$mailMessage) abort(404);
         // παίρνω το συνημμένο
-        $oAttachment = $mailMessage->getAttachmentPart($attachmentKey);
+        $oAttachment = $mailMessage->getAttachmentPart((int) $attachmentKey);
+        if (!$oAttachment) abort(404);
         // παίρνω το περιεχόμενο
         $content = $oAttachment->getContent();
         // παίρνω το όνομα του αρχείου
-        $filename = $oAttachment->getFilename();
+        $filename = (string) $oAttachment->getFilename();
         // το στέλνω για εμφάνιση
-        ob_end_clean();
+        // R5a: όνομα αρχείου κωδικοποιημένο σωστά (Ελληνικά, εισαγωγικά)· ένα συνημμένο HTML δεν τρέχει μέσα στην εφαρμογή
+        $fallback = preg_replace('/[^\x20-\x7E]|["\\\\%\/]/', '_', $filename) ?: 'attachment';
         return response($content)
             ->header('Content-Type', $oAttachment->getContentType())
-            ->header('Content-Disposition', "filename=" . $filename);
+            ->header('Content-Disposition', \Symfony\Component\HttpFoundation\HeaderUtils::makeDisposition('inline', str_replace(['/', '\\'], '_', $filename) ?: 'attachment', $fallback))
+            ->header('Content-Security-Policy', 'sandbox')
+            ->header('X-Content-Type-Options', 'nosniff');
     }
 
     public function setEmailRead($messageUid)
@@ -2174,38 +2126,44 @@ class ProtocolController extends Controller implements HasMiddleware
 
         $protocol = $protocolCreated;
 
-        // δημιουργία στάμπας ΑΡ.Πρωτ.
-        $putStamp = Config::getConfigValueOf('putStamp');
-        // έλεγχος αν ο χρήστης δεν επιθυμεί στάμπα
-        if (isset($data['explicityNoStamp']))  $putStamp = false;
+        // R5a: όλα ή τίποτα. Αν αποτύχει η αποθήκευση ενός αρχείου, διαγράφω ό,τι γράφτηκε, τις εγγραφές συνημμένων
+        // και το πρωτόκολλο· το email μένει στα εισερχόμενα και ο χρήστης μπορεί να το καταχωρίσει ξανά.
+        $writtenFiles = [];
+        $numCreatedAttachments = 0;
+        $numMissedAttachments = 0;
         $stampDone = false;
-        if ($protocol && $putStamp) {
-            $stampDone = $this->createStamp($protocol);
-        }
-
-        if (Config::getConfigValueOf('saveEmailAs')) {
-            // αποθηκεύω το email σαν συνημμένο eml
-            $html = $this->readSavedEmailFromFile($uid);
-            $filename = 'email_' . Carbon::parse($mailMessage->getHeader(HeaderConsts::DATE)->getDateTime())->format('Ymd_His') . '.' . Config::getConfigValueOf('saveEmailAs');
-            $mimeType = 'message/rfc822';
-        } else {
-            // αποθηκεύω το email σαν συνημμένο html
-            $html = view('viewEmail', compact('mailMessage'))->render();
-            $filename = 'email_' . Carbon::parse($mailMessage->getHeader(HeaderConsts::DATE)->getDateTime())->format('Ymd_His') . '.html';
-            $mimeType = 'text/html';
-        }
-        $filenameToStore = $protocol->protocolnum . '-' . $protocol->protocoldate . '_' . $filename;
-        $dir = $fakelos ? 'arxeio/' . $fakelos  : 'arxeio/emails';
-        $savedPath = "$dir/$filenameToStore";
-        Storage::put($savedPath, $html);
-        $expires = null;
-        if ($keep and is_numeric($keep)) {
-            $dt = Carbon::createFromFormat('Ymd', $protocol->protocoldate);
-            $dt->addYears((int) $keep);
-            $expires = $dt->format('Ymd');
-        }
-
         try {
+            // δημιουργία στάμπας ΑΡ.Πρωτ.
+            $putStamp = Config::getConfigValueOf('putStamp');
+            // έλεγχος αν ο χρήστης δεν επιθυμεί στάμπα
+            if (isset($data['explicityNoStamp']))  $putStamp = false;
+            if ($protocol && $putStamp) {
+                $stampDone = $this->createStamp($protocol);
+            }
+
+            $emailDate = Carbon::parse($mailMessage->getHeader(HeaderConsts::DATE)->getDateTime())->format('Ymd_His');
+            if (Config::getConfigValueOf('saveEmailAs')) {
+                // αποθηκεύω το email σαν συνημμένο eml, όπως ακριβώς παραλήφθηκε
+                $html = $this->rawEmail($uid);
+                $filename = 'email_' . $emailDate . '.' . Config::getConfigValueOf('saveEmailAs');
+                $mimeType = 'message/rfc822';
+            } else {
+                // αποθηκεύω το email σαν συνημμένο html
+                $html = view('viewEmail', compact('mailMessage'))->render();
+                $filename = 'email_' . $emailDate . '.html';
+                $mimeType = 'text/html';
+            }
+            $filenameToStore = $protocol->protocolnum . '-' . $protocol->protocoldate . '_' . $filename;
+            $dir = $fakelos ? 'arxeio/' . $fakelos  : 'arxeio/emails';
+            $savedPath = "$dir/$filenameToStore";
+            $this->putEmailFile($savedPath, (string) $html, $writtenFiles);
+            $expires = null;
+            if ($keep and is_numeric($keep)) {
+                $dt = Carbon::createFromFormat('Ymd', $protocol->protocoldate);
+                $dt->addYears((int) $keep);
+                $expires = $dt->format('Ymd');
+            }
+
             Attachment::updateOrCreate(
                 [
                     'protocol_id' => $protocol->id,
@@ -2221,10 +2179,8 @@ class ProtocolController extends Controller implements HasMiddleware
             );
 
             // αποθηκεύω τα συνημμένα
-            $numCreatedAttachments = 0;
-            $numMissedAttachments = 0;
             foreach ($attachmentKeys as $attachmentKey) {
-                $oAttachment = $mailMessage->getAttachmentPart($attachmentKey);
+                $oAttachment = $mailMessage->getAttachmentPart((int) $attachmentKey);
                 if (!$oAttachment) {
                     $numMissedAttachments++;
                     continue;
@@ -2232,7 +2188,6 @@ class ProtocolController extends Controller implements HasMiddleware
                 $content = $oAttachment->getContent();
                 $mimeType = $oAttachment->getContentType();
                 $filename = $oAttachment->getFilename();
-
 
                 // αφαίρεση απαγορευμένων χαρακτήρων από το όνομα του συνημμένου
                 $filename = $this->filter_filename($filename, false);
@@ -2242,12 +2197,16 @@ class ProtocolController extends Controller implements HasMiddleware
                 // αποθηκεύω το αρχείο και παίρνω το path αποθήκευσης
                 if ($stampDone && $putStamp) {
                     $savedPath = $this->putStamp($dir, $filenameToStore, null, $content);
+                    $writtenFiles[] = $savedPath;
+                    if (!Storage::exists($savedPath)) {
+                        throw new \RuntimeException("attachment not written: $savedPath");
+                    }
                 } else {
                     $savedPath = "$dir/$filenameToStore";
-                    Storage::put($savedPath, $content);
+                    $this->putEmailFile($savedPath, (string) $content, $writtenFiles);
                 }
 
-                $createdAttachment = Attachment::updateOrCreate(
+                Attachment::updateOrCreate(
                     [
                         'protocol_id' => $protocol->id,
                         'name' => $filename,
@@ -2260,11 +2219,7 @@ class ProtocolController extends Controller implements HasMiddleware
                         'expires' => $expires,
                     ]
                 );
-
-
-                if ($createdAttachment) {
-                    $numCreatedAttachments++;
-                }
+                $numCreatedAttachments++;
             }
             // διαγράφω τη στάμπα
             if (file_exists('arPr.png')) unlink('arPr.png');
@@ -2272,12 +2227,13 @@ class ProtocolController extends Controller implements HasMiddleware
             // διαγράφω τη στάμπα
             if (file_exists('arPr.png')) unlink('arPr.png');
             report($e);
+            $this->undoEmailRegistration($protocol, $writtenFiles);
             $notification = array(
-                'message' => 'Υπήρξε κάποιο πρόβλημα στην καταχώριση των συνημμένων αρχείων<br>Ελέγξτε αν καταχωρίστηκαν όλα σωστά.<br>' . $e->getMessage(),
+                'message' => 'Δεν ήταν δυνατή η αποθήκευση των συνημμένων αρχείων.<br>Το email <strong>δεν καταχωρίστηκε</strong> και παραμένει στα εισερχόμενα.<br>Κωδικός σφάλματος: ' . \App\Exceptions\Handler::errorId(),
                 'alert-type' => 'error'
             );
             session()->flash('notification', $notification);
-            return redirect("home/" . $protocol->id);
+            return back();
         }
 
         if ($numCreatedAttachments) {
@@ -2559,15 +2515,68 @@ class ProtocolController extends Controller implements HasMiddleware
         return $limitProtocolAccessList;
     }
 
+    /** R5a: write a file of an e-mail registration; a failed write stops the registration (Storage::put only returns false). */
+    private function putEmailFile(string $path, string $content, array &$writtenFiles): void
+    {
+        if (!Storage::put($path, $content)) {
+            throw new \RuntimeException("file not written: $path");
+        }
+        $writtenFiles[] = $path;
+    }
+
+    /** R5a: remove a half-registered e-mail: its files, its attachment rows and the protocol itself. */
+    private function undoEmailRegistration(Protocol $protocol, array $writtenFiles): void
+    {
+        try {
+            foreach ($writtenFiles as $path) {
+                Storage::delete($path);
+            }
+            Attachment::where('protocol_id', $protocol->id)->delete();
+            $protocol->delete();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /** R5a: the INBOX folder of the account (in-memory in tests, see MailboxConnector). */
+    private function openInbox(string $account): \App\Services\Mail\Mailbox
+    {
+        return app(\App\Services\Mail\MailboxConnector::class)->open($account, config('imapFolders.inbox'));
+    }
+
+    /**
+     * R5a: the raw e-mail, as received, of a message shown on this user's inbox page (from the cache; null when it is
+     * not there, e.g. the inbox page was not opened in this session or the message has left the inbox meanwhile).
+     */
+    private function rawEmail($messageUid): ?string
+    {
+        $inbox = session('inbox');
+        if (!is_array($inbox) || !ctype_digit((string) $messageUid)) return null;
+        return app(\App\Services\Mail\Inbox::class)->raw($inbox['mailbox'], $inbox['uidValidity'], (int) $messageUid);
+    }
+
     public function readSavedEmailFromFile($messageUid)
     {
-        $dir = 'tmp/u' . Auth()->user()->id . '/';
-        // αν δεν υπάρχει το αρχείο email σταματάω
-        if (!file_exists($dir . $messageUid . '.eml')) return null;
-        // διαβάζω τα περιεχόμενα του email
-        $mailParser = new MailMimeParser();
-        $mailMessage = $mailParser->parse(fopen($dir . $messageUid . '.eml', 'r'), true);         // returns `Message`
-        return $mailMessage;
+        $raw = $this->rawEmail($messageUid);
+        return $raw === null ? null : \App\Support\Mail\MailParser::parse($raw);
+    }
+
+    /**
+     * R5a: the HTML part of an inbox e-mail, for the preview frame. Before, it was written to public/tmp, where anyone
+     * could open it without logging in, and it ran on the application's own origin. Now: logged-in inbox users only,
+     * and the browser shows it in a sandbox (no scripts, no forms, no access to the application).
+     */
+    public function viewEmailHtml($messageUid)
+    {
+        $mailMessage = $this->readSavedEmailFromFile($messageUid);
+        if (!$mailMessage || !strlen((string) $mailMessage->getHtmlContent())) abort(404);
+        // το περιεχόμενο είναι πλέον UTF-8: αντικαθιστώ το charset του email
+        $content = preg_replace('/charset=[\s\S]+?"/', 'charset=utf-8"', $mailMessage->getHtmlContent());
+        return response($content)
+            ->header('Content-Type', 'text/html; charset=utf-8')
+            // no allow-scripts: same origin only lets the inbox page size the frame; links open in a new tab
+            ->header('Content-Security-Policy', "sandbox allow-same-origin allow-popups allow-popups-to-escape-sandbox; script-src 'none'; object-src 'none'")
+            ->header('X-Content-Type-Options', 'nosniff');
     }
 
     private function saveCycleSxetiko($newProtocolNum, $etos, $sxetiko)
@@ -2712,7 +2721,7 @@ class ProtocolController extends Controller implements HasMiddleware
                     $savedPath = $file->storeas($dir, $filenameToStore);
                 }
                 if ($content) {
-                    $savedPath = $dir . $filenameToStore;
+                    $savedPath = "$dir/$filenameToStore";
                     Storage::put($savedPath, $content);
                 }
             }

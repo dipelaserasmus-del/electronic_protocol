@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/viewEmails', [ProtocolController::class, 'viewEmails']);
     Route::get('/getEmailNum', [ProtocolController::class, 'getEmailNum']);
     Route::get('/viewEmailAttachment/{messageUid}/{attachmentKey}', [ProtocolController::class, 'viewEmailAttachment']);
+    Route::get('/viewEmailHtml/{messageUid}', [ProtocolController::class, 'viewEmailHtml']);
     Route::get('/setEmailRead/{messageUid}', [ProtocolController::class, 'setEmailRead']);
     Route::post('/storeFromEmail', [ProtocolController::class, 'storeFromEmail']);
 
