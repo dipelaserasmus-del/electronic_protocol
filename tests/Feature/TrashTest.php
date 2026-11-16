@@ -208,4 +208,34 @@ class TrashTest extends FeatureTestCase
         Storage::assertMissing('trash/Φ.1/ληγμένο.pdf');
         Storage::assertExists('trash/άσχετο.txt');
     }
+
+    /** Review of R4b: purging an old-shape row never deletes a live attachment's file at the same arxeio/ path. */
+    public function test_purging_an_old_row_never_deletes_a_live_file(): void
+    {
+        $p = Protocol::factory()->number(1)->create();
+        $live = $this->file($p, 'κοινό.pdf', 'ΖΩΝΤΑΝΟ');                    // live, at arxeio/Φ.1/κοινό.pdf
+        $old = Attachment::create(['protocol_id' => $p->id, 'name' => 'κοινό.pdf', 'savedPath' => 'arxeio/Φ.1/κοινό.pdf']);
+        DB::table('attachments')->where('id', $old->id)->update(['deleted_at' => now()]);   // trashed before R4b, its trash file gone
+
+        $this->trash()->purge(Attachment::withTrashed()->find($old->id));
+
+        $this->assertSame('ΖΩΝΤΑΝΟ', Storage::get($live->savedPath));
+        $this->assertNull(Attachment::withTrashed()->find($old->id));
+    }
+
+    /** Review of R4b: a name at the length limit still gets a free name that fits. */
+    public function test_same_long_name_twice_still_fits(): void
+    {
+        $p = Protocol::factory()->number(1)->create();
+        $name = '1-20261116_' . str_repeat('α', 120) . '.pdf';   // 255 bytes, as FileNames::fit can make it
+        $this->assertSame(255, strlen($name));
+        foreach (['ΠΡΩΤΟ', 'ΔΕΥΤΕΡΟ'] as $content) {
+            $this->trash()->trash($this->file($p, $name, $content));
+        }
+        $paths = Attachment::onlyTrashed()->orderBy('id')->pluck('savedPath')->all();
+        $this->assertSame("trash/Φ.1/$name", $paths[0]);
+        $this->assertStringEndsWith(' (2).pdf', $paths[1]);
+        $this->assertLessThanOrEqual(255, strlen(basename($paths[1])));
+        $this->assertSame('ΔΕΥΤΕΡΟ', Storage::get($paths[1]));
+    }
 }

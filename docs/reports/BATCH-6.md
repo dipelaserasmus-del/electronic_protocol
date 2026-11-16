@@ -4,7 +4,7 @@ All 6 planned tasks are done. Each one is merged to `master` only after all CI j
 review finding has been checked, fixed with a test and answered. This batch rebuilds the screens used most: the
 protocol form, its attachments and the protocol list. It also adds safe file handling and a trash for attachments.
 All of it reaches the server with the final deployment.
-PHPUnit: **263 → 331 tests**; browser tests: **27 → 41**.
+PHPUnit: **263 → 339 tests**; browser tests: **27 → 42**.
 
 | Task | Result | PR | Report |
 |---|---|---|---|
@@ -23,8 +23,16 @@ PHPUnit: **263 → 331 tests**; browser tests: **27 → 41**.
 - **On the Docker stack every upload over 1 MB failed** (nginx limit); this is the production target — R1b.
 - **An uploaded `.html`/`.svg` opened as a page of the application** — R4a.
 - The trash overwrote files with the same name, and *Οριστική διαγραφή* emptied the whole trash folder — R4b.
-- Review findings (Codex) fixed with tests: an old assignment to a deleted user blocked saving; `12.5` was cut to 12;
-  a failure after saving asked the user to register again (a second protocol).
+- Review findings (Codex), 13 in all, fixed with tests, among them:
+  - a reader could register a protocol by calling the form's save directly;
+  - the form could be pointed at a protocol the user may not see;
+  - a protocol could be saved without a file still uploading;
+  - the menu's per-user list showed everybody's protocols;
+  - a renamed Windows program passed the upload check;
+  - emptying the trash could delete a live file with the same name;
+  - a failure after saving asked the user to register again (a second protocol).
+
+  Details in each task's report.
 
 ## Decisions taken (tell me if you want otherwise)
 - *Δυνατότητα Επεξεργασίας = ΚΑΝΕΙΣ* now also blocks writers when no time limit is set (the old form allowed it, the

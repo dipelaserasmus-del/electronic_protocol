@@ -51,7 +51,7 @@ The owner asked for:
 - Migration: two new columns on `attachments`, safe to run twice; existing rows are left as they are.
 
 ## How verified
-- `TrashTest` (10 tests):
+- `TrashTest` (12 tests):
   - to the trash: new path, old path, who;
   - a name already in the trash is kept (before: deleted);
   - restore, also of a row in the old shape;
@@ -70,7 +70,15 @@ The owner asked for:
   puts it back and it downloads intact. A writer gets 403 on `/trash`.
 
   ![trash page](img/R4b/r4b-trash-page.png)
-- Full suites: PHPUnit 331, browser 41/41.
+- Full suites (whole batch, after the review fixes): PHPUnit 339, browser 42/42.
+
+## Review findings (Codex), fixed with tests
+- Purging an attachment trashed before R4b could delete a **live** attachment's file with the same name (the old
+  rows still point to `arxeio/`). The trash now only ever deletes files that are in `trash/` and that no live
+  attachment uses (`test_purging_an_old_row_never_deletes_a_live_file`).
+- Two files with the longest possible name in the trash: ` (2)` made the second name too long to store. Names are
+  shortened to fit (`test_same_long_name_twice_still_fits`); a failed move no longer records a path that doesn't
+  exist.
 
 ## Owner actions
 1. Optional, after `git pull`: **Real data: load** (runs `migrate`). Then *Διαχείριση → Κάδος* shows the

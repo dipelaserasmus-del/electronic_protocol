@@ -90,6 +90,15 @@ Found on the way:
   ![saved, with attachment](img/R1b/r1b-attachment-saved.png)
 - Full suites: PHPUnit 300, browser 33/33.
 
+## Review findings (Codex), fixed with tests
+- A reader could call the form's *save* directly and register a protocol: the service now refuses users who may not
+  register (`test_reader_can_not_register_through_the_form`).
+- The form's protocol id could be changed by the browser, showing a protocol the user may not see: the id is locked
+  and the access is checked on every request (`test_the_form_can_not_be_pointed_at_another_protocol`; found by me
+  and by the review).
+- Sending (again) the receipt by e-mail for a saved protocol was lost with the old form: back as *Απόδειξη
+  παραλαβής με email* (`test_receipt_is_sent_for_an_existing_protocol`).
+
 ## Owner actions
 1. Optional, after `git pull` and *Demo: start*: open *Νέο* and try the number field (as administrator with *Έλεγχοι
    καταχώρισης = ΟΧΙ*), TAB to the date, and a subject you have used before.

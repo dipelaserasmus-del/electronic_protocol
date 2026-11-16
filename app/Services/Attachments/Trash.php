@@ -37,9 +37,10 @@ final class Trash
         $path = (string) $a->savedPath;
         if ($path !== '' && Storage::exists($path)) {
             $target = $this->free(preg_replace('~^arxeio/~', 'trash/', $path) === $path ? 'trash/' . $path : preg_replace('~^arxeio/~', 'trash/', $path));
-            Storage::move($path, $target);
-            $a->trashed_from = $path;
-            $a->savedPath = $target;
+            if (Storage::move($path, $target)) {   // a failed move leaves the file where it was, and the row says so
+                $a->trashed_from = $path;
+                $a->savedPath = $target;
+            }
         }
         $a->protocol_label = $label ?? $a->protocol_label ?? $this->label($a->protocol);
         $a->deleted_by = $by?->id ?? auth()->id();
@@ -53,11 +54,13 @@ final class Trash
         if (! $a->trashed() || ! Protocol::whereKey($a->protocol_id)->exists()) {
             return false;
         }
-        $current = $a->storedFilePath();
+        $current = $this->fileInTrash($a);
         $original = $a->trashed_from ?: (string) $a->savedPath;   // before R4b the row kept its old path
         if ($current !== null && $original !== '' && $current !== $original) {
             $original = $this->free($original);
-            Storage::move($current, $original);
+            if (! Storage::move($current, $original)) {
+                return false;
+            }
             $a->savedPath = $original;
         }
         $a->trashed_from = null;
@@ -70,10 +73,25 @@ final class Trash
     /** Delete for good: the file and the row. */
     public function purge(Attachment $a): void
     {
-        if ($path = $a->storedFilePath()) {
+        $path = $a->trashed() ? $this->fileInTrash($a) : $a->storedFilePath();
+        // never a file another (live) attachment points to (review of R4b: rows trashed before R4b can share a name)
+        if ($path !== null && ! Attachment::where('savedPath', $path)->where('id', '!=', $a->id)->exists()) {
             Storage::delete($path);
         }
         $a->forceDelete();
+    }
+
+    /**
+     * The file of a trashed attachment, only if it is in trash/. Rows trashed before R4b still say arxeio/…: their
+     * file is looked for in trash/ only, never at the arxeio/ path, which may belong to a live attachment by now.
+     */
+    public function fileInTrash(Attachment $a): ?string
+    {
+        $path = (string) $a->savedPath;
+        if (! str_starts_with($path, 'trash/')) {
+            $path = preg_replace('~^arxeio/~', 'trash/', $path) ?? '';
+        }
+        return $path !== '' && str_starts_with($path, 'trash/') && Storage::exists($path) ? $path : null;
     }
 
     /** The daily clean-up: attachments in the trash for longer than the retention. Returns how many. */
@@ -136,7 +154,14 @@ final class Trash
         $info = pathinfo($path);
         $ext = isset($info['extension']) ? '.' . $info['extension'] : '';
         for ($i = 2; ; $i++) {
-            $candidate = $info['dirname'] . '/' . $info['filename'] . " ($i)" . $ext;
+            // the suffix must fit too: 255 bytes per name and FileNames::MAX_PATH_CHARS per path (review of R4b)
+            $suffix = " ($i)" . $ext;
+            $base = $info['filename'];
+            while ($base !== '' && (strlen($base . $suffix) > \App\Support\FileNames::MAX_BYTES
+                || mb_strlen($info['dirname'] . '/' . $base . $suffix) > \App\Support\FileNames::MAX_PATH_CHARS)) {
+                $base = mb_substr($base, 0, -1);
+            }
+            $candidate = $info['dirname'] . '/' . $base . $suffix;
             if (! Storage::exists($candidate)) {
                 return $candidate;
             }

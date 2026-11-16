@@ -44,7 +44,7 @@ class ProtocolFormController extends Controller
     {
         abort_unless(Auth::user()->role?->role === 'Διαχειριστής', 403);
         $a = \App\Models\Attachment::onlyTrashed()->findOrFail($attachment);
-        $path = $a->storedFilePath();
+        $path = app(\App\Services\Attachments\Trash::class)->fileInTrash($a);   // only what is in trash/
         abort_if($path === null, 404);
         return \App\Support\SafeFile::download(\Illuminate\Support\Facades\Storage::path($path), $a->name ?: basename($path), $a->mimeType);
     }

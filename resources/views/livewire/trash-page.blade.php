@@ -35,7 +35,7 @@
                     <tr wire:key="t-{{ $a->id }}" class="trash-row">
                         <td>
                             <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
-                            @if ($a->storedFilePath())
+                            @if ($trash->fileInTrash($a))
                                 <a href="{{ url('/trash/'.$a->id.'/download') }}" target="_blank" class="text-break">{{ $a->name ?: $a->ada }}</a>
                             @else
                                 <span class="text-break">{{ $a->name ?: $a->ada }}</span> <small class="text-danger">(το αρχείο λείπει)</small>
