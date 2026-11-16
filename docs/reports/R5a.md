@@ -91,7 +91,7 @@
 - Full suites: PHPUnit 216, browser 24/24.
 
 ## Owner actions
-1. **Recommended now (security):** apply the one Apache line in
-   [`docs/BLOCK-PUBLIC-EMAIL-COPIES.md`](../BLOCK-PUBLIC-EMAIL-COPIES.md) on the production server, and run its check.
-   Until then, anyone who can reach the server can download inbox e-mails by guessing their address.
-2. Final deployment: remove that line before `git pull`; the first inbox visit deletes the old copies.
+1. Owner decision (2026-11-16): no changes on the production server before the migration, so the Apache line in
+   [`docs/BLOCK-PUBLIC-EMAIL-COPIES.md`](../BLOCK-PUBLIC-EMAIL-COPIES.md) is not applied; until the migration, anyone
+   who can reach the server can download inbox e-mails by guessing their address.
+2. Final deployment: nothing extra; the first inbox visit deletes the old copies.

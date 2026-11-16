@@ -1,4 +1,4 @@
-# Batch 3 — summary (2026-11-16)
+# Batch 3 — summary (2026-11-16 13:01)
 
 All 4 planned tasks done (plus B10, which you added), each merged to `master` only after all CI jobs were green and
 the automated review had no open findings. Nothing changes yet for the people who use the app every day: this batch

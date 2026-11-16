@@ -1,4 +1,4 @@
-# Batch 4 — summary (2026-11-16)
+# Batch 4 — summary (2026-11-16 14:26)
 
 All 4 planned tasks done, each merged to `master` only after all CI jobs were green and every automated review
 finding had been checked, fixed with a test and answered. This batch fixes what your e-mails showed. It reaches the
@@ -24,8 +24,9 @@ server with the final deployment. PHPUnit: **186 → 232 tests**; browser tests:
 
 ## Found on the way
 - 🔒 **E-mails downloadable without login on the current server** (`public/tmp/u<n>/<n>.eml`). Fixed in R5a for the
-  new code; for the server you run today: [docs/BLOCK-PUBLIC-EMAIL-COPIES.md](../BLOCK-PUBLIC-EMAIL-COPIES.md) (one
-  Apache line, tested).
+  new code; a one-line Apache rule for the server you run today exists ([docs/BLOCK-PUBLIC-EMAIL-COPIES.md](../BLOCK-PUBLIC-EMAIL-COPIES.md),
+  tested), but you decided not to change the production server before the migration (2026-11-16); the new version
+  closes the gap itself.
 - The new browser tests found two bugs the other tests could not: the inbox's save button for the last e-mail of a page
   (D01), and the header/body join when downloading from the real mail server (R5a).
 - Review findings (Codex) fixed with tests: confirm dialog vs form handlers (N04, #33), cache expiry vs concurrent

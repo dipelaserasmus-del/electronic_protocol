@@ -1,4 +1,4 @@
-# Batch 1 — summary (2026-11-12)
+# Batch 1 — summary (2026-11-12 19:40)
 
 All 8 tasks done, each merged to `master` only after CI was green (PHPUnit on MySQL 8.4 with
 PHP 8.4 and 8.5, dependency audit, Docker build). Test suite: **0 → 87 tests / 243 assertions**.
