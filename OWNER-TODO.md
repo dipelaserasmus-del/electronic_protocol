@@ -28,9 +28,9 @@ head -2 /etc/os-release
 version your server runs, so that the update won't break the live app.
 
 ## Before Batch 4 (D05 emoji support, R5a e-mail cache)
-1. **Set up your computers** (Mac: demo app works ✅; still to do: real data on the Mac, then Fedora): follow [docs/LOCAL-SETUP.md](docs/LOCAL-SETUP.md)
-   ([Fedora RPM](docs/VSCODE-FEDORA.md) · [Mac](docs/VSCODE-MACOS.md)). Reply **"L01/L02 works"** or paste the output
-   of the task "Check: set-up status".
+1. **Set up your computers** (Fedora with real data ✅ L01, 2026-11-16; Mac: demo app works ✅, still to do: real data
+   on the Mac): follow [docs/LOCAL-SETUP.md](docs/LOCAL-SETUP.md) ([Mac](docs/VSCODE-MACOS.md)). Reply **"L02 works"**
+   or paste the output of the task "Check: set-up status".
    *Needed because D05 changes how texts are stored, and you must check it on your real data locally before it is merged.*
 2. **E-mails for testing R5a.** Prepare a few `.eml` files (in Thunderbird: select the message → *Save As*):
    - Greek subjects/text that show as `??` today

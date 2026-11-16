@@ -25,3 +25,6 @@ yarn-error.log
 /.env
 /.env-old
 /.env.backup
+
+# Claude Code personal settings (per computer)
+/.claude/settings.local.json

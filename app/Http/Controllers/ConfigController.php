@@ -7,6 +7,8 @@ use Storage;
 use App\Config;
 use Carbon\Carbon;
 use App\Attachment;
+use App\Services\DatabaseBackup;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class ConfigController extends Controller
@@ -86,38 +88,28 @@ class ConfigController extends Controller
 
     public function backups()
     {
-        $f = File::files(storage_path('app/arxeio/backups/'));
         $files = [];
-        foreach ($f as $path) {
-            $files[] = pathinfo($path);
+        foreach (Storage::disk('local')->files(DatabaseBackup::DIR) as $path) {
+            if (DatabaseBackup::isValidName(basename($path))) {
+                $files[] = pathinfo($path);
+            }
         }
+        rsort($files);   // newest first (names end in the date)
         return view('backup', compact('files'));
     }
 
     public function backup()
     {
-        $database = config('database.connections.mysql.database');
-        $username = config('database.connections.mysql.username');
-        $password = config('database.connections.mysql.password');
-        $mysqldumpPath = Config::getConfigValueOf('mysqldumpPath');
-
-        if ('\\' === DIRECTORY_SEPARATOR) {
-            $filename = storage_path('app\arxeio\backups') . "\\{$database}_back_" . date("YmdHms") . '.sql';
-            $command = "$mysqldumpPath --user=$username --password=$password --host=localhost $database > $filename";
-        } else {
-            $filename = storage_path('app/arxeio/backups') . "/$database\_back_" . date("YmdHms") . '.sql.gz';
-            $command = "$mysqldumpPath --user=$username --password=$password --host=localhost $database | gzip > $filename";
-        }
-        exec($command, $out, $ret);
-
-        if ($ret == 0) {
+        try {
+            $name = (new DatabaseBackup(Config::getConfigValueOf('mysqldumpPath')))->create();
             $notification = array(
-                'message' => "Επιτυχημένη δημιουργία αρχείου backup.",
+                'message' => "Επιτυχημένη δημιουργία αρχείου backup: $name",
                 'alert-type' => 'success'
             );
-        } else {
+        } catch (\RuntimeException $e) {
+            Log::error('Backup failed: ' . $e->getMessage());
             $notification = array(
-                'message' => "Πρόβλημα στη δημιουργία αρχείου backup.",
+                'message' => 'Πρόβλημα στη δημιουργία αρχείου backup. ' . $e->getMessage(),
                 'alert-type' => 'error'
             );
         }
@@ -129,15 +121,18 @@ class ConfigController extends Controller
 
     public function downloadBackup($name)
     {
-        $content = Storage::get('arxeio/backups//' . $name);
-        return response($content)
-            ->header('Content-Type', 'application\/x-gzip')
-            ->header('Content-Disposition', "filename=" . $name);
+        $path = DatabaseBackup::DIR . '/' . $name;
+        abort_unless(DatabaseBackup::isValidName($name) && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->download($path, $name, [
+            'Content-Type' => str_ends_with($name, '.gz') ? 'application/gzip' : 'application/sql',
+        ]);
     }
 
     public function deleteBackup($name)
     {
-        Storage::delete('arxeio/backups//' . $name);
+        abort_unless(DatabaseBackup::isValidName($name), 404);
+        Storage::disk('local')->delete(DatabaseBackup::DIR . '/' . $name);
         return back();
     }
 

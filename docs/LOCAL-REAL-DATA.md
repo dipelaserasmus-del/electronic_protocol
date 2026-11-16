@@ -20,15 +20,20 @@ committed, never uploaded, and is never read by Claude.
 - `git` ignores `local-data/` and `.env.real`, and CI fails if such files are ever committed.
 
 ## 1. Get the data from the production server
-1. **Database:** in the app, *Ρυθμίσεις → Backup* creates a `.sql.gz` file in
-   `storage/app/arxeio/backups/` on the server. Or run `mysqldump` yourself. Either `.sql` or `.sql.gz` works.
+1. **Database:** export it with **phpMyAdmin** on the server: select the database → *Export* → method *Quick*,
+   format *SQL* → *Export*. Plain `.sql`, gzip (`.sql.gz`) and zip (`.zip`) all work. A `mysqldump` file also works.
+   *Do not use the app's Ρυθμίσεις → Backup for now: the version on the server creates empty files (fixed in task B10,
+   reaches the server when you deploy it).*
+   Older installations have no `migrations` table; `real load` handles that by itself (F07).
 2. **Attachments:** copy the server's whole `storage/app` folder (it contains `arxeio/…` with the files).
+   Take the database and the files **at the same time**: `real load` then reports the same number of attachments and
+   files found, and a difference points to a real problem.
 
 ## 2. Put them in `local-data/`
 ```
 local-data/
 ├── db/                 ← the backup file(s); the newest is used
-│   └── backup.sql.gz
+│   └── protocol.sql (or .sql.gz / .zip)
 ├── storage/app/        ← the server's storage/app folder (arxeio/, trash/, …)
 └── emails/             ← optional: .eml files to show in the local test mailbox
 ```

@@ -72,6 +72,7 @@ Written as small reusable services so the rebuilt modules reuse them instead of 
 | B04 | Descriptive error pages instead of bare 500: friendly message + error ID; details for admins | BE | P1 | S | — |
 | B09 | 🔎 (from F02, confirmed by test) **All outgoing email crashes (HTTP 500)**: receipts, "send receipt" button, assignment notifications use the SwiftMailer API (`setBody`, `Mail::failures`) removed in Laravel 9. Protocol is saved, user sees an error. Port to Laravel Mail/Mailables | BUG | **P0** | S | F02 |
 | B07 | Diagnose random timeouts/500s: request IDs, structured logs, slow-query log; fix top causes that aren't solved by later modules 📧 | BUG | P1 | M | F03, B04 |
+| B10 | 🔎 (owner, 2026-11-16) **Ρυθμίσεις → Backup creates empty files and says "success"**: `mysqldump | gzip` checked only gzip's exit code; no `--no-tablespaces` (PROCESS privilege), host fixed to localhost, password unquoted in a shell command, `mysqldumpPath` run by the shell, wrong date (`m` for minutes). Also download/delete accept any name (part of R6c). Until deployed: export with phpMyAdmin | BUG/SEC | P1 | S | — |
 
 ## Phase 2 — Platform
 
