@@ -27,7 +27,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Item | Status |
 |---|---|
 | `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
-| Real emails for tests | Owner will provide some public-safe `.eml` files; **needed before Batch 4 (R5a)**, also R5b/R5c/R5d. Ask public (commit) vs private (`local-data/emails/`, owner runs checks). |
+| Real emails for tests | **Received 2026-11-16: 6 private e-mails in `local-data/emails/`** (owner: Claude may read them locally, never publish; see CLAUDE.md). Structural notes in `local-data/emails/NOTES-claude.md` (git-ignored). Covers: ISO-8859-7 Outlook mail with a 255-char subject, emoji (fails today, D05), winmail.dat-only read receipt (R5b), 21 MB mail with 4 attachments, long RFC 2231 file names. Asked the owner what exactly went wrong with the long subject (current code stores it). |
 | `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 postponed by the owner (2026-11-16):** Mac demo app works; real data on the Mac still to do. Guides: `docs/VSCODE-MACOS.md`, `docs/LOCAL-SETUP.md`. Owner replies "L02 works" → mark done in tasks.toml. |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
 | Production server facts | **Answered 2026-11-16:** Windows 11, XAMPP 3.3.0 (Apache), PHP 8.1.25 ZTS x64, php-imap on, MariaDB 10.4.32. Will be replaced by the Docker stack on the same Windows 11 PC (Docker Desktop + WSL 2). |
@@ -36,6 +36,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 | Open registration in production (S00) | Not deployed by owner decision. Web-server rules (Apache/nginx) given in `docs/BLOCK-REGISTRATION.md`; owner chose **not to apply them yet** (2026-11-16). Remind at the final deployment (remove the rule before `git pull`). |
 
 ## Decisions log (short)
+- Private e-mails: Claude may read `local-data/emails/` locally, never publish anything from them (2026-11-16).
 - Module-by-module rebuild, Livewire + Bootstrap 5, MySQL only (BACKLOG "Decisions").
 - Dev image: Ubuntu 26.04 + distro PHP 8.5 (sandbox can't reach Debian/Alpine mirrors; CI builds it too).
 - Dev stack isolated: Compose project `electronic-protocol-dev`, containers `ep-dev-*`, volume `devdbdata`.
