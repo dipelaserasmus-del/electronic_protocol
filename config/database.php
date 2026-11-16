@@ -53,8 +53,11 @@ return [
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', 'p@ssw@rd'),
             'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => 'utf8',
-            'collation' => 'utf8_general_ci',
+            // D05: utf8mb4 stores emoji and other 4-byte characters (utf8 = utf8mb3 refuses them). general_ci
+            // compares exactly like the old utf8_general_ci (Greek accents and final sigma folded), so searches
+            // and unique keys behave as before.
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_general_ci',
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
