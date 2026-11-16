@@ -33,7 +33,7 @@ class FileNamesTest extends TestCase
         $fitted = FileNames::fit(self::PREFIX, $name);
 
         $this->assertLessThanOrEqual(FileNames::MAX_BYTES, strlen($fitted));
-        $this->assertLessThanOrEqual(FileNames::MAX_CHARS, mb_strlen($fitted));
+        $this->assertLessThanOrEqual(FileNames::MAX_PATH_CHARS, mb_strlen($fitted));
         $this->assertTrue(mb_check_encoding($fitted, 'UTF-8'), 'no character cut in half');
         $this->assertStringStartsWith(self::PREFIX, $fitted);
         $extension = pathinfo($name, PATHINFO_EXTENSION);
@@ -41,6 +41,27 @@ class FileNamesTest extends TestCase
             $this->assertStringEndsWith('.'.$extension, $fitted);
         }
         $this->assertGreaterThan(strlen(self::PREFIX) + 20, strlen($fitted), 'as much of the name as fits is kept');
+    }
+
+    /** Review finding: shortening the shown name must keep its extension. */
+    public function test_clean_keeps_the_extension_of_a_long_name(): void
+    {
+        $clean = FileNames::clean(str_repeat('a', 201).'.pdf');
+        $this->assertSame(FileNames::MAX_CHARS, mb_strlen($clean));
+        $this->assertStringEndsWith('.pdf', $clean);
+        $this->assertStringEndsWith('.pdf', FileNames::clean(str_repeat('Αίτηση ', 40).'.pdf'));
+    }
+
+    /** Review finding: folder + "/" + stored name must fit the 255-character savedPath column, also for long folders. */
+    public function test_stored_path_fits_the_column_with_a_long_folder(): void
+    {
+        foreach ([1, 47, 80, 150] as $folderLength) {
+            $dir = 'arxeio/'.str_repeat('Φ', $folderLength);
+            $fitted = FileNames::fit(self::PREFIX, str_repeat('a', 190).'.pdf', $dir);
+            $this->assertLessThanOrEqual(FileNames::MAX_PATH_CHARS, mb_strlen("$dir/$fitted"), "folder of $folderLength");
+            $this->assertLessThanOrEqual(FileNames::MAX_BYTES, strlen($fitted));
+            $this->assertStringEndsWith('.pdf', $fitted);
+        }
     }
 
     public function test_clean_replaces_unsafe_characters_as_before(): void

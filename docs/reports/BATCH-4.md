@@ -2,7 +2,7 @@
 
 All 4 planned tasks done, each merged to `master` only after all CI jobs were green and every automated review
 finding had been checked, fixed with a test and answered. This batch fixes what your e-mails showed. It reaches the
-server with the final deployment. PHPUnit: **186 → 230 tests**; browser tests: **18 → 25**.
+server with the final deployment. PHPUnit: **186 → 232 tests**; browser tests: **18 → 25**.
 
 | Task | Result | PR | Report |
 |---|---|---|---|
@@ -29,4 +29,4 @@ server with the final deployment. PHPUnit: **186 → 230 tests**; browser tests:
 - The new browser tests found two bugs the other tests could not: the inbox's save button for the last e-mail of a page
   (D01), and the header/body join when downloading from the real mail server (R5a).
 - Review findings (Codex) fixed with tests: confirm dialog vs form handlers (N04, #33), cache expiry vs concurrent
-  users and rollback leaving rows in the trash (R5a).
+  users and rollback leaving rows in the trash (R5a), long names losing their extension and long folders (F08).

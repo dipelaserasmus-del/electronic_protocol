@@ -827,9 +827,9 @@ class ProtocolController extends Controller implements HasMiddleware
                     // τον τύπο mimeType του αρχείου
                     $mimeType = $file->getMimeType();
                     // φτιάχνω το όνομα Αρ.Πρ + Ημνια.Πρ
-                    $filenameToStore = \App\Support\FileNames::fit($protocol->protocolnum . '-' . $protocol->protocoldate . '_', $filename);   // F08
-                    // τον φάκελο arxeio + Φ.
                     $dir = 'arxeio/' . request()->fakelos;
+                    $filenameToStore = \App\Support\FileNames::fit($protocol->protocolnum . '-' . $protocol->protocoldate . '_', $filename, $dir);   // F08
+                    // τον φάκελο arxeio + Φ.
                     // αποθηκεύω το αρχείο και παίρνω το path αποθήκευσης
                     if ($stampDone && $putStamp) {
                         $savedPath = $this->putStamp($dir, $filenameToStore, $file, null);
@@ -1110,9 +1110,9 @@ class ProtocolController extends Controller implements HasMiddleware
                     // τον τύπο αρχείου
                     $mimeType = $file->getMimeType();
                     // φτιάχνω το όνομα αποθήκευσης
-                    $filenameToStore = \App\Support\FileNames::fit(request()->protocolnum . '-' . Carbon::createFromFormat('d/m/Y', request()->protocoldate)->format('Ymd') . '_', $filename);   // F08
-                    // τον φάκελο αποθήκευσης
                     $dir = 'arxeio/' . request()->fakelos;
+                    $filenameToStore = \App\Support\FileNames::fit(request()->protocolnum . '-' . Carbon::createFromFormat('d/m/Y', request()->protocoldate)->format('Ymd') . '_', $filename, $dir);   // F08
+                    // τον φάκελο αποθήκευσης
                     // αποθηκεύω και παίρνω το path
                     if ($stampDone && $putStamp) {
                         $savedPath = $this->putStamp($dir, $filenameToStore, $file, null);
@@ -2191,8 +2191,8 @@ class ProtocolController extends Controller implements HasMiddleware
 
                 // αφαίρεση απαγορευμένων χαρακτήρων από το όνομα του συνημμένου
                 $filename = \App\Support\FileNames::clean($filename, $mimeType);
-                $filenameToStore = \App\Support\FileNames::fit($protocol->protocolnum . '-' . $protocol->protocoldate . '_' . $attachmentKey . '_', $filename);   // F08
                 $dir = 'arxeio/' . $fakelos;
+                $filenameToStore = \App\Support\FileNames::fit($protocol->protocolnum . '-' . $protocol->protocoldate . '_' . $attachmentKey . '_', $filename, $dir);   // F08
 
                 // αποθηκεύω το αρχείο και παίρνω το path αποθήκευσης
                 if ($stampDone && $putStamp) {

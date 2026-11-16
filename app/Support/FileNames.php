@@ -17,8 +17,11 @@ final class FileNames
     /** Linux limit for one file name (ext4, also Docker volumes on WSL 2). */
     public const MAX_BYTES = 255;
 
-    /** attachments.savedPath is VARCHAR(255) characters and also holds "arxeio/<folder>/". */
+    /** Longest name shown in the app (attachments.name is VARCHAR(255) characters). */
     public const MAX_CHARS = 200;
+
+    /** attachments.savedPath is VARCHAR(255) characters and holds "<folder>/<stored name>". */
+    public const MAX_PATH_CHARS = 255;
 
     /** Name shown for an attachment that has no usable name of its own. */
     public const FALLBACK = 'συνημμένο';
@@ -46,17 +49,32 @@ final class FileNames
             $name = self::FALLBACK.($extension !== '' ? '.'.$extension : '');
         }
 
-        return mb_substr($name, 0, self::MAX_CHARS);
+        return self::shorten($name, self::MAX_CHARS);   // review finding: keep the extension
+    }
+
+    /** $name in at most $chars characters, the extension kept. */
+    private static function shorten(string $name, int $chars): string
+    {
+        if (mb_strlen($name) <= $chars) {
+            return $name;
+        }
+        $extension = pathinfo($name, PATHINFO_EXTENSION);
+        $extension = ($extension !== '' && mb_strlen($extension) <= 10) ? '.'.$extension : '';
+        $base = $extension === '' ? $name : mb_substr($name, 0, -mb_strlen($extension));
+
+        return rtrim(mb_substr($base, 0, max(1, $chars - mb_strlen($extension))), ' .-').$extension;
     }
 
     /**
-     * $prefix + $name, shortened so that it fits in MAX_BYTES bytes and MAX_CHARS characters; the extension is kept and
-     * a character is never cut in half.
+     * $prefix + $name, shortened so that it fits in MAX_BYTES bytes and, together with "$dir/", in the
+     * MAX_PATH_CHARS-character savedPath column (review finding: folders can be long). The extension is kept and a
+     * character is never cut in half.
      */
-    public static function fit(string $prefix, string $name): string
+    public static function fit(string $prefix, string $name, string $dir = ''): string
     {
+        $chars = self::MAX_PATH_CHARS - ($dir === '' ? 0 : mb_strlen(rtrim($dir, '/')) + 1);
         $full = $prefix.$name;
-        if (strlen($full) <= self::MAX_BYTES && mb_strlen($full) <= self::MAX_CHARS) {
+        if (strlen($full) <= self::MAX_BYTES && mb_strlen($full) <= $chars) {
             return $full;
         }
         $extension = pathinfo($name, PATHINFO_EXTENSION);
@@ -64,7 +82,7 @@ final class FileNames
         $base = $extension === '' ? $name : substr($name, 0, -strlen($extension));
 
         $bytes = self::MAX_BYTES - strlen($prefix) - strlen($extension);
-        $chars = self::MAX_CHARS - mb_strlen($prefix) - mb_strlen($extension);
+        $chars -= mb_strlen($prefix) + mb_strlen($extension);
         $base = mb_strcut($base, 0, max(0, $bytes), 'UTF-8');                 // bytes, whole characters
         $base = rtrim(mb_substr($base, 0, max(0, $chars)), ' .-');
 
