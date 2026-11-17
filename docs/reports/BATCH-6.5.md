@@ -2,7 +2,7 @@
 
 You tried Batch 6 on 2026-11-17 and sent a list of problems and ideas; this short batch handles all of it. Each task is
 merged to `master` only after all CI jobs are green and the automated review has been checked.
-PHPUnit: **339 → 345 tests**; browser tests: **42 → 48**.
+PHPUnit: **339 → 346 tests**; browser tests: **42 → 48**.
 
 | Task | Result | PR | Report |
 |---|---|---|---|
@@ -13,6 +13,8 @@ PHPUnit: **339 → 345 tests**; browser tests: **42 → 48**.
 ## Found on the way
 - The new "start number must be at least 1" rule would have stopped the settings page from saving, because the
   installer stores 0 there. 0 still means 1; a test covers it.
+- Review (Codex): sorted upwards, a run of missing numbers starting at the start number had no row; fixed with a test
+  (R2c).
 
 ## For you
 - **Firefox drop:** please try it again (see [OWNER-TODO](../../OWNER-TODO.md)). I could test a real drag only in Chrome.

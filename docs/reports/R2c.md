@@ -47,9 +47,14 @@ one setting instead of two.
 - Browser (`protocol-list.spec.js`): an administrator leaves one number out. The dashed row appears right under the new
   protocol, and its button opens the form with that number. After saving, the row is gone. The smoke test of the box
   still passes.
-- Full suites: PHPUnit 345, browser 48/48.
+- Full suites: PHPUnit 346, browser 48/48.
 
   ![missing number row](img/R2c/r2c-gap-row.png)
+
+## Review finding (Codex), fixed with a test
+- Sorted upwards, a run starting at the start number (no protocol right before it, e.g. protocols 1 and 10 with start
+  number 5) had no row at all. The first run of each year now follows the closest existing number below it
+  (`test_ascending_row_for_a_run_starting_at_the_start_number`).
 
 ## Owner actions
 1. At the final deployment: check *Ρυθμίσεις → Αρ.Πρωτοκόλλου για ξεκίνημα*. Set it to the first number of the year

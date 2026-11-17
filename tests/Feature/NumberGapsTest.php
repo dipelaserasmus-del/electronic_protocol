@@ -197,4 +197,18 @@ class NumberGapsTest extends FeatureTestCase
         $this->assertSame('500', \App\Models\Config::where('key', 'firstProtocolNum')->value('value'));
         $this->assertFalse(\App\Models\Config::where('key', 'gapCheckFromNumber')->exists());
     }
+
+    /** Review of R2c: a run that starts at the start number (no protocol right before it) still has its row upwards. */
+    public function test_ascending_row_for_a_run_starting_at_the_start_number(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $this->setting('firstProtocolNum', 5);
+        $year = now()->year;
+        $this->book($year, [1, 10], now()->format('md'));   // checked: 5–9
+
+        $asc = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\ProtocolList::class)->call('sortBy', 'protocolnum')->html();
+        $this->assertStringContainsString("Κενοί αριθμοί 5–9/$year", $asc);
+        $this->assertStringContainsString('/home?num=5', $asc);
+        $this->assertTrue(strpos($asc, "1/$year") < strpos($asc, 'Κενοί αριθμοί 5–9') && strpos($asc, 'Κενοί αριθμοί 5–9') < strpos($asc, "10/$year"));
+    }
 }

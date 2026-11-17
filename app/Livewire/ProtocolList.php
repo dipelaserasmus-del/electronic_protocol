@@ -208,9 +208,19 @@ class ProtocolList extends Component
             return [];
         }
         $rows = [];
+        $firstOfYear = [];
         foreach (NumberGaps::runs($gaps) as $run) {
-            // descending: under the protocol just above the run; ascending: under the one just below it
-            $after = $this->sort === 'desc' ? $run['to'] + 1 : $run['from'] - 1;
+            // descending: under the protocol just above the run (always exists: runs end below the last number);
+            // ascending: under the one just below it. The first run of a year may start at the start number with no
+            // protocol right before it (review of R2c): then the closest existing number below it.
+            if ($this->sort === 'desc') {
+                $after = $run['to'] + 1;
+            } elseif (! isset($firstOfYear[$run['year']])) {
+                $after = (int) Protocol::whereEtos($run['year'])->where('protocolnum', '<', $run['from'])->max('protocolnum');
+            } else {
+                $after = $run['from'] - 1;
+            }
+            $firstOfYear[$run['year']] = true;
             $rows[$run['year'] . ':' . $after] = $run;
         }
         return $rows;
