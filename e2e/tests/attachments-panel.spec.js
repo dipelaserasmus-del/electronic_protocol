@@ -80,3 +80,35 @@ test('saving right after a drop waits for the upload (R1c review)', async ({ pag
   await page.waitForURL(/\/home\/\d+$/);
   await expect(page.locator('#attachments .attachment-row', { hasText: name })).toBeVisible();
 });
+
+// R1e: the owner's Firefox (GNOME, Wayland) did not attach files dropped in the middle of the window. A real native
+// drag (Chromium's DevTools input, not synthetic events) onto a text field in the middle must attach the file …
+test('a native file drag dropped on a field in the middle is attached (R1e)', async ({ page, browserName }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'native drag through the DevTools protocol');
+  const file = testInfo.outputPath('Έγγραφο R1e.pdf');
+  require('fs').writeFileSync(file, '%PDF-1.4 R1e\n%%EOF\n');
+  await login(page, 'writer');
+  await page.goto('/home');
+  await page.waitForLoadState('networkidle');
+  const box = await page.locator('#f-thema').boundingBox();
+  const x = Math.round(box.x + box.width / 2), y = Math.round(box.y + box.height / 2);
+  const cdp = await page.context().newCDPSession(page);
+  const data = { items: [], files: [file], dragOperationsMask: 1 };
+  await cdp.send('Input.dispatchDragEvent', { type: 'dragEnter', x, y, data });
+  await cdp.send('Input.dispatchDragEvent', { type: 'dragOver', x: x + 2, y, data });
+  await expect(page.locator('.drop-overlay')).toBeVisible();
+  await cdp.send('Input.dispatchDragEvent', { type: 'drop', x: x + 2, y, data });
+  await expect(page.locator('#attachments .upload-row')).toContainText('Έγγραφο R1e.pdf');
+  await expect(page.locator('#f-thema')).toHaveValue('');   // the file is not typed into the field
+});
+
+// … and so must a drop when the browser never announced the drag (no dragenter, types not given yet).
+test('a drop without dragenter still attaches the files (R1e)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  const dt = await dataTransfer(page, [{ name: 'χωρίς-dragenter.pdf', body: '%PDF-1.4 R1e\n' }]);
+  await page.dispatchEvent('#f-thema', 'dragover', { dataTransfer: dt });
+  await page.dispatchEvent('#f-thema', 'drop', { dataTransfer: dt });
+  await expect(page.locator('#attachments .upload-row')).toContainText('χωρίς-dragenter.pdf');
+  await expect(page.locator('.drop-overlay')).toBeHidden();
+});

@@ -29,7 +29,13 @@ test('to the trash from the form, back from the trash page (R4b)', async ({ page
 
   await trashed.getByRole('button', { name: 'Επαναφορά' }).click();
   await expect(trashed).toHaveCount(0);
-  await page.goto(protocolUrl);
+  // R1e: the notice links to the protocol
+  const back = page.locator('#app-toasts .toast a', { hasText: 'Άνοιγμα πρωτοκόλλου' });
+  await expect(back).toHaveAttribute('href', protocolUrl);
+  await expect(page.locator('#app-toasts .toast')).toHaveCSS('opacity', '1');   // after the fade-in
+  await evidence(page, 'r1e-restore-notice', { clip: { x: 0, y: 0, width: 1440, height: 300 } });
+  await back.click();
+  await expect(page).toHaveURL(protocolUrl);
   await expect(page.locator('#attachments .attachment-row', { hasText: name })).toBeVisible();
   const link = page.locator('#attachments a[href*="/download/"]', { hasText: name });
   expect((await (await page.request.get(await link.getAttribute('href'))).body()).toString()).toContain('%PDF-1.4 R4b');

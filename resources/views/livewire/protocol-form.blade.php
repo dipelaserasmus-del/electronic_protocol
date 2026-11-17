@@ -132,7 +132,36 @@
                         @endif
                     </x-form.text>
                     <div class="row g-2">
-                        <x-form.text class="col-md-6" name="sxetiko" :value="$form['sxetiko']" label="Σχετικοί αριθμοί" :error="$e('sxetiko')" help="π.χ. 12/2026, 40/2025" />
+                        {{-- R1e: related numbers as tags. Enter, a comma or leaving the box turns what was typed into a pill
+                             (a bare number gets the year); an existing protocol is a link ↗ (new tab); ✕ or Backspace in the
+                             empty box removes one. The stored value stays "12/2026, 40/2025". --}}
+                        <div class="col-md-6 mb-2">
+                            <label for="f-sxetiko" class="form-label small fw-semibold mb-1">Σχετικοί αριθμοί</label>
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 tag-box @if ($e('sxetiko')) is-invalid @endif" id="related-box"
+                                 x-on:click="$el.querySelector('input')?.focus()">
+                                @foreach ($related as $i => $r)
+                                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 related-pill {{ $r['protocol'] ? 'bg-primary-subtle text-primary-emphasis border-primary-subtle' : 'text-body-secondary bg-body-tertiary' }}"
+                                          wire:key="rel-{{ $i }}-{{ $r['text'] }}"
+                                          title="{{ $r['protocol'] ? $r['protocol']->thema : 'Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε' }}">
+                                        @if ($r['protocol'])
+                                            <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="text-reset text-decoration-none">↗ {{ $r['protocol']->protocolnum }}/{{ $r['protocol']->etos }}</a>
+                                        @else
+                                            {{ $r['text'] }}
+                                        @endif
+                                        <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeRelated({{ $i }})"
+                                                aria-label="Αφαίρεση {{ $r['text'] }}"></button>
+                                    </span>
+                                @endforeach
+                                <input id="f-sxetiko" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" style="min-width: 6rem; outline: none" autocomplete="off"
+                                       placeholder="{{ $related ? '' : 'π.χ. 12/2026' }}" aria-describedby="sxetiko-help"
+                                       x-data="{ add() { const v = $el.value.trim(); $el.value = ''; if (v) $wire.addRelated(v) } }"
+                                       x-on:keydown="if ($event.key === 'Enter' || $event.key === ',' || $event.key === ';') { $event.preventDefault(); add() }
+                                                     else if ($event.key === 'Backspace' && $el.value === '' && {{ count($related) }} > 0) $wire.removeRelated({{ count($related) - 1 }})"
+                                       x-on:input="if (/[,;]/.test($el.value)) add()" x-on:blur="add()">
+                            </div>
+                            @if ($e('sxetiko'))<div class="invalid-feedback d-block">{{ $e('sxetiko') }}</div>@endif
+                            <div class="form-text" id="sxetiko-help">Γράψτε αριθμό (π.χ. 12/2026 ή 12) και πατήστε Enter ή κόμμα.</div>
+                        </div>
                         <x-form.text class="col-md-6" name="keywords" :value="$form['keywords']" label="Λέξεις κλειδιά" list="suggest-keywords" :error="$e('keywords')" />
                     </div>
                     <x-form.text name="paratiriseis" :value="$form['paratiriseis']" label="Παρατηρήσεις" rows="2" :error="$e('paratiriseis')" />
@@ -222,14 +251,32 @@
             {{-- attachments (R1c): open on new and copy, files can be dropped anywhere on the window --}}
             <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title"
                 @if ($access->canSave)
-                     x-data="{ over: false, depth: 0,
-                               hasFiles(e) { return [...(e.dataTransfer?.types || [])].includes('Files') } }"
-                     x-on:dragenter.window="if (hasFiles($event)) { $event.preventDefault(); depth++; over = true }"
-                     x-on:dragover.window="if (hasFiles($event)) $event.preventDefault()"
-                     x-on:dragleave.window="if (hasFiles($event)) { depth = Math.max(0, depth - 1); if (! depth) over = false }"
-                     x-on:drop.window="if (hasFiles($event)) { $event.preventDefault(); depth = 0; over = false;
-                         progress = 0;
-                         $wire.uploadMultiple('picked', $event.dataTransfer.files, () => progress = null, () => progress = null, (e) => progress = e.detail.progress) }"
+                     {{-- R1e: Firefox on Linux (Wayland) may announce dragged files only as application/x-moz-file or
+                          text/uri-list, or with no types until the drop; anything dragged in from outside the page counts,
+                          and the drop uploads only when it really carries files --}}
+                     x-data="{ over: false, depth: 0, inside: false,
+                               hasFiles(e) {
+                                   if (this.inside) return false;
+                                   const t = [...(e.dataTransfer?.types || [])];
+                                   return t.length === 0 || t.includes('Files') || t.includes('application/x-moz-file') || t.includes('text/uri-list');
+                               },
+                               enter(e) { if (this.hasFiles(e)) { e.preventDefault(); this.depth++; this.over = true } },
+                               hover(e) { if (this.hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; this.over = true } },
+                               leave(e) { if (this.hasFiles(e)) { this.depth = Math.max(0, this.depth - 1); if (! this.depth) this.over = false } },
+                               drop(e) {
+                                   const fromOutside = this.hasFiles(e);
+                                   this.inside = false;
+                                   if (! fromOutside) return;
+                                   e.preventDefault();
+                                   this.depth = 0; this.over = false;
+                                   const files = [...(e.dataTransfer?.files || [])];
+                                   if (! files.length) return;
+                                   this.progress = 0;
+                                   this.$wire.uploadMultiple('picked', files, () => this.progress = null, () => this.progress = null, (p) => this.progress = p.detail.progress);
+                               } }"
+                     x-on:dragstart.window="inside = true" x-on:dragend.window="inside = false"
+                     x-on:dragenter.window="enter($event)" x-on:dragover.window="hover($event)"
+                     x-on:dragleave.window="leave($event)" x-on:drop.window="drop($event)"
                      x-on:livewire-upload-start="progress = 0" x-on:livewire-upload-progress="progress = $event.detail.progress"
                      x-on:livewire-upload-finish="progress = null" x-on:livewire-upload-error="progress = null"
                 @endif>

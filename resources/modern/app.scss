@@ -24,10 +24,14 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .border-dashed { border-style: dashed !important; }
 .dropzone { cursor: pointer; transition: background-color .15s, border-color .15s; }
 .dropzone:hover, .dropzone:focus-within { border-color: var(--bs-primary) !important; }
+.tag-box { min-height: calc(1.5em + .75rem + 2px); cursor: text; }
+.tag-box:focus-within { border-color: var(--bs-primary-border-subtle, #86b7fe); box-shadow: 0 0 0 .25rem rgba(var(--bs-primary-rgb), .25); }
 /* not d-flex: its !important would beat x-show's display:none */
 .drop-overlay { display: flex; align-items: center; justify-content: center; background: rgba(var(--bs-primary-rgb), .15); z-index: 2000; pointer-events: none; }
 
 /* R2: protocol list — header stays under the top bar while scrolling; the whole row opens the protocol */
+#app-toasts { top: var(--app-topbar-height, 3.2rem); z-index: 1090; }
+#app-toasts .toast { cursor: pointer; }
 .table-sticky thead th { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 3; background: var(--bs-tertiary-bg); box-shadow: inset 0 -1px 0 var(--bs-border-color); }
 .protocol-row { position: relative; }
 .stretched-link-row::after { content: ''; position: absolute; inset: 0; z-index: 1; }

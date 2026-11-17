@@ -57,6 +57,38 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame(0, Protocol::count());
     }
 
+    /** R1e: related numbers are tags; an existing protocol is a link (new tab), others stay text. */
+    public function test_related_numbers_are_tags_linking_to_existing_protocols(): void
+    {
+        $year = (int) now()->year;
+        $mine = Protocol::factory()->number(12)->create(['thema' => 'Σχετικό δώδεκα']);
+        $old = Protocol::factory()->number(40)->create(['etos' => $year - 1]);
+        $writer = $this->writer();
+
+        $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class)
+            ->call('addRelated', '12')                                  // a bare number gets the year
+            ->call('addRelated', '40/' . ($year - 1) . '; 77, φ.3')      // pasted list
+            ->call('addRelated', '12/' . $year)                         // no repeats
+            ->assertSet('form.sxetiko', "12/$year, 40/" . ($year - 1) . ', 77/' . $year . ', φ.3');
+        $form->assertSeeHtml('href="' . url('/home/' . $mine->id) . '" target="_blank"')
+            ->assertSeeHtml('title="Σχετικό δώδεκα"')
+            ->assertSeeHtml('href="' . url('/home/' . $old->id) . '" target="_blank"')
+            ->assertSee('↗ 40/' . ($year - 1))
+            ->assertSeeHtml('aria-label="Αφαίρεση 77/' . $year . '"')
+            ->assertSeeHtml('aria-label="Αφαίρεση φ.3"');
+        $this->assertSame(2, substr_count($form->html(), 'title="Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε"'));
+
+        $form->call('removeRelated', 1)->assertSet('form.sxetiko', "12/$year, 77/$year, φ.3")
+            ->set('form.thema', 'Με σχετικά')->set('form.fakelos', 'Φ.1')
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame("12/$year, 77/$year, φ.3", Protocol::latest('id')->first()->sxetiko);
+
+        // a writer limited to own/assigned protocols gets no link (and no subject) for others' protocols
+        $this->setting('limitProtocolAccessList', 1);
+        Livewire::actingAs($writer)->test(ProtocolForm::class)->call('addRelated', '12')
+            ->assertDontSeeHtml('href="' . url('/home/' . $mine->id) . '"')->assertDontSee('Σχετικό δώδεκα');
+    }
+
     public function test_same_subject_is_a_notice_not_a_question(): void
     {
         $this->setting('limitProtocolAccessList', 1);

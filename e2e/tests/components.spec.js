@@ -114,6 +114,23 @@ test('toasts show text, never HTML', async ({ page }) => {
   await evidence(page, 'n04-toasts');
 });
 
+test('toasts sit under the top bar in the middle, a click closes them, links stay same-site (R1e)', async ({ page }) => {
+  await page.evaluate(() => window.appToast('Με σύνδεσμο', 'success', { url: '/home', label: 'Άνοιγμα' }));
+  await page.evaluate(() => window.appToast('Ξένος σύνδεσμος', 'info', { url: 'https://example.org/x', label: 'Έξω' }));
+  const toast = page.locator('#app-toasts .toast', { hasText: 'Με σύνδεσμο' });
+  await expect(toast).toBeVisible();
+  await expect(toast).toHaveCSS('opacity', '1');   // after the fade-in
+  const box = await toast.boundingBox();
+  const bar = await page.locator('.app-topbar').boundingBox();
+  expect(box.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);              // under the top bar, not covering it
+  expect(Math.abs(box.x + box.width / 2 - 1440 / 2)).toBeLessThan(4);        // centred
+  await expect(toast.locator('a')).toHaveAttribute('href', '/home');
+  await expect(page.locator('#app-toasts .toast', { hasText: 'Ξένος σύνδεσμος' }).locator('a')).toHaveCount(0);
+  await evidence(page, 'r1e-toast-top', { clip: { x: 0, y: 0, width: 1440, height: 260 } });
+  await toast.locator('.toast-body').click({ position: { x: 5, y: 5 } });
+  await expect(toast).toHaveCount(0);
+});
+
 test('pill buttons stay on one row; on a narrow screen the rest go to the ⋯ menu and still work', async ({ page }) => {
   const bar = page.locator('#actions');
   const more = bar.getByRole('button', { name: 'Περισσότερες ενέργειες' });

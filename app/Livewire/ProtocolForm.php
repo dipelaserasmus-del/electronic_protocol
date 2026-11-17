@@ -132,6 +132,17 @@ class ProtocolForm extends Component
         $this->replacePlaceholder = false;
     }
 
+    /** R1e: "Σχετικοί αριθμοί" as tags — Enter, comma or leaving the box adds what was typed; ✕ removes one. */
+    public function addRelated(string $typed): void
+    {
+        $this->form['sxetiko'] = \App\Support\RelatedNumbers::add($this->form['sxetiko'], $typed, (int) ($this->form['etos'] ?: $this->activeYear()));
+    }
+
+    public function removeRelated(int $index): void
+    {
+        $this->form['sxetiko'] = \App\Support\RelatedNumbers::remove($this->form['sxetiko'], $index);
+    }
+
     public function save(ProtocolWriter $writer)
     {
         $input = $this->form + [
@@ -334,6 +345,7 @@ class ProtocolForm extends Component
             'nextNumber' => $protocol->exists ? null : app(ProtocolNumbering::class)->next((int) ($this->form['etos'] ?: $this->activeYear())),
             'sameSubject' => $this->similar('thema'),
             'sameIncoming' => $this->similar('in_num'),
+            'related' => \App\Support\RelatedNumbers::resolve($this->form['sxetiko'], (int) ($this->form['etos'] ?: $this->activeYear())),
             'folders' => Keepvalue::orderByRaw('SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-3)+0<>0 DESC, SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-(3))+0, `fakelos`')->get(['fakelos', 'describe']),
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),

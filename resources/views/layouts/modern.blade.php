@@ -113,8 +113,9 @@
     @yield('content')
 </main>
 
-{{-- N04 toasts: window.appToast(message, type), session('toast') = [message, type], Livewire dispatch('toast') --}}
-<div id="app-toasts" class="toast-container position-fixed bottom-0 end-0 p-3">
+{{-- N04 toasts: window.appToast(message, type, link), session('toast') = [message, type], Livewire dispatch('toast').
+     R1e: top centre under the top bar (bottom right covered the save button); a click closes them --}}
+<div id="app-toasts" class="toast-container position-fixed start-50 translate-middle-x p-3">
     @if (is_array(session('toast')))
         <div hidden data-toast-message="{{ session('toast')[0] ?? '' }}" data-toast-type="{{ session('toast')[1] ?? 'success' }}"></div>
     @endif

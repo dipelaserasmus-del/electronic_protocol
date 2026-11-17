@@ -88,3 +88,34 @@ test('a 2 MB attachment is uploaded and saved (R1b: nginx allowed only 1 MB)', a
   expect((await file.body()).length).toBe(body.length);
   await evidence(page, 'r1b-attachment-saved', { fullPage: true });
 });
+
+test('related numbers are tags; an existing one opens in a new tab (R1e)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R1e σχετικό ${Date.now()}`, fakelos: 'first' });
+  await saveProtocol(page);
+  const first = page.url();
+  const [, num, year] = (await notice(page)).match(/Καταχωρίστηκε με αριθμό (\d+)\/(\d{4})/);
+
+  await page.goto('/home');
+  const box = page.locator('#f-sxetiko');
+  await box.fill(`${num}/${year}`);
+  await box.press('Enter');                                   // Enter makes a pill (and does not save)
+  const link = page.locator('#related-box a');
+  await expect(link).toHaveText(`↗ ${num}/${year}`);
+  await expect(link).toHaveAttribute('href', first);
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(page).toHaveURL(/\/home$/);
+  await box.pressSequentially('999999,');                     // a comma too; unknown number = grey pill
+  await expect(page.locator('#related-box .related-pill')).toHaveCount(2);
+  await expect(page.locator('#related-box .related-pill').last()).toContainText(`999999/${year}`);
+  await expect(box).toHaveValue('');
+  await box.pressSequentially('5');
+  await evidence(page, 'r1e-related-links', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
+  await box.press('Backspace');
+  await box.press('Backspace');                               // empty box: removes the last pill
+  await expect(page.locator('#related-box .related-pill')).toHaveCount(1);
+  const [tab] = await Promise.all([page.context().waitForEvent('page'), link.click()]);
+  await tab.waitForLoadState();
+  expect(tab.url()).toBe(first);
+});
