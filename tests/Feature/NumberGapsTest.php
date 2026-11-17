@@ -46,7 +46,7 @@ class NumberGapsTest extends FeatureTestCase
 
     public function test_start_number_setting_ignores_lower_numbers(): void
     {
-        $this->setting('gapCheckFromNumber', 50);
+        $this->setting('firstProtocolNum', 50);   // R2c: the start number
         $this->book(2026, [1, 3, 50, 52], '1001');
 
         $this->assertSame([2026 => [51]], $this->gaps());
@@ -63,7 +63,7 @@ class NumberGapsTest extends FeatureTestCase
     /** Review finding: start number above the last entry must not produce descending "gaps" */
     public function test_start_number_above_last_entry_gives_no_gaps(): void
     {
-        $this->setting('gapCheckFromNumber', 10);
+        $this->setting('firstProtocolNum', 10);
         $this->book(2026, [1, 2, 3], '1001');
 
         $this->assertSame([], $this->gaps());
@@ -140,11 +140,75 @@ class NumberGapsTest extends FeatureTestCase
         $base = ['ipiresiasName' => 'Σχολείο', 'firstProtocolNum' => 1, 'showRowsInPage' => 25,
                  'protocolArrowStep' => 10, 'minutesRefreshInterval' => 5];
 
-        $this->actingAs($admin)->post('/settings', $base + ['gapCheckFromNumber' => 1000, 'gapCheckMonths' => 4])
+        $this->actingAs($admin)->post('/settings', ['firstProtocolNum' => 1000] + $base + ['gapCheckFromNumber' => 7, 'gapCheckMonths' => 4])
             ->assertRedirect('/settings');
-        $this->assertSame('1000', \App\Models\Config::getConfigValueOf('gapCheckFromNumber'));
+        $this->assertSame('1000', \App\Models\Config::getConfigValueOf('firstProtocolNum'));
+        $this->assertFalse(\App\Models\Config::where('key', 'gapCheckFromNumber')->exists(), 'R2c: the old setting is not stored');
+        // 0 is the installer's value (= 1): the page must still save
+        $this->actingAs($admin)->post('/settings', ['firstProtocolNum' => 0] + $base)->assertSessionHasNoErrors();
         $this->assertSame('4', \App\Models\Config::getConfigValueOf('gapCheckMonths'));
 
         $this->actingAs($admin)->post('/settings', $base + ['gapCheckMonths' => 99])->assertSessionHasErrors('gapCheckMonths');
+    }
+
+    /** R2c (owner): missing numbers are rows of the list, a run of them one row, with a button for its first number. */
+    public function test_missing_numbers_are_rows_in_the_list(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $year = now()->year;
+        $this->book($year, [1, 2, 4, 8, 9], now()->format('md'));   // missing: 3, 5–7
+        $admin = $this->admin();
+
+        $html = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolList::class)->html();
+        $this->assertSame(2, substr_count($html, 'class="gap-row"'));
+        $this->assertStringContainsString("Κενοί αριθμοί 5–7/$year", $html);
+        $this->assertStringContainsString('· 3 αριθμοί', $html);
+        $this->assertStringContainsString("Κενός αριθμός 3/$year", $html);
+        // newest first: 9, 8, [7–5], 4, [3], 2, 1 — the button offers the highest number of the run
+        $order = array_map(fn ($t) => strpos($html, $t), ["8/$year", "Κενοί αριθμοί 5–7", "4/$year", "Κενός αριθμός 3", "2/$year"]);
+        $sorted = $order; sort($sorted);
+        $this->assertSame($sorted, $order, 'rows in number order');
+        $this->assertStringContainsString('/home?num=7', $html);
+        $this->assertStringContainsString('/home?num=3', $html);
+        $this->assertStringContainsString('Φαίνονται στη λίστα με διακεκομμένο πλαίσιο', $html);
+
+        // ascending: the run follows the protocol below it, the button offers its lowest number
+        $asc = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolList::class)->call('sortBy', 'protocolnum')->html();
+        $this->assertStringContainsString('/home?num=5', $asc);
+
+        // another filter or sort: no rows, the banner says where to see them
+        $other = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolList::class)->call('setFilter', 'd')->html();
+        $this->assertStringNotContainsString('class="gap-row"', $other);
+        $this->assertStringContainsString('Επιλέξτε «Όλα»', $other);
+
+        // a writer sees the rows but can't choose the number: no button
+        $writer = \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\ProtocolList::class)->html();
+        $this->assertSame(2, substr_count($writer, 'class="gap-row"'));
+        $this->assertStringNotContainsString('/home?num=', $writer);
+    }
+
+    /** R2c: the gap check starts at "Αρ.Πρωτοκόλλου για ξεκίνημα"; the old separate setting moves there. */
+    public function test_old_gap_start_setting_moves_to_the_start_number(): void
+    {
+        $this->setting('gapCheckFromNumber', 500);
+        $migration = require base_path('database/migrations/2026_11_17_000001_gap_check_from_first_number.php');
+        $migration->up();
+        $migration->up();   // safe to run again
+        $this->assertSame('500', \App\Models\Config::where('key', 'firstProtocolNum')->value('value'));
+        $this->assertFalse(\App\Models\Config::where('key', 'gapCheckFromNumber')->exists());
+    }
+
+    /** Review of R2c: a run that starts at the start number (no protocol right before it) still has its row upwards. */
+    public function test_ascending_row_for_a_run_starting_at_the_start_number(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $this->setting('firstProtocolNum', 5);
+        $year = now()->year;
+        $this->book($year, [1, 10], now()->format('md'));   // checked: 5–9
+
+        $asc = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\ProtocolList::class)->call('sortBy', 'protocolnum')->html();
+        $this->assertStringContainsString("Κενοί αριθμοί 5–9/$year", $asc);
+        $this->assertStringContainsString('/home?num=5', $asc);
+        $this->assertTrue(strpos($asc, "1/$year") < strpos($asc, 'Κενοί αριθμοί 5–9') && strpos($asc, 'Κενοί αριθμοί 5–9') < strpos($asc, "10/$year"));
     }
 }

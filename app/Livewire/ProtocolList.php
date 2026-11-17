@@ -195,18 +195,54 @@ class ProtocolList extends Component
         return $groups;
     }
 
+    /**
+     * R2c: missing numbers shown as rows in the list, right after the protocol they follow ("year:number" of that
+     * protocol => run). Only in the whole list (everybody's, "Όλα") sorted by number, where the rows are in order.
+     *
+     * @param  array<int, int[]>  $gaps
+     * @return array<string, array{year: int, from: int, to: int}>
+     */
+    private function gapRows(array $gaps): array
+    {
+        if (! $gaps || $this->filter !== '' || $this->who !== 'me' || $this->field !== 'protocolnum') {
+            return [];
+        }
+        $rows = [];
+        $firstOfYear = [];
+        foreach (NumberGaps::runs($gaps) as $run) {
+            // descending: under the protocol just above the run (always exists: runs end below the last number);
+            // ascending: under the one just below it. The first run of a year may start at the start number with no
+            // protocol right before it (review of R2c): then the closest existing number below it.
+            if ($this->sort === 'desc') {
+                $after = $run['to'] + 1;
+            } elseif (! isset($firstOfYear[$run['year']])) {
+                $after = (int) Protocol::whereEtos($run['year'])->where('protocolnum', '<', $run['from'])->max('protocolnum');
+            } else {
+                $after = $run['from'] - 1;
+            }
+            $firstOfYear[$run['year']] = true;
+            $rows[$run['year'] . ':' . $after] = $run;
+        }
+        return $rows;
+    }
+
     public function render()
     {
         $user = Auth::user();
         $role = ProtocolPolicy::role($user);
         $seesGaps = in_array($role, [ProtocolPolicy::ADMIN, ProtocolPolicy::ASSIGNER, ProtocolPolicy::WRITER], true);
 
+        $gaps = $seesGaps ? app(NumberGaps::class)->find() : [];
+
         return view('livewire.protocol-list', [
             'protocols' => $this->query()->paginate((int) (Config::getConfigValueOf('showRowsInPage') ?: 25)),
+            'gapRows' => $this->gapRows($gaps),
+            'gapCount' => array_sum(array_map('count', $gaps)),
+            'gapFrom' => (int) Config::getConfigValueOf('firstProtocolNum'),
             'folders' => Keepvalue::pluck('describe', 'fakelos'),
             'userGroups' => $this->canSeeOthers() ? $this->userGroups() : [],
             'names' => User::pluck('name', 'id'),
-            'numberGaps' => $seesGaps ? app(NumberGaps::class)->find() : [],
+            'numberGaps' => $gaps,
             'gapMonths' => (int) (Config::getConfigValueOf('gapCheckMonths') ?: NumberGaps::DEFAULT_MONTHS),
             'canCreate' => app(ProtocolNumbering::class)->userMayChooseNumber($user),
             'formYear' => (int) (Config::getConfigValueOf('yearInUse') ?: Carbon::now()->year),

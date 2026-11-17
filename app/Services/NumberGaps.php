@@ -11,7 +11,8 @@ use Carbon\Carbon;
  *
  * Scope (settings, page "Ρυθμίσεις"):
  *  - gapCheckMonths      look only at protocols dated in the last N months (default 6)
- *  - gapCheckFromNumber  ignore numbers below this one in the current year (empty = no lower limit)
+ *  - firstProtocolNum    "Αρ.Πρωτοκόλλου για ξεκίνημα": numbers below it in the current year are not checked
+ *                        (R2c, owner 2026-11-17; was the separate setting gapCheckFromNumber)
  * Numbering restarts every year, so each year in the window is checked separately.
  */
 class NumberGaps
@@ -25,7 +26,7 @@ class NumberGaps
     {
         $today ??= Carbon::now();
         $months = (int) (Config::getConfigValueOf('gapCheckMonths') ?: self::DEFAULT_MONTHS);
-        $from = (int) Config::getConfigValueOf('gapCheckFromNumber');
+        $from = (int) Config::getConfigValueOf('firstProtocolNum');
         $windowStart = (int) $today->copy()->subMonthsNoOverflow($months)->format('Ymd');
 
         $result = [];
@@ -52,6 +53,34 @@ class NumberGaps
             }
         }
         return $result;
+    }
+
+    /**
+     * R2c: the missing numbers as runs of consecutive numbers, for the placeholder rows of the list.
+     *
+     * @param  array<int, int[]>  $gaps  the result of find()
+     * @return list<array{year: int, from: int, to: int}>
+     */
+    public static function runs(array $gaps): array
+    {
+        $runs = [];
+        foreach ($gaps as $year => $numbers) {
+            $start = $prev = null;
+            foreach ($numbers as $n) {
+                if ($prev !== null && $n === $prev + 1) {
+                    $prev = $n;
+                    continue;
+                }
+                if ($start !== null) {
+                    $runs[] = ['year' => (int) $year, 'from' => $start, 'to' => $prev];
+                }
+                $start = $prev = $n;
+            }
+            if ($start !== null) {
+                $runs[] = ['year' => (int) $year, 'from' => $start, 'to' => $prev];
+            }
+        }
+        return $runs;
     }
 
     /** "37, 88, 100–105" */

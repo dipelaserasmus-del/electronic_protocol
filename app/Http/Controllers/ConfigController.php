@@ -63,22 +63,22 @@ class ConfigController extends Controller implements HasMiddleware
         $this->validate(request(), [
             'ipiresiasName' => 'required|max:255',
             'yearInUse' => 'nullable|sometimes|integer|digits:4',
-            'firstProtocolNum' => 'required|integer',
+            'firstProtocolNum' => 'required|integer|min:0',   // 0 (the installer's value) = 1
             'showRowsInPage' => 'required|integer',
             'protocolArrowStep' => 'required|integer',
             'maxRowsInFindPage' => 'nullable|integer',
             'maxRowsInXlsExport' => 'nullable|integer',
             'minutesRefreshInterval' => 'required|numeric',
-            'gapCheckFromNumber' => 'nullable|integer|min:1',
             'gapCheckMonths' => 'nullable|integer|min:1|max:24',
             'trashRetentionDays' => 'nullable|integer|min:0|max:3650',
         ], [
             'trashRetentionDays.*' => 'Οι ημέρες του κάδου είναι από 0 (μέχρι να αδειάσει με το χέρι) έως 3650.',
-            'gapCheckFromNumber.*' => 'Ο αριθμός έναρξης ελέγχου κενών πρέπει να είναι θετικός ακέραιος.',
+            'firstProtocolNum.*' => 'Ο αριθμός για ξεκίνημα πρέπει να είναι ακέραιος (0 ή κενό = 1).',
             'gapCheckMonths.*' => 'Οι μήνες ελέγχου κενών πρέπει να είναι από 1 έως 24.',
         ]);
 
 
+        unset($data['gapCheckFromNumber']);   // R2c: replaced by firstProtocolNum
         foreach ($data as $key => $value) {
             Config::setConfigValueOf($key, trim($value));
             if ($key == 'updatesAutoCheck' and $value == 0) Config::setConfigValueOf('needsUpdate', 0);
