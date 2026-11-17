@@ -132,6 +132,17 @@ class ProtocolForm extends Component
         $this->replacePlaceholder = false;
     }
 
+    /** R1e: "Σχετικοί αριθμοί" as tags — Enter, comma or leaving the box adds what was typed; ✕ removes one. */
+    public function addRelated(string $typed): void
+    {
+        $this->form['sxetiko'] = \App\Support\RelatedNumbers::add($this->form['sxetiko'], $typed, (int) ($this->form['etos'] ?: $this->activeYear()));
+    }
+
+    public function removeRelated(int $index): void
+    {
+        $this->form['sxetiko'] = \App\Support\RelatedNumbers::remove($this->form['sxetiko'], $index);
+    }
+
     public function save(ProtocolWriter $writer)
     {
         $input = $this->form + [

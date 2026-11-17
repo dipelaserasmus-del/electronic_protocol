@@ -26,16 +26,18 @@ The owner tried Batch 6 and reported (2026-11-17):
 - **Notices (toasts), everywhere:** top centre, just under the top bar; a click anywhere on one closes it; optional
   link (`appToast(message, type, {url, label})`, Livewire `dispatch('toast', …, url:, label:)`), same-site addresses
   only, text only as before.
-- **Σχετικοί αριθμοί:** under the field, each reference becomes a small pill. An existing protocol the user may open is
-  a link ↗ (new tab, its subject on hover); a number without such a protocol stays grey text. `12/2026`, a bare `12`
-  (= the protocol's year), separated by commas, semicolons or spaces (`App\Support\RelatedNumbers`). Users limited to
-  their own protocols get no link and no subject for other people's protocols.
+- **Σχετικοί αριθμοί as tags** (owner's idea, 2026-11-17): Enter, a comma (or `;`) or leaving the box turns what was
+  typed into a pill; a bare number gets the protocol's year (`12` → `12/2026`); pasting "12/2026, 40/2025" makes two;
+  no repeats. An existing protocol the user may open is a blue link pill ↗ (new tab, its subject on hover); anything
+  else is a grey pill. ✕ or Backspace in the empty box removes one. The stored value stays the same text
+  ("12/2026, 40/2025"), so search, prints and old entries are unchanged (`App\Support\RelatedNumbers`). Users limited
+  to their own protocols get no link and no subject for other people's protocols.
 - **Trash page:** "Το «…» επέστρεψε στο πρωτόκολλό του." now ends with *Άνοιγμα πρωτοκόλλου N/YYYY*.
 
 ## How verified
 - Full suites: PHPUnit 340, browser 46/46.
-- PHPUnit: `test_related_numbers_link_to_existing_protocols` (links, subject on hover, unknown numbers, a limited writer
-  sees no link or subject); `TrashTest` checks the restore notice's link.
+- PHPUnit: `test_related_numbers_are_tags_linking_to_existing_protocols` (bare number gets the year, pasted list, no
+  repeats, links, subject on hover, unknown numbers, remove, saved text; a limited writer sees no link or subject); `TrashTest` checks the restore notice's link.
 - Browser:
   - `attachments-panel.spec.js`: a **native** file drag (Chromium's DevTools input, as the operating system does it, not
     synthetic events) dropped on the subject field in the middle of the form is attached and nothing is typed into the
@@ -43,7 +45,8 @@ The owner tried Batch 6 and reported (2026-11-17):
     test is Chromium only).
   - `components.spec.js`: the notice is under the top bar and centred, a click closes it, a link to another site is not
     shown.
-  - `protocol-form.spec.js`: the related number opens the protocol in a new tab.
+  - `protocol-form.spec.js`: Enter and a comma make pills (Enter does not save), Backspace in the empty box removes
+    the last one, the link pill opens the protocol in a new tab.
   - `trash.spec.js`: the restore notice's link opens the protocol.
 
   ![related numbers](img/R1e/r1e-related-links.png)

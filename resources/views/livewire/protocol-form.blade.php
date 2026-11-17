@@ -132,21 +132,36 @@
                         @endif
                     </x-form.text>
                     <div class="row g-2">
-                        <x-form.text class="col-md-6" name="sxetiko" :value="$form['sxetiko']" live label="Σχετικοί αριθμοί" :error="$e('sxetiko')" help="π.χ. 12/2026, 40/2025">
-                            {{-- R1e: each existing number opens its protocol in a new tab --}}
-                            @if (collect($related)->contains(fn ($r) => $r['protocol']))
-                                <div class="small mt-1" id="related-links">
-                                    @foreach ($related as $r)
+                        {{-- R1e: related numbers as tags. Enter, a comma or leaving the box turns what was typed into a pill
+                             (a bare number gets the year); an existing protocol is a link ↗ (new tab); ✕ or Backspace in the
+                             empty box removes one. The stored value stays "12/2026, 40/2025". --}}
+                        <div class="col-md-6 mb-2">
+                            <label for="f-sxetiko" class="form-label small fw-semibold mb-1">Σχετικοί αριθμοί</label>
+                            <div class="form-control d-flex flex-wrap align-items-center gap-1 tag-box @if ($e('sxetiko')) is-invalid @endif" id="related-box"
+                                 x-on:click="$el.querySelector('input')?.focus()">
+                                @foreach ($related as $i => $r)
+                                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 related-pill {{ $r['protocol'] ? 'bg-primary-subtle text-primary-emphasis border-primary-subtle' : 'text-body-secondary bg-body-tertiary' }}"
+                                          wire:key="rel-{{ $i }}-{{ $r['text'] }}"
+                                          title="{{ $r['protocol'] ? $r['protocol']->thema : 'Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε' }}">
                                         @if ($r['protocol'])
-                                            <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="badge rounded-pill text-bg-light border text-decoration-none me-1"
-                                               title="{{ $r['protocol']->thema }}">↗ {{ $r['protocol']->protocolnum }}/{{ $r['protocol']->etos }}</a>
+                                            <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="text-reset text-decoration-none">↗ {{ $r['protocol']->protocolnum }}/{{ $r['protocol']->etos }}</a>
                                         @else
-                                            <span class="badge rounded-pill text-body-secondary border me-1" title="Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε">{{ $r['text'] }}</span>
+                                            {{ $r['text'] }}
                                         @endif
-                                    @endforeach
-                                </div>
-                            @endif
-                        </x-form.text>
+                                        <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeRelated({{ $i }})"
+                                                aria-label="Αφαίρεση {{ $r['text'] }}"></button>
+                                    </span>
+                                @endforeach
+                                <input id="f-sxetiko" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" style="min-width: 6rem; outline: none" autocomplete="off"
+                                       placeholder="{{ $related ? '' : 'π.χ. 12/2026' }}" aria-describedby="sxetiko-help"
+                                       x-data="{ add() { const v = $el.value.trim(); $el.value = ''; if (v) $wire.addRelated(v) } }"
+                                       x-on:keydown="if ($event.key === 'Enter' || $event.key === ',' || $event.key === ';') { $event.preventDefault(); add() }
+                                                     else if ($event.key === 'Backspace' && $el.value === '' && {{ count($related) }} > 0) $wire.removeRelated({{ count($related) - 1 }})"
+                                       x-on:input="if (/[,;]/.test($el.value)) add()" x-on:blur="add()">
+                            </div>
+                            @if ($e('sxetiko'))<div class="invalid-feedback d-block">{{ $e('sxetiko') }}</div>@endif
+                            <div class="form-text" id="sxetiko-help">Γράψτε αριθμό (π.χ. 12/2026 ή 12) και πατήστε Enter ή κόμμα.</div>
+                        </div>
                         <x-form.text class="col-md-6" name="keywords" :value="$form['keywords']" label="Λέξεις κλειδιά" list="suggest-keywords" :error="$e('keywords')" />
                     </div>
                     <x-form.text name="paratiriseis" :value="$form['paratiriseis']" label="Παρατηρήσεις" rows="2" :error="$e('paratiriseis')" />

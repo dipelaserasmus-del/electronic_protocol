@@ -10,6 +10,33 @@ use App\Models\Protocol;
  */
 class RelatedNumbers
 {
+    /** @return list<string> the references as typed */
+    public static function tokens(?string $value): array
+    {
+        return preg_split('~[\s,;]+~u', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    /** Adds what was typed (one or more references) to the field's value; a bare number gets the year, no repeats. */
+    public static function add(?string $value, string $typed, int $year): string
+    {
+        $tokens = self::tokens($value);
+        foreach (self::tokens($typed) as $t) {
+            $t = ctype_digit($t) ? ((int) $t) . '/' . $year : $t;
+            if (! in_array($t, $tokens, true)) {
+                $tokens[] = $t;
+            }
+        }
+        return implode(', ', $tokens);
+    }
+
+    /** The field's value without its reference number $index (0 = first). */
+    public static function remove(?string $value, int $index): string
+    {
+        $tokens = self::tokens($value);
+        unset($tokens[$index]);
+        return implode(', ', $tokens);
+    }
+
     /**
      * Every reference in order; protocol = the existing protocol the user may open, else null.
      *
@@ -18,7 +45,7 @@ class RelatedNumbers
     public static function resolve(?string $value, int $year): array
     {
         $refs = [];
-        foreach (preg_split('~[\s,;]+~u', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY) as $text) {
+        foreach (self::tokens($value) as $text) {
             if (preg_match('~^(\d{1,9})(?:/(\d{4}))?$~', $text, $m)) {
                 $refs[] = ['text' => $text, 'num' => (int) $m[1], 'year' => isset($m[2]) ? (int) $m[2] : $year];
             } else {
