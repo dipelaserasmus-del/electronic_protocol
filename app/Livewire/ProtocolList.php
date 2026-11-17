@@ -82,6 +82,10 @@ class ProtocolList extends Component
         if (! $this->canSeeOthers() || ! ($this->who === 'all' || $this->who === 'me' || (ctype_digit($this->who) && User::whereKey($this->who)->exists()))) {
             $this->who = 'me';
         }
+        // R2b: under "Όλα", "me" already means everybody's protocols (as for every user); "all" is the same list
+        if ($this->filter === '' && $this->who === 'all') {
+            $this->who = 'me';
+        }
         if (! array_key_exists($this->field, self::SORTS)) {
             $this->field = 'protocolnum';
         }
@@ -127,12 +131,13 @@ class ProtocolList extends Component
             $q->ownOrAssigned((int) $user->id);
         }
         match ($this->filter) {
+            // R2b: "Όλα" with a chosen user = what that user registered or is assigned to ("me" = everything)
+            '' => $this->who === 'me' ? null : $q->ownOrAssigned((int) $for),
             'm' => $for === null ? null : $q->ownOrAssigned($for),
             'a' => $for === null ? null : $q->where('user_id', $for),
             'd' => ($for === null ? $q->assignedFor('d') : $q->assignedTo($for, 'd'))->whereNull('diekp_date'),
             'e' => $for === null ? $q->assignedFor('e') : $q->assignedTo($for, 'e'),
             'f' => ($for === null ? $q->assignedFor('d') : $q->assignedTo($for, 'd'))->whereNotNull('diekp_date'),
-            default => null,
         };
         return $q;
     }
@@ -156,6 +161,9 @@ class ProtocolList extends Component
     private function title(): string
     {
         $base = self::FILTERS[$this->filter] === 'Όλα' ? 'Πρωτόκολλο' : self::FILTERS[$this->filter];
+        if ($this->filter === '' && $this->who === 'me') {
+            return $base;
+        }
         if ($this->who === 'all') {
             return "Όλοι οι χρήστες · $base";
         }
@@ -163,6 +171,28 @@ class ProtocolList extends Component
             return (User::find($this->who)?->name ?? '') . " · $base";
         }
         return $base;
+    }
+
+    /**
+     * R2b: the user menu in two groups: users with open handling assignments (not yet marked "Διεκπεραιώθηκε"), with
+     * their number, then everyone else.
+     *
+     * @return array{open: list<array{id: int, name: string, open: int}>, rest: list<array{id: int, name: string}>}
+     */
+    private function userGroups(): array
+    {
+        $open = ProtocolAssignment::query()
+            ->join('protocols', 'protocols.id', '=', 'protocol_assignments.protocol_id')
+            ->where('protocol_assignments.type', 'd')->whereNull('protocols.diekp_date')
+            ->groupBy('protocol_assignments.user_id')
+            ->selectRaw('protocol_assignments.user_id, COUNT(DISTINCT protocols.id) AS n')
+            ->pluck('n', 'user_id');
+        $groups = ['open' => [], 'rest' => []];
+        foreach (User::orderBy('name')->get(['id', 'name']) as $u) {
+            $n = (int) ($open[$u->id] ?? 0);
+            $groups[$n > 0 ? 'open' : 'rest'][] = ['id' => $u->id, 'name' => $u->name, 'open' => $n];
+        }
+        return $groups;
     }
 
     public function render()
@@ -174,7 +204,7 @@ class ProtocolList extends Component
         return view('livewire.protocol-list', [
             'protocols' => $this->query()->paginate((int) (Config::getConfigValueOf('showRowsInPage') ?: 25)),
             'folders' => Keepvalue::pluck('describe', 'fakelos'),
-            'users' => $this->canSeeOthers() ? User::orderBy('name')->get(['id', 'name']) : collect(),
+            'userGroups' => $this->canSeeOthers() ? $this->userGroups() : [],
             'names' => User::pluck('name', 'id'),
             'numberGaps' => $seesGaps ? app(NumberGaps::class)->find() : [],
             'gapMonths' => (int) (Config::getConfigValueOf('gapCheckMonths') ?: NumberGaps::DEFAULT_MONTHS),

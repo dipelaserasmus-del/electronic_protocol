@@ -54,10 +54,25 @@
         @endforeach
         @if ($canSeeOthers)
             <label for="list-who" class="visually-hidden">Χρήστης</label>
+            {{-- R2b: under "Όλα" the list is everybody's unless a user is chosen; users with open handling
+                 assignments (not yet "Διεκπεραιώθηκε") first, with their number --}}
             <select id="list-who" class="form-select form-select-sm w-auto" wire:model.live="who">
-                <option value="me">Εγώ</option>
-                <option value="all">Όλοι οι χρήστες</option>
-                @foreach ($users as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach
+                @if ($filter === '')
+                    <option value="me">Όλοι οι χρήστες</option>
+                @else
+                    <option value="me">Εγώ</option>
+                    <option value="all">Όλοι οι χρήστες</option>
+                @endif
+                @if ($userGroups['open'])
+                    <optgroup label="Με εκκρεμείς αναθέσεις">
+                        @foreach ($userGroups['open'] as $u)<option value="{{ $u['id'] }}">{{ $u['name'] }} ({{ $u['open'] }})</option>@endforeach
+                    </optgroup>
+                @endif
+                @if ($userGroups['rest'])
+                    <optgroup label="Χωρίς εκκρεμείς αναθέσεις">
+                        @foreach ($userGroups['rest'] as $u)<option value="{{ $u['id'] }}">{{ $u['name'] }}</option>@endforeach
+                    </optgroup>
+                @endif
             </select>
         @endif
         <div class="form-check form-switch ms-auto">
@@ -97,8 +112,23 @@
                         </td>
                         <td>
                             <div class="text-break">{{ $p->thema }}</div>
-                            <div x-show="detailed" x-cloak class="small text-body-secondary">
+                            {{-- R2b: the detailed view shows everything a row has, not only the (often empty) notes --}}
+                            <div x-show="detailed" x-cloak class="small text-body-secondary detailed">
+                                @if ($p->fakelos && ($folders[$p->fakelos] ?? null))<div><span class="fw-semibold">Φάκελος:</span> {{ $p->fakelos }} · {{ $folders[$p->fakelos] }}</div>@endif
+                                @if ($p->in_num || $p->in_arxi_ekdosis || $p->in_topos_ekdosis || $p->in_paraliptis)
+                                    <div><span class="fw-semibold">Εισερχόμενο:</span>
+                                        {{ collect([
+                                            $p->in_num ? 'αρ. '.$p->in_num : null,
+                                            $p->in_date ? $p->dateOf('in_date')?->format('d/m/Y') : null,
+                                            $p->in_arxi_ekdosis, $p->in_topos_ekdosis,
+                                            $p->in_paraliptis ? 'προς '.$p->in_paraliptis : null,
+                                        ])->filter()->implode(' · ') }}</div>
+                                @endif
                                 @if ($p->in_perilipsi)<div><span class="fw-semibold">Περίληψη εισ.:</span> {{ $p->in_perilipsi }}</div>@endif
+                                @if ($p->out_to || $p->out_date)
+                                    <div><span class="fw-semibold">Εξερχόμενο:</span>
+                                        {{ collect([$p->out_to, $p->out_date ? $p->dateOf('out_date')?->format('d/m/Y') : null])->filter()->implode(' · ') }}</div>
+                                @endif
                                 @if ($p->out_perilipsi)<div><span class="fw-semibold">Περίληψη εξ.:</span> {{ $p->out_perilipsi }}</div>@endif
                                 @if ($p->keywords)<div><span class="fw-semibold">Λέξεις:</span> {{ $p->keywords }}</div>@endif
                                 @if ($p->sxetiko)
@@ -109,6 +139,7 @@
                                     </div>
                                 @endif
                                 @if ($p->paratiriseis)<div><span class="fw-semibold">Παρατηρήσεις:</span> {{ $p->paratiriseis }}</div>@endif
+                                <div><span class="fw-semibold">Καταχώριση:</span> {{ $names[$p->user_id] ?? '—' }}@if ($p->created_at) · {{ $p->created_at->format('d/m/Y H:i') }}@endif</div>
                             </div>
                         </td>
                         <td class="d-none d-lg-table-cell small">
@@ -135,15 +166,18 @@
                             @endif
                         </td>
                         <td class="d-none d-sm-table-cell small">
+                            {{-- R2b: the file's name, shortened (whole in the detailed view and on hover) --}}
                             @foreach ($p->attachments as $a)
-                                <div class="text-nowrap">
+                                <div class="d-flex align-items-center gap-1 attachment-name">
                                     @if ($a->savedPath)
-                                        <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-decoration-none position-relative z-2"
-                                           title="{{ $a->name }}"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" /></a>
+                                        <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-decoration-none position-relative z-2 d-inline-flex align-items-center gap-1"
+                                           title="{{ $a->name }}"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
+                                            <span x-show="! detailed" class="text-nowrap">{{ \App\Support\FileBadge::shortName($a->name) }}</span>
+                                            <span x-show="detailed" x-cloak class="text-break">{{ $a->name }}</span></a>
                                     @endif
                                     @if ($a->ada)
-                                        @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light position-relative z-2">ΑΔΑ</a>
-                                        @else<span class="badge text-bg-light" title="{{ $a->ada }}">ΑΔΑ</span>@endif
+                                        @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light position-relative z-2" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed" x-cloak> {{ $a->ada }}</span></a>
+                                        @else<span class="badge text-bg-light" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed" x-cloak> {{ $a->ada }}</span></span>@endif
                                     @endif
                                 </div>
                             @endforeach
