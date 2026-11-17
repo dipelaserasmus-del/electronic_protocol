@@ -28,6 +28,19 @@ final class FileBadge
         };
     }
 
+    /** R2b: "Πρόσκληση_σε_ημερ….pdf": at most $max letters, keeping the extension. */
+    public static function shortName(?string $name, int $max = 24): string
+    {
+        $name = (string) $name;
+        if (mb_strlen($name) <= $max) {
+            return $name;
+        }
+        $ext = pathinfo($name, PATHINFO_EXTENSION);
+        $ext = $ext !== '' && mb_strlen($ext) <= 5 ? '.' . $ext : '';
+        $stem = mb_substr($name, 0, mb_strlen($name) - mb_strlen($ext));
+        return rtrim(mb_substr($stem, 0, max(1, $max - mb_strlen($ext) - 1))) . '…' . $ext;
+    }
+
     /** 0 B, 950 B, 12 KB, 1,2 MB, 3,4 GB (Greek decimal comma). */
     public static function size(?int $bytes): string
     {

@@ -66,3 +66,45 @@ test('"Αναλυτικά" shows more and is remembered by the browser (R2)', as
   await expect(page).toHaveURL(/\/home\/\d+$/);
   await expect(page.locator('#f-thema')).toHaveValue(subject);
 });
+
+test('a user chosen under "Όλα" filters the list; busy users first; file names shown (R2b)', async ({ page }) => {
+  const subject = `R2b ${Date.now()}`;
+  const file = `Πρόσκληση_σε_επιμορφωτική_ημερίδα_R2b_${Date.now()}.pdf`;
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: subject, fakelos: 'first' });
+  await page.setInputFiles('#f-uploads', { name: file, mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 R2b\n') });
+  await expect(page.locator('#attachments .upload-row')).toHaveCount(1);
+  await saveProtocol(page);
+
+  await page.context().clearCookies();
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  const who = page.locator('#list-who');
+  await expect(who.locator('option').first()).toHaveText('Όλοι οι χρήστες');
+  await expect(who.locator('optgroup[label="Χωρίς εκκρεμείς αναθέσεις"]')).toHaveCount(1);
+  const row = page.locator('.protocol-row', { hasText: subject });
+  await expect(row).toBeVisible();
+  // attachments column: the start of the name and the extension; the whole name on hover
+  const name = row.locator('.attachment-name a');
+  await expect(name).toContainText('Πρόσκληση_σε_επιμορ….pdf');
+  await expect(name).toHaveAttribute('title', file);
+  await evidence(page, 'r2b-user-menu-and-file-names', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
+
+  // the writer's protocols only (registered or assigned)
+  const writerId = await who.locator('option', { hasText: 'Συγγραφέας Δοκιμών' }).getAttribute('value');
+  await who.selectOption(writerId);
+  await expect(page.locator('#list-title')).toHaveText('Συγγραφέας Δοκιμών · Πρωτόκολλο');
+  await expect(page.locator('.protocol-row', { hasText: subject })).toBeVisible();
+  const total = Number((await page.locator('text=Σύνολο:').innerText()).replace(/\D/g, ''));
+  await who.selectOption('me');
+  await expect(page.locator('#list-title')).toHaveText('Πρωτόκολλο');
+  await expect.poll(async () => Number((await page.locator('text=Σύνολο:').innerText()).replace(/\D/g, ''))).toBeGreaterThan(total);
+
+  // the detailed view: the whole file name, who registered it
+  await page.locator('#list-detailed').check();
+  await expect(row.locator('.attachment-name a')).toContainText(file);
+  await expect(row.locator('.detailed')).toContainText('Καταχώριση: Συγγραφέας Δοκιμών');
+  await evidence(page, 'r2b-detailed', { clip: { x: 0, y: 0, width: 1440, height: 620 } });
+  await page.locator('#list-detailed').uncheck();
+});

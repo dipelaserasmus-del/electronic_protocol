@@ -124,4 +124,64 @@ class ProtocolListTest extends FeatureTestCase
         Protocol::factory()->number(1)->create(['sxetiko' => '3/2025']);
         $this->actingAs($this->admin())->get('/home/list')->assertSee('?find=1" class="position-relative z-2"', false);
     }
+    /** R2b (owner): choosing a user under "Όλα" did not filter the list. */
+    public function test_choosing_a_user_under_all_shows_that_users_protocols(): void
+    {
+        [$a, $b] = [$this->writer(), $this->writer()];
+        Protocol::factory()->number(1)->assignedTo($a)->create(['thema' => 'Ανάθεση στον Α']);
+        Protocol::factory()->number(2)->create(['thema' => 'Γραμμένο από Α', 'user_id' => $a->id]);
+        Protocol::factory()->number(3)->assignedTo($b)->create(['thema' => 'Ανάθεση στον Β']);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get('/home/list')->assertSee('Ανάθεση στον Α')->assertSee('Ανάθεση στον Β');
+        $this->actingAs($admin)->get("/home/list?user={$a->id}")
+            ->assertSee('Ανάθεση στον Α')->assertSee('Γραμμένο από Α')->assertDontSee('Ανάθεση στον Β')
+            ->assertSee($a->name . ' · Πρωτόκολλο');
+        Livewire::actingAs($admin)->test(ProtocolList::class)->set('who', 'all')->assertSet('who', 'me')   // same list under "Όλα"
+            ->assertSee('Ανάθεση στον Β')->set('filter', 'd')->set('who', 'all')->assertSet('who', 'all');
+    }
+
+    /** R2b (owner): users with open handling assignments first, with their number; done ones don't count. */
+    public function test_user_menu_groups_users_by_open_assignments(): void
+    {
+        [$busy, $done, $idle] = [
+            \App\Models\User::factory()->writer()->create(['name' => 'Ανοιχτός Χρήστης']),
+            \App\Models\User::factory()->writer()->create(['name' => 'Τελειωμένος Χρήστης']),
+            \App\Models\User::factory()->writer()->create(['name' => 'Αργός Χρήστης']),
+        ];
+        Protocol::factory()->number(1)->assignedTo($busy)->create();
+        Protocol::factory()->number(2)->assignedTo($busy, $idle)->create();   // informing is not an open assignment
+        Protocol::factory()->number(3)->assignedTo($busy)->create(['diekp_date' => 20260105]);
+        Protocol::factory()->number(4)->assignedTo($done)->create(['diekp_date' => 20260105]);
+
+        $html = Livewire::actingAs($this->admin())->test(ProtocolList::class)->html();
+        $open = substr($html, strpos($html, 'label="Με εκκρεμείς αναθέσεις"'));
+        $open = substr($open, 0, strpos($open, '</optgroup>'));
+        $rest = substr($html, strpos($html, 'label="Χωρίς εκκρεμείς αναθέσεις"'));
+        $this->assertStringContainsString('Ανοιχτός Χρήστης (2)', $open);
+        $this->assertStringNotContainsString('Τελειωμένος', $open);
+        $this->assertStringContainsString('Τελειωμένος Χρήστης', $rest);
+        $this->assertStringContainsString('Αργός Χρήστης', $rest);
+    }
+
+    /** R2b (owner): "Αναλυτικά" showed little; the attachments column showed no names. */
+    public function test_detailed_view_and_attachment_names(): void
+    {
+        $writer = \App\Models\User::factory()->writer()->create(['name' => 'Γραμματέας Δοκιμών']);
+        $p = Protocol::factory()->number(9)->create([
+            'user_id' => $writer->id, 'in_num' => 'Φ.12/345', 'in_arxi_ekdosis' => 'Περιφερειακή Διεύθυνση',
+            'in_topos_ekdosis' => 'Λάρισα', 'out_to' => 'Σχολεία',
+        ]);
+        $long = 'Πρόσκληση_σε_επιμορφωτική_ημερίδα_εκπαιδευτικών.pdf';
+        \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => $long, 'ada' => 'ΩΑΒΓ465ΧΘΞ-1']);
+
+        $page = $this->actingAs($this->admin())->get('/home/list')->assertOk();
+        $page->assertSee('Εισερχόμενο:')->assertSee('αρ. Φ.12/345 · Περιφερειακή Διεύθυνση · Λάρισα')
+            ->assertSee('Εξερχόμενο:')->assertSee('Καταχώριση:')->assertSee('Γραμματέας Δοκιμών')
+            ->assertSee(\App\Support\FileBadge::shortName($long))->assertSee('title="' . $long . '"', false)
+            ->assertSee('ΩΑΒΓ465ΧΘΞ-1');
+        $this->assertSame('Πρόσκληση_σε_επιμορ….pdf', \App\Support\FileBadge::shortName($long));
+        $this->assertSame('σύντομο.pdf', \App\Support\FileBadge::shortName('σύντομο.pdf'));
+        $this->assertSame(24, mb_strlen(\App\Support\FileBadge::shortName(str_repeat('α', 40))));
+    }
 }
