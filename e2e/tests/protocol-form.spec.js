@@ -88,3 +88,25 @@ test('a 2 MB attachment is uploaded and saved (R1b: nginx allowed only 1 MB)', a
   expect((await file.body()).length).toBe(body.length);
   await evidence(page, 'r1b-attachment-saved', { fullPage: true });
 });
+
+test('related numbers open the protocol in a new tab (R1e)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R1e σχετικό ${Date.now()}`, fakelos: 'first' });
+  await saveProtocol(page);
+  const first = page.url();
+  const [, num, year] = (await notice(page)).match(/Καταχωρίστηκε με αριθμό (\d+)\/(\d{4})/);
+
+  await page.goto('/home');
+  await page.locator('#f-sxetiko').fill(`${num}/${year}, 999999`);
+  await page.locator('#f-sxetiko').press('Tab');
+  const link = page.locator('#related-links a');
+  await expect(link).toHaveText(`↗ ${num}/${year}`);
+  await expect(link).toHaveAttribute('href', first);
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(page.locator('#related-links')).toContainText('999999');
+  await evidence(page, 'r1e-related-links', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
+  const [tab] = await Promise.all([page.context().waitForEvent('page'), link.click()]);
+  await tab.waitForLoadState();
+  expect(tab.url()).toBe(first);
+});

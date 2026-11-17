@@ -171,7 +171,8 @@ class TrashTest extends FeatureTestCase
         $this->assertSame('%PDF', $this->actingAs($admin)->get("/trash/{$a->id}/download")->assertOk()->streamedContent());
 
         Livewire::actingAs($admin)->test(TrashPage::class)
-            ->call('restore', $a->id)->assertDispatched('toast', type: 'success')
+            ->call('restore', $a->id)
+            ->assertDispatched('toast', type: 'success', url: url('/home/' . $p->id), label: "Άνοιγμα πρωτοκόλλου 5/{$p->etos}")   // R1e
             ->call('restore', $gone->id)->assertDispatched('toast', type: 'error')
             ->call('purge', $gone->id);
         $this->assertFalse(Attachment::find($a->id)->trashed());

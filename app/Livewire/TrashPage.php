@@ -27,9 +27,14 @@ class TrashPage extends Component
     {
         abort_unless(auth()->user()?->role?->role === 'Διαχειριστής', 403);
         $a = Attachment::onlyTrashed()->findOrFail($id);
-        $trash->restore($a)
-            ? $this->dispatch('toast', message: "Το «{$a->name}» επέστρεψε στο πρωτόκολλό του.", type: 'success')
-            : $this->dispatch('toast', message: 'Το πρωτόκολλο δεν υπάρχει πια: δεν γίνεται επαναφορά.', type: 'error');
+        if (! $trash->restore($a)) {
+            $this->dispatch('toast', message: 'Το πρωτόκολλο δεν υπάρχει πια: δεν γίνεται επαναφορά.', type: 'error');
+            return;
+        }
+        // R1e: the notice links to the protocol the file went back to
+        $p = $a->fresh()->protocol;
+        $this->dispatch('toast', message: "Το «{$a->name}» επέστρεψε στο πρωτόκολλό του.", type: 'success',
+            url: $p ? url('/home/'.$p->id) : null, label: $p ? "Άνοιγμα πρωτοκόλλου {$p->protocolnum}/{$p->etos}" : null);
     }
 
     public function purge(int $id, Trash $trash): void

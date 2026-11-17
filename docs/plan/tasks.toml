@@ -65,6 +65,11 @@ tasks = [
   { id = "R4a", title = "Secure file handling", phase = "R", batch = 6, size = "S", deps = ["S02"], status = "done", pr = 46 },
   { id = "R4b", title = "Attachment trash with retention", phase = "R", batch = 6, size = "M", deps = ["R4a", "D03"], status = "done", pr = 47 },
 
+  # ---------------- Batch 6.5: owner's feedback on Batch 6 (2026-11-17) ----------------
+  { id = "R1e", title = "Form feedback: drop (Firefox), related links, notices", phase = "R", batch = 6.5, size = "S", deps = ["R1c", "R4b"], status = "in-progress" },
+  { id = "R2b", title = "List feedback: user filter, detailed view, file names", phase = "R", batch = 6.5, size = "M", deps = ["R2"], status = "todo" },
+  { id = "R2c", title = "Missing numbers as rows in the list", phase = "R", batch = 6.5, size = "M", deps = ["R2b", "A02"], status = "todo" },
+
   # ---------------- Batch 7 ----------------
   { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "todo" },
   { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "todo" },

@@ -106,8 +106,9 @@ function initPills(root = document) {
     });
 }
 
-/* ---------- toasts: window.appToast(message, type), Livewire $this->dispatch('toast', message: …, type: …) ---------- */
-window.appToast = function (message, type = 'success') {
+/* ---------- toasts: window.appToast(message, type, link), Livewire $this->dispatch('toast', message: …, type: …,
+   url: …, label: …). Top centre under the top bar; a click anywhere on one closes it (R1e). ---------- */
+window.appToast = function (message, type = 'success', link = null) {
     const box = document.getElementById('app-toasts');
     if (!box) return;
     const colour = { success: 'success', error: 'danger', danger: 'danger', warning: 'warning', info: 'info' }[type] ?? 'secondary';
@@ -115,14 +116,27 @@ window.appToast = function (message, type = 'success') {
     el.className = `toast align-items-center text-bg-${colour} border-0`;
     el.setAttribute('role', type === 'error' || type === 'danger' ? 'alert' : 'status');
     el.setAttribute('aria-live', 'polite');
+    el.title = 'Κλικ για κλείσιμο';
     el.innerHTML = '<div class="d-flex"><div class="toast-body"></div>'
         + '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Κλείσιμο"></button></div>';
-    el.querySelector('.toast-body').textContent = message;   // text only, never HTML
+    const body = el.querySelector('.toast-body');
+    body.textContent = message;   // text only, never HTML
+    // optional link (e.g. the restored file's protocol): same-site addresses only
+    if (link?.url && new URL(link.url, location.href).origin === location.origin) {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.className = 'd-block fw-semibold text-reset mt-1';
+        a.textContent = link.label || link.url;
+        body.append(a);
+    }
     box.append(el);
+    const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: type === 'error' || type === 'danger' ? 10000 : 5000 });
+    el.addEventListener('click', () => toast.hide());   // a link still opens
     el.addEventListener('hidden.bs.toast', () => el.remove());
-    bootstrap.Toast.getOrCreateInstance(el, { delay: type === 'error' || type === 'danger' ? 10000 : 5000 }).show();
+    toast.show();
 };
-window.addEventListener('toast', e => window.appToast(e.detail?.message ?? '', e.detail?.type ?? 'success'));
+window.addEventListener('toast', e => window.appToast(e.detail?.message ?? '', e.detail?.type ?? 'success',
+    e.detail?.url ? { url: e.detail.url, label: e.detail.label } : null));
 
 /* ---------- confirm dialog: any button/link/form with data-confirm="question" ---------- */
 let pendingConfirm = null;

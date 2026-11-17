@@ -57,6 +57,31 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame(0, Protocol::count());
     }
 
+    /** R1e: an existing related number opens its protocol in a new tab; others stay text. */
+    public function test_related_numbers_link_to_existing_protocols(): void
+    {
+        $year = (int) now()->year;
+        $mine = Protocol::factory()->number(12)->create(['thema' => 'Σχετικό δώδεκα']);
+        $old = Protocol::factory()->number(40)->create(['etos' => $year - 1]);
+        $writer = $this->writer();
+
+        $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class)
+            ->set('form.sxetiko', '12, 40/' . ($year - 1) . '; 77 φ.3');
+        $form->assertSeeHtml('href="' . url('/home/' . $mine->id) . '" target="_blank"')
+            ->assertSeeHtml('title="Σχετικό δώδεκα"')
+            ->assertSeeHtml('href="' . url('/home/' . $old->id) . '" target="_blank"')
+            ->assertSee('↗ 40/' . ($year - 1));
+        $this->assertStringContainsString('title="Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε">77<', $form->html());
+        $this->assertStringContainsString('>φ.3<', $form->html());
+
+        // a writer limited to own/assigned protocols gets no link (and no subject) for others' protocols
+        $this->setting('limitProtocolAccessList', 1);
+        Livewire::actingAs($writer)->test(ProtocolForm::class)->set('form.sxetiko', '12')
+            ->assertDontSee('id="related-links"', false)->assertDontSee('Σχετικό δώδεκα');
+        $this->actingAs($writer);
+        $this->assertNull(\App\Support\RelatedNumbers::resolve('12', $year)[0]['protocol']);
+    }
+
     public function test_same_subject_is_a_notice_not_a_question(): void
     {
         $this->setting('limitProtocolAccessList', 1);

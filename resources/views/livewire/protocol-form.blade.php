@@ -132,7 +132,21 @@
                         @endif
                     </x-form.text>
                     <div class="row g-2">
-                        <x-form.text class="col-md-6" name="sxetiko" :value="$form['sxetiko']" label="Σχετικοί αριθμοί" :error="$e('sxetiko')" help="π.χ. 12/2026, 40/2025" />
+                        <x-form.text class="col-md-6" name="sxetiko" :value="$form['sxetiko']" live label="Σχετικοί αριθμοί" :error="$e('sxetiko')" help="π.χ. 12/2026, 40/2025">
+                            {{-- R1e: each existing number opens its protocol in a new tab --}}
+                            @if (collect($related)->contains(fn ($r) => $r['protocol']))
+                                <div class="small mt-1" id="related-links">
+                                    @foreach ($related as $r)
+                                        @if ($r['protocol'])
+                                            <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="badge rounded-pill text-bg-light border text-decoration-none me-1"
+                                               title="{{ $r['protocol']->thema }}">↗ {{ $r['protocol']->protocolnum }}/{{ $r['protocol']->etos }}</a>
+                                        @else
+                                            <span class="badge rounded-pill text-body-secondary border me-1" title="Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε">{{ $r['text'] }}</span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @endif
+                        </x-form.text>
                         <x-form.text class="col-md-6" name="keywords" :value="$form['keywords']" label="Λέξεις κλειδιά" list="suggest-keywords" :error="$e('keywords')" />
                     </div>
                     <x-form.text name="paratiriseis" :value="$form['paratiriseis']" label="Παρατηρήσεις" rows="2" :error="$e('paratiriseis')" />
@@ -222,14 +236,32 @@
             {{-- attachments (R1c): open on new and copy, files can be dropped anywhere on the window --}}
             <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title"
                 @if ($access->canSave)
-                     x-data="{ over: false, depth: 0,
-                               hasFiles(e) { return [...(e.dataTransfer?.types || [])].includes('Files') } }"
-                     x-on:dragenter.window="if (hasFiles($event)) { $event.preventDefault(); depth++; over = true }"
-                     x-on:dragover.window="if (hasFiles($event)) $event.preventDefault()"
-                     x-on:dragleave.window="if (hasFiles($event)) { depth = Math.max(0, depth - 1); if (! depth) over = false }"
-                     x-on:drop.window="if (hasFiles($event)) { $event.preventDefault(); depth = 0; over = false;
-                         progress = 0;
-                         $wire.uploadMultiple('picked', $event.dataTransfer.files, () => progress = null, () => progress = null, (e) => progress = e.detail.progress) }"
+                     {{-- R1e: Firefox on Linux (Wayland) may announce dragged files only as application/x-moz-file or
+                          text/uri-list, or with no types until the drop; anything dragged in from outside the page counts,
+                          and the drop uploads only when it really carries files --}}
+                     x-data="{ over: false, depth: 0, inside: false,
+                               hasFiles(e) {
+                                   if (this.inside) return false;
+                                   const t = [...(e.dataTransfer?.types || [])];
+                                   return t.length === 0 || t.includes('Files') || t.includes('application/x-moz-file') || t.includes('text/uri-list');
+                               },
+                               enter(e) { if (this.hasFiles(e)) { e.preventDefault(); this.depth++; this.over = true } },
+                               hover(e) { if (this.hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; this.over = true } },
+                               leave(e) { if (this.hasFiles(e)) { this.depth = Math.max(0, this.depth - 1); if (! this.depth) this.over = false } },
+                               drop(e) {
+                                   const fromOutside = this.hasFiles(e);
+                                   this.inside = false;
+                                   if (! fromOutside) return;
+                                   e.preventDefault();
+                                   this.depth = 0; this.over = false;
+                                   const files = [...(e.dataTransfer?.files || [])];
+                                   if (! files.length) return;
+                                   this.progress = 0;
+                                   this.$wire.uploadMultiple('picked', files, () => this.progress = null, () => this.progress = null, (p) => this.progress = p.detail.progress);
+                               } }"
+                     x-on:dragstart.window="inside = true" x-on:dragend.window="inside = false"
+                     x-on:dragenter.window="enter($event)" x-on:dragover.window="hover($event)"
+                     x-on:dragleave.window="leave($event)" x-on:drop.window="drop($event)"
                      x-on:livewire-upload-start="progress = 0" x-on:livewire-upload-progress="progress = $event.detail.progress"
                      x-on:livewire-upload-finish="progress = null" x-on:livewire-upload-error="progress = null"
                 @endif>
