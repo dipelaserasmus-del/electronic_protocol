@@ -1,10 +1,11 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-16 23:54 (after Batch 6). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-17 12:10 (after Batch 6.5). Times are Greek time.
 
 ## ▶ Your next message
-Batch 6 is done ([summary](docs/reports/BATCH-6.md)): the protocol form, its attachments and the list are rebuilt.
-Start a **new conversation** in this project and send:
+Batch 6.5 is done ([summary](docs/reports/BATCH-6.5.md)): your notes on the form and the list.
+Send your notes on moving rarely used fields and controls whenever you have them; otherwise start a **new
+conversation** and send:
 
 ```
 run batch 7
@@ -13,23 +14,21 @@ run batch 7
 Batch 7 (R3a → R3b → R3c) rebuilds the search: the advanced search screen, Gmail-style search words (`από:`,
 `φάκελος:` …) and the search box in the top bar.
 
-## Try it (recommended, 10 minutes)
-After `git pull` and *Demo: start* (it rebuilds the screens), log in as `admin`:
-1. *Νέο*: type a number that already exists, then a free one; press TAB and type `9` (the day). Drag a PDF from a
-   folder onto the window and leave the subject empty, then save.
-2. *Λίστα*: try the filter pills, click a column title, switch on *Αναλυτικά* and reload the page.
-3. Delete that attachment from the protocol, then find it in *Διαχείριση → Κάδος* and press *Επαναφορά*.
-
-Tell me what feels wrong or is missing; screenshots of the demo are fine (no real data).
-
-Optional: **Real data: load** again. It drops the old assignments text after copying it, and prepares the trash.
-Assignments should look the same as before.
+## Try it (5 minutes)
+After *Update: get latest version from GitHub* and *Demo: start*, log in as `admin`:
+1. **Firefox:** drag a file from *Files* into the middle of the *Νέο* form. If it is not attached, try again and keep
+   the mouse still for a second before letting go. Tell me which worked.
+2. *Σχετικοί αριθμοί*: type `1` and press Enter, then `999999,`.
+3. *Λίστα*: choose a user; switch on *Αναλυτικά*; look for a dashed *Κενός αριθμός* row.
 
 ## Questions for you
-1. **The `--` problem** you mentioned: I could not find it in the old code. Saving and showing `--` (and `' " ; % _ \
+1. **Attachments shown as missing in your real-data copy** (port 8081): run *Real data: load newest backup from
+   local-data/db* and send me the two counts it prints (attachments measured / files not found). If almost all are
+   not found, the files are not in `local-data/storage/app/arxeio/…`.
+2. **The `--` problem** you mentioned: I could not find it in the old code. Saving and showing `--` (and `' " ; % _ \
    < > &`, Greek, emoji) works and is now tested. If it still happens, send the screen and what you typed (no real
    data).
-2. **Writers and the protocol date:** new setting *Ρυθμίσεις → Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία
+3. **Writers and the protocol date:** new setting *Ρυθμίσεις → Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
 
 ## Final deployment (when all tasks are completed and verified)
@@ -42,7 +41,8 @@ Assignments should look the same as before.
    - check the user list for unknown administrators;
    - press *Ρυθμίσεις → Backup* once and check the file opens;
    - choose how many days the trash keeps deleted attachments (30 if left empty; the old trash gets these days from
-     the deployment day).
+     the deployment day);
+   - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c).
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
    - anyone who can reach it can create an administrator account (S00);

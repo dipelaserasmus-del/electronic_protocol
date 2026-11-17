@@ -32,6 +32,7 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 /* R2: protocol list — header stays under the top bar while scrolling; the whole row opens the protocol */
 #app-toasts { top: var(--app-topbar-height, 3.2rem); z-index: 1090; }
 #app-toasts .toast { cursor: pointer; }
+.gap-row > td { background: var(--bs-warning-bg-subtle) !important; border: 2px dashed rgba(var(--bs-warning-rgb), .75) !important; color: var(--bs-warning-text-emphasis); }
 .table-sticky thead th { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 3; background: var(--bs-tertiary-bg); box-shadow: inset 0 -1px 0 var(--bs-border-color); }
 .protocol-row { position: relative; }
 .stretched-link-row::after { content: ''; position: absolute; inset: 0; z-index: 1; }

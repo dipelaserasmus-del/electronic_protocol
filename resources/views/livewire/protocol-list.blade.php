@@ -22,26 +22,21 @@
         </x-pill-actions>
     </div>
 
-    {{-- A02: missing numbers --}}
+    {{-- A02/R2c: missing numbers. A short line here; the numbers themselves are rows in the list (dashed) --}}
     @if (! empty($numberGaps))
-        <div class="alert alert-warning py-2" id="numberGaps" role="alert">
+        <div class="alert alert-warning py-2 d-flex flex-wrap align-items-center gap-2" id="numberGaps" role="alert">
             <strong>Κενά στην αρίθμηση:</strong>
-            @foreach ($numberGaps as $gapYear => $gapNumbers)
-                <span class="me-3">
-                    έτος {{ $gapYear }} →
-                    @foreach (array_slice($gapNumbers, 0, 30) as $gapNum)
-                        @if ($canCreate && $gapYear == $formYear)
-                            <a href="{{ url('/home') }}?num={{ $gapNum }}" title="Νέο πρωτόκολλο με αριθμό {{ $gapNum }}">{{ $gapNum }}</a>@if (! $loop->last), @endif
-                        @else
-                            {{ $gapNum }}@if (! $loop->last), @endif
-                        @endif
-                    @endforeach
-                    @if (count($gapNumbers) > 30)
-                        … (σύνολο {{ count($gapNumbers) }}: {{ \App\Services\NumberGaps::compact($gapNumbers) }})
-                    @endif
-                </span>
-            @endforeach
-            <small class="text-body-secondary">(έλεγχος τελευταίων {{ $gapMonths }} μηνών)</small>
+            <span>{{ $gapCount }} {{ $gapCount === 1 ? 'αριθμός' : 'αριθμοί' }}
+                @foreach ($numberGaps as $gapYear => $gapNumbers)
+                    · έτος {{ $gapYear }}: {{ \App\Services\NumberGaps::compact(array_slice($gapNumbers, 0, 12)) }}@if (count($gapNumbers) > 12) …@endif
+                @endforeach
+            </span>
+            <small class="text-body-secondary">
+                @if ($gapRows) Φαίνονται στη λίστα με διακεκομμένο πλαίσιο.
+                @else Επιλέξτε «Όλα», ταξινόμηση κατά αριθμό, για να τα δείτε στη λίστα.
+                @endif
+                (έλεγχος {{ $gapFrom > 1 ? 'από τον αριθμό '.$gapFrom.', ' : '' }}τελευταίων {{ $gapMonths }} μηνών)
+            </small>
         </div>
     @endif
 
@@ -187,6 +182,26 @@
                             <a href="{{ url('/receipt/'.$p->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill position-relative z-2 d-none d-xl-inline-block" title="Απόδειξη">Απόδειξη</a>
                         </td>
                     </tr>
+                    @php $gap = $gapRows[$p->etos.':'.$p->protocolnum] ?? null; @endphp
+                    @if ($gap)
+                        @php $single = $gap['from'] === $gap['to']; $first = $sort === 'desc' ? $gap['to'] : $gap['from']; @endphp
+                        <tr wire:key="gap-{{ $gap['year'] }}-{{ $gap['from'] }}" class="gap-row">
+                            <td colspan="7">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="fw-semibold">
+                                        @if ($single) Κενός αριθμός {{ $gap['from'] }}/{{ $gap['year'] }}
+                                        @else Κενοί αριθμοί {{ $gap['from'] }}–{{ $gap['to'] }}/{{ $gap['year'] }}
+                                            <span class="fw-normal text-body-secondary">· {{ $gap['to'] - $gap['from'] + 1 }} αριθμοί</span>
+                                        @endif
+                                    </span>
+                                    @if ($canCreate && $gap['year'] == $formYear)
+                                        <a href="{{ url('/home') }}?num={{ $first }}" class="btn btn-sm btn-outline-warning text-body rounded-pill ms-auto">
+                                            Καταχώριση με αριθμό {{ $first }}</a>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr><td colspan="7" class="text-center text-body-secondary py-4">Δεν υπάρχουν πρωτόκολλα σε αυτή τη λίστα.</td></tr>
                 @endforelse

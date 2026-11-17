@@ -49,27 +49,16 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
-                                        Αρ.Πρωτοκόλλου για ξεκίνημα
+                                        Αρ.Πρωτοκόλλου για ξεκίνημα (και αρχή του ελέγχου κενών αριθμών στο τρέχον έτος)
                                     </div>
                                     <div class="col-md-2 col-sm-2  " id="firstProtocolNumdiv">
                                         <input id="firstProtocolNum" type="text" class="form-control text-center"
-                                            name="firstProtocolNum" placeholder="firstProtocolNum"
+                                            name="firstProtocolNum" placeholder="1"
                                             value="{{ $settings['firstProtocolNum'] ?? App\Models\Config::getConfigValueOf('firstProtocolNum') }}"
-                                            title=''>
+                                            title='Ο πρώτος αριθμός ενός άδειου βιβλίου. Αριθμοί κάτω από αυτόν δεν ελέγχονται για κενά.'>
                                     </div>
                                 </div>
-                                {{-- A02: έλεγχος κενών στην αρίθμηση --}}
-                                <div class="row">
-                                    <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
-                                        Έλεγχος κενών αριθμών: από Αρ.Πρωτοκόλλου (τρέχον έτος, κενό = από την αρχή)
-                                    </div>
-                                    <div class="col-md-2 col-sm-2  " id="gapCheckFromNumberdiv">
-                                        <input id="gapCheckFromNumber" type="text" class="form-control text-center"
-                                            name="gapCheckFromNumber" placeholder="π.χ. 1000"
-                                            value="{{ $settings['gapCheckFromNumber'] ?? App\Models\Config::getConfigValueOf('gapCheckFromNumber') }}"
-                                            title='Αριθμοί κάτω από αυτόν δεν ελέγχονται για κενά'>
-                                    </div>
-                                </div>
+                                {{-- A02/R2c: έλεγχος κενών στην αρίθμηση (από τον αριθμό για ξεκίνημα) --}}
                                 <div class="row">
                                     <div class="form-control-static col-md-8 col-sm-8  col-md-offset-1 col-sm-offset-1">
                                         Έλεγχος κενών αριθμών: τελευταίοι μήνες

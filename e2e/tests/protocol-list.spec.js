@@ -1,6 +1,6 @@
 // R2: the rebuilt protocol list: filters, sorting, header that stays visible while scrolling, "Αναλυτικά" remembered.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
+const { login, evidence, setSetting, fillProtocol, saveProtocol } = require('./helpers');
 
 test('filters, sorting and the sticky header (R2)', async ({ page }) => {
   await login(page, 'anathetis');
@@ -107,4 +107,35 @@ test('a user chosen under "Όλα" filters the list; busy users first; file name
   await expect(row.locator('.detailed')).toContainText('Καταχώριση: Συγγραφέας Δοκιμών');
   await evidence(page, 'r2b-detailed', { clip: { x: 0, y: 0, width: 1440, height: 620 } });
   await page.locator('#list-detailed').uncheck();
+});
+
+test('a missing number is a dashed row; its button registers that number (R2c)', async ({ page }) => {
+  await login(page, 'admin');
+  const previousValidate = await setSetting(page, 'protocolValidate', 0);
+  try {
+    // leave one number out: save with the next free number + 1
+    await page.goto('/home');
+    const free = Number(await page.locator('#f-protocolnum').getAttribute('placeholder'));
+    const year = new Date().getFullYear();
+    await page.locator('#f-protocolnum').fill(String(free + 1));
+    await fillProtocol(page, { thema: `R2c μετά το κενό ${Date.now()}`, fakelos: 'first' });
+    await saveProtocol(page);
+
+    await page.goto('/home/list');
+    const gap = page.locator('.gap-row', { hasText: `Κενός αριθμός ${free}/${year}` });
+    await expect(gap).toBeVisible();
+    await expect(page.locator('.protocol-row').first()).toContainText(`${free + 1}/${year}`);   // the gap is right under it
+    await expect(page.locator('tbody tr').nth(1)).toHaveClass(/gap-row/);
+    await expect(gap.locator('td')).toHaveCSS('border-top-style', 'dashed');
+    await evidence(page, 'r2c-gap-row', { clip: { x: 0, y: 0, width: 1440, height: 560 } });
+
+    await gap.getByRole('link', { name: `Καταχώριση με αριθμό ${free}` }).click();
+    await expect(page.locator('#f-protocolnum')).toHaveValue(String(free));
+    await fillProtocol(page, { thema: `R2c στο κενό ${Date.now()}`, fakelos: 'first' });
+    await saveProtocol(page);
+    await page.goto('/home/list');
+    await expect(page.locator('.gap-row', { hasText: `Κενός αριθμός ${free}/${year}` })).toHaveCount(0);
+  } finally {
+    await setSetting(page, 'protocolValidate', previousValidate);
+  }
 });
