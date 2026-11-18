@@ -81,6 +81,11 @@ tasks = [
   { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "done", pr = 56 },
   { id = "R3c", title = "Global search box + results page", phase = "R", batch = 7, size = "M", deps = ["R3b"], status = "done", pr = 57 },
 
+  # ---------------- Batch 7.5 (owner's notes on Batch 7, 2026-11-18) ----------------
+  { id = "R1h", title = "Folder codes: φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match", phase = "R", batch = 7.5, size = "S", deps = ["R3c"], status = "done", pr = 59 },
+  { id = "R3d", title = "Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name", phase = "R", batch = 7.5, size = "S", deps = ["R3c"], status = "todo" },
+  { id = "R1i", title = "Protocol page sections: collapsible, movable, one/two columns, saved per user", phase = "R", batch = 7.5, size = "M", deps = ["R1g"], status = "todo" },
+
   # ---------------- Batch 8 ----------------
   { id = "R5c", title = "Inbox screen (sidebar, collapsible)", phase = "R", batch = 8, size = "M", deps = ["R5a", "N04"], status = "todo" },
   { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 8, size = "M", deps = ["R5c", "R1a"], status = "todo" },

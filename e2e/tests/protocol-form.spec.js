@@ -249,6 +249,45 @@ test('the browser ignores case and accents like the server (R1f)', async ({ page
   expect(got).toEqual(cases.map(([, out]) => out));
 });
 
+test('folder codes in the browser follow the same rules as the server (R1h)', async ({ page }) => {
+  const fs = require('fs');
+  const path = require('path');
+  const cases = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'tests', 'fixtures', 'folder-code-cases.json'), 'utf8'));
+  await login(page, 'writer');
+  await page.goto('/home');
+  const got = await page.evaluate((c) => ({
+    keys: c.keys.map(([code]) => window.appFolderCode.key(code)),
+    same: c.same.map(([typed, code]) => window.appFolderCode.same(typed, code)),
+    startsWith: c.startsWith.map(([typed, code]) => window.appFolderCode.startsWith(typed, code)),
+  }), cases);
+  expect(got.keys).toEqual(cases.keys.map(([, key]) => key));
+  expect(got.same).toEqual(cases.same.map((c) => c[2]));
+  expect(got.startsWith).toEqual(cases.startsWith.map((c) => c[2]));
+});
+
+test('folder picker: "12" puts Φ.12 first and shows the list from the top; "φ11" never offers Φ.1.1 (R1h)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  const folder = page.locator('#f-fakelos');
+  const options = page.locator('#folder-list li[role=option]');
+  await folder.click();
+  await page.locator('#folder-list').evaluate((el) => el.scrollTo(0, 400));   // scrolled down, as after browsing the list
+  await folder.pressSequentially('12');
+  await expect(options.first()).toContainText('Φ.12');
+  await expect(options.first()).toHaveAttribute('aria-selected', 'true');
+  expect(await page.locator('#folder-list').evaluate((el) => el.scrollTop)).toBe(0);   // the best match is in view
+  await expect(options.nth(1)).toContainText('Φ.12.1');                               // then codes starting with 12
+  await evidence(page, 'folder-12', { clip: { x: 0, y: 0, width: 1440, height: 800 } });
+
+  await folder.fill('');
+  await folder.pressSequentially('φ11');
+  await expect(options.first()).toContainText('Φ.11');
+  const codes = await options.locator('.fw-semibold').allInnerTexts();
+  expect(codes).not.toContain('Φ.1.1');
+  await folder.press('Enter');
+  await expect(folder).toHaveValue(/^Φ\.11( ·|$)/);
+});
+
 test('the number is large in the middle; assignment and receipt are below the attachments (R1g)', async ({ page }) => {
   await login(page, 'admin');
   const previousValidate = await setSetting(page, 'protocolValidate', 0);   // the administrator may type the number

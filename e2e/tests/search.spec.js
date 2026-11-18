@@ -54,11 +54,11 @@ test('folder picker: code without dots, «Χωρίς φάκελο»; the pending
   await fillProtocol(page, { thema: `R3a αίτηση ${stamp} - ΕΚΚΡΕΜΟΤΗΤΑ`, fakelos: 'Φ.1.1' });
   await saveProtocol(page);
 
-  // "φ11" finds Φ.1.1 (no dots); Enter chooses it, the next Enter searches
+  // "φ1.1" finds Φ.1.1 (dot after Φ optional, R1h); Enter chooses it, the next Enter searches
   await page.goto('/find');
   const folder = page.locator('#s-folder');
   await folder.click();
-  await folder.fill('φ11');
+  await folder.fill('φ1.1');
   await expect(page.locator('#s-folder-list li[role=option]').first()).toContainText('Φ.1.1');
   await evidence(page, 'folder-without-dots', { clip: { x: 0, y: 0, width: 1440, height: 800 } });
   await folder.press('Enter');
@@ -115,7 +115,7 @@ test('«Οπουδήποτε»: words anywhere and the search words (από:, φ
   await expect(page.locator('#search-as-text')).toContainText(`μεταθεση ${stamp} δοκιμαστικοσ έτος:`);
 
   // search words: the folder, without dots
-  await search(page, { words: `${stamp} φάκελος:φ11 από:δήμος` });
+  await search(page, { words: `${stamp} φάκελος:φ1.1 από:δήμος` });
   await expect(page.locator('#search-results')).toContainText(`R3b μετάθεση ${stamp}`);
   await evidence(page, 'anywhere-with-operators', { clip: { x: 0, y: 0, width: 1440, height: 900 } });
   await search(page, { words: `${stamp} φάκελος:κανένας` });

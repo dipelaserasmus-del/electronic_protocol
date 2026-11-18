@@ -148,8 +148,48 @@ function tagBox(field, withSuggestions = false) {
  */
 const NONE = ['', 'Χωρίς φάκελο'];
 
-/** Lower case, no accents, no symbols or spaces: "Φ.22.1" → "φ221" (ProtocolSearch::loose on the server). */
-export const loose = text => fold(text).replace(/[^\p{L}\p{N}]+/gu, '');
+/**
+ * R1h: folder codes as typed (owner, 2026-11-18), the browser twin of App\Support\FolderCode (same cases:
+ * tests/fixtures/folder-code-cases.json). Dots/spaces before the number are optional, dots inside it count:
+ * "φ11" = Φ.11, never Φ1.1; a number alone is the number part: "12" = Φ12.
+ */
+export function folderKey(code) {
+    return fold(code).replace(/\s+/gu, '').replace(/^(\p{L}*)[^\p{L}\p{N}]+(?=\p{N})/u, '$1');
+}
+const folderNumber = code => folderKey(code).replace(/^\p{L}+/u, '');
+const numberOnly = key => /^\p{N}/u.test(key);
+export function folderSame(typed, code) {
+    const k = folderKey(typed);
+    return k !== '' && (numberOnly(k) ? folderNumber(code) === k : folderKey(code) === k);
+}
+export function folderStartsWith(typed, code) {
+    const k = folderKey(typed);
+    return k !== '' && (numberOnly(k) ? folderNumber(code) : folderKey(code)).startsWith(k);
+}
+
+/**
+ * Folders for what was typed, best first: the code itself ("12" → Φ12), codes starting with it (Φ12.1, Φ120), then
+ * folders whose code and description hold every typed word (a word starting with it first). Ties keep the list order.
+ */
+export function searchFolders(folders, query, limit = 100) {
+    const q = query.trim();
+    if (!q) return [];
+    const parts = fold(q).split(/\s+/).filter(Boolean);
+    const found = [];
+    folders.forEach((f, order) => {
+        let score;
+        if (folderSame(q, f[0])) score = 0;
+        else if (folderStartsWith(q, f[0])) score = 1;
+        else {
+            const text = fold(`${f[0]} ${f[1]}`);
+            if (!parts.every(p => text.includes(p))) return;
+            score = words(text).some(w => w.startsWith(parts[0])) ? 2 : 3;
+        }
+        found.push([score, order, f]);
+    });
+    found.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    return found.slice(0, limit).map(f => f[2]);
+}
 
 function folderPicker({ model = 'form.fakelos', live = true, choices = [NONE], submit = false } = {}) {
     return {
@@ -165,7 +205,7 @@ function folderPicker({ model = 'form.fakelos', live = true, choices = [NONE], s
         get items() {
             // review of R1f: a protocol without attachments may have no folder, so "—" is offered first (as the old list did)
             if (!this.typed) return [...choices, ...this.folders];
-            return search(this.folders, this.query, { limit: 100, key: f => `${f[0]} ${f[0].replace(/^φ\.?/i, '')} ${loose(f[0])} ${f[1]}` });
+            return searchFolders(this.folders, this.query);
         },
         isChoice(f) { return choices.includes(f); },
         mark(text) { return this.typed ? highlight(text, this.query) : escape(String(text ?? '')); },
@@ -177,7 +217,11 @@ function folderPicker({ model = 'form.fakelos', live = true, choices = [NONE], s
             this.$nextTick(() => this.scroll());
         },
         close() { this.open = false; this.typed = false; this.query = ''; },
-        input(e) { this.open = true; this.typed = true; this.query = e.target.value; this.active = 0; },
+        input(e) {
+            this.open = true; this.typed = true; this.query = e.target.value; this.active = 0;
+            // R1h: the best match is at the top: show the list from its start (it kept the earlier scroll position)
+            this.$nextTick(() => { this.$root.querySelector('[role=listbox]')?.scrollTo(0, 0); this.scroll(); });
+        },
         choose(folder) {
             if (folder && folder[0] !== this.value) this.$wire.$set(model, folder[0], live);
             this.close();
@@ -212,3 +256,4 @@ if (window.Alpine) register();
 document.addEventListener('alpine:init', register);
 
 window.appFold = fold;   // the browser tests check fold() against the server's cases
+window.appFolderCode = { key: folderKey, same: folderSame, startsWith: folderStartsWith };   // and the folder codes (R1h)

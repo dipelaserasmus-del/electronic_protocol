@@ -32,7 +32,7 @@ suggestions while typing. Only protocols the user may see.
   - **Σύνθετη αναζήτηση** opens the advanced screen with the same search filled in. What has no field there (free
     words, an assignee by name) goes to *Οπουδήποτε*. A folder named exactly (`φάκελος:φ.1.1`) shows as that folder.
 - **Folders without dots**, refined: a code typed with its dots (any case) means only that folder. Without dots it
-  means every folder it could be: `φ11` is both Φ.1.1 and Φ.11 in the demo list.
+  means every folder it could be: `φ11` is both Φ.1.1 and Φ.11 in the demo list. (Replaced by [R1h](R1h.md): the dots inside the number count, so `φ11` is Φ.11 only.)
 - **Top bar width:** the institution's name next to the brand shows only on screens at least 1600 px wide, so the
   search box fits next to the menu.
 

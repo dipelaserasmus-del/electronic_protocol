@@ -31,7 +31,7 @@
   - *Ημ/νία από / έως* use the usual date field (`9`, `9/4` … work).
 - **Content** (right):
   - *Φάκελος*: the form's folder picker, with «Όλοι οι φάκελοι» and «Χωρίς φάκελο» first. A code typed without dots
-    works (`φ11` finds Φ.1.1), and so does a word of the description;
+    works (`φ11` finds Φ.1.1; changed in [R1h](R1h.md): `φ11` = Φ.11 only), and so does a word of the description;
   - *Θέμα*, *Από (αρχή έκδοσης)*, *Προς (απευθύνεται)*, *Αρ. εισερχομένου*, *Σχετικοί αριθμοί*, *Λέξεις κλειδιά*;
   - *Ανάθεση*: a user, or «Κανένας».
 - **Περισσότερα πεδία** (closed unless used; remembered per browser): the other text fields, the attachment name and
