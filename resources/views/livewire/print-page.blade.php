@@ -1,5 +1,17 @@
 {{-- R7: what to print. Rules: App\Services\Printing\PrintRange; output: App\Http\Controllers\PrintController. --}}
-<div class="print-page">
+{{-- the links are built from the fields at the moment of the click (review of R7: a value typed just before the click
+     was not yet on the server, so the old range was printed or exported) --}}
+<div class="print-page" x-data="{
+        link(base, xls) {
+            const p = new URLSearchParams();
+            for (const [key, id] of [['etosForMany', 'p-year'], ['aponum', 'p-from'], ['eosnum', 'p-to'], ['apoProtocolDate', 'p-from-date'], ['eosProtocolDate', 'p-to-date']]) {
+                const v = (document.getElementById(id)?.value || '').trim();
+                if (v !== '') p.set(key, v);
+            }
+            if (xls) p.set('target', 'xls');
+            return base + '?' + p.toString();
+        }
+    }">
     <h1 class="h4 mb-3">Εκτύπωση</h1>
     <div class="card shadow-sm" style="max-width: 46rem">
         <div class="card-header">
@@ -57,9 +69,11 @@
 
             <div class="d-flex flex-wrap gap-2">
                 @if ($printUrl && $count)
-                    <a class="btn btn-primary rounded-pill" href="{{ $printUrl }}" target="_blank" id="print-open"><i class="bi bi-printer me-1" aria-hidden="true"></i>Εκτύπωση</a>
+                    <a class="btn btn-primary rounded-pill" href="{{ $printUrl }}" target="_blank" id="print-open"
+                       data-base="{{ url($mode === 'attachments' ? '/printedAttachments' : '/printed') }}" x-on:click="$el.href = link($el.dataset.base, false)"><i class="bi bi-printer me-1" aria-hidden="true"></i>Εκτύπωση</a>
                     @if ($xlsUrl)
-                        <a class="btn btn-outline-success rounded-pill" href="{{ $xlsUrl }}" id="print-xls"><i class="bi bi-file-earmark-spreadsheet me-1" aria-hidden="true"></i>Excel</a>
+                        <a class="btn btn-outline-success rounded-pill" href="{{ $xlsUrl }}" id="print-xls"
+                           data-base="{{ url('/printed') }}" x-on:click="$el.href = link($el.dataset.base, true)"><i class="bi bi-file-earmark-spreadsheet me-1" aria-hidden="true"></i>Excel</a>
                     @endif
                 @else
                     <button type="button" class="btn btn-primary rounded-pill" disabled>Εκτύπωση</button>

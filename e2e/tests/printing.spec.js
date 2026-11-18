@@ -24,6 +24,16 @@ test('print page: count, protocol book, Excel, attachments (R7)', async ({ page,
   const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#print-xls').click()]);
   expect(download.suggestedFilename()).toMatch(/πρωτόκολλο έτους \d{4} - \d{8}-\d{6}\.xlsx$/);
 
+  // review of R7: a number typed just before the click is in the printout (the link is built at the click)
+  await page.locator('#p-to').fill('3');
+  const [quick] = await Promise.all([context.waitForEvent('page'), page.locator('#print-open').click()]);
+  expect(quick.url()).toContain('eosnum=3');
+  await quick.waitForLoadState();
+  await expect(quick.locator('#protocol-book')).toBeVisible();
+  expect(await quick.locator('#protocol-book .book-row').count()).toBeLessThanOrEqual(3);   // numbers 1–3 only
+  await quick.close();
+  await page.locator('#p-to').fill('');
+
   // a wrong number is said, not guessed
   await page.locator('#p-from').fill('12α');
   await expect(page.locator('#print-summary')).toContainText('Από αριθμό «12α»');
