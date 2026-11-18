@@ -377,7 +377,7 @@ class InboxTest extends FeatureTestCase
 
         $page->assertSee('Αίτηση άδειας.pdf')->assertSee('Πίνακας μαθητών.xls')->assertDontSee('winmail.dat</a>', false)
             ->assertSee('Το email ήρθε ως')->assertSeeHtml('/viewEmailAttachment/6/0-1');
-        $this->assertSame([ '0-0' => true, '0-1' => true], $page->get('forms.6.files'));
+        $this->assertSame(['0-0' => true, '0-1' => true], $page->get('forms.6.files'));
         $this->assertSame('Σας στέλνω την αίτηση.', $page->get('forms.6.in_perilipsi'), 'the text inside, for Περίληψη');
 
         $file = $this->get('/viewEmailAttachment/6/0-1')->assertOk();
