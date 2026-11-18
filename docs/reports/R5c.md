@@ -105,11 +105,19 @@ The old *Εισερχόμενα email* page (`/viewEmails`, Bootstrap 3) had sev
       `.eml` and the PDF.
 - On this computer only (nothing committed): the owner's 12 private e-mails, each registered on the new page with a
   folder, all attachments and *Έλεγχοι καταχώρισης* on: all 12 registered with all their files.
-- Full suites: PHPUnit 426, browser 65/65.
+- Full suites: PHPUnit 427, browser 65/65.
 
   ![the inbox](img/R5c/r5c-inbox.png)
   ![folder needed: said at the field](img/R5c/r5c-folder-needed.png)
   ![registered: the result in the e-mail's place](img/R5c/email-registered.png)
+
+## Review
+- Codex (P1): users who may choose the number (administrators with the checks off) or the date
+  (*allowWriterChangeDate*) could not register e-mails. `ProtocolWriter` expected a year and a date that the inbox
+  does not have, and the errors went to fields the page lacks.
+  - Fixed: every e-mail is numbered on save and dated today, in the year in use.
+  - An error about a field the page doesn't show now appears above the form.
+  - Test `test_users_who_may_choose_number_or_date_register_too` (it failed before the fix).
 
 ## Owner actions
 None. The address for bookmarks is now `/inbox`; the old one still works.
