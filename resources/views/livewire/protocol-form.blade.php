@@ -5,7 +5,7 @@
     // R1i: a collapsed section opens by itself when one of its fields has an error
     $sectionFields = ['general' => ['fakelos', 'thema', 'sxetiko', 'keywords', 'paratiriseis'],
         'incoming' => ['in_num', 'in_date', 'in_topos_ekdosis', 'in_paraliptis', 'in_arxi_ekdosis', 'in_perilipsi'],
-        'done' => ['diekp_date'], 'outgoing' => ['out_to', 'out_date', 'out_perilipsi'], 'attachments' => ['uploads', 'ada', 'keep'],
+        'done' => ['diekp_date'], 'outgoing' => ['out_to', 'out_date', 'out_perilipsi'], 'attachments' => ['picked', 'uploads', 'ada', 'keep'],
         'assign' => ['diekperaiosi', 'diekp_eos'], 'receipt' => ['receipt_email', 'reply_to_email']];
     $open = fn (string $id) => ! in_array($id, $layout['collapsed'], true)
         || collect($sectionFields[$id] ?? [])->contains(fn ($f) => $errors->has($f) || $errors->has($f.'.*'));

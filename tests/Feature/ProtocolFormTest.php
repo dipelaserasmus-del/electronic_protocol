@@ -106,6 +106,18 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~data-section-toggle="incoming"[^>]*>\s*<i class="bi bi-chevron-up"~', $form->html());
     }
 
+    /** review of R1i: a file refused when dropped on a collapsed Συνημμένα opens it, so the reason is seen */
+    public function test_a_refused_drop_opens_a_collapsed_attachments_section(): void
+    {
+        $me = $this->writer();
+        \App\Support\UserPreferences::setFormLayout($me, ['collapsed' => ['attachments']] + \App\Support\UserPreferences::FORM_DEFAULT);
+
+        $form = Livewire::actingAs($me)->test(ProtocolForm::class, ['protocol' => new Protocol()]);
+        $this->assertMatchesRegularExpression('~data-section-toggle="attachments"[^>]*>\s*<i class="bi bi-chevron-down"~', $form->html());
+        $form->set('picked', [UploadedFile::fake()->createWithContent('κακό.vbs', 'x')])->assertHasErrors('picked');
+        $this->assertMatchesRegularExpression('~data-section-toggle="attachments"[^>]*>\s*<i class="bi bi-chevron-up"~', $form->html());
+    }
+
     public function test_users_who_can_not_choose_see_the_number_given_on_save(): void
     {
         Protocol::factory()->number(41)->create();
