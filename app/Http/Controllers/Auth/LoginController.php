@@ -49,6 +49,15 @@ class LoginController extends Controller implements HasMiddleware
         return 'username';
     }
 
+    /**
+     * R6a: only active accounts log in ("Ενεργός" on the users page). Before, the box only hid the user from
+     * the assignment lists: an inactive user could still log in.
+     */
+    protected function credentials(Request $request)
+    {
+        return $request->only($this->username(), 'password') + ['active' => fn ($query) => $query->whereNotNull('active')];
+    }
+
     public function showLoginForm()
     {
         $allowregister = \App\Support\Registration::isOpen();

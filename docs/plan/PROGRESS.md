@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **52 / 67** `███████████████████████░░░░░░░` 78% |
-| Effort done (PERT) | **25.3 / 32.4 h** `███████████████████████░░░░░░░` 78% |
-| Remaining effort, one agent in sequence | **7.1 h ± 0.4** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **53 / 67** `████████████████████████░░░░░░` 79% |
+| Effort done (PERT) | **25.8 / 32.4 h** `████████████████████████░░░░░░` 80% |
+| Remaining effort, one agent in sequence | **6.6 h ± 0.4** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 2.3 h ± 0.2 |
 | In progress | — |
-| Next task | **R6a** — Users & roles screens |
+| Next task | **R6b** — Folders + auto-assignment rules |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** R6b → R1d → Z01 → Z02 → Z03
@@ -32,7 +32,7 @@
 | 7 | ✅R3a ✅R3b ✅R3c | 3/3 | `██████████` |
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
-| 9 | ⬜R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 0/5 | `░░░░░░░░░░` |
+| 9 | ✅R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 1/5 | `██░░░░░░░░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -218,8 +218,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b done
-  class R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a done
+  class R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R6b,R1d,Z01,Z02,Z03 critical
 ```
@@ -297,7 +297,7 @@ gantt
   R5d Register-from-email flow, keywords :done, r5d, 2026-11-13 08:28, 33m
   R5b winmail.dat (TNEF) :done, r5b, 2026-11-13 09:01, 66m
   section Batch 9
-  R6a Users & roles screens :r6a, 2026-11-13 10:07, 33m
+  R6a Users & roles screens :done, r6a, 2026-11-13 10:07, 33m
   R6b Folders + auto-assignment rules :crit, r6b, 2026-11-13 10:40, 33m
   R1d Apply auto-assignment on save :crit, r1d, 2026-11-13 11:13, 19m
   R6c Settings, backups, archive screens :r6c, 2026-11-13 11:32, 33m
@@ -373,7 +373,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5c** | Inbox screen (sidebar, collapsible) | R5a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 | #62 |
 | ✅ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 4.7 | 5.3 | 0.5 | #63 |
 | ✅ | **R5b** | winmail.dat (TNEF) | R5a | 1.1 | 0.2 | 3.1 | 4.2 | 4.2 | 5.3 | 1.1 | #64 |
-| ⬜ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.7 | 5.3 | 1.1 |  |
+| ✅ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.7 | 5.3 | 1.1 | #65 |
 | ⬜ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 4.4 | 4.9 | 0.8 |  |
 | ⬜ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 4.9 | 5.3 | 0.8 |  |
 | ⬜ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 4.7 | 5.3 | 1.1 |  |

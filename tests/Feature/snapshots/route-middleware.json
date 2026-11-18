@@ -178,11 +178,6 @@
         "auth",
         "web"
     ],
-    "GET users/del/{user}": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
     "GET users/{user}": [
         "admin:home",
         "auth",
@@ -268,16 +263,6 @@
         "web"
     ],
     "POST settings": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
-    "POST users": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
-    "POST users/{user}": [
         "admin:home",
         "auth",
         "web"

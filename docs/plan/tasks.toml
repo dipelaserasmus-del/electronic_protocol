@@ -92,7 +92,7 @@ tasks = [
   { id = "R5b", title = "winmail.dat (TNEF)", phase = "R", batch = 8, size = "L", deps = ["R5a"], status = "done", pr = 64 },
 
   # ---------------- Batch 9 ----------------
-  { id = "R6a", title = "Users & roles screens", phase = "R", batch = 9, size = "M", deps = ["N04"], status = "todo" },
+  { id = "R6a", title = "Users & roles screens", phase = "R", batch = 9, size = "M", deps = ["N04"], status = "done", pr = 65 },
   { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 9, size = "M", deps = ["N04", "D02"], status = "todo" },
   { id = "R1d", title = "Apply auto-assignment on save", phase = "R", batch = 9, size = "S", deps = ["R1a", "R6b"], status = "todo" },
   { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 9, size = "M", deps = ["N04", "R4b"], status = "todo" },

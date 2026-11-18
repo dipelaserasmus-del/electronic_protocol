@@ -39,11 +39,8 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
 // Everything below needs a logged-in user; each controller adds its role checks (HasMiddleware).
 Route::middleware('auth')->group(function () {
-    Route::get('users', [UserController::class, 'index']);
-    Route::post('users', [UserController::class, 'store']);
-    Route::get('users/{user}', [UserController::class, 'index']);
-    Route::post('users/{user}', [UserController::class, 'update']);
-    Route::get('users/del/{user}', [UserController::class, 'delete']);
+    Route::get('users', [UserController::class, 'index']);   // R6a: App\Livewire\UserAdmin (save/delete are its actions)
+    Route::get('users/{user}', [UserController::class, 'index'])->whereNumber('user');
 
     Route::get('keep', [KeepvalueController::class, 'index']);
     Route::post('keep', [KeepvalueController::class, 'store']);
