@@ -302,7 +302,8 @@ class EmailRegistrationTest extends FeatureTestCase
 
         Attachment::query()->delete();
         $this->putEml($user->id, $this->emlWithAttachmentName(null));
-        $this->register($user, ['fakelos' => 'Φ.1'], ['0']);
+        // another subject and incoming number: the same ones would wait for "register anyway" (R5d)
+        $this->register($user, ['fakelos' => 'Φ.1', 'thema' => 'Αίτηση χωρίς όνομα αρχείου', 'in_num' => '2'], ['0'])->assertHasNoErrors();
         $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
         $this->assertSame('συνημμένο.pdf', $pdf->name, 'extension from the attachment type');
         $this->assertStringEndsWith('_0_συνημμένο.pdf', $pdf->savedPath);

@@ -303,6 +303,57 @@ class InboxTest extends FeatureTestCase
         }
     }
 
+    /** R5d: the same document registered before: a notice with links, and a second explicit click registers it. */
+    public function test_similar_protocol_is_shown_and_needs_a_second_click(): void
+    {
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $old = \App\Models\Protocol::factory()->number(7)->create(['thema' => $page->get('forms.2.thema')]);
+        $page->call('refresh')->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα')->assertSeeHtml('/home/'.$old->id);
+
+        $page->call('register', 2, false)->assertHasErrors('forms.2.similar')->assertSeeHtml('data-action="register-anyway"');
+        $this->assertSame(1, \App\Models\Protocol::count(), 'not registered yet');
+
+        $page->call('register', 2, false, true)->assertHasNoErrors();
+        $this->assertSame(2, \App\Models\Protocol::count());
+    }
+
+    /** R5d: keywords as tags with suggestions from the subject; they are registered with the protocol. */
+    public function test_keywords_as_tags_with_suggestions_from_the_subject(): void
+    {
+        \App\Models\Protocol::factory()->create(['keywords' => 'ημερίδα, Επιμόρφωση']);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);   // 01: «Πρόσκληση σε επιμορφωτική ημερίδα εκπαιδευτικών»
+
+        $page->assertSeeHtml('data-suggest="ημερίδα"')->assertSeeHtml('data-suggest="επιμορφωτική"');
+        $page->call('addTag', 'keywords', 'ημερίδα', 1)->call('addTag', 'keywords', 'σεμινάριο, ΕΚΔΡΟΜΗ', 1)
+            ->call('removeTag', 'keywords', 2, 1);
+        $this->assertSame('ημερίδα, σεμινάριο', $page->get('forms.1.keywords'));
+        $page->assertDontSeeHtml('data-suggest="ημερίδα"');   // chosen: no longer offered
+
+        $page->set('forms.1.files.0', false)->call('register', 1, false)->assertHasNoErrors();
+        $this->assertSame('ημερίδα, σεμινάριο', \App\Models\Protocol::latest('id')->first()->keywords);
+        $page->call('addTag', 'thema', 'x', 2)->assertStatus(400);   // only keywords
+    }
+
+    /** R5d: an e-mail without a subject offers its attachment's name, and takes it if left empty. */
+    public function test_email_without_subject_takes_its_attachments_name(): void
+    {
+        $this->mailbox->messages = [5 => str_replace("Subject: Αίτηση\r\n", '', $this->attachmentEml('Βεβαίωση_σπουδών 2026.pdf'))];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        $page->assertSeeHtml('placeholder="Βεβαίωση σπουδών 2026"')->assertSee('Το email δεν έχει θέμα');
+        $page->set('forms.5.files.0', false)->call('register', 5, false)->assertHasNoErrors();
+        $this->assertSame('Βεβαίωση σπουδών 2026', \App\Models\Protocol::sole()->thema);
+    }
+
+    private function attachmentEml(string $name): string
+    {
+        return implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: Αίτηση',
+            'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="b"', '',
+            '--b', 'Content-Type: text/plain; charset=utf-8', '', 'Καλημέρα', '--b', 'Content-Type: application/pdf',
+            "Content-Disposition: attachment; filename*=UTF-8''".rawurlencode($name), 'Content-Transfer-Encoding: base64', '',
+            base64_encode("%PDF-1.4\nfake\n%%EOF\n"), '--b--', '']);
+    }
+
     /** @return list<string> */
     private function cachedFiles(): array
     {

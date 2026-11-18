@@ -39,15 +39,7 @@ final class EmailRegistration
     {
         $mail = MailParser::parse($raw);
         $date = MailContent::date($mail);
-        $fakelos = trim((string) ($input['fakelos'] ?? ''));
-
-        // the folder: needed for the attachments' place in the archive (old inbox: a message in the browser only)
-        if ($fakelos === '' && $keys !== []) {
-            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε email με συνημμένα αρχεία επιλέξτε Φάκελο (ή αφαιρέστε το ✓ από τα συνημμένα).']);
-        }
-        if ($fakelos === '' && Config::getConfigValueOf('alwaysShowFakelosInViewEmails')) {
-            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.']);
-        }
+        self::checkFolder($input, $keys);
 
         $files = [$this->copyOfEmail($raw, $mail, $date)];
         $missing = 0;
@@ -86,6 +78,25 @@ final class EmailRegistration
         }
 
         return $result;
+    }
+
+    /**
+     * The folder: needed for the attachments' place in the archive (old inbox: a message in the browser only), or always
+     * with the setting alwaysShowFakelosInViewEmails. Public so the page can say it before anything else (R5d).
+     *
+     * @throws ValidationException
+     */
+    public static function checkFolder(array $input, array $keys): void
+    {
+        if (trim((string) ($input['fakelos'] ?? '')) !== '') {
+            return;
+        }
+        if ($keys !== []) {
+            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε email με συνημμένα αρχεία επιλέξτε Φάκελο (ή αφαιρέστε το ✓ από τα συνημμένα).']);
+        }
+        if (Config::getConfigValueOf('alwaysShowFakelosInViewEmails')) {
+            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.']);
+        }
     }
 
     /** The e-mail itself, stored with the protocol: as received (.eml), or as a page (.html) when saveEmailAs is empty. */

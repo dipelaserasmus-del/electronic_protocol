@@ -25,10 +25,19 @@ async function open(page, text) {
 async function register(page, text) {
   const { message, before } = await open(page, text);
   for (const box of await message.locator('.inbox-attachment input[type=checkbox]').all()) await box.uncheck();
-  await message.locator('[data-action="register"]').click();
+  await submit(message);
   const done = message.locator('.inbox-done');
-  await expect(done).toBeVisible();
   return { message, notice: (await done.innerText()).replace(/\s+/g, ' '), before };
+}
+
+/** «Καταχώριση»; if a similar protocol exists (earlier runs on this database), «Ναι, καταχώριση» (R5d). */
+async function submit(message) {
+  await message.locator('[data-action="register"]').click();
+  const anyway = message.locator('[data-action="register-anyway"]');
+  const done = message.locator('.inbox-done');
+  await expect(done.or(anyway)).toBeVisible();
+  if (await anyway.isVisible()) await anyway.click();
+  await expect(done).toBeVisible();
 }
 
 const numberOf = (notice) => notice.match(/Καταχωρίστηκε με αριθμό (\d+)\/(\d{4})/).slice(1);
@@ -85,7 +94,7 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
 
   await message.locator(`#f-${uid}-fakelos`).click();
   await message.locator(`#folder-list-${uid} li[role=option]`).nth(1).click();   // 0 is "— Χωρίς φάκελο"
-  await message.locator('[data-action="register"]').click();
+  await submit(message);
   const done = message.locator('.inbox-done');
   await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
   await expect(message.locator('form.inbox-form')).toHaveCount(0);
@@ -95,4 +104,51 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
   // the e-mail itself (.eml) and its PDF
   await expect(page.locator('a[href*="/download/"]', { hasText: /\.eml$/ })).toHaveCount(1);
   await expect(page.locator('a[href*="/download/"]', { hasText: /\.pdf$/ })).toHaveCount(1);
+});
+
+test('keywords offered from the subject become tags and are registered (R5d)', async ({ page }) => {
+  await login(page, 'admin');
+  const { message } = await open(page, 'Αποστολή στοιχείων');   // a mock e-mail no other test registers
+  const uid = await message.getAttribute('data-uid');
+  const offer = message.locator('.keyword-suggestions [data-suggest]').first();
+  await expect(offer).toBeVisible();
+  const word = await offer.getAttribute('data-suggest');
+  await offer.click();
+  await expect(message.locator(`.keyword-pill[data-tag="${word}"]`)).toBeVisible();
+  await expect(message.locator(`[data-suggest="${word}"]`)).toHaveCount(0);   // chosen: no longer offered
+  await message.locator(`#f-${uid}-keywords`).fill('σεμινάριο');
+  await message.locator(`#f-${uid}-keywords`).press('Enter');
+  await expect(message.locator('.keyword-pill[data-tag="σεμινάριο"]')).toBeVisible();
+  await message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5d-keywords', { clip: await message.locator('form.inbox-form').boundingBox() });
+
+  for (const box of await message.locator('.inbox-attachment input[type=checkbox]').all()) await box.uncheck();
+  await submit(message);
+  const [num, year] = numberOf((await message.locator('.inbox-done').innerText()).replace(/\s+/g, ' '));
+  await page.goto(`/goto/${year}/${num}?find=1`);
+  await expect(page.locator(`#keywords-box [data-tag="${word}"]`)).toBeVisible();
+  await expect(page.locator('#keywords-box [data-tag="σεμινάριο"]')).toBeVisible();
+});
+
+test('same subject as a registered protocol: a notice, and a second click registers it (R5d)', async ({ page }) => {
+  await login(page, 'admin');
+  const { notice } = await register(page, 'Εγκύκλιος για την έναρξη');   // synthetic e-mail 02
+  const [num, year] = numberOf(notice);
+
+  const { message } = await open(page, 'Μεγάλο σαρωμένο');               // another e-mail: give it the same subject
+  const uid = await message.getAttribute('data-uid');
+  await page.goto(`/goto/${year}/${num}?find=1`);
+  const subject = await page.locator('#f-thema').inputValue();
+  const again = await open(page, 'Μεγάλο σαρωμένο');
+  await again.message.locator(`#f-${uid}-thema`).fill(subject);
+  for (const box of await again.message.locator('.inbox-attachment input[type=checkbox]').all()) await box.uncheck();
+  await again.message.locator('[data-action="register"]').click();
+
+  const anyway = again.message.locator('[data-action="register-anyway"]');
+  await expect(anyway).toBeVisible();
+  await expect(again.message.locator('.inbox-similar')).toContainText(`${num}/${year}`);
+  await again.message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5d-similar', { clip: await again.message.locator('form.inbox-form').boundingBox() });
+  await anyway.click();
+  await expect(again.message.locator('.inbox-done')).toContainText('Καταχωρίστηκε με αριθμό');
 });
