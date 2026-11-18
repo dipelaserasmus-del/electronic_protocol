@@ -154,7 +154,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 | A03 | Rule: dates must not go backwards as numbers increase | AUTO | P2 | S | A01 |
 | A04 | Rule: contains "εκκρεμότητα" (accent/case-insensitive) | AUTO | P3 | S | A01 |
 | A05 | Rule: identical / partially identical protocols (subject, in_num, sender, attachment hash) without `sxetiko` | AUTO | P2 | M | A01, D03 |
-| A06 | Rule: no attachment and none of `sxetiko` / "εκκρεμότητα" / "ΕΛΕΥΘΕΡΟ" | AUTO | P2 | S | A01 |
+| A06 | Rule: no attachment and none of `sxetiko` / "εκκρεμότητα" / "ΕΛΕΥΘΕΡΟ" / no folder. 👤 Owner (2026-11-18): a protocol without a folder is on hold or a placeholder until the actual content reaches the department: not an error here; A04 may list them as pending | AUTO | P2 | S | A01 |
 | X01 | **Audit log — recording**: append-only `audit_log` table (user, action, entity, old→new values, IP, time); automatic capture of create/update/delete on protocols, attachments, assignments, users, folders, settings; logins / logouts / failed logins; attachment downloads; email registrations; retention setting | AUDIT | P3 | M | N02 |
 | X02 | **Audit log — viewing**: admin page with filters (user, action, date, protocol), per-protocol "History" tab, CSV export; not editable from UI | AUDIT | P3 | M | X01 |
 | Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2; D04 transitional cast `LegacyYmdDate` → `date` | MOD | P2 | M | R1–R7 |
