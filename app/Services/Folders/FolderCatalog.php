@@ -54,8 +54,9 @@ final class FolderCatalog
                 .' και δεν αλλάζει. Για άλλον κωδικό προσθέστε νέο φάκελο.']);
         }
 
-        $d = $this->userIds($data['d'] ?? [], 'd');
-        $e = $this->userIds($data['e'] ?? [], 'e');
+        $kept = $creating ? [] : FolderAssignment::where('keepvalue_id', $folder->id)->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $d = $this->userIds($data['d'] ?? [], 'd', $kept);
+        $e = $this->userIds($data['e'] ?? [], 'e', $kept);
 
         return DB::transaction(function () use ($folder, $creating, $clean, $d, $e) {
             $folder = $creating ? new Keepvalue() : $folder;
@@ -107,12 +108,12 @@ final class FolderCatalog
         $rows = [];
         $seen = [];
         $existing = Keepvalue::all()->keyBy(fn ($f) => mb_strtolower($f->fakelos));
-        $lines = preg_split('/\R/u', $text) ?: [];
-        foreach ($lines as $i => $line) {
-            if (trim($line) === '') {
+        foreach (self::records($text) as [$line, $cells]) {
+            $cells = array_map(fn ($c) => trim($c, " \t\u{00A0}"), $cells);
+            if (implode('', $cells) === '') {
                 continue;
             }
-            $cells = array_map(fn ($c) => trim($c, " \t\"'\u{00A0}"), str_contains($line, "\t") ? explode("\t", $line) : explode(';', $line));
+            $i = $line - 1;
             $code = $this->normaliseCode($cells[0] ?? '');
             if ($rows === [] && ! preg_match(self::CODE_PATTERN, $code) && ! preg_match('/^Φ/u', $code)) {
                 continue;   // a heading such as "Κωδικός;Περιγραφή"
@@ -196,6 +197,69 @@ final class FolderCatalog
         }
     }
 
+    /**
+     * The rows of a pasted table, as a spreadsheet copies them: cells separated by Tab (or by ";" in a row without a
+     * Tab), a cell in double quotes may hold line breaks, the separator and "" for a quote (review of R6b: a
+     * description with a line break became a row of its own).
+     *
+     * @return list<array{0: int, 1: list<string>}> [first line number, cells]
+     */
+    public static function records(string $text): array
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        // each row's separator: Tab if its first line has one, else ";"
+        $sepAt = fn (int $from) => str_contains(substr($text, $from, (($n = strpos($text, "\n", $from)) === false ? strlen($text) : $n) - $from), "\t") ? "\t" : ';';
+        $sep = $sepAt(0);
+        $records = [];
+        $cells = [];
+        $cell = '';
+        $quoted = false;
+        $line = 1;
+        $start = 1;
+        $len = strlen($text);
+        for ($i = 0; $i < $len; $i++) {
+            $ch = $text[$i];
+            if ($quoted) {
+                if ($ch === '"') {
+                    if (($text[$i + 1] ?? '') === '"') {
+                        $cell .= '"';
+                        $i++;
+                    } else {
+                        $quoted = false;
+                    }
+                } else {
+                    $cell .= $ch;
+                    if ($ch === "\n") {
+                        $line++;
+                    }
+                }
+                continue;
+            }
+            if ($ch === '"' && trim($cell) === '') {
+                $quoted = true;
+                $cell = '';
+            } elseif ($ch === $sep) {
+                $cells[] = $cell;
+                $cell = '';
+            } elseif ($ch === "\n") {
+                $cells[] = $cell;
+                $records[] = [$start, $cells];
+                $cells = [];
+                $cell = '';
+                $start = ++$line;
+                $sep = $sepAt($i + 1);
+            } else {
+                $cell .= $ch;
+            }
+        }
+        if ($cell !== '' || $cells !== []) {
+            $cells[] = $cell;
+            $records[] = [$start, $cells];
+        }
+
+        return $records;
+    }
+
     /** "φ.1 " → "Φ.1", "Φ 1" → "Φ.1", "Φ1" → "Φ.1", "f.1" → "Φ.1": codes as typed or pasted, as the folders are written */
     public function normaliseCode(string $code): string
     {
@@ -207,14 +271,19 @@ final class FolderCatalog
         return $code;
     }
 
-    /** @return list<int> active users among the ids, else a validation error */
-    private function userIds(array $ids, string $key): array
+    /**
+     * @param  list<int>  $kept  users already in this folder's rules: kept even if deactivated since (review of R6b: an
+     *         inactive user could not be removed and blocked every save); the save applies rules to active users only
+     * @return list<int> the ids, if each is an active user or one of $kept, else a validation error
+     */
+    private function userIds(array $ids, string $key, array $kept = []): array
     {
         $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
         if ($ids === []) {
             return [];
         }
-        $known = User::whereIn('id', $ids)->whereNotNull('active')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $known = User::whereIn('id', $ids)->where(fn ($q) => $q->whereNotNull('active')->orWhereIn('id', $kept ?: [0]))
+            ->pluck('id')->map(fn ($id) => (int) $id)->all();
         if (count($known) !== count($ids)) {
             throw ValidationException::withMessages([$key => 'Επιλέξτε μόνο ενεργούς χρήστες.']);
         }

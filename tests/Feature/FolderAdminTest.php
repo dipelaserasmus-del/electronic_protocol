@@ -151,4 +151,41 @@ class FolderAdminTest extends FeatureTestCase
         app(\App\Services\Users\UserAccounts::class)->delete($u, $this->admin());
         $this->assertSame(0, FolderAssignment::where('user_id', $u->id)->count());
     }
+
+    /** Review of R6b: a user deactivated after being put in a folder's rules does not block saving the folder */
+    public function test_an_inactive_user_in_the_rules_can_be_kept_or_removed(): void
+    {
+        $admin = $this->admin();
+        $gone = $this->writer();
+        $f = Keepvalue::create(['fakelos' => 'Φ.994']);
+        FolderAssignment::create(['keepvalue_id' => $f->id, 'user_id' => $gone->id, 'type' => 'd']);
+        $gone->forceFill(['active' => null])->save();
+
+        $this->page($admin)->call('edit', $f->id)->assertSee('ανενεργός: δεν παίρνει αναθέσεις')
+            ->set('form.describe', 'Μόνο η περιγραφή')->call('save')->assertHasNoErrors();
+        $this->assertSame('Μόνο η περιγραφή', $f->fresh()->describe);
+        $this->assertSame(1, FolderAssignment::where('keepvalue_id', $f->id)->count());
+
+        $this->page($admin)->call('edit', $f->id)->set('form.d', [])->call('save')->assertHasNoErrors();
+        $this->assertSame(0, FolderAssignment::where('keepvalue_id', $f->id)->count());
+
+        // an inactive user who was not in the rules is still refused
+        $this->page($admin)->call('edit', $f->id)->set('form.e', [(string) $gone->id])->call('save')->assertHasErrors('form.e');
+    }
+
+    /** Review of R6b: a spreadsheet cell with a line break comes in quotes and stays one cell of its row */
+    public function test_import_keeps_multi_line_cells_in_their_row(): void
+    {
+        $text = "Φ.710\t\"Πρώτη γραμμή\nΔεύτερη γραμμή\"\t5\t\"με \"\"εισαγωγικά\"\"\"\nΦ.711\tΑπλή\n";
+        $rows = app(FolderCatalog::class)->parseImport($text);
+        $this->assertSame(['Φ.710', 'Φ.711'], array_column($rows, 'fakelos'));
+        $this->assertSame("Πρώτη γραμμή\nΔεύτερη γραμμή", $rows[0]['describe']);
+        $this->assertSame('5', $rows[0]['keep']);
+        $this->assertSame('με "εισαγωγικά"', $rows[0]['remarks']);
+        $this->assertSame([1, 3], array_column($rows, 'line'));
+
+        app(FolderCatalog::class)->import($text);
+        $this->assertSame("Πρώτη γραμμή\nΔεύτερη γραμμή", Keepvalue::where('fakelos', 'Φ.710')->value('describe'));
+        $this->assertSame(5, (int) Keepvalue::where('fakelos', 'Φ.710')->value('keep'));
+    }
 }

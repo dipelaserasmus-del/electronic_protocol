@@ -175,7 +175,8 @@ class FolderAdmin extends Component
             'total' => Keepvalue::count(),
             'counts' => $counts,
             'names' => $users->pluck('name', 'id'),
-            'activeUsers' => $users->whereNotNull('active')->values(),
+            // active users, and inactive ones still in the edited folder's rules (shown so they can be removed)
+            'activeUsers' => $users->filter(fn ($u) => $u->active || in_array((string) $u->id, array_map('strval', array_merge($this->form['d'] ?? [], $this->form['e'] ?? [])), true))->values(),
             'isAdmin' => self::isAdmin(),
             'catalog' => $catalog,
             'withRules' => FolderAssignment::distinct()->count('keepvalue_id'),
