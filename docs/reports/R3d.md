@@ -56,5 +56,10 @@
   ![Διαχείριση menu](img/R3d/top-bar-manage-menu.png)
   ![narrow page width](img/R3d/width-narrow.png)
 
+## Review (Codex)
+- The two new tests (top bar, page width) had been appended inside a helper class at the end of the test file, so they
+  never ran. They were moved into the test class, run and pass. The other test files of this batch have one class
+  each.
+
 ## Owner actions
 None. The new column is added by `php artisan migrate`, also in the final deployment.
