@@ -120,14 +120,6 @@ class SearchPage extends Component
         return $c->pending && $rest->isEmpty();
     }
 
-    public function clear(): void
-    {
-        $this->reset();
-        $this->year = (string) self::currentYear();
-        $this->resetPage();
-        $this->resetErrorBag();
-    }
-
     /** Builds the criteria from the fields; wrong fields get an error and give null. */
     public function criteria(): ?SearchCriteria
     {

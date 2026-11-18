@@ -145,7 +145,8 @@
 
         <div class="d-flex flex-wrap gap-2 mt-3">
             <button type="submit" class="btn btn-primary rounded-pill px-4" id="search-submit">Αναζήτηση</button>
-            <button type="button" class="btn btn-outline-secondary rounded-pill" wire:click="clear" id="search-clear">Καθαρισμός</button>
+            {{-- a fresh page, so nothing typed right after it can be lost to a late answer (review of R3a) --}}
+            <a href="{{ url('/find') }}" class="btn btn-outline-secondary rounded-pill" id="search-clear">Καθαρισμός</a>
             <span class="small text-body-secondary align-self-center" wire:loading.delay>αναζήτηση…</span>
         </div>
     </form>
