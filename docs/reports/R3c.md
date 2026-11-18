@@ -60,5 +60,12 @@ suggestions while typing. Only protocols the user may see.
   ![search word offered](img/R3c/search-word-hint.png)
   ![results page](img/R3c/results-page.png)
 
+## Review (Codex)
+- After the text was changed, the protocols found for the earlier text stayed in the list until the new answer came;
+  ↓ Enter could open one of them. If the new request failed, they stayed for good. They now go away as soon as the
+  text changes. Tested in `global-search.spec.js`.
+- A quoted word that looks like a search word (`"από:δήμος"`) became a sender filter in the *Σύνθετη αναζήτηση* link.
+  Fixed with R3b's quoting. Tested: `GlobalSearchTest::test_the_advanced_link_keeps_quoted_words`.
+
 ## Owner actions
 None.

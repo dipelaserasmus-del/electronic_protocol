@@ -79,4 +79,12 @@ class GlobalSearchTest extends FeatureTestCase
         auth()->logout();
         $this->getJson('/search/suggest?q=εκδρομη')->assertUnauthorized();
     }
+
+    /** review of R3c: a quoted word that looks like a search word stays a word on the advanced screen */
+    public function test_the_advanced_link_keeps_quoted_words(): void
+    {
+        $params = \App\Livewire\SearchPage::paramsFor((new \App\Services\Search\QueryParser())->parse('"από:δήμος" αίτηση'));
+        $this->assertSame('"από:δήμος" αίτηση', $params['w']);
+        $this->assertArrayNotHasKey('t', $params);
+    }
 }

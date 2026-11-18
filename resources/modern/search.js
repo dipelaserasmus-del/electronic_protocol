@@ -31,6 +31,10 @@ function searchBox(url) {
             this.hints = operatorHints(this.query);
             this.active = -1;
             this.open = this.query.trim().length > 0;
+            // review of R3c: the protocols found for the earlier text go at once (↓ Enter must never open one of them)
+            this.controller?.abort();
+            this.items = []; this.more = false;
+            this.loading = this.query.trim().length >= 2;
             clearTimeout(this.timer);
             this.timer = setTimeout(() => this.fetch(), 250);
         },
@@ -38,11 +42,11 @@ function searchBox(url) {
             const q = this.query.trim();
             this.controller?.abort();
             if (q.length < 2) { this.items = []; this.more = false; return; }
-            this.controller = new AbortController();
+            const controller = this.controller = new AbortController();
             this.loading = true;
             try {
                 const r = await fetch(url + '?q=' + encodeURIComponent(q), {
-                    headers: { Accept: 'application/json' }, signal: this.controller.signal, credentials: 'same-origin',
+                    headers: { Accept: 'application/json' }, signal: controller.signal, credentials: 'same-origin',
                 });
                 if (!r.ok) return;
                 const data = await r.json();
@@ -51,7 +55,7 @@ function searchBox(url) {
                 if (this.active >= this.total) this.active = -1;
             } catch (e) {
                 if (e.name !== 'AbortError') { this.items = []; }
-            } finally { this.loading = false; }
+            } finally { if (this.controller === controller) this.loading = false; }
         },
         useHint(h) {
             const input = this.$refs.input;

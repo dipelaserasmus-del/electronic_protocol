@@ -23,6 +23,12 @@ test('suggestions while typing, results page, advanced screen with the same sear
   await expect(first.locator('mark').first()).toHaveText('Εκδρομή');
   await evidence(page, 'suggestions', { clip: { x: 0, y: 0, width: 1440, height: 450 } });
 
+  // review of R3c: typing on removes the earlier protocols at once (↓ Enter must not open one of them)
+  await box.press('x');
+  await expect(page.locator('#app-search-list .search-suggestion')).toHaveCount(0);
+  await box.press('Backspace');
+  await expect(first).toContainText(subject);
+
   // ↓ Enter opens it
   await box.press('ArrowDown');
   await Promise.all([page.waitForURL(url), box.press('Enter')]);
