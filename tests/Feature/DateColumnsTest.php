@@ -81,10 +81,10 @@ class DateColumnsTest extends FeatureTestCase
 
         $this->actingAs($admin)->get('/home/list')->assertOk()->assertSee('10/01/2026')->assertSee('20/02/2026');
 
-        $q = ['searchField1' => 'thema', 'searchField2' => 'in_arxi_ekdosis', 'searchField3' => 'ada', 'searchData1' => '', 'searchData2' => '', 'searchData3' => ''];
-        $this->actingAs($admin)->get('/getFindData?' . http_build_query($q + ['apoProtocolDate' => '01/01/2026', 'eosProtocolDate' => '31/01/2026']))
+        $q = ['s' => 1, 'year' => ''];   // R3a search screen
+        $this->actingAs($admin)->get('/find?' . http_build_query($q + ['from' => '01/01/2026', 'to' => '31/01/2026']))
             ->assertOk()->assertSee('Δέκα Ιανουαρίου')->assertDontSee('Είκοσι Φεβρουαρίου');
-        $this->actingAs($admin)->get('/getFindData?' . http_build_query($q + ['apoEiserxDate' => '15/02/2026']))
+        $this->actingAs($admin)->get('/find?' . http_build_query($q + ['in_from' => '15/02/2026']))
             ->assertOk()->assertSee('Είκοσι Φεβρουαρίου')->assertDontSee('Δέκα Ιανουαρίου');
     }
 

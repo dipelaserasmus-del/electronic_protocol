@@ -1,6 +1,6 @@
 // D04: dates are stored as DATE columns. The form shows what was saved, and the search's date range finds it.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol, search } = require('./helpers');
 
 test('incoming date is saved, shown again and found by a date range (D04)', async ({ page }) => {
   const subject = `D04 ημερομηνίες ${Date.now()}`;
@@ -14,18 +14,11 @@ test('incoming date is saved, shown again and found by a date range (D04)', asyn
   await expect(page.locator('#f-in_date')).toHaveValue('03/01/2025');
   await evidence(page, 'd04-saved-incoming-date', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
 
-  await page.goto('/find');
-  await page.selectOption('#searchField1', 'thema');
-  await page.fill('#searchData1', subject);
-  await page.fill('#apoEiserxDate', '02/01/2025');
-  await page.fill('#eosEiserxDate', '04/01/2025');
-  await page.evaluate(() => getFindData());
-  const results = page.locator('#showFindData').first();
-  await expect(results).toContainText(subject);
-  await page.addStyleTag({ content: '.datepicker-dropdown { display: none !important; }' });
+  // R3a search screen: the incoming date range is under "Περισσότερα πεδία"
+  const results = await search(page, { thema: subject, 'in-from': '02/01/2025', 'in-to': '04/01/2025' });
+  await expect(results.locator('#search-results')).toContainText(subject);
   await evidence(page, 'd04-found-by-date-range', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
 
-  await page.fill('#apoEiserxDate', '04/01/2025');   // range after the date: not found
-  await page.evaluate(() => getFindData());
-  await expect(results).not.toContainText(subject);
+  await search(page, { 'in-from': '04/01/2025' }, { open: false });   // range after the date: not found
+  await expect(results.locator('#search-count')).toContainText('Δεν βρέθηκε');
 });

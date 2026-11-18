@@ -72,6 +72,24 @@ async function fillProtocol(page, fields) {
   }
 }
 
+/**
+ * R3a search screen: open it, fill fields by id (s-<name>: thema, in_num, sxetiko, num, year, from, in-from …) and press
+ * Enter in the last one. Fields under "Περισσότερα πεδία" open that section first. Returns the results area.
+ */
+async function search(page, fields, { open = true } = {}) {
+  if (open) await page.goto('/find');
+  for (const [name, value] of Object.entries(fields)) {
+    const field = page.locator(`#s-${name}`);
+    if (!(await field.isVisible()) && (await page.locator('#more-fields-body').isHidden())) await page.locator('#more-toggle').click();
+    await field.fill(String(value));
+  }
+  const last = Object.keys(fields).at(-1);
+  const done = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+  await page.locator(`#s-${last}`).press('Enter');
+  await done;
+  return page.locator('.search-page');
+}
+
 /** Save the protocol form and wait for the saved protocol's page (or for the form to show its messages). */
 async function saveProtocol(page, { expectSaved = true } = {}) {
   await page.locator('#protocol-form button[type=submit]').first().click();
@@ -84,4 +102,5 @@ async function notice(page) {
   return (await page.locator('main > .alert').allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
 }
 
-module.exports = { login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice };
+module.exports = {
+  search, login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice };

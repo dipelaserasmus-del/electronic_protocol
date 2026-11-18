@@ -63,40 +63,12 @@ use Yasapurnama\DocumentWatermark\WatermarkFactory;
 
 class ProtocolController extends Controller implements HasMiddleware
 {
-    protected $protocolfields = [
-        'fakelos' => 'Φάκελος',
-        'thema' => 'Θέμα',
-        'in_num' => 'Αριθ. Εισερχ.',
-        'in_topos_ekdosis' => 'Τόπος έκδοσης',
-        'in_arxi_ekdosis' => 'Αρχή έκδοσης',
-        'in_paraliptis' => 'Παραλήπτης',
-        'in_perilipsi' => 'Περιλ. Εισερχ',
-        'diekperaiosi' => 'Διεκπεραίωση',
-        'sxetiko' => 'Σχετικοί Αριθ.',
-        'out_to' => 'Απευθύνεται',
-        'out_perilipsi' => 'Περιλ. Εξερχ',
-        'keywords' => 'Λέξεις κλειδιά',
-        'paratiriseis' => 'Παρατηρήσεις'
-    ];
-    protected $attachmentfields = [
-        'name' => 'Όνομα συνημμένου',
-        'ada' => 'ΑΔΑ'
-    ];
-    protected $protocolExtraSortFields = [
-        'protocolnum' => 'Αθξ.Αριθ.',
-        'protocoldate' => 'Ημνία',
-        'in_date' => 'Ημνία Εισερχ.',
-        'out_date' => 'Ημνία Εξερχ.',
-        'diekp_eos' => 'Διεκπ. έως',
-        'diekp_date' => 'Ημνία Διεκπ.'
-    ];
-
     /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
     public static function middleware(): array
     {
         return [
             'auth',
-            new Middleware('writer:home/list', except: ['gotonum', 'download', 'find', 'getFindData', 'printprotocols', 'printed', 'about']),
+            new Middleware('writer:home/list', except: ['gotonum', 'download', 'printprotocols', 'printed', 'about']),
             new Middleware('email', only: ['viewEmails', 'setEmailRead', 'storeFromEmail', 'viewEmailAttachment', 'viewEmailHtml']),
             new Middleware('limitList', only: ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']),
         ];
@@ -311,19 +283,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return back();
     }
 
-    public function find()
-    {
-        $fields = array_merge($this->protocolfields, $this->attachmentfields);
-        $attachmentfields = $this->attachmentfields;
-
-        $searchField1 = Config::getConfigValueOf('searchField1');
-        $searchField2 = Config::getConfigValueOf('searchField2');
-        $searchField3 = Config::getConfigValueOf('searchField3');
-
-        return view('find', compact('fields', 'attachmentfields', 'searchField1', 'searchField2', 'searchField3'));
-    }
-
-
     /**
      * B07: search / print filters typed by users ("from number", dates…) crashed the page with a 500 when they
      * were not numbers or dd/mm/yyyy dates. Invalid values are removed from the request and reported back.
@@ -350,213 +309,6 @@ class ProtocolController extends Controller implements HasMiddleware
             }
         }
         return $ignored;
-    }
-
-    public function getFindData()
-    {
-        $ignoredFilters = $this->dropInvalidFilters();
-        $sqlite = env('DB_CONNECTION') == 'sqlite';
-
-        $maxRowsInFindPage = Config::getConfigValueOf('maxRowsInFindPage');
-
-        $fields = array_merge($this->protocolfields, $this->attachmentfields);
-        $attachmentfields = $this->attachmentfields;
-
-        $wherevalues = [];
-        $filtervalues = [];
-        $whereNullFields = [];
-        $whereAttachmentvalues = [];
-        $whereNullAttachmentvalues = [];
-        $assigneeNames = [];
-        $noAssignee = false;
-
-        if (request('aponum')) {
-            $wherevalues[] = ['protocolnum', '>', request('aponum') - 1];
-        }
-        if (request('eosnum')) {
-            $wherevalues[] = ['protocolnum', '<', request('eosnum') + 1];
-        }
-        if (request('etosForMany')) {
-            $wherevalues[] = ['etos', request('etosForMany')];
-        }
-
-        if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('apoEiserxDate')) {
-            $wherevalues[] = ['in_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoEiserxDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('eosEiserxDate')) {
-            $wherevalues[] = ['in_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosEiserxDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('apoExerxDate')) {
-            $wherevalues[] = ['out_date', '>=', Carbon::createFromFormat('d/m/Y', request('apoExerxDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('eosExerxDate')) {
-            $wherevalues[] = ['out_date', '<=', Carbon::createFromFormat('d/m/Y', request('eosExerxDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('searchData1') or request('searchData1chk')) {
-            if (request('searchData1chk')) {
-                if (request('searchField1') == 'diekperaiosi') {
-                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
-                } elseif (array_key_exists(request('searchField1'), $attachmentfields)) {
-                    $whereNullAttachmentvalues[] = request('searchField1');
-                } else {
-                    $whereNullFields[] = request('searchField1');
-                }
-            } else {
-                if (array_key_exists(request('searchField1'), $attachmentfields)) {
-                    $whereAttachmentvalues[] = [request('searchField1'), 'LIKE', '%' . request('searchData1') . '%'];
-                } else {
-                    if (request('searchField1') == 'diekperaiosi') {
-                        $assigneeNames[] = request('searchData1');   // D02: any protocol with such a user for διεκπεραίωση
-                    } else {
-                        if (!$sqlite) $wherevalues[] = [request('searchField1'), 'LIKE', '%' . request('searchData1') . '%'];
-                        if ($sqlite) $filtervalues[] = [request('searchField1'), request('searchData1')];
-                    }
-                }
-            }
-        }
-        if (request('searchData2') or request('searchData2chk')) {
-            if (request('searchData2chk')) {
-                if (request('searchField2') == 'diekperaiosi') {
-                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
-                } elseif (array_key_exists(request('searchField2'), $attachmentfields)) {
-                    $whereNullAttachmentvalues[] = request('searchField2');
-                } else {
-                    $whereNullFields[] = request('searchField2');
-                }
-            } else {
-                if (array_key_exists(request('searchField2'), $attachmentfields)) {
-                    $whereAttachmentvalues[] = [request('searchField2'), 'LIKE', '%' . request('searchData2') . '%'];
-                } else {
-                    if (request('searchField2') == 'diekperaiosi') {
-                        $assigneeNames[] = request('searchData2');   // D02: any protocol with such a user for διεκπεραίωση
-                    } else {
-                        if (!$sqlite) $wherevalues[] = [request('searchField2'), 'LIKE', '%' . request('searchData2') . '%'];
-                        if ($sqlite) $filtervalues[] = [request('searchField2'), request('searchData2')];
-                    }
-                }
-            }
-        }
-        if (request('searchData3') or request('searchData3chk')) {
-            if (request('searchData3chk')) {
-                if (request('searchField3') == 'diekperaiosi') {
-                    $noAssignee = true;   // D02: "empty" = nobody assigned for διεκπεραίωση (the text was '' or NULL)
-                } elseif (array_key_exists(request('searchField3'), $attachmentfields)) {
-                    $whereNullAttachmentvalues[] = request('searchField3');
-                } else {
-                    $whereNullFields[] = request('searchField3');
-                }
-            } else {
-                if (array_key_exists(request('searchField3'), $attachmentfields)) {
-                    $whereAttachmentvalues[] =  [request('searchField3'), 'LIKE', '%' . request('searchData3')  . '%'];
-                } else {
-                    if (request('searchField3') == 'diekperaiosi') {
-                        $assigneeNames[] = request('searchData3');   // D02: any protocol with such a user for διεκπεραίωση
-                    } else {
-                        if (!$sqlite) $wherevalues[] = [request('searchField3'), 'LIKE', '%' . request('searchData3') . '%'];
-                        if ($sqlite) $filtervalues[] = [request('searchField3'), request('searchData3')];
-                    }
-                }
-            }
-        }
-
-        if (!$wherevalues and !$whereAttachmentvalues and !$whereNullFields and !$whereNullAttachmentvalues and !$filtervalues and !$assigneeNames and !$noAssignee) {
-            // no usable criteria: nothing to search (but say which typed values were not valid)
-            return response($ignoredFilters ? '<div class="alert alert-warning" id="ignoredFilters">Αγνοήθηκαν μη έγκυρα κριτήρια: '
-                . implode(', ', $ignoredFilters) . ' (αριθμοί: μόνο ψηφία · ημερομηνίες: ηη/μμ/εεεε).</div>' : '');
-        }
-
-        $foundProtocolsCount = null;
-        $protocols = Protocol::with('attachments', 'assignments');
-        foreach ($whereNullFields as $whereNullField) {
-            $protocols = $protocols->whereNull($whereNullField);
-        }
-        foreach ($assigneeNames as $name) {
-            $ids = User::where('name', 'LIKE', '%' . $name . '%')->pluck('id');   // unknown name → no ids → no results (B07)
-            $protocols = $protocols->whereHas('assignments', fn ($q) => $q->where('type', 'd')->whereIn('user_id', $ids));
-        }
-        if ($noAssignee) {
-            $protocols = $protocols->whereDoesntHave('assignments', fn ($q) => $q->where('type', 'd'));
-        }
-        // Restrict results even when SQLite applies text filters in memory.
-        if ($this->limitProtocolAccessList()) {
-            $protocols = $protocols->where(function ($query) {
-                $query->ownOrAssigned(Auth::user()->id);   // D02
-            });
-        }
-        if ($wherevalues) {
-            $protocols = $protocols->where($wherevalues);
-        }
-        foreach ($whereNullAttachmentvalues as $whereNullAttachmentvalue) {
-            $protocols = $protocols->whereHas('attachments', function ($query) use ($whereNullAttachmentvalue) {
-                $query->whereNull($whereNullAttachmentvalue);
-            });
-        }
-        if ($whereAttachmentvalues) {
-            $protocols = $protocols->whereHas('attachments', function ($query) use ($whereAttachmentvalues) {
-                $query->where($whereAttachmentvalues);
-            });
-        }
-        $protocols = $protocols->orderby('protocoldate', 'desc')->orderby('protocolnum', 'desc');
-
-        // Ο πίνακας $filtervalues γεμίζει μόνο αν η ΒΔ είναι sqlite
-        // άρα αν η ΒΔ δεν είναι sqlite
-        if (!$filtervalues) {
-            // βρίσκω τον αριθμό και paginate
-            $foundProtocolsCount = $protocols->count();
-            $protocols = $protocols->paginate($maxRowsInFindPage);
-        } else {
-            // διαβάζω στις ρυθμίσεις πόσα πρέπι να πάρω
-            $take = Config::getConfigValueOf('maxRowsInXlsExport');
-            // default 5000
-            if (!$take) $take = 5000;
-
-            // η ΒΔ είναι sqlite φορτώνω τα πρωτόκολλα στη μνήμη !!!
-            /// παίρνω μόνο τα τελευταία
-            $protocols = $protocols->take($take)->get();
-
-            foreach ($filtervalues as $fv) {
-                // φιλτράρω 
-                $protocols = $protocols->filter(function ($item) use ($fv) {
-                    if (str_contains($this->uc_without_accents($item[$fv[0]]), $this->uc_without_accents($fv[1]))) {
-                        return $item;
-                    }
-                });
-            }
-            // βρίσκω τον αριθμό και paginate collection ( macro στον AppserviceProvider)
-            $foundProtocolsCount = $protocols->count();
-            $protocols = $protocols->paginate($maxRowsInFindPage);
-        }
-
-
-        $userNames = User::pluck('name', 'id');
-        foreach ($protocols as $protocol) {
-            if ($protocol->protocoldate) {
-                $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-            }
-            // D02: names of the users assigned for διεκπεραίωση (the old code showed nothing when there was also an "e")
-            $names = $protocol->assignments->where('type', 'd')->map(fn ($a) => $userNames[$a->user_id] ?? null)->filter();
-            $protocol->setAttribute('assignee_names', $names->isEmpty() ? null : $names->implode(', '));   // display only, never saved
-        }
-
-        $searchField1 = request('searchField1');
-        $searchField2 = request('searchField2');
-        $searchField3 = request('searchField3');
-        $searchData1 = request('searchData1');
-        $searchData2 = request('searchData2');
-        $searchData3 = request('searchData3');
-
-        $html = view('getFindData', compact('protocols', 'foundProtocolsCount', 'maxRowsInFindPage', 'fields', 'attachmentfields', 'searchField1', 'searchField2', 'searchField3', 'searchData1', 'searchData2', 'searchData3'))->render();
-        if ($ignoredFilters) {
-            $html = '<div class="alert alert-warning" id="ignoredFilters">Αγνοήθηκαν μη έγκυρα κριτήρια: '
-                . implode(', ', $ignoredFilters) . ' (αριθμοί: μόνο ψηφία · ημερομηνίες: ηη/μμ/εεεε).</div>' . $html;
-        }
-        return response($html);
     }
 
     public function printprotocols()
@@ -1433,27 +1185,5 @@ class ProtocolController extends Controller implements HasMiddleware
         }
         $this->stamp?->apply($savedPath);
         return $savedPath;
-    }
-
-    public function uc_without_accents($string, $enc = "utf-8")
-    {
-        return strtr(
-            mb_strtoupper($string, $enc),
-            array(
-                'Ά' => 'Α',
-                'Έ' => 'Ε',
-                'Ί' => 'Ι',
-                'Ή' => 'Η',
-                'Ύ' => 'Υ',
-                'Ό' => 'Ο',
-                'Ώ' => 'Ω',
-                'A' => 'A',
-                'A' => 'A',
-                'A' => 'A',
-                'A' => 'A',
-                'Y' => 'Y',
-                'ΐ' => 'Ϊ'
-            )
-        );
     }
 }

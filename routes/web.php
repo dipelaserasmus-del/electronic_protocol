@@ -64,8 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/trash', [ProtocolFormController::class, 'trash']);   // R4b (administrators)
     Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
-    Route::get('/find', [ProtocolController::class, 'find']);
-    Route::get('/getFindData', [ProtocolController::class, 'getFindData']);
+    Route::get('/find', [ProtocolFormController::class, 'search']);   // R3a (old /getFindData removed)
     // autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
     Route::get('/getValues/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValuesQuery']);
     Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValues']);

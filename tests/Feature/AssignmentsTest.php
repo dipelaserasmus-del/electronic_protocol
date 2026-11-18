@@ -17,11 +17,10 @@ class AssignmentsTest extends FeatureTestCase
             ->get()->map(fn ($a) => $a->type . $a->user_id)->all();
     }
 
+    /** R3a: the search screen (fields in the address; year empty: all years) */
     private function find(array $q): string
     {
-        $q += ['searchField1' => 'diekperaiosi', 'searchField2' => 'thema', 'searchField3' => 'ada',
-               'searchData1' => '', 'searchData2' => '', 'searchData3' => ''];
-        return '/getFindData?' . http_build_query($q);
+        return '/find?' . http_build_query($q + ['s' => 1, 'year' => '']);
     }
 
     public function test_text_is_parsed_tolerantly(): void
@@ -119,11 +118,11 @@ class AssignmentsTest extends FeatureTestCase
         Protocol::factory()->number(2)->assignedTo($d)->create(['thema' => 'Με έναν χρήστη']);
         Protocol::factory()->number(3)->assignedTo(null, $d)->create(['thema' => 'Μόνο ενημέρωση']);
 
-        $this->actingAs($this->admin())->get($this->find(['searchData1' => 'Διεκπεραιωτής']))
+        $this->actingAs($this->admin())->get($this->find(['assignee' => $d->id]))
             ->assertOk()
             ->assertSee('Με δύο χρήστες')->assertSee('Με έναν χρήστη')->assertDontSee('Μόνο ενημέρωση')
-            // the results list shows the assignee's name also when there is an "e" user
-            ->assertSeeText('Διεκπεραιωτής Δοκιμής');
+            // the results list shows the assignee's name also when there is an "e" user (the menu above lists it too)
+            ->assertSeeInOrder(['id="search-results"', 'Με δύο χρήστες', 'Διεκπεραιωτής Δοκιμής'], false);
     }
 
     public function test_search_for_empty_assignee_finds_protocols_saved_with_empty_text(): void
@@ -132,7 +131,7 @@ class AssignmentsTest extends FeatureTestCase
         Protocol::factory()->number(2)->create(['thema' => 'Χωρίς τιμή', 'diekperaiosi' => null]);
         Protocol::factory()->number(3)->assignedTo($this->writer())->create(['thema' => 'Ανατεθειμένο']);
 
-        $this->actingAs($this->admin())->get($this->find(['searchData1chk' => 1]))
+        $this->actingAs($this->admin())->get($this->find(['assignee' => 'none']))
             ->assertOk()->assertSee('Κενό κείμενο')->assertSee('Χωρίς τιμή')->assertDontSee('Ανατεθειμένο');
     }
 

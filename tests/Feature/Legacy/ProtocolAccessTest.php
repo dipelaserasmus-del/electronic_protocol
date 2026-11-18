@@ -9,13 +9,10 @@ use Tests\Feature\FeatureTestCase;
 /** Characterization of list, search, download and role/assignment-based access. */
 class ProtocolAccessTest extends FeatureTestCase
 {
-    /** The search form always sends the three field selectors (defaults from settings) */
-    private function findUrl(string $query): string
+    /** R3a: the search screen keeps its fields in the address (s=1: search; year empty: all years) */
+    private function findUrl(array $q): string
     {
-        parse_str($query, $q);
-        $q += ['searchField1' => 'thema', 'searchField2' => 'in_arxi_ekdosis', 'searchField3' => 'ada',
-               'searchData1' => '', 'searchData2' => '', 'searchData3' => ''];
-        return '/getFindData?' . http_build_query($q);
+        return '/find?' . http_build_query($q + ['s' => 1, 'year' => '']);
     }
 
     public function test_protocol_list_shows_protocols(): void
@@ -33,7 +30,7 @@ class ProtocolAccessTest extends FeatureTestCase
         Protocol::factory()->number(2)->create(['thema' => 'Άσχετο']);
 
         $this->actingAs($this->reader())
-            ->get($this->findUrl('searchField1=thema&searchData1=' . urlencode('ημερίδα')))
+            ->get($this->findUrl(['t' => ['thema' => 'ημερίδα']]))
             ->assertOk()->assertSee('Πρόσκληση σε')->assertDontSee('Άσχετο');   // match is wrapped in <mark>
     }
 
@@ -42,7 +39,7 @@ class ProtocolAccessTest extends FeatureTestCase
         Protocol::factory()->number(1)->incoming()->create(['in_num' => 'Φ.20/12345/Δ1']);
 
         $this->actingAs($this->reader())
-            ->get($this->findUrl('searchField1=in_num&searchData1=12345'))
+            ->get($this->findUrl(['t' => ['in_num' => '12345']]))
             ->assertOk()->assertSee('12345');
     }
 
@@ -51,7 +48,7 @@ class ProtocolAccessTest extends FeatureTestCase
         foreach ([5, 6, 7, 8] as $n) Protocol::factory()->number($n)->create(['thema' => "Θέμα αρ $n"]);
 
         $this->actingAs($this->reader())
-            ->get($this->findUrl('aponum=6&eosnum=7&etosForMany=' . now()->year))
+            ->get($this->findUrl(['num' => '6-7', 'year' => now()->year]))
             ->assertOk()->assertSee('Θέμα αρ 6')->assertSee('Θέμα αρ 7')->assertDontSee('Θέμα αρ 5')->assertDontSee('Θέμα αρ 8');
     }
 
@@ -87,7 +84,7 @@ class ProtocolAccessTest extends FeatureTestCase
         Protocol::factory()->number(1)->assignedTo($writer)->create(['thema' => 'Δικό μου θέμα']);
         Protocol::factory()->number(2)->create(['thema' => 'Ξένο θέμα']);
 
-        $this->actingAs($writer)->get($this->findUrl('searchField1=thema&searchData1=' . urlencode('θέμα')))
+        $this->actingAs($writer)->get($this->findUrl(['t' => ['thema' => 'θέμα']]))
             ->assertOk()->assertSee('Δικό μου')->assertDontSee('Ξένο');
     }
 
