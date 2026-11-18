@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **39 / 60** `████████████████████░░░░░░░░░░` 65% |
-| Effort done (PERT) | **18.7 / 29.7 h** `███████████████████░░░░░░░░░░░` 63% |
-| Remaining effort, one agent in sequence | **11.0 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **41 / 64** `███████████████████░░░░░░░░░░░` 64% |
+| Effort done (PERT) | **19.4 / 31.2 h** `███████████████████░░░░░░░░░░░` 62% |
+| Remaining effort, one agent in sequence | **11.8 h ± 0.6** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 3.1 h ± 0.3 |
 | In progress | — |
-| Next task | **R3a** — Advanced search screen |
+| Next task | **R1f** — Form: checked tags (related, keywords), folder filter |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** R3a → R3b → R3c → Z01 → Z02 → Z03
@@ -28,6 +28,7 @@
 | 5 | ✅D02 ✅D03 ✅D04 | 3/3 | `██████████` |
 | 6 | ✅R1a ✅R1b ✅R1c ✅R2 ✅R4a ✅R4b | 6/6 | `██████████` |
 | 6.5 | ✅R1e ✅R2b ✅R2c | 3/3 | `██████████` |
+| 6.6 | ✅D06 ⬜R1f ⬜R1g ✅R2d | 2/4 | `█████░░░░░` |
 | 7 | ⬜R3a ⬜R3b ⬜R3c | 0/3 | `░░░░░░░░░░` |
 | 8 | ⬜R5c ⬜R5d ⬜R5b | 0/3 | `░░░░░░░░░░` |
 | 9 | ⬜R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 0/5 | `░░░░░░░░░░` |
@@ -76,6 +77,7 @@ flowchart LR
     D02["D02<br/>Assignments table (replace d14,e10 text)"]
     D03["D03<br/>Attachment size/hash/deleted_by"]
     D04["D04<br/>Integer dates → DATE columns"]
+    D06["D06<br/>Folder description → TEXT"]
   end
   subgraph R["4 Module rebuilds"]
     R5a["R5a<br/>Email service, EML cache, charsets"]
@@ -88,6 +90,9 @@ flowchart LR
     R1e["R1e<br/>Form feedback: drop (Firefox), related tags, notices"]
     R2b["R2b<br/>List feedback: user filter, detailed view, file names"]
     R2c["R2c<br/>Missing numbers as rows in the list"]
+    R1f["R1f<br/>Form: checked tags (related, keywords), folder filter"]
+    R1g["R1g<br/>Form layout: number in the centre, rarely used sections lower"]
+    R2d["R2d<br/>Missing-number rows: new look"]
     R3a["R3a<br/>Advanced search screen"]
     R3b["R3b<br/>Gmail-style query parser"]
     R3c["R3c<br/>Global search box + results page"]
@@ -158,6 +163,11 @@ flowchart LR
   R2 --> R2b
   R2b --> R2c
   A02 --> R2c
+  D05 --> D06
+  R1e --> R1f
+  D06 --> R1f
+  R1f --> R1g
+  R2c --> R2d
   N04 --> R3a
   D02 --> R3a
   R3a --> R3b
@@ -200,8 +210,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c done
-  class R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R2d done
+  class R1f,R1g,R3a,R3b,R3c,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R3a,R3b,R3c,Z01,Z02,Z03 critical
 ```
@@ -261,31 +271,36 @@ gantt
   R1e Form feedback  drop (Firefox), related tags, notices :done, r1e, 2026-11-13 02:10, 19m
   R2b List feedback  user filter, detailed view, file names :done, r2b, 2026-11-13 02:29, 33m
   R2c Missing numbers as rows in the list :done, r2c, 2026-11-13 03:02, 33m
+  section Batch 6.6
+  D06 Folder description → TEXT :done, d06, 2026-11-13 03:35, 19m
+  R1f Form  checked tags (related, keywords), folder filter :r1f, 2026-11-13 03:54, 33m
+  R1g Form layout  number in the centre, rarely used sections lower :r1g, 2026-11-13 04:27, 19m
+  R2d Missing-number rows  new look :done, r2d, 2026-11-13 04:46, 19m
   section Batch 7
-  R3a Advanced search screen :crit, r3a, 2026-11-13 03:35, 33m
-  R3b Gmail-style query parser :crit, r3b, 2026-11-13 04:08, 33m
-  R3c Global search box + results page :crit, r3c, 2026-11-13 04:41, 33m
+  R3a Advanced search screen :crit, r3a, 2026-11-13 05:05, 33m
+  R3b Gmail-style query parser :crit, r3b, 2026-11-13 05:38, 33m
+  R3c Global search box + results page :crit, r3c, 2026-11-13 06:11, 33m
   section Batch 8
-  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 05:14, 33m
-  R5d Register-from-email flow, keywords :r5d, 2026-11-13 05:47, 33m
-  R5b winmail.dat (TNEF) :r5b, 2026-11-13 06:20, 66m
+  R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 06:44, 33m
+  R5d Register-from-email flow, keywords :r5d, 2026-11-13 07:17, 33m
+  R5b winmail.dat (TNEF) :r5b, 2026-11-13 07:50, 66m
   section Batch 9
-  R6a Users & roles screens :r6a, 2026-11-13 07:26, 33m
-  R6b Folders + auto-assignment rules :r6b, 2026-11-13 07:59, 33m
-  R1d Apply auto-assignment on save :r1d, 2026-11-13 08:32, 19m
-  R6c Settings, backups, archive screens :r6c, 2026-11-13 08:51, 33m
-  R7 Printing & exports :r7, 2026-11-13 09:24, 33m
+  R6a Users & roles screens :r6a, 2026-11-13 08:56, 33m
+  R6b Folders + auto-assignment rules :r6b, 2026-11-13 09:29, 33m
+  R1d Apply auto-assignment on save :r1d, 2026-11-13 10:02, 19m
+  R6c Settings, backups, archive screens :r6c, 2026-11-13 10:21, 33m
+  R7 Printing & exports :r7, 2026-11-13 10:54, 33m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 09:57, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 10:30, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 10:49, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 11:08, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 11:41, 19m
-  X01 Audit log — recording :x01, 2026-11-13 12:00, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 12:33, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 13:06, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 13:39, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 13:58, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 11:27, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 12:00, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 12:19, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 12:38, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 13:11, 19m
+  X01 Audit log — recording :x01, 2026-11-13 13:30, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 14:03, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 14:36, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 15:09, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 15:28, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -299,9 +314,9 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **F02** 🔴 | Test foundation, characterization tests | F01 | 1.1 | 0.2 | 0.3 | 1.4 | 0.3 | 1.4 | 0.0 | #4 |
 | ✅ | **S00** | Close open admin registration | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 6.4 | 6.7 | 4.9 | #5 |
 | ✅ | **B03** | Keep manually typed number | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 6.1 | 6.7 | 4.7 | #6 |
-| ✅ | **B08** | Atomic numbering (concurrency) | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 5.0 | 5.6 | 3.6 | #7 |
+| ✅ | **B08** | Atomic numbering (concurrency) | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 4.7 | 5.3 | 3.3 | #7 |
 | ✅ | **S02** | Central access-control policy | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 3.3 | 3.8 | 1.9 | #8 |
-| ✅ | **A02** | Missing-number reminder | B08 | 0.5 | 0.1 | 2.0 | 2.5 | 5.6 | 6.1 | 3.6 | #9 |
+| ✅ | **A02** | Missing-number reminder | B08 | 0.5 | 0.1 | 2.0 | 2.5 | 5.3 | 5.8 | 3.3 | #9 |
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 6.4 | 6.7 | 4.9 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
 | ✅ | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.0 | 6.4 | 5.2 | #16 |
@@ -317,7 +332,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **N02** 🔴 | Laravel structure modernization | N01 | 0.5 | 0.1 | 2.0 | 2.5 | 2.0 | 2.5 | 0.0 | #28 |
 | ✅ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | 0.0 | #31 |
 | ✅ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | 0.0 | #33 |
-| ✅ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 | #34 |
+| ✅ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 5.2 | 5.5 | 4.3 | #34 |
 | ✅ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 3.3 | 3.6 | 1.9 | #35 |
 | ✅ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 3.1 | 4.2 | 1.1 | #36 |
 | ✅ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 6.4 | 6.7 | 5.5 | #37 |
@@ -330,9 +345,13 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2** | Protocol list rebuild | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 | #45 |
 | ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 3.8 | 4.2 | 1.9 | #46 |
 | ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 4.2 | 4.7 | 1.9 | #47 |
-| ✅ | **R1e** | Form feedback: drop (Firefox), related tags, notices | R1c, R4b | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 | #48 |
-| ✅ | **R2b** | List feedback: user filter, detailed view, file names | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.6 | 6.1 | 1.4 | #49 |
-| ✅ | **R2c** | Missing numbers as rows in the list | R2b, A02 | 0.5 | 0.1 | 4.7 | 5.3 | 6.1 | 6.7 | 1.4 | #50 |
+| ✅ | **R1e** | Form feedback: drop (Firefox), related tags, notices | R1c, R4b | 0.3 | 0.1 | 4.7 | 5.0 | 5.5 | 5.8 | 0.8 | #48 |
+| ✅ | **R2b** | List feedback: user filter, detailed view, file names | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.3 | 5.8 | 1.1 | #49 |
+| ✅ | **R2c** | Missing numbers as rows in the list | R2b, A02 | 0.5 | 0.1 | 4.7 | 5.3 | 5.8 | 6.4 | 1.1 | #50 |
+| ✅ | **D06** | Folder description → TEXT | D05 | 0.3 | 0.1 | 1.2 | 1.5 | 5.5 | 5.8 | 4.3 | #51 |
+| ⬜ | **R1f** | Form: checked tags (related, keywords), folder filter | R1e, D06 | 0.5 | 0.1 | 5.0 | 5.6 | 5.8 | 6.4 | 0.8 |  |
+| ⬜ | **R1g** | Form layout: number in the centre, rarely used sections lower | R1f | 0.3 | 0.1 | 5.6 | 5.9 | 6.4 | 6.7 | 0.8 |  |
+| ✅ | **R2d** | Missing-number rows: new look | R2c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #52 |
 | ⬜ | **R3a** 🔴 | Advanced search screen | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 3.6 | 4.2 | 0.0 |  |
 | ⬜ | **R3b** 🔴 | Gmail-style query parser | R3a | 0.5 | 0.1 | 4.2 | 4.7 | 4.2 | 4.7 | 0.0 |  |
 | ⬜ | **R3c** 🔴 | Global search box + results page | R3b | 0.5 | 0.1 | 4.7 | 5.3 | 4.7 | 5.3 | 0.0 |  |
