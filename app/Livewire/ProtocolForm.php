@@ -13,6 +13,7 @@ use App\Services\Protocols\ProtocolAccess;
 use App\Services\Protocols\ProtocolWriter;
 use App\Services\Protocols\SaveResult;
 use App\Support\DateInput;
+use App\Support\UserPreferences;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
@@ -360,6 +361,46 @@ class ProtocolForm extends Component
         return $query->orderByDesc('etos')->orderByDesc('protocolnum')->take(5)->get(['id', 'protocolnum', 'etos'])->all();
     }
 
+    /*
+     * R1i (owner, 2026-11-18): each user arranges the page's sections: drag a section by its handle to another place
+     * (two columns and a row below them), collapse it, one or two columns. Saved with the account (UserPreferences).
+     */
+
+    /** wire:sort: $id was dropped at $position of $zone */
+    public function moveSection(string $id, int $position, string $zone): void
+    {
+        $layout = UserPreferences::formLayout(Auth::user());
+        if (! isset(UserPreferences::FORM_SECTIONS[$id]) || ! in_array($zone, UserPreferences::FORM_ZONES, true)) {
+            return;
+        }
+        foreach ($layout['zones'] as $z => $ids) {
+            $layout['zones'][$z] = array_values(array_diff($ids, [$id]));
+        }
+        array_splice($layout['zones'][$zone], max(0, min($position, count($layout['zones'][$zone]))), 0, [$id]);
+        UserPreferences::setFormLayout(Auth::user(), $layout);
+    }
+
+    public function toggleSection(string $id): void
+    {
+        $layout = UserPreferences::formLayout(Auth::user());
+        $layout['collapsed'] = in_array($id, $layout['collapsed'], true)
+            ? array_values(array_diff($layout['collapsed'], [$id]))
+            : [...$layout['collapsed'], $id];
+        UserPreferences::setFormLayout(Auth::user(), $layout);
+    }
+
+    public function setColumns(int $columns): void
+    {
+        $layout = UserPreferences::formLayout(Auth::user());
+        $layout['columns'] = $columns;
+        UserPreferences::setFormLayout(Auth::user(), $layout);
+    }
+
+    public function resetLayout(): void
+    {
+        UserPreferences::resetFormLayout(Auth::user());
+    }
+
     public function render()
     {
         $protocol = $this->protocol();
@@ -368,6 +409,7 @@ class ProtocolForm extends Component
         $isReader = ProtocolPolicy::role($user) === ProtocolPolicy::READER;
 
         return view('livewire.protocol-form', [
+            'layout' => UserPreferences::formLayout($user),
             'protocol' => $protocol,
             'access' => $access,
             'title' => match (true) {

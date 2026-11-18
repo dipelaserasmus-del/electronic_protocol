@@ -1,10 +1,10 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 12:22 (after Batch 7). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 13:57 (after Batch 7.5). Times are Greek time.
 
 ## ▶ Your next message
-Batch 7 is done ([summary](docs/reports/BATCH-7.md)): the new search. Try it and send notes whenever you have them;
-otherwise start a **new conversation** and send:
+Batch 7.5 is done ([summary](docs/reports/BATCH-7.5.md)): your notes on folders, the top bar and the protocol page.
+Answer the two e-mail questions below when you can; otherwise start a **new conversation** and send:
 
 ```
 run batch 8
@@ -16,25 +16,26 @@ keywords) and `winmail.dat` attachments. 📧 If you have new e-mails that show 
 
 ## Try it (5 minutes)
 After *Update: get latest version from GitHub* and *Demo: start*, log in as `admin`:
-1. Press `/` on any page and type a word of a subject without accents (e.g. `εκδρομη`): matching protocols appear;
-   ↓ Enter opens one; Enter alone opens the results page.
-2. Type `φακ` in the box: it offers `φάκελος:`. Try `φάκελος:κανένας` or `είναι:εκκρεμές`.
-3. On the results page, *Σύνθετη αναζήτηση* opens the full screen with the same search.
-4. *Αναζήτηση* → *Έλεγχος εκκρεμοτήτων*: protocols without a folder or with ΕΚΚΡΕΜΟΤΗΤΑ in the subject for the year or
-   the dates you give; with none, it says so in green. Worth trying on your real copy (port 8081) for a past month.
-5. In *Φάκελος* type a code without dots (`φ11`) or a word of its description.
+1. *Νέο* → *Φάκελος*: type `12` (Φ.12 first), then `φ11` (only Φ.11, never Φ.1.1).
+2. The top bar: four items with icons, the organisation under the name. *Διαχείριση* has Εκτύπωση and Διατήρηση; the
+   second button in the search box (sliders) opens *Σύνθετη αναζήτηση*.
+3. Your name (top right) → *Πλάτος σελίδας* → *Στενό, στο κέντρο*; and back to *Όλη η οθόνη*.
+4. *Νέο*: drag a section by ⠿ (left of its title) into the other column; ▴ collapses it; try *Μία στήλη*; then
+   *Επαναφορά διάταξης*. Log in on another computer: your layout is there too.
 
 ## Questions for you
-1. **Folders list:** send the full list (code, title, description) as a spreadsheet or text file; I'll add an import so
+1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** on the current code the inbox shows its sender, subject, text and the three
+   attachment names correctly. Where did you see `??`: which screen, which field, and on which copy (8081, the old
+   server, an e-mail program)? A description is enough; no screenshot of the e-mail needed.
+2. **E-mails of the `ΑΔΕΙΑ` sender not registered:** on the current code both register (with attachments) once a
+   *Φάκελος* is chosen. Without a folder, the old inbox page says *«Για να καταχωρίσετε email με συνημμένα αρχεία
+   είναι απαραίτητο να επιλέξετε Φάκελο»* and the e-mail stays. Was that the message? If not, send its exact words.
+   (This is probably the `--` problem too: that e-mail has `--` before its signature.)
+3. **Folders list:** send the full list (code, title, description) as a spreadsheet or text file; I'll add an import so
    nobody types it. Should a folder have a short **title** separate from its long description? Today it has a code, a
    description and remarks (see [D06](docs/reports/D06.md)).
-2. **Firefox on Fedora crashes when a file is dropped:** a Firefox/GNOME bug, not the page (see
+4. **Firefox on Fedora crashes when a file is dropped:** a Firefox/GNOME bug, not the page (see
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
-3. **Attachments shown as missing in your real-data copy** (port 8081): run *Real data: load newest backup from
-   local-data/db* and send me the two counts it prints (attachments measured / files not found).
-4. **The `--` problem** you mentioned: I could not find it in the old code. Saving and showing `--` (and `' " ; % _ \
-   < > &`, Greek, emoji) works and is now tested. If it still happens, send the screen and what you typed (no real
-   data).
 5. **Writers and the protocol date:** new setting *Ρυθμίσεις → Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
 
@@ -65,6 +66,9 @@ After *Update: get latest version from GitHub* and *Demo: start*, log in as `adm
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Your real copy after Batch 7 (2026-11-18): 3653 protocols, 24 users, 7630 attachments, 7148 files found (482 missing:
+  the known gap between your backup and your file copy, L01). Thanks: nothing to do.
+- Your screen choices (page width, the protocol page's sections) are saved per user, on every computer (2026-11-18).
 - Real data after Batch 5, on your Fedora copy: 7183 attachments measured, 646 files not found (the known gap between
   your backup and file copy, L01), 0 dates that were not real dates (2026-11-16). Thanks: nothing to do.
 - No changes on the production server until the move to the new version, also not the two Apache security rules (2026-11-16).

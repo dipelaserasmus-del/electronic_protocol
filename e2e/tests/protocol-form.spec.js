@@ -319,3 +319,71 @@ test('the number is large in the middle; assignment and receipt are below the at
     await setSetting(page, 'protocolValidate', previousValidate);
   }
 });
+
+/** Drags like a person: press on the handle, move in small steps, release over the upper part of the target. */
+async function drag(page, handle, target) {
+  const from = await handle.boundingBox();
+  const to = await target.boundingBox();
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 20; i++) {
+    await page.mouse.move(from.x + (to.x + 40 - from.x) * i / 20, from.y + (to.y + 4 - from.y) * i / 20);
+    await page.waitForTimeout(15);
+  }
+  await page.mouse.up();
+}
+
+test('sections: drag to the other column, collapse, one column, kept for the user, reset (R1i)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await login(page, 'anathetis');
+  await page.goto('/home');
+  const zone = (z) => page.locator(`.form-zone[data-zone="${z}"] > .form-section`);
+  const ids = async (z) => zone(z).evaluateAll((els) => els.map((e) => e.dataset.section));
+  await page.locator('#layout-reset').click();   // start from the default (earlier runs)
+  await expect.poll(() => ids('left')).toEqual(['general', 'incoming']);
+
+  // drag "Συνημμένα" by its handle onto the left column, above "Γενικά"
+  const saved = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().postData()?.includes('moveSection'));
+  await drag(page, page.locator('[data-section="attachments"] .section-handle'), page.locator('[data-section="general"] .section-head'));
+  await saved;
+  await expect.poll(() => ids('left')).toEqual(['attachments', 'general', 'incoming']);
+  await expect.poll(() => ids('right')).toEqual(['done', 'outgoing']);
+  const left = await page.locator('[data-section="attachments"]').boundingBox();
+  const right = await page.locator('[data-section="done"]').boundingBox();
+  expect(left.x).toBeLessThan(right.x);   // really in the left column
+
+  // collapse "Εισερχόμενο": its fields hide, a click opens it again later
+  await page.locator('[data-section-toggle="incoming"]').click();
+  await expect(page.locator('#f-in_num')).toBeHidden();
+  await expect(page.locator('[data-section-toggle="incoming"]')).toHaveAttribute('aria-expanded', 'false');
+  await evidence(page, 'sections-moved-collapsed', { fullPage: true });
+
+  // one column: every section is as wide as the page
+  await page.locator('#layout-one').click();
+  await expect(page.locator('#form-sections')).toHaveClass(/one-column/);
+  const a = await page.locator('[data-section="attachments"]').boundingBox();
+  const d = await page.locator('[data-section="done"]').boundingBox();
+  expect(Math.abs(a.x - d.x)).toBeLessThan(2);
+  expect(Math.abs(a.width - d.width)).toBeLessThan(2);
+  await evidence(page, 'sections-one-column', { clip: { x: 0, y: 0, width: 1440, height: 1000 } });
+
+  // kept after a reload, for this user only
+  await page.reload();
+  await expect(page.locator('#form-sections')).toHaveClass(/one-column/);
+  await expect(page.locator('#f-in_num')).toBeHidden();
+  await expect.poll(() => ids('left')).toEqual(['attachments', 'general', 'incoming']);
+  await page.context().clearCookies();
+  await login(page, 'writer');
+  await page.goto('/home');
+  await expect(page.locator('#form-sections')).toHaveClass(/two-columns/);
+  await expect(page.locator('#f-in_num')).toBeVisible();
+
+  // back to the default
+  await page.context().clearCookies();
+  await login(page, 'anathetis');
+  await page.goto('/home');
+  await page.locator('#layout-reset').click();
+  await expect(page.locator('#form-sections')).toHaveClass(/two-columns/);
+  await expect.poll(() => ids('left')).toEqual(['general', 'incoming']);
+  await expect(page.locator('#f-in_num')).toBeVisible();
+});
