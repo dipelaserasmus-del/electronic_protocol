@@ -64,6 +64,9 @@ final class Tnef
         }
     }
 
+    /** Most files read from one winmail.dat; a crafted one with more could use up the memory. */
+    private const MAX_ATTACHMENTS = 500;
+
     /** Deepest RTF group nesting read; real documents stay far below it. */
     private const RTF_MAX_DEPTH = 1000;
 
@@ -115,6 +118,9 @@ final class Tnef
                 case self::ATT_ATTACH_REND_DATA:
                     if ($current !== null) {
                         $attachments[] = $current;
+                    }
+                    if (count($attachments) >= self::MAX_ATTACHMENTS) {   // R5b review: not unlimited entries
+                        return null;
                     }
                     $current = ['title' => '', 'data' => null, 'props' => []];
                     break;

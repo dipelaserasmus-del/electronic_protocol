@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 457, browser 68/68.
+- Full suites: PHPUnit 458, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -129,6 +129,10 @@ read, Greek in code page 1253.
   be caught, so one e-mail could stop the inbox page from loading.
   - Fixed: nesting deeper than 1000 makes the file unreadable (real documents stay far below).
   - Test `test_deeply_nested_rtf_is_refused` (it failed before).
+- Codex, thirteenth review (P1): a winmail.dat declaring hundreds of thousands of tiny files used up the memory the
+  same way.
+  - Fixed: more than 500 files make it unreadable.
+  - Test `test_too_many_attachments_are_refused` (it failed before).
 - CI (PHP 8.4) failed once in an older test, `ProtocolAccessTest::test_limit_setting_filters_search_results`: a random
   user was named *Ξένος*, which contains the word the test looked for. The test now uses a marker no name contains, and
   it still fails when the access limit is off.

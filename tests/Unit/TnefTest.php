@@ -182,6 +182,22 @@ RTF;
         $this->assertSame('deep', Tnef::decode($tnef)['text']);
     }
 
+    /** Thirteenth review of R5b: a winmail.dat declaring countless tiny attachments could use up the memory. */
+    public function test_too_many_attachments_are_refused(): void
+    {
+        $many = new TnefBuilder();
+        for ($i = 0; $i < 501; $i++) {
+            $many->attachment("F$i.TXT", 'x');
+        }
+        $this->assertNull(Tnef::decode($many->bytes()));
+
+        $enough = new TnefBuilder();
+        for ($i = 0; $i < 500; $i++) {
+            $enough->attachment("F$i.TXT", 'x');
+        }
+        $this->assertCount(500, Tnef::decode($enough->bytes())['attachments']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
