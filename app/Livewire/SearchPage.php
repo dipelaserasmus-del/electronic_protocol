@@ -125,14 +125,6 @@ class SearchPage extends Component
         return $c->pending && $rest->isEmpty();
     }
 
-    public function clear(): void
-    {
-        $this->reset();
-        $this->year = (string) self::currentYear();
-        $this->resetPage();
-        $this->resetErrorBag();
-    }
-
     /**
      * R3c: the advanced screen's address for these criteria ("Σύνθετη αναζήτηση" on the results page). What has no
      * field of its own (free words, an assignee by name) goes to «Οπουδήποτε» as search words.
