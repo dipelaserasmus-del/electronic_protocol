@@ -32,7 +32,7 @@
                 @endforeach
             </span>
             <small class="text-body-secondary">
-                @if ($gapRows) Φαίνονται στη λίστα με διακεκομμένο πλαίσιο.
+                @if ($gapRows) Φαίνονται στη λίστα σε πράσινες γραμμές «ΚΕΝΟ».
                 @else Επιλέξτε «Όλα», ταξινόμηση κατά αριθμό, για να τα δείτε στη λίστα.
                 @endif
                 (έλεγχος {{ $gapFrom > 1 ? 'από τον αριθμό '.$gapFrom.', ' : '' }}τελευταίων {{ $gapMonths }} μηνών)
@@ -185,18 +185,19 @@
                     @php $gap = $gapRows[$p->etos.':'.$p->protocolnum] ?? null; @endphp
                     @if ($gap)
                         @php $single = $gap['from'] === $gap['to']; $first = $sort === 'desc' ? $gap['to'] : $gap['from']; @endphp
+                        {{-- R2d (owner, 2026-11-18): green, dimmed text, the number first, the button in the middle --}}
                         <tr wire:key="gap-{{ $gap['year'] }}-{{ $gap['from'] }}" class="gap-row">
                             <td colspan="7">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <span class="fw-semibold">
-                                        @if ($single) Κενός αριθμός {{ $gap['from'] }}/{{ $gap['year'] }}
-                                        @else Κενοί αριθμοί {{ $gap['from'] }}–{{ $gap['to'] }}/{{ $gap['year'] }}
-                                            <span class="fw-normal text-body-secondary">· {{ $gap['to'] - $gap['from'] + 1 }} αριθμοί</span>
+                                <div class="gap-row-grid">
+                                    <span class="gap-label">
+                                        @if ($single) <span class="fw-semibold">{{ $gap['from'] }}/{{ $gap['year'] }}</span> ΚΕΝΟ
+                                        @else <span class="fw-semibold">{{ $gap['from'] }}–{{ $gap['to'] }}/{{ $gap['year'] }}</span> ΚΕΝΑ
+                                            · {{ $gap['to'] - $gap['from'] + 1 }} αριθμοί
                                         @endif
                                     </span>
                                     @if ($canCreate && $gap['year'] == $formYear)
-                                        <a href="{{ url('/home') }}?num={{ $first }}" class="btn btn-sm btn-outline-warning text-body rounded-pill ms-auto">
-                                            Καταχώριση με αριθμό {{ $first }}</a>
+                                        <a href="{{ url('/home') }}?num={{ $first }}" class="btn btn-sm btn-outline-success rounded-pill gap-create">
+                                            <x-icon name="plus" /> Καταχώριση με αριθμό {{ $first }}</a>
                                     @endif
                                 </div>
                             </td>

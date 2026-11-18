@@ -74,7 +74,7 @@ tasks = [
   { id = "D06", title = "Folder description → TEXT", phase = "D", batch = 6.6, size = "S", deps = ["D05"], status = "done", pr = 51 },
   { id = "R1f", title = "Form: checked tags (related, keywords), folder filter", phase = "R", batch = 6.6, size = "M", deps = ["R1e", "D06"], status = "todo" },
   { id = "R1g", title = "Form layout: number in the centre, rarely used sections lower", phase = "R", batch = 6.6, size = "S", deps = ["R1f"], status = "todo" },
-  { id = "R2d", title = "Missing-number rows: new look", phase = "R", batch = 6.6, size = "S", deps = ["R2c"], status = "todo" },
+  { id = "R2d", title = "Missing-number rows: new look", phase = "R", batch = 6.6, size = "S", deps = ["R2c"], status = "done", pr = 52 },
 
   # ---------------- Batch 7 ----------------
   { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "todo" },

@@ -109,7 +109,7 @@ test('a user chosen under "Όλα" filters the list; busy users first; file name
   await page.locator('#list-detailed').uncheck();
 });
 
-test('a missing number is a dashed row; its button registers that number (R2c)', async ({ page }) => {
+test('a missing number is a green ΚΕΝΟ row; its button registers that number (R2c, R2d)', async ({ page }) => {
   await login(page, 'admin');
   const previousValidate = await setSetting(page, 'protocolValidate', 0);
   try {
@@ -122,19 +122,29 @@ test('a missing number is a dashed row; its button registers that number (R2c)',
     await saveProtocol(page);
 
     await page.goto('/home/list');
-    const gap = page.locator('.gap-row', { hasText: `Κενός αριθμός ${free}/${year}` });
+    const gap = page.locator('.gap-row', { hasText: `${free}/${year} ΚΕΝΟ` });
     await expect(gap).toBeVisible();
     await expect(page.locator('.protocol-row').first()).toContainText(`${free + 1}/${year}`);   // the gap is right under it
     await expect(page.locator('tbody tr').nth(1)).toHaveClass(/gap-row/);
     await expect(gap.locator('td')).toHaveCSS('border-top-style', 'dashed');
-    await evidence(page, 'r2c-gap-row', { clip: { x: 0, y: 0, width: 1440, height: 560 } });
+    // R2d: green background, the button (with a + icon) in the middle of the row
+    const bg = await gap.locator('td').evaluate((td) => getComputedStyle(td).backgroundColor);
+    const [r, g, b] = bg.match(/\d+/g).map(Number);
+    expect(g).toBeGreaterThan(r);
+    expect(g).toBeGreaterThan(b);
+    const button = gap.getByRole('link', { name: `Καταχώριση με αριθμό ${free}` });
+    await expect(button.locator('svg.icon-plus')).toHaveCount(1);
+    const row = await gap.locator('td').boundingBox();
+    const btn = await button.boundingBox();
+    expect(Math.abs((btn.x + btn.width / 2) - (row.x + row.width / 2))).toBeLessThan(20);
+    await evidence(page, 'r2d-gap-row', { clip: { x: 0, y: 0, width: 1440, height: 560 } });
 
-    await gap.getByRole('link', { name: `Καταχώριση με αριθμό ${free}` }).click();
+    await button.click();
     await expect(page.locator('#f-protocolnum')).toHaveValue(String(free));
     await fillProtocol(page, { thema: `R2c στο κενό ${Date.now()}`, fakelos: 'first' });
     await saveProtocol(page);
     await page.goto('/home/list');
-    await expect(page.locator('.gap-row', { hasText: `Κενός αριθμός ${free}/${year}` })).toHaveCount(0);
+    await expect(page.locator('.gap-row', { hasText: `${free}/${year} ΚΕΝΟ` })).toHaveCount(0);
   } finally {
     await setSetting(page, 'protocolValidate', previousValidate);
   }

@@ -32,7 +32,12 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 /* R2: protocol list — header stays under the top bar while scrolling; the whole row opens the protocol */
 #app-toasts { top: var(--app-topbar-height, 3.2rem); z-index: 1090; }
 #app-toasts .toast { cursor: pointer; }
-.gap-row > td { background: var(--bs-warning-bg-subtle) !important; border: 2px dashed rgba(var(--bs-warning-rgb), .75) !important; color: var(--bs-warning-text-emphasis); }
+/* R2d: a missing number — green, dashed, dimmed text; the button in the middle */
+.gap-row > td { background: var(--bs-success-bg-subtle) !important; border: 2px dashed rgba(var(--bs-success-rgb), .55) !important; color: var(--bs-secondary-color) !important; }
+.gap-row-grid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .5rem; }
+.gap-row-grid .gap-create { grid-column: 2; }
+.gap-row-grid .gap-create .icon { vertical-align: -.125em; }
+@media (max-width: 575.98px) { .gap-row-grid { grid-template-columns: 1fr; } .gap-row-grid .gap-create { grid-column: 1; justify-self: start; } }
 .table-sticky thead th { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 3; background: var(--bs-tertiary-bg); box-shadow: inset 0 -1px 0 var(--bs-border-color); }
 .protocol-row { position: relative; }
 .stretched-link-row::after { content: ''; position: absolute; inset: 0; z-index: 1; }
