@@ -116,6 +116,21 @@ class TnefTest extends TestCase
         $this->assertSame(['Before After', 'Before  After end'], $texts);   // the spaces around the picture both stay
     }
 
+    /** Eighth review of R5b: MAPI properties ending before their declared count were taken as complete. */
+    public function test_missing_declared_properties_make_the_file_unreadable(): void
+    {
+        $name = mb_convert_encoding('Αίτηση.pdf', 'UTF-16LE', 'UTF-8')."\0\0";
+        $one = pack('vv', TnefBuilder::UNICODE, 0x3707).pack('VV', 1, strlen($name)).str_pad($name, (strlen($name) + 3) & ~3, "\0");
+        foreach ([2, 3] as $declared) {
+            $props = pack('V', $declared).$one;   // declares more properties than it has
+            $tnef = pack('Vv', 0x223E9F78, 1).pack('CVV', 2, 0x00069005, strlen($props)).$props
+                .pack('v', array_sum(unpack('C*', $props)) % 65536);
+            $this->assertNull(Tnef::decode($tnef), "$declared declared, 1 present");
+        }
+        $props = pack('V', 1).$one;
+        $this->assertNotNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 2, 0x00069005, strlen($props)).$props.pack('v', 0)));
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {

@@ -220,14 +220,17 @@ final class Tnef
         // review of R5b: every count is checked against the bytes left (each value takes at least 4), so a crafted
         // file can't make the inbox loop millions of times
         self::fits($d, $pos, $count, 4);
-        for ($i = 0; $i < $count && $pos + 4 <= strlen($d); $i++) {
+        for ($i = 0; $i < $count; $i++) {
+            self::fits($d, $pos, 1, 4);   // every declared property must be there (R5b review)
             ['t' => $type, 'id' => $id] = unpack('vt/vid', $d, $pos);
             $pos += 4;
             if ($id >= 0x8000) {   // named property: GUID, then a number or a name
+                self::fits($d, $pos, 1, 24);
                 $pos += 16;
                 $kind = unpack('V', $d, $pos)[1];
                 $pos += 4;
                 $pos += $kind === 0 ? 4 : 4 + self::pad(unpack('V', $d, $pos)[1]);
+                self::fits($d, $pos, 0, 0);
             }
             $multi = ($type & 0x1000) !== 0;
             $type &= 0x0FFF;

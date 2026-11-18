@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 452, browser 68/68.
+- Full suites: PHPUnit 453, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -108,6 +108,10 @@ read, Greek in code page 1253.
   the rest of the text.
   - Fixed: those bytes are skipped unread.
   - Test `test_rtf_binary_data_is_skipped` (it failed before).
+- Codex, eighth review (P2): a list of Outlook properties ending before its declared count was taken as complete, so
+  an attachment could go missing without notice.
+  - Fixed: every declared property must be there, otherwise the file is shown as plain `winmail.dat`.
+  - Test `test_missing_declared_properties_make_the_file_unreadable` (it failed before).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.
