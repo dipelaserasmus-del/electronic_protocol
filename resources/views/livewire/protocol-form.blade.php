@@ -14,20 +14,22 @@
             @endif
         </div>
         <div class="card-body">
-            {{-- number, year, date: TAB from the number goes straight to the date (owner) --}}
-            <div class="row g-3 align-items-start">
-                <div class="col-6 col-md-2">
-                    <label for="f-etos" class="form-label small fw-semibold mb-1">Έτος</label>
-                    <input id="f-etos" class="form-control text-center @if ($e('etos')) is-invalid @endif" inputmode="numeric"
+            {{-- number, year, date: TAB from the number goes straight to the date (owner). R1g (owner, 2026-11-18): the number is
+                 the most important piece of information, so it is large, in the middle; the year small next to it. --}}
+            <div class="number-head">
+                <div class="number-head-year">
+                    <label for="f-etos" class="form-label small text-body-secondary mb-1">Έτος</label>
+                    <input id="f-etos" class="form-control form-control-sm text-center @if ($e('etos')) is-invalid @endif" inputmode="numeric"
                            value="{{ $form['etos'] }}" wire:model.live.debounce.400ms="form.etos" @disabled(! $access->number) tabindex="-1">
                     @if ($e('etos'))<div class="invalid-feedback">{{ $e('etos') }}</div>@endif
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="number-head-number text-center">
                     <label for="f-protocolnum" class="form-label small fw-semibold mb-1">Αριθμός πρωτοκόλλου</label>
                     @if ($access->number)
-                        <input id="f-protocolnum" class="form-control form-control-lg text-center fw-bold @if ($e('protocolnum') || in_array($numberStatus[0] ?? '', ['taken', 'invalid'], true)) is-invalid @elseif (($numberStatus[0] ?? '') === 'free') is-valid @endif"
+                        <input id="f-protocolnum" class="form-control text-center fw-bold protocol-number @if ($e('protocolnum') || in_array($numberStatus[0] ?? '', ['taken', 'invalid'], true)) is-invalid @elseif (in_array($numberStatus[0] ?? '', ['free', 'quiet'], true)) is-valid @endif"
                                inputmode="numeric" autocomplete="off" value="{{ $form['protocolnum'] }}" wire:model.live.debounce.400ms="form.protocolnum"
                                @if ($nextNumber) placeholder="{{ $nextNumber }}" @endif autofocus>
+                        {{-- said only when the user changes the number (or it is a problem) --}}
                         <div class="small mt-1" id="number-status" aria-live="polite">
                             @switch($numberStatus[0] ?? null)
                                 @case('auto')
@@ -46,7 +48,7 @@
                                 @case('placeholder')
                                     <span class="text-warning-emphasis">Κρατημένος ως «ΕΛΕΥΘΕΡΟ»
                                         (<a href="{{ url('/home/'.$numberStatus[1]->id) }}" target="_blank">{{ $numberStatus[1]->protocolnum }}/{{ $numberStatus[1]->etos }}</a>)</span>
-                                    <div class="form-check mt-1">
+                                    <div class="form-check d-inline-block mt-1">
                                         <input class="form-check-input" type="checkbox" id="f-replace" wire:model="replacePlaceholder">
                                         <label class="form-check-label" for="f-replace">Το νέο πρωτόκολλο παίρνει τη θέση του</label>
                                     </div>
@@ -54,7 +56,7 @@
                             @endswitch
                         </div>
                     @else
-                        <div class="form-control form-control-lg text-center fw-bold bg-body-secondary" id="f-protocolnum">
+                        <div class="form-control text-center fw-bold bg-body-secondary protocol-number" id="f-protocolnum">
                             {{ $protocol->exists ? $protocol->protocolnum : '—' }}
                         </div>
                         @unless ($protocol->exists)
@@ -64,7 +66,7 @@
                     @if ($e('protocolnum'))<div class="text-danger small">{{ $e('protocolnum') }}</div>@endif
                     @if ($e('replace_placeholder'))<div class="text-danger small">{{ $e('replace_placeholder') }}</div>@endif
                 </div>
-                <div class="col-12 col-md-7">
+                <div class="number-head-date">
                     <x-date-input name="protocoldate" label="Ημερομηνία παραλαβής" :value="$form['protocoldate']"
                                   wire:model.change="form.protocoldate" id="f-protocoldate" :readonly="! $access->date"
                                   :help="$access->date ? null : 'Η σημερινή, όπως ορίζουν οι ρυθμίσεις.'" />
@@ -73,10 +75,10 @@
             </div>
 
             @if ($access->secondsLeft > 0)
-                <x-notice type="info" class="mt-2">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ (int) ceil($access->secondsLeft / 60) }} λεπτά.</x-notice>
+                <x-notice type="info" class="mt-2 text-center">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ (int) ceil($access->secondsLeft / 60) }} λεπτά.</x-notice>
             @endif
 
-            <x-pill-actions class="mt-3">
+            <x-pill-actions class="mt-3 pill-actions-center">
                 @if ($access->canSave)
                     <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">Αποθήκευση</x-pill>
                 @endif
@@ -252,38 +254,19 @@
         </div>
 
         <div class="col-12 col-xl-6">
-            {{-- assignment --}}
-            <fieldset class="card shadow-sm mb-3">
-                <legend class="card-header h6 mb-0 w-100">Ανάθεση</legend>
+            {{-- R1g: "Διεκπεραιώθηκε την" is used often: near the top; the assignment itself is lower (owner, 2026-11-18) --}}
+            <fieldset class="card shadow-sm mb-3" id="done-card">
+                <legend class="card-header h6 mb-0 w-100">Διεκπεραίωση</legend>
                 <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-6 mb-2">
-                            <label for="f-handle" class="form-label small fw-semibold mb-1">Διεκπεραίωση</label>
-                            <select id="f-handle" multiple size="4" class="form-select @if ($e('diekperaiosi')) is-invalid @endif"
-                                    wire:model="handle" @disabled(! $access->canAssign)>
-                                @foreach ($users as $u)<option value="{{ $u->id }}" @selected(in_array((string) $u->id, $handle, true))>{{ $u->name }}</option>@endforeach
-                            </select>
-                            @if ($e('diekperaiosi'))<div class="invalid-feedback">{{ $e('diekperaiosi') }}</div>@endif
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label for="f-inform" class="form-label small fw-semibold mb-1">Ενημέρωση</label>
-                            <select id="f-inform" multiple size="4" class="form-select" wire:model="inform" @disabled(! $access->canAssign)>
-                                @foreach ($users as $u)<option value="{{ $u->id }}" @selected(in_array((string) $u->id, $inform, true))>{{ $u->name }}</option>@endforeach
-                            </select>
-                        </div>
-                    </div>
-                    @if ($access->canAssign)<div class="form-text mb-2">Ctrl + κλικ για περισσότερους χρήστες.</div>@endif
-                    <div class="row g-2">
-                        <div class="col-md-6 mb-2">
-                            <x-date-input name="diekp_eos" label="Διεκπεραίωση έως" :value="$form['diekp_eos']" id="f-diekp_eos"
-                                          wire:model.change="form.diekp_eos" :readonly="! $access->canAssign" help="" />
-                            @if ($e('diekp_eos'))<div class="text-danger small">{{ $e('diekp_eos') }}</div>@endif
-                        </div>
-                        <div class="col-md-6 mb-2">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-7 mb-2">
                             <x-date-input name="diekp_date" label="Διεκπεραιώθηκε την" :value="$form['diekp_date']" id="f-diekp_date"
                                           wire:model.change="form.diekp_date" :readonly="! $access->doneDate" help="" />
                             @if ($e('diekp_date'))<div class="text-danger small">{{ $e('diekp_date') }}</div>@endif
                         </div>
+                        @if ($form['diekp_eos'] !== '')
+                            <div class="col-md-5 mb-2 small text-body-secondary" id="done-deadline">Προθεσμία: {{ $form['diekp_eos'] }}</div>
+                        @endif
                     </div>
                 </div>
             </fieldset>
@@ -420,6 +403,45 @@
                 </div>
             </section>
 
+        </div>
+    </div>
+
+    {{-- R1g: used less often, so below the rest (owner, 2026-11-18) --}}
+    <div class="row g-3" id="less-used">
+        <div class="col-12 col-xl-6">
+            {{-- assignment (the deadline is here; the done date has its own card above) --}}
+            <fieldset class="card shadow-sm mb-3">
+                <legend class="card-header h6 mb-0 w-100">Ανάθεση</legend>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-6 mb-2">
+                            <label for="f-handle" class="form-label small fw-semibold mb-1">Διεκπεραίωση</label>
+                            <select id="f-handle" multiple size="4" class="form-select @if ($e('diekperaiosi')) is-invalid @endif"
+                                    wire:model="handle" @disabled(! $access->canAssign)>
+                                @foreach ($users as $u)<option value="{{ $u->id }}" @selected(in_array((string) $u->id, $handle, true))>{{ $u->name }}</option>@endforeach
+                            </select>
+                            @if ($e('diekperaiosi'))<div class="invalid-feedback">{{ $e('diekperaiosi') }}</div>@endif
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="f-inform" class="form-label small fw-semibold mb-1">Ενημέρωση</label>
+                            <select id="f-inform" multiple size="4" class="form-select" wire:model="inform" @disabled(! $access->canAssign)>
+                                @foreach ($users as $u)<option value="{{ $u->id }}" @selected(in_array((string) $u->id, $inform, true))>{{ $u->name }}</option>@endforeach
+                            </select>
+                        </div>
+                    </div>
+                    @if ($access->canAssign)<div class="form-text mb-2">Ctrl + κλικ για περισσότερους χρήστες.</div>@endif
+                    <div class="row g-2">
+                        <div class="col-md-6 mb-2">
+                            <x-date-input name="diekp_eos" label="Διεκπεραίωση έως" :value="$form['diekp_eos']" id="f-diekp_eos"
+                                          wire:model.change="form.diekp_eos" :readonly="! $access->canAssign" help="" />
+                            @if ($e('diekp_eos'))<div class="text-danger small">{{ $e('diekp_eos') }}</div>@endif
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+        </div>
+        <div class="col-12 col-xl-6">
             @if ($canEmailReceipt)
                 <section class="card shadow-sm mb-3" aria-labelledby="receipt-title">
                     <h2 class="card-header h6 mb-0" id="receipt-title">Απόδειξη παραλαβής με email</h2>

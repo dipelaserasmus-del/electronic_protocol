@@ -18,13 +18,42 @@ class ProtocolFormTest extends FeatureTestCase
         $used = Protocol::factory()->number(7)->create();
         Protocol::factory()->number(8)->placeholder()->create();
 
-        Livewire::actingAs($this->admin())->test(ProtocolForm::class)
-            ->assertSee('Κενό: ο επόμενος ελεύθερος')
+        $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class)
+            ->assertDontSee('Κενό: ο επόμενος ελεύθερος')->assertDontSee('Ελεύθερος');   // R1g: untouched = nothing to say
+        $this->assertMatchesRegularExpression('/protocol-number\s+is-valid/', $form->html());   // … but the green border
+        $form
             ->set('form.protocolnum', '9')->assertSee('✔ Ελεύθερος')
             ->set('form.protocolnum', '7')->assertSee('✖ Δεσμευμένος από το')->assertSee('/home/' . $used->id, false)
             ->set('form.protocolnum', '8')->assertSee('Κρατημένος ως «ΕΛΕΥΘΕΡΟ»')
             ->set('form.protocolnum', 'x1')->assertSee('Γράψτε θετικό ακέραιο αριθμό.')
-            ->set('form.etos', (string) (now()->year - 1))->set('form.protocolnum', '7')->assertSee('✔ Ελεύθερος');
+            ->set('form.etos', (string) (now()->year - 1))->set('form.protocolnum', '7')->assertSee('✔ Ελεύθερος')
+            ->set('form.protocolnum', '')->assertSee('Κενό: ο επόμενος ελεύθερος');
+    }
+
+    /** R1g: an existing protocol's own number says nothing until it is changed; a number from a missing-number row does. */
+    public function test_free_status_only_after_the_number_is_changed(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $p = Protocol::factory()->number(20)->create();
+        $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertDontSee('Ελεύθερος');
+        $this->assertMatchesRegularExpression('/protocol-number\s+is-valid/', $form->html());
+        $form->set('form.protocolnum', '21')->assertSee('✔ Ελεύθερος');
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['prefillNum' => 19])->assertSee('✔ Ελεύθερος');
+    }
+
+    /** R1g (owner, 2026-11-18): the number in the middle; "Διεκπεραιώθηκε την" high; assignment and receipt lower. */
+    public function test_layout_number_in_the_middle_rarely_used_sections_lower(): void
+    {
+        $p = Protocol::factory()->number(30)->create();
+        $html = $this->actingAs($this->admin())->get('/home/' . $p->id)->assertOk()->getContent();
+        $pos = fn (string $needle) => strpos($html, $needle);
+
+        $this->assertTrue($pos('number-head-year') < $pos('number-head-number') && $pos('number-head-number') < $pos('number-head-date'));
+        $this->assertTrue($pos('id="done-card"') < $pos('id="f-out_to"'), 'done date above the outgoing section');
+        $this->assertTrue($pos('id="f-diekp_date"') < $pos('id="attachments"'));
+        $this->assertTrue($pos('id="attachments"') < $pos('id="less-used"'));
+        $this->assertTrue($pos('id="less-used"') < $pos('id="f-handle"'), 'assignment below the attachments');
+        $this->assertTrue($pos('id="less-used"') < $pos('id="receipt-title"'), 'receipt by e-mail below too');
     }
 
     public function test_users_who_can_not_choose_see_the_number_given_on_save(): void

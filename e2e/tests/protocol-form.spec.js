@@ -19,7 +19,7 @@ test.describe('administrator with registration checks off', () => {
     await page.goto('/home');
     const number = page.locator('#f-protocolnum');
     const status = page.locator('#number-status');
-    await expect(status).toContainText('ο επόμενος ελεύθερος');
+    await expect(status).toHaveText('');   // R1g: nothing to say until the number is changed
 
     await number.fill('1');   // the demo book starts at 1
     await expect(status).toContainText('Δεσμευμένος από το');
@@ -220,4 +220,36 @@ test('the browser ignores case and accents like the server (R1f)', async ({ page
   await page.goto('/home');
   const got = await page.evaluate((cases) => cases.map(([input]) => window.appFold(input)), cases);
   expect(got).toEqual(cases.map(([, out]) => out));
+});
+
+test('the number is large in the middle; assignment and receipt are below the attachments (R1g)', async ({ page }) => {
+  await login(page, 'admin');
+  const previousValidate = await setSetting(page, 'protocolValidate', 0);   // the administrator may type the number
+  try {
+    await page.goto('/home');
+    const number = page.locator('#f-protocolnum');
+    await expect(page.locator('#number-status')).toHaveText('');
+    await expect(number).toHaveClass(/is-valid/);                                // green border
+    const head = await page.locator('.number-head').boundingBox();
+    const box = await number.boundingBox();
+    expect(Math.abs((box.x + box.width / 2) - (head.x + head.width / 2))).toBeLessThan(20);
+    const size = async (sel) => parseFloat(await page.locator(sel).evaluate((el) => getComputedStyle(el).fontSize));
+    expect(await size('#f-protocolnum')).toBeGreaterThan(2 * (await size('#f-etos')));
+    await evidence(page, 'r1g-head', { clip: { x: 0, y: 0, width: 1440, height: 330 } });
+
+    // typing a number says whether it is free
+    await number.fill(String(Number(await number.getAttribute('placeholder')) + 500 + (Date.now() % 100)));
+    await expect(page.locator('#number-status')).toContainText('Ελεύθερος');
+    await number.fill('');
+    await expect(page.locator('#number-status')).toContainText('ο επόμενος ελεύθερος');
+
+    const y = async (sel) => (await page.locator(sel).boundingBox()).y;
+    expect(await y('#f-diekp_date')).toBeLessThan(await y('#attachments'));    // used often: high
+    expect(await y('#f-handle')).toBeGreaterThan(await y('#attachments'));     // used less: below
+    expect(await y('#f-reply_to_email')).toBeGreaterThan(await y('#attachments'));
+    await page.setViewportSize({ width: 1440, height: 2000 });
+    await evidence(page, 'r1g-form', { fullPage: true });
+  } finally {
+    await setSetting(page, 'protocolValidate', previousValidate);
+  }
 });
