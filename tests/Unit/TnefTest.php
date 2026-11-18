@@ -105,6 +105,17 @@ class TnefTest extends TestCase
         Tnef::decompressRtf($noEnd);
     }
 
+    /** Seventh review of R5b: the bytes of \\binN (a picture's data) were read as RTF, and a "{" in them hid the rest. */
+    public function test_rtf_binary_data_is_skipped(): void
+    {
+        foreach (['{\rtf1\ansi Before {\pict\pngblip\bin1 {}After}', '{\rtf1\ansi Before {\pict\bin4 }{{}} After\bin2 {{ end}'] as $rtf) {
+            $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+                ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+            $texts[] = Tnef::decode($tnef)['text'];
+        }
+        $this->assertSame(['Before After', 'Before  After end'], $texts);   // the spaces around the picture both stay
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 18:21 (after Batch 8). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 18:26 (after Batch 8). Times are Greek time.
 
 ## ▶ Your next message
 Batch 8 is done ([summary](docs/reports/BATCH-8.md)): the inbox is rebuilt. Try it (below) and send notes if something

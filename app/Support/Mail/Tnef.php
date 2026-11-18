@@ -459,7 +459,9 @@ final class Tnef
                     $i += strlen($w[0]) - 1;
                     $word = $w[1];
                     $arg = isset($w[2]) && $w[2] !== '' ? (int) $w[2] : null;
-                    if (in_array($word, $skipWords, true)) {
+                    if ($word === 'bin') {   // N bytes of binary data, never RTF (R5b review)
+                        $i += max(0, $arg ?? 0);
+                    } elseif (in_array($word, $skipWords, true)) {
                         $skip = true;
                     } elseif ($word === 'uc') {
                         $uc = $arg ?? 1;
