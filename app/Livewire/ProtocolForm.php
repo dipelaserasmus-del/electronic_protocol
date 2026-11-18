@@ -340,25 +340,9 @@ class ProtocolForm extends Component
     /** Other protocols the user may see with the same subject / incoming number + date (were YES/NO dialogs). */
     private function similar(string $field): array
     {
-        $query = Protocol::query()->when($this->protocolId, fn ($q) => $q->where('id', '!=', $this->protocolId));
-        if ($field === 'thema') {
-            $thema = trim($this->form['thema']);
-            if ($thema === '' || ProtocolWriter::isPlaceholder(new Protocol(['thema' => $thema]))) {
-                return [];
-            }
-            $query->where('thema', $thema);
-        } else {
-            $date = DateInput::expand((string) $this->form['in_date']);
-            if (trim($this->form['in_num']) === '' || ! $date) {
-                return [];
-            }
-            $query->where('in_num', trim($this->form['in_num']))
-                ->where('in_date', Carbon::createFromFormat('!' . DateInput::FORMAT, $date)->format('Y-m-d'));
-        }
-        if (ProtocolPolicy::isLimited(Auth::user())) {
-            $query->ownOrAssigned((int) Auth::id());
-        }
-        return $query->orderByDesc('etos')->orderByDesc('protocolnum')->take(5)->get(['id', 'protocolnum', 'etos'])->all();
+        return $field === 'thema'
+            ? \App\Support\SimilarProtocols::sameSubject(Auth::user(), $this->form['thema'], $this->protocolId)
+            : \App\Support\SimilarProtocols::sameIncoming(Auth::user(), $this->form['in_num'], $this->form['in_date'], $this->protocolId);
     }
 
     /*

@@ -88,7 +88,7 @@ tasks = [
 
   # ---------------- Batch 8 ----------------
   { id = "R5c", title = "Inbox screen (sidebar, collapsible)", phase = "R", batch = 8, size = "M", deps = ["R5a", "N04"], status = "done", pr = 62 },
-  { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 8, size = "M", deps = ["R5c", "R1a"], status = "todo" },
+  { id = "R5d", title = "Register-from-email flow, keywords", phase = "R", batch = 8, size = "M", deps = ["R5c", "R1a"], status = "done", pr = 63 },
   { id = "R5b", title = "winmail.dat (TNEF)", phase = "R", batch = 8, size = "L", deps = ["R5a"], status = "todo" },
 
   # ---------------- Batch 9 ----------------

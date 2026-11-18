@@ -51,7 +51,7 @@
 
             <div class="col-lg-9">
                 @foreach ($messages as $uid => $m)
-                    @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; @endphp
+                    @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
                     <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}"
                              data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}">
                         <header class="card-header d-flex flex-wrap gap-2 align-items-baseline">
@@ -104,9 +104,30 @@
                                     </div>
                                     <div class="col-md-8">
                                         <label for="f-{{ $uid }}-thema" class="form-label small fw-semibold mb-1">Θέμα</label>
-                                        <textarea id="f-{{ $uid }}-thema" rows="1" class="form-control @if ($err($uid, 'thema')) is-invalid @endif" wire:model="forms.{{ $uid }}.thema">{{ $f['thema'] ?? '' }}</textarea>
+                                        {{-- R5d: an e-mail without a subject: its attachment's name is offered (a click puts it in the field) --}}
+                                        <textarea id="f-{{ $uid }}-thema" rows="1" class="form-control @if ($err($uid, 'thema')) is-invalid @endif" wire:model="forms.{{ $uid }}.thema"
+                                                  @if ($x['subjectGuess']) placeholder="{{ $x['subjectGuess'] }}" data-fill-placeholder
+                                                  @elseif (($m['subject'] ?? '') === '') placeholder="Το email δεν έχει θέμα: γράψτε το θέμα" @endif>{{ $f['thema'] ?? '' }}</textarea>
                                         @if ($err($uid, 'thema'))<div class="invalid-feedback">{{ $err($uid, 'thema') }}</div>@endif
+                                        @if ($x['subjectGuess'])
+                                            <div class="form-text subject-guess">Το email δεν έχει θέμα: αν μείνει κενό, θέμα θα γίνει το όνομα του συνημμένου.</div>
+                                        @endif
                                     </div>
+                                    {{-- R5d: the same document registered before? (were YES/NO dialogs) --}}
+                                    @if ($x['similar'][0] || $x['similar'][1])
+                                        <div class="col-12 inbox-similar">
+                                            <x-notice type="warning" class="mb-0">
+                                                @if ($x['similar'][0])
+                                                    Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα:
+                                                    @foreach ($x['similar'][0] as $p)<a href="{{ url('/home/'.$p->id) }}" target="_blank">{{ $p->protocolnum }}/{{ $p->etos }}</a>@if (! $loop->last), @endif@endforeach.
+                                                @endif
+                                                @if ($x['similar'][1])
+                                                    Υπάρχει ήδη πρωτόκολλο με τον ίδιο αριθμό και ημερομηνία εισερχομένου:
+                                                    @foreach ($x['similar'][1] as $p)<a href="{{ url('/home/'.$p->id) }}" target="_blank">{{ $p->protocolnum }}/{{ $p->etos }}</a>@if (! $loop->last), @endif@endforeach.
+                                                @endif
+                                            </x-notice>
+                                        </div>
+                                    @endif
                                     <div class="col-6 col-md-2">
                                         <label for="f-{{ $uid }}-in_num" class="form-label small fw-semibold mb-1">Αριθ. εισερχ.</label>
                                         <input id="f-{{ $uid }}-in_num" class="form-control @if ($err($uid, 'in_num')) is-invalid @endif" autocomplete="off" wire:model="forms.{{ $uid }}.in_num" value="{{ $f['in_num'] ?? '' }}">
@@ -140,11 +161,51 @@
                                         <textarea id="f-{{ $uid }}-in_perilipsi" rows="2" class="form-control @if ($err($uid, 'in_perilipsi')) is-invalid @endif" wire:model="forms.{{ $uid }}.in_perilipsi">{{ $f['in_perilipsi'] ?? '' }}</textarea>
                                         @if ($err($uid, 'in_perilipsi'))<div class="invalid-feedback">{{ $err($uid, 'in_perilipsi') }}</div>@endif
                                     </div>
-                                    <div class="col-md-8">
+                                    {{-- R5d: keywords as tags (R1f), with suggestions from the e-mail's subject --}}
+                                    <div class="col-md-8" x-data="tagBox('keywords', true, [{{ $uid }}])">
                                         <label for="f-{{ $uid }}-keywords" class="form-label small fw-semibold mb-1">Λέξεις κλειδιά</label>
-                                        <input id="f-{{ $uid }}-keywords" class="form-control @if ($err($uid, 'keywords')) is-invalid @endif" autocomplete="off" placeholder="χωρισμένες με κόμμα"
-                                               wire:model="forms.{{ $uid }}.keywords" value="{{ $f['keywords'] ?? '' }}">
-                                        @if ($err($uid, 'keywords'))<div class="invalid-feedback">{{ $err($uid, 'keywords') }}</div>@endif
+                                        <div class="position-relative">
+                                            <div class="form-control d-flex flex-wrap align-items-center gap-1 tag-box @if ($err($uid, 'keywords')) is-invalid @endif"
+                                                 x-on:click.self="$el.querySelector('.tag-input')?.focus()">
+                                                @foreach ($x['keywords'] as $i => $k)
+                                                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 tag-pill keyword-pill"
+                                                          wire:key="kw-{{ $uid }}-{{ $i }}-{{ $k }}" data-tag="{{ $k }}">
+                                                        <span class="d-inline-flex align-items-center gap-1" x-show="editing !== {{ $i }}">
+                                                            <button type="button" class="tag-text" x-on:click="edit({{ $i }})" aria-label="Αλλαγή {{ $k }}">{{ $k }}</button>
+                                                            <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('keywords', {{ $i }}, {{ $uid }})"
+                                                                    aria-label="Αφαίρεση {{ $k }}"></button>
+                                                        </span>
+                                                        <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $k }}"
+                                                               x-on:keydown="key($event, {{ $i }})" x-on:input="typed($event, {{ $i }})" x-on:blur="left($event, {{ $i }})">
+                                                    </span>
+                                                @endforeach
+                                                <input id="f-{{ $uid }}-keywords" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" autocomplete="off"
+                                                       role="combobox" aria-autocomplete="list" aria-controls="keywords-suggest-{{ $uid }}" :aria-expanded="items.length > 0"
+                                                       placeholder="{{ $x['keywords'] ? '' : 'π.χ. εκδρομή' }}"
+                                                       x-on:keydown="key($event)" x-on:input="typed($event)" x-on:blur="left($event)">
+                                            </div>
+                                            <ul class="list-group shadow tag-suggest" id="keywords-suggest-{{ $uid }}" role="listbox" x-show="items.length" x-cloak>
+                                                <template x-for="(it, n) in items" :key="it[0]">
+                                                    <li class="list-group-item list-group-item-action py-1 d-flex justify-content-between gap-2" role="option"
+                                                        :class="{ active: n === active }" :aria-selected="n === active"
+                                                        x-on:mousedown.prevent="pick(it[0])" x-on:mousemove="active = n">
+                                                        <span x-html="mark(it[0])"></span>
+                                                        <small class="opacity-75" x-text="it[1] + (it[1] === 1 ? ' φορά' : ' φορές')"></small>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        @if ($err($uid, 'keywords'))<div class="invalid-feedback d-block">{{ $err($uid, 'keywords') }}</div>@endif
+                                        @if ($x['suggested'])
+                                            <div class="d-flex flex-wrap align-items-center gap-1 mt-1 keyword-suggestions">
+                                                <small class="text-body-secondary me-1">Προτάσεις από το θέμα:</small>
+                                                @foreach ($x['suggested'] as [$word, $inUse])
+                                                    <button type="button" class="btn btn-sm rounded-pill py-0 {{ $inUse ? 'btn-outline-primary' : 'btn-outline-secondary' }}"
+                                                            wire:click="addTag('keywords', @js($word), {{ $uid }})" data-suggest="{{ $word }}"
+                                                            title="{{ $inUse ? 'Λέξη κλειδί που ήδη χρησιμοποιείται' : 'Νέα λέξη κλειδί' }}">+ {{ $word }}</button>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="col-md-4">
                                         <label for="f-{{ $uid }}-keep" class="form-label small fw-semibold mb-1">Διατήρηση</label>
@@ -191,6 +252,14 @@
                                     </div>
                                 </details>
 
+                                {{-- R5d: similar protocols found on «Καταχώριση»: a second, explicit click registers it --}}
+                                @if ($err($uid, 'similar'))
+                                    <x-notice type="warning" class="mt-2 mb-0 inbox-confirm">
+                                        Υπάρχει ήδη πρωτόκολλο που μοιάζει με αυτό το email (δείτε παραπάνω). Να καταχωριστεί ούτως ή άλλως;
+                                        <button type="button" class="btn btn-sm btn-warning rounded-pill ms-2" data-action="register-anyway"
+                                                wire:click="register({{ $uid }}, {{ ($confirming[$uid] ?? false) ? 'true' : 'false' }}, true)">Ναι, καταχώριση</button>
+                                    </x-notice>
+                                @endif
                                 <x-pill-actions class="mt-2 inbox-actions">
                                     @unless ($receiptOnly)
                                         <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="register" data-action="register">

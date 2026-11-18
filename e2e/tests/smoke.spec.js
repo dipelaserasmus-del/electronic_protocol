@@ -45,11 +45,11 @@ test.describe('@smoke', () => {
     await page.goto('/inbox');
     const body = page.locator('body');
     await expect(page.locator('#inbox-count')).toContainText(/από \d+|\d+ email/);
-    // the order of the mock e-mails differs between machines: check whichever ones are on page 1
-    const subjects = ['Πρόσκληση σε επιμορφωτική ημερίδα', 'Εγκύκλιος για την έναρξη', 'Διαβιβαστικό εγγράφων μαθητή',
-      'Αποστολή στοιχείων', 'Αίτηση γονέα', 'Ενημέρωση για τη διαδικασία', 'Μεγάλο σαρωμένο', 'αρχικό μήνυμα', 'εισαγωγικά'];
+    // whichever mock e-mails are left on page 1 (other tests register some, the order differs between machines):
+    // their subjects are decoded Greek
+    const subjects = await page.locator('.inbox-subject').allInnerTexts();
+    expect(subjects.filter((t) => /\p{Script=Greek}{3}/u.test(t)).length).toBeGreaterThanOrEqual(3);
     const text = await body.innerText();
-    expect(subjects.filter((s) => text.includes(s)).length).toBeGreaterThanOrEqual(3);
     expect(text).not.toMatch(/=\?(UTF-8|ISO-8859-7|Windows-1253)\?/i);   // every header decoded
   });
 });

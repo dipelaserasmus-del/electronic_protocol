@@ -55,11 +55,11 @@ const readJson = id => {
 };
 
 /**
- * A tag box: x-data="tagBox('keywords', true)". The pills come from the server (data-tag, one per tag); this handles
+ * A tag box: x-data="tagBox('keywords', true)" (R5d inbox: tagBox('keywords', true, [uid])). The pills come from the server (data-tag, one per tag); this handles
  * typing: Enter / comma / leaving the box adds, a click on a pill's text edits it in place, Backspace in the empty box
  * removes the last one, suggestions (keywords) with ↑ ↓ Enter or the mouse.
  */
-function tagBox(field, withSuggestions = false) {
+function tagBox(field, withSuggestions = false, extra = []) {   // extra: more arguments for the server (R5d: the e-mail's UID)
     return {
         list: [], items: [], active: -1, editing: null, query: '', target: null, targetIndex: null,
         init() { if (withSuggestions) this.list = readJson('suggest-' + field); },
@@ -83,10 +83,10 @@ function tagBox(field, withSuggestions = false) {
             input.value = ''; this.close();
             if (this.list.length) value = value.split(/[,;]/).map(p => this.canonical(p)).filter(Boolean).join(', ');
             if (index === null) {
-                if (value) this.$wire.addTag(field, value);
+                if (value) this.$wire.addTag(field, value, ...extra);
             } else {
                 this.editing = null;
-                if (value !== this.current()[index]) this.$wire.editTag(field, index, value);
+                if (value !== this.current()[index]) this.$wire.editTag(field, index, value, ...extra);
             }
         },
         pick(text) {
@@ -115,7 +115,7 @@ function tagBox(field, withSuggestions = false) {
                 else if (index !== null) { e.preventDefault(); this.editing = null; }
             } else if (e.key === 'Backspace' && index === null && input.value === '') {
                 const n = this.current().length;
-                if (n) { e.preventDefault(); this.$wire.removeTag(field, n - 1); }
+                if (n) { e.preventDefault(); this.$wire.removeTag(field, n - 1, ...extra); }
             }
         },
         typed(e, index = null) {

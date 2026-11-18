@@ -13,6 +13,11 @@ use App\Services\Mail\MailboxConnector;
 use App\Services\Protocols\AttachmentsNotSaved;
 use App\Services\Protocols\ProtocolAccess;
 use App\Support\InboxAccess;
+use App\Support\KeywordSuggestions;
+use App\Support\SimilarProtocols;
+use App\Support\SubjectFromFile;
+use App\Support\Suggestions;
+use App\Support\TagList;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
@@ -62,6 +67,10 @@ class EmailInbox extends Component
     /** @var array<int, array<string, mixed>> the form of each message, by UID */
     public array $forms = [];
 
+    /** @var array<int, bool> R5d: e-mails waiting for "register anyway" (similar protocols found), with the receipt choice */
+    #[Locked]
+    public array $confirming = [];
+
     /** @var array<int, array{type: string, protocol_id?: int, label?: string, messages?: list<string>, warnings?: list<string>}> done, by UID */
     #[Locked]
     public array $done = [];
@@ -96,7 +105,36 @@ class EmailInbox extends Component
         }
     }
 
-    public function register(int $uid, bool $receipt, EmailRegistration $registration): void
+    /**
+     * R5d: Λέξεις κλειδιά as tags (as in the protocol form): add what was typed or a suggestion, edit in place, remove.
+     * Called by tagBox('keywords', true, [uid]).
+     */
+    public function addTag(string $field, string $typed, int $uid): void
+    {
+        $this->tagged($field, $uid, fn (string $value) => TagList::keywords()->add($value, $typed));
+    }
+
+    public function editTag(string $field, int $index, string $typed, int $uid): void
+    {
+        $this->tagged($field, $uid, fn (string $value) => TagList::keywords()->replace($value, $index, $typed));
+    }
+
+    public function removeTag(string $field, int $index, int $uid): void
+    {
+        $this->tagged($field, $uid, fn (string $value) => TagList::keywords()->remove($value, $index));
+    }
+
+    private function tagged(string $field, int $uid, \Closure $change): void
+    {
+        abort_unless($field === 'keywords' && isset($this->forms[$uid]), 400);
+        $this->forms[$uid]['keywords'] = $change((string) ($this->forms[$uid]['keywords'] ?? ''));
+    }
+
+    /**
+     * @param bool $confirmed R5d: the user saw the protocols with the same subject / incoming number and still wants
+     *        it registered (was a YES/NO dialog)
+     */
+    public function register(int $uid, bool $receipt = false, bool $confirmed = false): void
     {
         $this->allowed();
         if (! in_array($uid, $this->uids, true) || isset($this->done[$uid])) {
@@ -129,6 +167,22 @@ class EmailInbox extends Component
 
         $this->resetErrorBag();
         try {
+            EmailRegistration::checkFolder($input, $keys);   // what the user must fix comes first
+        } catch (ValidationException $e) {
+            $this->addError("forms.$uid.fakelos", $e->errors()['fakelos'][0]);
+            return;
+        }
+        // R5d: an e-mail without a subject takes its attachment's name, as offered in the field
+        $input['thema'] = $this->subject($uid);
+        // R5d: the same document registered before (by the subject it will have)? Said next to the button; a second,
+        // explicit click registers it
+        if (! $confirmed && $this->similar($uid) !== [[], []]) {
+            $this->confirming[$uid] = $receipt;
+            $this->addError("forms.$uid.similar", 'Υπάρχει ήδη πρωτόκολλο που μοιάζει με αυτό το email (δείτε παραπάνω).');
+            return;
+        }
+        unset($this->confirming[$uid]);
+        try {
             $mailbox = $this->mailbox();
         } catch (\Throwable $e) {
             report($e);
@@ -136,7 +190,7 @@ class EmailInbox extends Component
             return;
         }
         try {
-            $result = $registration->register($user, $raw, $input, $keys, $to, $mailbox, $uid);
+            $result = app(EmailRegistration::class)->register($user, $raw, $input, $keys, $to, $mailbox, $uid);
         } catch (ValidationException $e) {
             foreach ($e->errors() as $field => $messages) {
                 $field = $field === 'diekperaiosi' ? 'handle' : $field;
@@ -224,6 +278,39 @@ class EmailInbox extends Component
         abort_unless($user && InboxAccess::allows($user) && ProtocolPolicy::role($user) !== ProtocolPolicy::READER, 403);
     }
 
+    /** @return array{0: list<\App\Models\Protocol>, 1: list<\App\Models\Protocol>} same subject, same incoming number + date */
+    private function similar(int $uid): array
+    {
+        $f = $this->forms[$uid] ?? [];
+
+        return [SimilarProtocols::sameSubject(Auth::user(), $this->subject($uid)),
+            SimilarProtocols::sameIncoming(Auth::user(), $f['in_num'] ?? '', $f['in_date'] ?? '')];
+    }
+
+    /** The subject the protocol will have: as typed; empty, for an e-mail without one, its attachment's name (R5d) */
+    private function subject(int $uid): string
+    {
+        $typed = (string) ($this->forms[$uid]['thema'] ?? '');
+
+        return trim($typed) === '' ? ($this->subjectGuess($uid, onlyWithoutSubject: true) ?? $typed) : $typed;
+    }
+
+    /** R5d: the subject offered when the e-mail has none: from its first attachment's name (R1c rule) */
+    private function subjectGuess(int $uid, bool $onlyWithoutSubject = false): ?string
+    {
+        $summary = app(Inbox::class)->summary($this->mailboxId, $this->uidValidity, $uid);
+        if ($onlyWithoutSubject && trim((string) ($summary['subject'] ?? '')) !== '') {
+            return null;   // the user emptied the subject: say so at the field instead of guessing
+        }
+        foreach ($summary['attachments'] ?? [] as $a) {
+            if ($guess = SubjectFromFile::guess($a['name'])) {
+                return $guess;
+            }
+        }
+
+        return null;
+    }
+
     public static function keepFor(?string $folder): string
     {
         $k = $folder ? Keepvalue::whereFakelos($folder)->first() : null;
@@ -244,9 +331,25 @@ class EmailInbox extends Component
             }
         }
         $user = Auth::user();
+        // R5d: per e-mail still to register: similar protocols, keyword suggestions, the subject offered when it has none
+        $known = \Illuminate\Support\Facades\Cache::remember('inbox-keywords:'.$user->id, 60, fn () => Suggestions::keywords($user));
+        $extra = [];
+        foreach ($messages as $uid => $m) {
+            if (isset($this->done[$uid])) {
+                continue;
+            }
+            $tags = TagList::keywords()->tokens($this->forms[$uid]['keywords'] ?? '');
+            $extra[$uid] = [
+                'similar' => $this->similar($uid),
+                'keywords' => $tags,
+                'suggested' => KeywordSuggestions::for((string) ($m['subject'] ?? ''), (string) ($m['text'] ?? ''), $known, $tags),
+                'subjectGuess' => ($m['subject'] ?? '') === '' ? $this->subjectGuess($uid) : null,
+            ];
+        }
 
         return view('livewire.email-inbox', [
             'messages' => $messages,
+            'extra' => $extra,
             'account' => (string) Config::getConfigValueOf('defaultImapEmail'),
             'newestFirst' => (bool) Config::getConfigValueOf('emailFetchOrderDesc'),
             'lastPage' => max(1, (int) ceil($this->total / max(1, $this->perPage))),
