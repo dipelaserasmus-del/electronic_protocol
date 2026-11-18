@@ -66,6 +66,16 @@ class TnefTest extends TestCase
         }
     }
 
+    /** Third review of R5b: a character beyond U+FFFF (emoji) comes as two \\uN halves (UTF-16), and was dropped. */
+    public function test_rtf_unicode_beyond_the_basic_plane(): void
+    {
+        $rtf = '{\rtf1\ansi\ansicpg1253\deff0 Reference \u-10179?\u-8704? complete, \u55357?alone}';
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+
+        $this->assertSame('Reference 😀 complete, alone', Tnef::decode($tnef)['text']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {

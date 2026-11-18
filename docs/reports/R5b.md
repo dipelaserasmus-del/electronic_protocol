@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 448, browser 68/68.
+- Full suites: PHPUnit 449, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -92,6 +92,10 @@ read, Greek in code page 1253.
   - Fixed: a file not read to its last byte is unreadable, and it is shown as plain `winmail.dat`, as before.
   - Test `test_a_file_ending_inside_an_attribute_header_is_not_read` (it failed before).
   - The owner's read receipt still decodes (checked on this computer only).
+- Codex, fourth review (P2): a character beyond U+FFFF (an emoji) in Outlook's Rich Text, written as two `\uN` halves,
+  was dropped.
+  - Fixed: the halves are joined.
+  - Test `test_rtf_unicode_beyond_the_basic_plane` (it failed before).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.

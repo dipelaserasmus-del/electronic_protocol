@@ -396,6 +396,7 @@ final class Tnef
         $skip = false;
         $uc = 1;
         $skipChars = 0;
+        $high = null;   // first half of a UTF-16 surrogate pair (\uN\uN), R5b review
         $n = strlen($rtf);
         for ($i = 0; $i < $n; $i++) {
             $c = $rtf[$i];
@@ -445,7 +446,18 @@ final class Tnef
                         } elseif ($word === 'tab' || $word === 'cell') {
                             $out .= "\t";
                         } elseif ($word === 'u' && $arg !== null) {
-                            $out .= mb_chr($arg < 0 ? $arg + 65536 : $arg, 'UTF-8');
+                            $unit = $arg < 0 ? $arg + 65536 : $arg;
+                            if ($unit >= 0xD800 && $unit <= 0xDBFF) {
+                                $high = $unit;
+                            } elseif ($unit >= 0xDC00 && $unit <= 0xDFFF) {
+                                if ($high !== null) {
+                                    $out .= mb_chr(0x10000 + (($high - 0xD800) << 10) + ($unit - 0xDC00), 'UTF-8');
+                                }
+                                $high = null;
+                            } else {
+                                $out .= (string) mb_chr($unit, 'UTF-8');
+                                $high = null;
+                            }
                             $skipChars = $uc;
                         }
                     }
