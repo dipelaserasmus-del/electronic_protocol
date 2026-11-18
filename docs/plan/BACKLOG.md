@@ -174,6 +174,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 5. **Batch 5:** D02 👤 → D03 👤 → D04 👤
 6. **Batch 6:** R1a → R1b → R1c → R2 → R4a → R4b
 7. **Batch 7:** R3a → R3b → R3c
+   - **Batch 7.5** (owner's notes, 2026-11-18): R1h (folder codes) → R3d (top bar) → R1i (sections: collapsible, movable, one/two columns, per user)
 8. **Batch 8:** R5c → R5d → R5b 📧
 9. **Batch 9:** R6a → R6b → R1d → R6c → R7
 10. **Batch 10:** A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03

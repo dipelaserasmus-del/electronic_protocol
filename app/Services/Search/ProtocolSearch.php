@@ -6,6 +6,7 @@ use App\Models\Keepvalue;
 use App\Models\Protocol;
 use App\Models\User;
 use App\Policies\ProtocolPolicy;
+use App\Support\FolderCode;
 use App\Support\TagList;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -133,13 +134,13 @@ final class ProtocolSearch
     }
 
     /**
-     * The folder as chosen in the picker (a code; typed without its dots it names every folder it could be: "φ11" =
-     * Φ.1.1 and Φ.11) is matched exactly;
-     * other text finds every folder whose code or description contains it, or a protocol's folder containing it.
+     * R1h (owner, 2026-11-18): a folder's code (case, accents and the dots before the number optional, the dots inside
+     * the number not: "φ11" = Φ.11 and Φ11, never Φ1.1; "12" = Φ12) is matched exactly. Other text finds every folder
+     * whose code starts with it ("φ1." → Φ1.1, Φ1.2) or whose code and description contain all its words, and also a
+     * protocol's folder containing it (old codes missing from the list).
      */
     private function whereFolder(Builder $q, string $typed): void
     {
-        $loose = self::loose($typed);
         $folders = Keepvalue::pluck('describe', 'fakelos');
         $exact = self::exactFolders($typed, $folders->keys()->all());
         if ($exact) {
@@ -147,15 +148,15 @@ final class ProtocolSearch
             return;
         }
         $words = preg_split('/\s+/u', TagList::fold($typed), -1, PREG_SPLIT_NO_EMPTY);
-        $codes = $folders->filter(function ($describe, $code) use ($loose, $words) {
+        $codes = $folders->filter(function ($describe, $code) use ($typed, $words) {
             $text = TagList::fold($code . ' ' . $describe);
-            return ($loose !== '' && str_contains(self::loose((string) $code), $loose))
+            return FolderCode::startsWith($typed, (string) $code)
                 || array_reduce($words, fn ($all, $w) => $all && str_contains($text, $w), true);
         })->keys()->all();
         $q->where(fn ($w) => $w->whereIn('fakelos', $codes)->orWhere('fakelos', 'LIKE', self::like($typed)));
     }
 
-    /** R3c: the folder's code when the text names exactly one folder ("φ11" → "Φ.1.1"); otherwise the text */
+    /** R3c: the folder's code when the text names exactly one folder ("φ.1.1" → "Φ.1.1"); otherwise the text */
     public static function folderCode(string $typed): string
     {
         $exact = self::exactFolders($typed, Keepvalue::pluck('fakelos')->all());
@@ -163,27 +164,12 @@ final class ProtocolSearch
     }
 
     /**
-     * The folders a text names: the code as written (any case: "φ.1.1" = Φ.1.1 only); otherwise every code that is
-     * the same without dots and spaces ("φ11" = Φ.1.1 and Φ.11)
-     *
      * @param  list<string>  $codes
-     * @return list<string>
+     * @return list<string> the codes the text names (FolderCode::same)
      */
     private static function exactFolders(string $typed, array $codes): array
     {
-        $folded = TagList::fold(trim($typed));
-        $same = array_values(array_filter($codes, fn ($code) => TagList::fold((string) $code) === $folded));
-        if ($same) {
-            return array_map('strval', $same);
-        }
-        $loose = self::loose($typed);
-        return array_values(array_map('strval', array_filter($codes, fn ($code) => $loose !== '' && self::loose((string) $code) === $loose)));
-    }
-
-    /** Lower case without accents and without symbols or spaces: "Φ.22.1" → "φ221" */
-    public static function loose(string $text): string
-    {
-        return preg_replace('/[^\p{L}\p{N}]+/u', '', TagList::fold($text)) ?? '';
+        return array_values(array_map('strval', array_filter($codes, fn ($code) => FolderCode::same($typed, (string) $code))));
     }
 
     /** "contains" pattern for LIKE; the user's % _ \ are plain characters */

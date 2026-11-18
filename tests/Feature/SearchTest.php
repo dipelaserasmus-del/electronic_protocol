@@ -84,16 +84,18 @@ class SearchTest extends FeatureTestCase
 
         $this->assertSame(['Στο Φ.1'], $this->subjects($this->criteria(['folder' => 'Φ.1'])), 'Φ.1 is not Φ.10');
         $this->assertSame(['Στο Φ.1'], $this->subjects($this->criteria(['folder' => 'φ1'])), 'dots and case optional');
-        $this->assertSame(['Στο Φ.22.1'], $this->subjects($this->criteria(['folder' => 'Φ 22 1'])));
-        // without dots a text can name two folders (Φ.1.1 and Φ.11): both; with its dots only that one
+        $this->assertSame(['Στο Φ.22.1'], $this->subjects($this->criteria(['folder' => 'φ 22.1'])));
+        // R1h (owner, 2026-11-18): the dots inside the number count: "φ11" is Φ.11 only, never Φ1.1 / Φ.1.1
         Keepvalue::updateOrCreate(['fakelos' => 'Φ.1.1'], ['describe' => 'Νόμοι']);
         Keepvalue::updateOrCreate(['fakelos' => 'Φ.11'], ['describe' => 'Άλλο']);
         Protocol::factory()->number(7)->create(['thema' => 'Στο Φ.1.1', 'fakelos' => 'Φ.1.1']);
         Protocol::factory()->number(8)->create(['thema' => 'Στο Φ.11', 'fakelos' => 'Φ.11']);
-        $this->assertSame(['Στο Φ.11', 'Στο Φ.1.1'], $this->subjects($this->criteria(['folder' => 'φ11'])));
-        $this->assertSame(['Στο Φ.1.1'], $this->subjects($this->criteria(['folder' => 'φ.1.1'])));
-        $this->assertSame('Φ.1.1', ProtocolSearch::folderCode('φ.1.1'));
-        $this->assertSame('φ11', ProtocolSearch::folderCode('φ11'), 'two folders: the text stays');
+        $this->assertSame(['Στο Φ.11'], $this->subjects($this->criteria(['folder' => 'φ11'])));
+        $this->assertSame(['Στο Φ.1.1'], $this->subjects($this->criteria(['folder' => 'φ1.1'])));
+        $this->assertSame('Φ.1.1', ProtocolSearch::folderCode('φ1.1'));
+        $this->assertSame('Φ.11', ProtocolSearch::folderCode('φ11'));
+        // a number alone is the number part: "11" is Φ.11, not Φ.1.1
+        $this->assertSame(['Στο Φ.11'], $this->subjects($this->criteria(['folder' => '11'])));
         $this->assertSame(['Στο Φ.10'], $this->subjects($this->criteria(['folder' => 'εκδρομες'])), 'a word of the description');
         $this->assertSame(['Κενός', 'Χωρίς'], $this->subjects($this->criteria(['folder' => SearchCriteria::NO_FOLDER])), '«Χωρίς φάκελο»');
         // a protocol's folder that is not in the folders list is still found by part of its text
