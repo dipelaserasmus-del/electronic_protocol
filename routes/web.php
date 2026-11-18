@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\InboxController;
 use App\Http\Controllers\KeepvalueController;
 use App\Http\Controllers\ProtocolFormController;
 use App\Http\Controllers\PreferencesController;
@@ -59,7 +60,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/home', [ProtocolController::class, 'store']);
     Route::post('/home/{protocol}', [ProtocolController::class, 'update']);
-    Route::post('/checkSameEmail', [ProtocolController::class, 'checkSameEmail'])->name('checkSameEmail');
 
     Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
     Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
@@ -84,12 +84,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/about', [ProtocolController::class, 'about']);
     Route::get('/updated', [ProtocolController::class, 'updated']);
 
-    Route::get('/viewEmails', [ProtocolController::class, 'viewEmails']);
-    Route::get('/getEmailNum', [ProtocolController::class, 'getEmailNum']);
-    Route::get('/viewEmailAttachment/{messageUid}/{attachmentKey}', [ProtocolController::class, 'viewEmailAttachment']);
-    Route::get('/viewEmailHtml/{messageUid}', [ProtocolController::class, 'viewEmailHtml']);
-    Route::get('/setEmailRead/{messageUid}', [ProtocolController::class, 'setEmailRead']);
-    Route::post('/storeFromEmail', [ProtocolController::class, 'storeFromEmail']);
+    // R5c: the inbox (App\Livewire\EmailInbox); registering and "read" are actions of the page
+    Route::get('/inbox', [InboxController::class, 'show']);
+    Route::get('/viewEmails', [InboxController::class, 'old']);
+    Route::get('/viewEmailAttachment/{uid}/{key}', [InboxController::class, 'attachment']);
+    Route::get('/viewEmailHtml/{uid}', [InboxController::class, 'html']);
 
     Route::get('/settings', [ConfigController::class, 'index']);
     Route::post('/settings', [ConfigController::class, 'store']);

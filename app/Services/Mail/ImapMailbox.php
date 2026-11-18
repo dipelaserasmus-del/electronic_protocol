@@ -59,6 +59,11 @@ final class ImapMailbox implements Mailbox
         return $raw;
     }
 
+    public function move(int $uid, string $folder): void
+    {
+        MessageMover::move($this->client, $this->folder->path, $uid, $folder);
+    }
+
     /**
      * Header + body as one e-mail. The header comes back without the empty line that separates it from the body;
      * without that line the body would be read as more headers.

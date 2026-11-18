@@ -22,4 +22,10 @@ interface Mailbox
 
     /** Complete raw messages (headers + body). Missing UIDs are left out. @param list<int> $uids @return array<int, string> */
     public function fetchRaw(array $uids): array;
+
+    /**
+     * R5c: move a message to another folder of the account (registered → inProtocol, read → beenRead).
+     * @throws \Throwable when the server refuses
+     */
+    public function move(int $uid, string $folder): void;
 }

@@ -142,7 +142,7 @@
                                           @if($defaultImapEmail)
                                           @if( ! $allowedEmailUsers || strpos($allowedEmailUsers,Auth::user()->username) !== false) 
                                           <li class="divider"></li>
-                                          <li><a  tabindex="-1" href="{{ url('/viewEmails') }}">Εισερχόμενα Email</a></li>
+                                          <li><a  tabindex="-1" href="{{ url('/inbox') }}">Εισερχόμενα Email</a></li>
                                           @endif
                                           @endif
                                           @endif

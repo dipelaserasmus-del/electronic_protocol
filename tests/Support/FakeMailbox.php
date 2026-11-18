@@ -21,6 +21,12 @@ final class FakeMailbox implements Mailbox
 
     public bool $unreachable = false;
 
+    /** @var list<array{int, string}> [uid, folder] of every move */
+    public array $moves = [];
+
+    /** R5c: the next move fails (server refuses) */
+    public bool $refuseMoves = false;
+
     public static function install(\Illuminate\Foundation\Application $app): self
     {
         $mailbox = new self;
@@ -63,6 +69,15 @@ final class FakeMailbox implements Mailbox
         $this->fetches[] = $uids;
 
         return array_intersect_key($this->messages, array_flip($uids));
+    }
+
+    public function move(int $uid, string $folder): void
+    {
+        if ($this->refuseMoves) {
+            throw new \RuntimeException('NO MOVE failed');
+        }
+        $this->moves[] = [$uid, $folder];
+        unset($this->messages[$uid]);
     }
 
     /** UIDs downloaded so far, in order. @return list<int> */

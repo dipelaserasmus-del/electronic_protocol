@@ -2,8 +2,8 @@
 
 namespace App\Services\Mail;
 
+use App\Support\Mail\MailContent;
 use App\Support\Mail\MailParser;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -17,6 +17,9 @@ final class Inbox
 {
     /** Longest wait for another user's download, in seconds (then this user downloads too: correct, just slower). */
     private const LOCK_WAIT = 60;
+
+    /** Changes when MailContent::summary changes, so older cached summaries are not used. */
+    private const SUMMARY_VERSION = 1;
 
     public function __construct(private MailCache $cache) {}
 
@@ -37,18 +40,35 @@ final class Inbox
 
         $messages = [];
         foreach ($uids as $uid) {
-            if (isset($raw[$uid])) {
-                $messages[] = new InboxMessage($uid, MailParser::parse($raw[$uid]));
+            if (isset($raw[$uid]) && ($summary = $this->summary($mailbox->id(), $validity, $uid, $raw[$uid])) !== null) {
+                $messages[] = new InboxMessage($uid, $summary);
             }
         }
         usort($messages, fn (InboxMessage $a, InboxMessage $b) => $newestFirst
             ? $b->timestamp() <=> $a->timestamp()
             : $a->timestamp() <=> $b->timestamp());
 
-        $paginator = new LengthAwarePaginator($messages, count($all), $perPage, $page,
-            ['path' => url('/viewEmails'), 'pageName' => 'imap_page']);
+        return new InboxPage($mailbox->id(), $validity, count($all), $page, $perPage, $messages);
+    }
 
-        return new InboxPage($validity, count($all), $messages, $paginator);
+    /**
+     * R5c: what the page shows of a cached message (MailContent::summary), itself cached: the page re-renders on every
+     * click and a large e-mail should be parsed once, not each time. Null when the message is not in the cache.
+     */
+    public function summary(string $mailboxId, string $uidValidity, int $uid, ?string $raw = null): ?array
+    {
+        $key = 'inbox-summary:'.self::SUMMARY_VERSION.':'.sha1($mailboxId).":$uidValidity:$uid";
+        if (is_array($cached = Cache::get($key))) {
+            return $cached;
+        }
+        $raw ??= $this->raw($mailboxId, $uidValidity, $uid);
+        if ($raw === null) {
+            return null;
+        }
+        $summary = MailContent::summary(MailParser::parse($raw));
+        Cache::put($key, $summary, now()->addDays(7));
+
+        return $summary;
     }
 
     /** Raw e-mail of a message shown on the inbox page (null when it is not in the cache). */

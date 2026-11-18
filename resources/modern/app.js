@@ -7,6 +7,7 @@ import { expandDate, shiftDate, toIso, fromIso } from './date-input';
 import './tags';
 import './search';
 import './preferences';
+import './inbox';
 
 window.bootstrap = bootstrap;
 
