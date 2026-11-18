@@ -68,10 +68,16 @@ This task adds the rest.
   - an e-mail given the subject of a registered one: the notice names it and *Ναι, καταχώριση* registers it;
   - the earlier registration tests confirm the duplicate question when an earlier run left the same protocol.
 - `smoke.spec.js` no longer depends on which mock e-mails other tests left on page 1.
-- Full suites: PHPUnit 434, browser 67/67.
+- Full suites: PHPUnit 435, browser 67/67.
 
   ![keywords as tags, suggestions from the subject](img/R5d/r5d-keywords.png)
   ![same subject: notice and "register anyway"](img/R5d/r5d-similar.png)
+
+## Review
+- Codex (P2): for an e-mail without a subject, the duplicate check ran before the subject was taken from the
+  attachment, so a protocol with that subject went unnoticed.
+  - Fixed: the check uses the subject the protocol will get (`EmailInbox::subject`), on the page and on *Καταχώριση*.
+  - Test `test_duplicate_check_uses_the_subject_taken_from_the_attachment` (it failed before the fix).
 
 ## Owner actions
 None.

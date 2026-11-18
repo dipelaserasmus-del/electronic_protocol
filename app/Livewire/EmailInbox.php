@@ -172,17 +172,16 @@ class EmailInbox extends Component
             $this->addError("forms.$uid.fakelos", $e->errors()['fakelos'][0]);
             return;
         }
-        // R5d: the same document registered before? Said next to the button; a second, explicit click registers it
+        // R5d: an e-mail without a subject takes its attachment's name, as offered in the field
+        $input['thema'] = $this->subject($uid);
+        // R5d: the same document registered before (by the subject it will have)? Said next to the button; a second,
+        // explicit click registers it
         if (! $confirmed && $this->similar($uid) !== [[], []]) {
             $this->confirming[$uid] = $receipt;
             $this->addError("forms.$uid.similar", 'Υπάρχει ήδη πρωτόκολλο που μοιάζει με αυτό το email (δείτε παραπάνω).');
             return;
         }
         unset($this->confirming[$uid]);
-        // R5d: an e-mail without a subject takes its attachment's name, as offered in the field
-        if (trim((string) ($input['thema'] ?? '')) === '' && ($guess = $this->subjectGuess($uid, onlyWithoutSubject: true))) {
-            $input['thema'] = $guess;
-        }
         try {
             $mailbox = $this->mailbox();
         } catch (\Throwable $e) {
@@ -284,8 +283,16 @@ class EmailInbox extends Component
     {
         $f = $this->forms[$uid] ?? [];
 
-        return [SimilarProtocols::sameSubject(Auth::user(), $f['thema'] ?? ''),
+        return [SimilarProtocols::sameSubject(Auth::user(), $this->subject($uid)),
             SimilarProtocols::sameIncoming(Auth::user(), $f['in_num'] ?? '', $f['in_date'] ?? '')];
+    }
+
+    /** The subject the protocol will have: as typed; empty, for an e-mail without one, its attachment's name (R5d) */
+    private function subject(int $uid): string
+    {
+        $typed = (string) ($this->forms[$uid]['thema'] ?? '');
+
+        return trim($typed) === '' ? ($this->subjectGuess($uid, onlyWithoutSubject: true) ?? $typed) : $typed;
     }
 
     /** R5d: the subject offered when the e-mail has none: from its first attachment's name (R1c rule) */

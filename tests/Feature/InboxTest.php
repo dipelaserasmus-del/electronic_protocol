@@ -345,6 +345,18 @@ class InboxTest extends FeatureTestCase
         $this->assertSame('Βεβαίωση σπουδών 2026', \App\Models\Protocol::sole()->thema);
     }
 
+    /** Review of R5d: the duplicate check uses the subject the protocol will get from the attachment. */
+    public function test_duplicate_check_uses_the_subject_taken_from_the_attachment(): void
+    {
+        \App\Models\Protocol::factory()->number(3)->create(['thema' => 'Βεβαίωση σπουδών 2026']);
+        $this->mailbox->messages = [5 => str_replace("Subject: Αίτηση\r\n", '', $this->attachmentEml('Βεβαίωση_σπουδών 2026.pdf'))];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        $page->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα');
+        $page->set('forms.5.files.0', false)->call('register', 5, false)->assertHasErrors('forms.5.similar');
+        $this->assertSame(1, \App\Models\Protocol::count());
+    }
+
     private function attachmentEml(string $name): string
     {
         return implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: Αίτηση',
