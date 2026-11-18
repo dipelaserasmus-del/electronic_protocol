@@ -60,8 +60,7 @@
   - **folder:** the list narrows to Φ.14.1.4 by description words without accents; the code `19.2` finds Φ.19.2;
     Escape keeps the choice; saved.
   - **case and accents:** the browser gives the same results as the server for the shared case list.
-- All other browser tests now pick the folder through the new box (`fillProtocol`). Full suites: PHPUnit 349
-  (without D06's 5, which are on their own branch), browser 51/51.
+- All other browser tests now pick the folder through the new box (`fillProtocol`). Full suites: PHPUnit 354, browser 51/51.
 
   ![related numbers](img/R1f/r1f-related-tags.png)
   ![keyword suggestions](img/R1f/r1f-keyword-suggestions.png)
