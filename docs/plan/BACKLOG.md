@@ -115,7 +115,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 ### R3 Search
 | ID | Task | Cat | Pri | Size | Depends |
 |----|------|-----|-----|------|---------|
-| R3a | Advanced search screen: year optional prefilled with current year, Enter submits (also "Σχετικοί αριθμοί"), **partial match** on incoming number and text fields, accent/case/symbol-insensitive folder autocomplete | UI/BE | P1 | M | N04, D02 |
+| R3a | Advanced search screen: year optional prefilled with current year, Enter submits (also "Σχετικοί αριθμοί"), **partial match** on incoming number and text fields, accent/case/symbol-insensitive folder autocomplete. 👤 Owner (2026-11-18): folder choice **«Χωρίς φάκελο»** (protocols on hold / placeholders) and a **pending check** for a date range: protocols without a folder **or** with ΕΚΚΡΕΜΟΤΗΤΑ in the subject (added as a suffix while pending, removed later; accent/case-insensitive). An empty result must say clearly that nothing is pending in that range | UI/BE | P1 | M | N04, D02 |
 | R3b | Gmail-style query parser: free text + `από:` `προς:` `φάκελος:` `έτος:` `αρ:` `θέμα:` … (unit tests) | BE | P2 | M | R3a |
 | R3c | Global search box in top bar + **separate results page**, live suggestions, access-controlled | UI | P2 | M | R3b |
 
