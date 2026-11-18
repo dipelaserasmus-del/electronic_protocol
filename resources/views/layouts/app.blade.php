@@ -109,6 +109,12 @@
                         <ul class="nav navbar-nav">
                             &nbsp;
                         </ul>
+                        @auth
+                            {{-- R3c: the search box (results on /search; the live suggestions are on the rebuilt pages) --}}
+                            <form class="navbar-form navbar-left" role="search" action="{{ url('/search') }}" method="GET">
+                                <input type="search" name="q" class="form-control" placeholder="Αναζήτηση…" aria-label="Αναζήτηση πρωτοκόλλων" maxlength="500">
+                            </form>
+                        @endauth
 
                         <!-- Right Side Of Navbar -->
                         <ul class="nav navbar-nav navbar-right">

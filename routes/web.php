@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\KeepvalueController;
 use App\Http\Controllers\ProtocolFormController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
     Route::get('/find', [ProtocolFormController::class, 'search']);   // R3a (old /getFindData removed)
+    Route::get('/search', [SearchController::class, 'results']);   // R3c: results of the top-bar box
+    Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1');
     // autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
     Route::get('/getValues/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValuesQuery']);
     Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValues']);

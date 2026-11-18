@@ -4,6 +4,7 @@
 import * as bootstrap from 'bootstrap';
 import { expandDate, shiftDate, toIso, fromIso } from './date-input';
 import './tags';
+import './search';
 
 window.bootstrap = bootstrap;
 

@@ -133,6 +133,36 @@ class SearchPage extends Component
         $this->resetErrorBag();
     }
 
+    /**
+     * R3c: the advanced screen's address for these criteria ("Σύνθετη αναζήτηση" on the results page). What has no
+     * field of its own (free words, an assignee by name) goes to «Οπουδήποτε» as search words.
+     *
+     * @return array<string, mixed>
+     */
+    public static function paramsFor(SearchCriteria $c): array
+    {
+        $date = fn (string $field, int $i) => ($c->dates[$field][$i] ?? null)?->format(DateInput::FORMAT) ?? '';
+        $anywhere = new SearchCriteria();
+        $anywhere->words = $c->words;
+        $anywhere->assigneeName = $c->assigneeName;
+        $empty = array_values(array_diff($c->empty, ['diekperaiosi']));
+
+        return array_filter([
+            's' => 1,
+            'year' => (string) ($c->year ?? ''),   // empty: every year (the screen fills in this year only when it is missing)
+            'num' => $c->number === null ? '' : $c->number . ($c->numberTo !== null ? '-' . $c->numberTo : ''),
+            'from' => $date('protocoldate', 0), 'to' => $date('protocoldate', 1),
+            'in_from' => $date('in_date', 0), 'in_to' => $date('in_date', 1),
+            'out_from' => $date('out_date', 0), 'out_to_date' => $date('out_date', 1),
+            'folder' => $c->folder === SearchCriteria::NO_FOLDER ? $c->folder : ProtocolSearch::folderCode($c->folder),
+            't' => $c->text,
+            'empty' => $empty,
+            'assignee' => in_array('diekperaiosi', $c->empty, true) ? 'none' : (string) ($c->assigneeId ?? ''),
+            'pending' => $c->pending ? 1 : '',
+            'w' => QueryParser::format($anywhere),
+        ], fn ($v, $k) => $k === 'year' || ($v !== '' && $v !== []), ARRAY_FILTER_USE_BOTH);
+    }
+
     /** Builds the criteria from the fields; wrong fields get an error and give null. */
     public function criteria(): ?SearchCriteria
     {
