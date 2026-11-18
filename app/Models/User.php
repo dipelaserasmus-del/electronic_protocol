@@ -39,6 +39,19 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\Role');
     }
 
+    /** R6a: protocols this user registered */
+    public function protocols(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Protocol::class);
+    }
+
+    /** R6a: διεκπεραίωση assignments of protocols not yet done ("Διεκπεραιώθηκε" empty) */
+    public function openAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProtocolAssignment::class)->where('type', 'd')
+            ->whereHas('protocol', fn ($q) => $q->whereNull('diekp_date'));
+    }
+
 
     public static function my_active_users(){
         // return User::where('role_id', '!=',   Role::whereRole('Αναγνώστης')->first()->id)->wherenotNull('active')->orderby('name')->get();

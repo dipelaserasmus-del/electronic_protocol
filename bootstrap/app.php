@@ -6,6 +6,7 @@ use App\Http\Middleware\MustBeWriterOrAdmin;
 use App\Http\Middleware\ProtocolEmail;
 use App\Http\Middleware\PurgeTrashDaily;
 use App\Http\Middleware\RedirectAfterLogin;
+use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\TouchUserActivity;
 use App\Support\Home;
 use Illuminate\Foundation\Application;
@@ -20,7 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectUsersTo(Home::LIST);   // logged-in user opens /login → protocol list
-        $middleware->web(append: [TouchUserActivity::class, PurgeTrashDaily::class]);
+        $middleware->web(append: [EnsureActiveUser::class, TouchUserActivity::class, PurgeTrashDaily::class]);   // R6a: EnsureActiveUser
         $middleware->alias([
             'admin' => MustBeAdmin::class,
             'writer' => MustBeWriterOrAdmin::class,

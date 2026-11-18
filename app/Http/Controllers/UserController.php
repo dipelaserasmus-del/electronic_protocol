@@ -3,171 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-use Auth;
-use App\Models\Role;
-use App\Models\User;
-use App\Models\Config;
-use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\RegistersUsers;
-
+/**
+ * R6a: the users page (App\Livewire\UserAdmin) at the old addresses /users and /users/{id} (opens that user).
+ * Saving and deleting are actions of the page (App\Services\Users\UserAccounts); the old POST /users,
+ * POST /users/{id} and GET /users/del/{id} (a delete by a plain link, without a CSRF check) are gone.
+ */
 class UserController extends Controller implements HasMiddleware
 {
-    /** Who may use this controller (was the constructor's \$this->middleware(), N02). */
     public static function middleware(): array
     {
-        return [
-            'auth',
-            'admin:home',
-        ];
+        return ['auth', 'admin:home'];
     }
 
-    /**
-     * Show the users.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(User $user)
+    public function index(?int $user = null)
     {
-        $users = User::with('role')->orderBy('name')->paginate(Config::getConfigValueOf('showRowsInPage'));
-
-
-        $roles = Role::all()->sortby('role');
-
-        $submitVisible = 'hidden';
-        if (Auth::user()->role->role == 'Διαχειριστής') $submitVisible = 'active';
-
-        return view('users', compact('users', 'user', 'roles', 'submitVisible'));
-    }
-
-
-
-
-
-    /**
-     * Add new user.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function store()
-    {
-
-        $this->validate(request(), [
-            'name' => 'required|max:255',
-            'username' => 'required|max:255|unique:users',
-            'email' => 'required|email|max:255',
-            'password' => 'required|min:6|confirmed',
-            'role_id' => 'required',
-        ]);
-
-
-        $data = request()->all();
-        $active = $data['active'] == "on" ? 1 : null;
-
-        User::create([
-            'name' => $data['name'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'role_id' => $data['role_id'],
-            'password' => bcrypt($data['password']),
-            'active' => $active
-        ]);
-
-        $notification = array(
-            'message' => 'Επιτυχημένη καταχώριση.',
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-
-        return back();
-    }
-
-    public function update($id)
-    {
-        $data = request()->all();
-        $active = $data['active'] == "on" ? 1 : null;
-
-        $validatevalues = [
-            'name' => 'required|max:255',
-            'username' => "required|max:255|unique:users,username,$id,id",
-            'email' => 'required|email|max:255',
-            'role_id' => 'required'
-        ];
-        $updatevalues = [
-            'name' => $data['name'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'active' => $active
-        ];
-
-        if (request()->password) {
-            $validatevalues['password'] = 'required|min:6|confirmed';
-            $updatevalues['password'] = bcrypt($data['password']);
-        }
-
-
-        // βρίσκω πόσοι είναι οι admin
-        $user = new User;
-        $admin_count = $user->get_num_of_admins();
-
-        // βρίσκω τον id του admin
-        $role = new Role;
-        $admin_id = $role->get_admin_id();
-
-        // αν είναι πάνω από 1 admin ενημερώνω
-        if ($admin_count > 1) {
-            $updatevalues['role_id'] = $data['role_id'];
-        }
-
-        // βρίσκω τον role_id του χρήστη που θα ενημέρώθεί
-        $old_role_id = $user->find($id)->role_id;
-        // αν είναι μονο ένας admin και ο χρήστης
-        // που θα ενημερωθεί δεν είναι αυτός ενημερώνω
-        if ($admin_count == 1 and $old_role_id != $admin_id) {
-            $updatevalues['role_id'] = $data['role_id'];
-        }
-
-        if ($admin_count == 1 and $old_role_id == $admin_id and ($data['role_id'] != $admin_id or !$active)) {
-            $notification = array(
-                'message' => 'Πρέπει να υπάρχει τουλάχιστον ένας ενεργός χρήστης με το Ρόλο <b>\"Διαχειριστής\"</b>',
-                'alert-type' => 'error'
-            );
-            session()->flash('notification', $notification);
-
-            return back();
-        }
-
-        $this->validate(request(), $validatevalues);
-
-        User::whereId($id)->update($updatevalues);
-
-        $notification = array(
-            'message' => 'Επιτυχημένη ενημέρωση.',
-            'alert-type' => 'success'
-        );
-        session()->flash('notification', $notification);
-
-        return back();
-    }
-
-
-
-    public function delete($user)
-    {
-
-        User::destroy($user);
-
-        if (Role::where('role', 'Διαχειριστής')->has('users')->count() == 0) {
-            $file = storage_path('conf/.denyregister');
-            if (file_exists($file)) unlink($file);
-        }
-
-        if (Auth::id() == $user || User::count() == 0) {
-            Auth::logout();
-            return redirect('/');
-        }
-
-        return redirect('users');
+        return view('users', ['user' => $user]);
     }
 }
