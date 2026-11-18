@@ -87,6 +87,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'preferences' => 'array',   // R3d: App\Support\UserPreferences
     ];
 
     /**

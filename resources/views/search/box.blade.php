@@ -6,10 +6,16 @@
 <form action="{{ url('/search') }}" method="GET" role="search" class="app-search position-relative" id="app-search"
       x-data="searchBox(@js(url('/search/suggest')))" x-on:click.outside="close()" x-on:submit="submitted()">
     <label for="app-search-q" class="visually-hidden">Αναζήτηση πρωτοκόλλων</label>
-    <input type="search" name="q" id="app-search-q" class="form-control form-control-sm" autocomplete="off"
-           value="{{ request()->is('search') ? request('q') : '' }}" placeholder="Αναζήτηση…  ( / )" maxlength="500"
-           role="combobox" aria-autocomplete="list" aria-controls="app-search-list" :aria-expanded="open"
-           x-ref="input" x-on:input="typed()" x-on:keydown="key($event)" x-on:focus="if (items.length || hints.length) open = true">
+    {{-- R3d: the search button and the advanced search (it was the menu's "Αναζήτηση") are part of the box --}}
+    <div class="input-group input-group-sm">
+        <input type="search" name="q" id="app-search-q" class="form-control" autocomplete="off"
+               value="{{ request()->is('search') ? request('q') : '' }}" placeholder="Αναζήτηση…  ( / )" maxlength="500"
+               role="combobox" aria-autocomplete="list" aria-controls="app-search-list" :aria-expanded="open"
+               x-ref="input" x-on:input="typed()" x-on:keydown="key($event)" x-on:focus="if (items.length || hints.length) open = true">
+        <button type="submit" class="btn btn-light" title="Αναζήτηση" aria-label="Αναζήτηση"><i class="bi bi-search" aria-hidden="true"></i></button>
+        <a href="{{ url('/find') }}" class="btn btn-light border-start" id="app-search-advanced" title="Σύνθετη αναζήτηση"
+           aria-label="Σύνθετη αναζήτηση"><i class="bi bi-sliders2" aria-hidden="true"></i></a>
+    </div>
     <div class="list-group shadow app-search-list" id="app-search-list" role="listbox" x-show="open" x-cloak>
         <template x-for="(h, n) in hints" :key="'h' + h[0]">
             <button type="button" class="list-group-item list-group-item-action py-1 small search-hint" role="option"

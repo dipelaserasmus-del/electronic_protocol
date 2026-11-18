@@ -83,7 +83,7 @@ tasks = [
 
   # ---------------- Batch 7.5 (owner's notes on Batch 7, 2026-11-18) ----------------
   { id = "R1h", title = "Folder codes: φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match", phase = "R", batch = 7.5, size = "S", deps = ["R3c"], status = "done", pr = 59 },
-  { id = "R3d", title = "Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name", phase = "R", batch = 7.5, size = "S", deps = ["R3c"], status = "todo" },
+  { id = "R3d", title = "Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user", phase = "R", batch = 7.5, size = "S", deps = ["R3c"], status = "done", pr = 60 },
   { id = "R1i", title = "Protocol page sections: collapsible, movable, one/two columns, saved per user", phase = "R", batch = 7.5, size = "M", deps = ["R1g"], status = "todo" },
 
   # ---------------- Batch 8 ----------------

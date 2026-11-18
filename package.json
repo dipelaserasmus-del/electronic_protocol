@@ -11,5 +11,8 @@
         "laravel-vite-plugin": "^2.0.1",
         "sass": "^1.93.2",
         "vite": "^7.1.9"
+    },
+    "dependencies": {
+        "bootstrap-icons": "1.13.2"
     }
 }
