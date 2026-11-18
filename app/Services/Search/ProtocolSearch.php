@@ -52,13 +52,17 @@ final class ProtocolSearch
             $this->whereFolder($q, trim($c->folder));
         }
 
+        // conditions on attachments: all of them on the same attachment (review of R3a: a name and an ΑΔΑ found on two
+        // different attachments of a protocol is not a match)
+        $onAttachment = [];
+
         foreach ($c->text as $field => $value) {
             $value = trim($value);
             if ($value === '' || ! array_key_exists($field, SearchCriteria::TEXT_FIELDS)) {
                 continue;
             }
             if (in_array($field, SearchCriteria::ATTACHMENT_FIELDS, true)) {
-                $q->whereHas('attachments', fn ($a) => $a->where($field, 'LIKE', self::like($value)));
+                $onAttachment[] = fn ($a) => $a->where($field, 'LIKE', self::like($value));
             } elseif ($field === 'sxetiko' && preg_match('~^\d+(/\d{4})?$~', $value)) {
                 // a related number is matched whole: "12" finds "12/2026" and "12", not "112" or "5/2012"
                 $q->where('sxetiko', 'REGEXP', '(^|[^0-9/])' . $value . '([^0-9]|$)');
@@ -70,10 +74,18 @@ final class ProtocolSearch
         foreach (array_unique($c->empty) as $field) {
             match (true) {
                 $field === 'diekperaiosi' => $q->whereDoesntHave('assignments', fn ($a) => $a->where('type', 'd')),
-                in_array($field, SearchCriteria::ATTACHMENT_FIELDS, true) => $q->whereHas('attachments', fn ($a) => self::isEmpty($a, $field)),
+                in_array($field, SearchCriteria::ATTACHMENT_FIELDS, true) => $onAttachment[] = fn ($a) => self::isEmpty($a, $field),
                 array_key_exists($field, SearchCriteria::EMPTY_FIELDS) => $q->where(fn ($w) => self::isEmpty($w, $field)),
                 default => null,
             };
+        }
+
+        if ($onAttachment) {
+            $q->whereHas('attachments', function ($a) use ($onAttachment) {
+                foreach ($onAttachment as $condition) {
+                    $condition($a);
+                }
+            });
         }
 
         if ($c->assigneeId !== null) {
