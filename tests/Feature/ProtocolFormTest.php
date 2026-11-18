@@ -57,8 +57,8 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame(0, Protocol::count());
     }
 
-    /** R1e: related numbers are tags; an existing protocol is a link (new tab), others stay text. */
-    public function test_related_numbers_are_tags_linking_to_existing_protocols(): void
+    /** R1e/R1f: related numbers are tags; existing protocol = green ✔ with a link ↗ (new tab), others orange ⚠. */
+    public function test_related_numbers_are_checked_tags_linking_to_existing_protocols(): void
     {
         $year = (int) now()->year;
         $mine = Protocol::factory()->number(12)->create(['thema' => 'Σχετικό δώδεκα']);
@@ -66,27 +66,67 @@ class ProtocolFormTest extends FeatureTestCase
         $writer = $this->writer();
 
         $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class)
-            ->call('addRelated', '12')                                  // a bare number gets the year
-            ->call('addRelated', '40/' . ($year - 1) . '; 77, φ.3')      // pasted list
-            ->call('addRelated', '12/' . $year)                         // no repeats
+            ->call('addTag', 'sxetiko', '12')                                  // a bare number gets the year
+            ->call('addTag', 'sxetiko', '40/' . ($year - 1) . '; 77, φ.3')      // pasted list
+            ->call('addTag', 'sxetiko', '12/' . $year)                         // no repeats
             ->assertSet('form.sxetiko', "12/$year, 40/" . ($year - 1) . ', 77/' . $year . ', φ.3');
+        $html = $form->html();
         $form->assertSeeHtml('href="' . url('/home/' . $mine->id) . '" target="_blank"')
             ->assertSeeHtml('title="Σχετικό δώδεκα"')
             ->assertSeeHtml('href="' . url('/home/' . $old->id) . '" target="_blank"')
-            ->assertSee('↗ 40/' . ($year - 1))
             ->assertSeeHtml('aria-label="Αφαίρεση 77/' . $year . '"')
-            ->assertSeeHtml('aria-label="Αφαίρεση φ.3"');
-        $this->assertSame(2, substr_count($form->html(), 'title="Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε"'));
+            ->assertSeeHtml('aria-label="Αφαίρεση φ.3"')
+            ->assertSeeHtml('title="Δεν υπάρχει πρωτόκολλο 77/' . $year . '"')
+            ->assertSeeHtml('title="Δεν είναι αριθμός πρωτοκόλλου (π.χ. 12/2026)"');
+        $this->assertSame(2, substr_count($html, 'tag-ok'));
+        $this->assertSame(2, substr_count($html, 'tag-missing'));
+        $this->assertSame(2, substr_count($html, 'icon-check'));
+        $this->assertSame(2, substr_count($html, 'icon-warning'));
 
-        $form->call('removeRelated', 1)->assertSet('form.sxetiko', "12/$year, 77/$year, φ.3")
+        // edited in place: the tag keeps its position; a bare number gets the year; editing to nothing removes it
+        $form->call('editTag', 'sxetiko', 2, '13')->assertSet('form.sxetiko', "12/$year, 40/" . ($year - 1) . ", 13/$year, φ.3")
+            ->call('editTag', 'sxetiko', 3, '')->assertSet('form.sxetiko', "12/$year, 40/" . ($year - 1) . ", 13/$year")
+            ->call('editTag', 'sxetiko', 2, '12')->assertSet('form.sxetiko', "12/$year, 40/" . ($year - 1))   // already there
+            ->call('addTag', 'sxetiko', '77, φ.3');
+
+        $form->call('removeTag', 'sxetiko', 1)->assertSet('form.sxetiko', "12/$year, 77/$year, φ.3")
             ->set('form.thema', 'Με σχετικά')->set('form.fakelos', 'Φ.1')
             ->call('save')->assertHasNoErrors();
         $this->assertSame("12/$year, 77/$year, φ.3", Protocol::latest('id')->first()->sxetiko);
 
-        // a writer limited to own/assigned protocols gets no link (and no subject) for others' protocols
+        // a writer limited to own/assigned protocols: green (it exists) but no link and no subject
         $this->setting('limitProtocolAccessList', 1);
-        Livewire::actingAs($writer)->test(ProtocolForm::class)->call('addRelated', '12')
-            ->assertDontSeeHtml('href="' . url('/home/' . $mine->id) . '"')->assertDontSee('Σχετικό δώδεκα');
+        $limited = Livewire::actingAs($writer)->test(ProtocolForm::class)->call('addTag', 'sxetiko', '12');
+        $limited->assertDontSeeHtml('href="' . url('/home/' . $mine->id) . '"')->assertDontSee('Σχετικό δώδεκα')
+            ->assertSeeHtml('title="Υπάρχει πρωτόκολλο με αυτόν τον αριθμό"');
+        $this->assertStringContainsString('tag-ok', $limited->html());
+    }
+
+    /** R1f: keywords as tags: no repeats (case and accents ignored), edited in place, saved as "a, b". */
+    public function test_keywords_are_tags(): void
+    {
+        $form = Livewire::actingAs($this->admin())->test(ProtocolForm::class)
+            ->call('addTag', 'keywords', 'Διαύγεια')
+            ->call('addTag', 'keywords', 'εκδρομή;  σχολικά   έξοδα , διαυγεια')
+            ->assertSet('form.keywords', 'Διαύγεια, εκδρομή, σχολικά έξοδα')
+            ->assertSeeHtml('data-tag="σχολικά έξοδα"')
+            ->call('editTag', 'keywords', 1, 'Εκδρομές')
+            ->assertSet('form.keywords', 'Διαύγεια, Εκδρομές, σχολικά έξοδα')
+            ->call('removeTag', 'keywords', 0)
+            ->assertSet('form.keywords', 'Εκδρομές, σχολικά έξοδα')
+            ->set('form.thema', 'Με λέξεις')->set('form.fakelos', 'Φ.1')
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame('Εκδρομές, σχολικά έξοδα', Protocol::latest('id')->first()->keywords);
+
+        // only these two fields
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class)->call('addTag', 'thema', 'x')->assertStatus(400);
+    }
+
+    public function test_fold_ignores_case_and_accents(): void
+    {
+        foreach (json_decode(file_get_contents(base_path('tests/fixtures/fold-cases.json')), true) as [$in, $out]) {
+            $this->assertSame($out, \App\Support\TagList::fold($in), $in);
+        }
     }
 
     public function test_same_subject_is_a_notice_not_a_question(): void
@@ -196,8 +236,34 @@ class ProtocolFormTest extends FeatureTestCase
 
         $this->actingAs($writer)->get('/home')->assertOk()
             ->assertSee('<datalist id="suggest-in_topos_ekdosis">', false)->assertSee('<option value="Αθήνα">', false)
-            ->assertSee('<option value="εκδρομή">', false)
+            ->assertDontSee('<datalist id="suggest-keywords">', false)
             ->assertSee('list="suggest-in_topos_ekdosis"', false);
+    }
+
+    /** R1f: every keyword used, most used first; spellings differing in case/accents are one; limited users: theirs only. */
+    public function test_keyword_and_folder_suggestions(): void
+    {
+        $writer = $this->writer();
+        Protocol::factory()->number(1)->create(['keywords' => 'Διαύγεια, εκδρομή', 'user_id' => $writer->id]);
+        Protocol::factory()->number(2)->create(['keywords' => 'διαύγεια; σχολικά έξοδα', 'user_id' => $writer->id]);
+        Protocol::factory()->number(3)->create(['keywords' => 'Διαύγεια', 'user_id' => $writer->id]);
+        Protocol::factory()->number(4)->create(['keywords' => 'απόρρητο θέμα']);   // someone else's
+
+        $all = \App\Support\Suggestions::keywords($writer);
+        $this->assertSame(['Διαύγεια', 3], $all[0]);
+        $this->assertContains(['απόρρητο θέμα', 1], $all);
+        $this->assertCount(4, $all);
+
+        $this->setting('limitProtocolAccessList', 1);
+        $mine = \App\Support\Suggestions::keywords($writer);
+        $this->assertNotContains(['απόρρητο θέμα', 1], $mine);
+
+        \App\Models\Keepvalue::create(['fakelos' => 'Φ.950', 'describe' => 'Εκδρομές </script> και μετακινήσεις']);
+        $page = $this->actingAs($writer)->get('/home')->assertOk();
+        $page->assertSee('<script type="application/json" id="suggest-keywords">[["Διαύγεια",3]', false)
+            ->assertSee('id="suggest-folders"', false)
+            ->assertSee('["Φ.950","Εκδρομές \\u003C\\/script\\u003E και μετακινήσεις"]', false)   // can't end the script early
+            ->assertSee('x-data="folderPicker"', false);
     }
 
     public function test_tab_from_the_number_goes_to_the_date(): void

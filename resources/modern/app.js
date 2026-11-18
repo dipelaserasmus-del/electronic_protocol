@@ -3,6 +3,7 @@
 // content Livewire adds later.
 import * as bootstrap from 'bootstrap';
 import { expandDate, shiftDate, toIso, fromIso } from './date-input';
+import './tags';
 
 window.bootstrap = bootstrap;
 
