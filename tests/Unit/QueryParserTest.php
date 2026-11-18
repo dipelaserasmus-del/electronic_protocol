@@ -110,4 +110,13 @@ class QueryParserTest extends TestCase
             $this->assertSame($text, QueryParser::format($first), 'written in the usual order');
         }
     }
+
+    /** review of R3b: a quoted word that looks like a search word stays a word when written back */
+    public function test_format_keeps_quotes_on_words_that_look_like_search_words(): void
+    {
+        $c = $this->parse('"θέμα:άδεια" "subject:leave" 10:30');
+        $this->assertSame(['θέμα:άδεια', 'subject:leave', '10:30'], $c->words);
+        $this->assertSame('"θέμα:άδεια" "subject:leave" "10:30"', QueryParser::format($c));
+        $this->assertEquals($c, $this->parse(QueryParser::format($c)));
+    }
 }

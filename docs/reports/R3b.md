@@ -56,5 +56,13 @@ feeds the search box in the top bar (R3c).
 
   ![Οπουδήποτε with search words](img/R3b/anywhere-with-operators.png)
 
+## Review (Codex)
+- An assignee chosen in the *Ανάθεση* menu and an `ανάθεση:` typed in *Οπουδήποτε* were both applied, which found only
+  protocols assigned to both, or nothing at all with «Κανένας». The menu now wins, as for the other fields.
+  Tested: `SearchTest::test_the_assignee_menu_wins_over_a_typed_assignee`.
+- A quoted word that looks like a search word (`"θέμα:άδεια"`) lost its quotes in *Ως κείμενο*, so copying that text
+  searched only the subject. Such words are now written in quotes. Tested:
+  `QueryParserTest::test_format_keeps_quotes_on_words_that_look_like_search_words`.
+
 ## Owner actions
 None.

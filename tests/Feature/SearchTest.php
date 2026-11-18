@@ -245,4 +245,21 @@ class SearchTest extends FeatureTestCase
             ->set('words', 'έτος:abc')->call('search')
             ->assertHasErrors('words')->assertSee('Δεν χρησιμοποιήθηκαν: «έτος:abc»');
     }
+
+    /** review of R3b: the assignee chosen in the menu wins over ανάθεση: typed in «Οπουδήποτε» */
+    public function test_the_assignee_menu_wins_over_a_typed_assignee(): void
+    {
+        $alice = \App\Models\User::factory()->writer()->create(['name' => 'Αλίκη Δοκιμή']);
+        $bob = \App\Models\User::factory()->writer()->create(['name' => 'Βασίλης Δοκιμή']);
+        Protocol::factory()->number(1)->assignedTo($alice)->create(['thema' => 'Της Αλίκης']);
+        Protocol::factory()->number(2)->assignedTo($bob)->create(['thema' => 'Του Βασίλη']);
+        Protocol::factory()->number(3)->create(['thema' => 'Κανενός', 'diekperaiosi' => '']);
+
+        $page = fn (string $assignee, string $words) => Livewire::actingAs($this->admin())->test(SearchPage::class)
+            ->set('year', '')->set('assignee', $assignee)->set('words', $words)->call('search');
+        $page((string) $alice->id, 'ανάθεση:Βασίλης')->assertSee('Της Αλίκης')->assertDontSee('Του Βασίλη');
+        $page('none', 'ανάθεση:Βασίλης')->assertSee('Κανενός')->assertDontSee('Του Βασίλη');
+        $page((string) $alice->id, 'ανάθεση:κανένας')->assertSee('Της Αλίκης')->assertDontSee('Κανενός');
+        $page('', 'ανάθεση:Βασίλης')->assertSee('Του Βασίλη')->assertDontSee('Της Αλίκης');
+    }
 }

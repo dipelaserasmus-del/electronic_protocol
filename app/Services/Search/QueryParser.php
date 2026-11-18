@@ -232,7 +232,8 @@ final class QueryParser
     /** SearchCriteria → search text, so parse(format($c)) gives the same criteria (shown on the advanced screen). */
     public static function format(SearchCriteria $c): string
     {
-        $q = static fn (string $v) => preg_match('/[\s"]/u', $v) || $v === '' ? '"' . str_replace('"', '', $v) . '"' : $v;
+        // quoted when it has spaces, or when it would be read back as a search word ("θέμα:άδεια" typed in quotes)
+        $q = static fn (string $v) => preg_match('/[\s"]|^[\p{L}\p{N}_]+:/u', $v) || $v === '' ? '"' . str_replace('"', '', $v) . '"' : $v;
         $parts = array_map($q, $c->words);
         if ($c->number !== null) {
             $parts[] = self::NAMES['number'] . ':' . $c->number . ($c->numberTo !== null ? '-' . $c->numberTo : '');
