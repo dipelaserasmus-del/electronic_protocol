@@ -68,3 +68,8 @@
 
 ## Owner actions
 None.
+
+## Review finding (Codex), fixed with a test
+- After a suggestion was highlighted (↓) and the list closed with Escape, Enter failed instead of adding the typed
+  keyword: the highlighted position was kept after the list was emptied. Closing the list now forgets it, and Enter
+  only picks a suggestion that is still shown (browser test: ↓, Escape, Enter adds what was typed).

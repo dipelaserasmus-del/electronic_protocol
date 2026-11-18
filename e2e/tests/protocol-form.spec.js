@@ -157,8 +157,20 @@ test('keywords are tags with suggestions that ignore case and accents (R1f)', as
   await saveProtocol(page);
 
   await page.goto('/home');
-  await box.pressSequentially(`ψηφιακος ${stamp}`);         // no accents, lower case, any order of words
   const suggestions = page.locator('#keywords-suggest li');
+  // review of R1f: a suggestion highlighted, the list closed with Escape: Enter adds what was typed
+  await box.pressSequentially(`ψηφιακ ${stamp}`);
+  await expect(suggestions.first()).toBeVisible();
+  await box.press('ArrowDown');
+  await box.press('Escape');
+  await expect(page.locator('#keywords-suggest')).toBeHidden();
+  await box.press('Enter');
+  await expect(pills).toHaveCount(1);
+  await expect(pills.last()).toHaveAttribute('data-tag', `ψηφιακ ${stamp}`);
+  await pills.last().locator('.btn-close').click();
+  await expect(pills).toHaveCount(0);
+
+  await box.pressSequentially(`ψηφιακος ${stamp}`);         // no accents, lower case, any order of words
   await expect(suggestions.first()).toContainText(keyword);
   await expect(suggestions.first().locator('mark').first()).toHaveText('Ψηφιακός');
   await evidence(page, 'r1f-keyword-suggestions', { clip: { x: 0, y: 0, width: 1440, height: 760 } });
