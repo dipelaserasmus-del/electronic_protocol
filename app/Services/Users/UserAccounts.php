@@ -117,8 +117,13 @@ final class UserAccounts
         });
     }
 
-    /** Why this account cannot be deleted (null: it can) */
-    public function cannotDelete(User $user, User $actor): ?string
+    /**
+     * Why this account cannot be deleted (null: it can).
+     *
+     * @param  array{protocols: int, assignments: int}|null  $uses  counts already loaded (the users page loads them for
+     *         the whole page at once), else counted here
+     */
+    public function cannotDelete(User $user, User $actor, ?array $uses = null): ?string
     {
         if ((int) $user->id === (int) $actor->id) {
             return 'Δεν μπορείτε να διαγράψετε τον δικό σας λογαριασμό.';
@@ -126,7 +131,7 @@ final class UserAccounts
         if ((int) $user->role_id === Roles::adminId() && $user->active && self::activeAdmins() <= 1) {
             return 'Είναι ο μόνος ενεργός Διαχειριστής.';
         }
-        $uses = $this->uses($user);
+        $uses ??= $this->uses($user);
         if ($uses['protocols'] || $uses['assignments']) {
             $parts = [];
             if ($uses['protocols']) {
@@ -155,6 +160,7 @@ final class UserAccounts
     {
         return User::where('role_id', Roles::adminId())->whereNotNull('active')->count();
     }
+
 
     /**
      * Logs the user out everywhere: their rows in `sessions` (SESSION_DRIVER=database). With another session driver,

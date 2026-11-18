@@ -131,7 +131,7 @@ class UserAdmin extends Component
     {
         $roles = UserAccounts::roles();
         $query = User::query()->with('role')
-            ->withCount(['protocols', 'openAssignments'])
+            ->withCount(['protocols', 'assignments', 'openAssignments'])   // one query for the page (review of R6a)
             ->orderByRaw('active IS NULL')->orderBy('name');
         if (($q = trim($this->search)) !== '') {
             $like = '%'.addcslashes($q, '\\%_').'%';

@@ -45,7 +45,13 @@ class User extends Authenticatable
         return $this->hasMany(Protocol::class);
     }
 
-    /** R6a: διεκπεραίωση assignments of protocols not yet done ("Διεκπεραιώθηκε" empty) */
+    /** R6a: all this user's assignments (διεκπεραίωση and ενημέρωση) */
+    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProtocolAssignment::class);
+    }
+
+        /** R6a: διεκπεραίωση assignments of protocols not yet done ("Διεκπεραιώθηκε" empty) */
     public function openAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ProtocolAssignment::class)->where('type', 'd')
