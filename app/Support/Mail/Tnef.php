@@ -67,6 +67,9 @@ final class Tnef
     /** Most files read from one winmail.dat; a crafted one with more could use up the memory. */
     private const MAX_ATTACHMENTS = 500;
 
+    /** Largest RTF body decompressed (bytes); far above any real message text. */
+    private const RTF_MAX_SIZE = 10_000_000;
+
     /** Deepest RTF group nesting read; real documents stay far below it. */
     private const RTF_MAX_DEPTH = 1000;
 
@@ -406,6 +409,9 @@ final class Tnef
         if ($h['compSize'] < 12 || strlen($data) - 4 < $h['compSize']) {
             throw new \UnexpectedValueException('TNEF: RTF cut short');
         }
+        if ($h['rawSize'] > self::RTF_MAX_SIZE) {   // R5b review: the only step that grows the data; bounded
+            throw new \UnexpectedValueException('TNEF: RTF too large');
+        }
         $body = substr($data, 16, $h['compSize'] - 12);
         if ($h['magic'] === 0x414C454D) {   // "MELA": stored as it is
             if (strlen($body) < $h['rawSize']) {
@@ -439,6 +445,9 @@ final class Tnef
                         }
 
                         return substr($out, 0, $h['rawSize']);
+                    }
+                    if (strlen($out) + $length > $h['rawSize'] + 2) {   // more than it declared
+                        throw new \UnexpectedValueException('TNEF: RTF larger than declared');
                     }
                     for ($i = 0; $i < $length; $i++) {
                         $c = $dict[($offset + $i) % 4096];

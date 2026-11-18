@@ -198,6 +198,30 @@ RTF;
         $this->assertCount(500, Tnef::decode($enough->bytes())['attachments']);
     }
 
+    /** Fourteenth review of R5b: compressed RTF expands (up to 8 times); its size is bounded, so memory is too. */
+    public function test_rtf_expanding_beyond_its_bounds_is_refused(): void
+    {
+        $rtf = '{\rtf1\ansi text}';
+        $lzfu = TnefBuilder::compressedRtf($rtf);
+        $declaring = fn (int $raw) => substr_replace($lzfu, pack('V', $raw), 4, 4);
+        $error = function (string $data): ?string {
+            try {
+                Tnef::decompressRtf($data);
+
+                return null;
+            } catch (\UnexpectedValueException $e) {
+                return $e->getMessage();
+            }
+        };
+
+        $this->assertSame('TNEF: RTF too large', $error($declaring(10_000_001)));
+        $this->assertSame('TNEF: RTF larger than declared', $error($declaring(5)));   // writes more than it declares
+        $this->assertSame($rtf, Tnef::decompressRtf($lzfu));
+
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')->properties([[TnefBuilder::BINARY, 0x1009, $declaring(5)]])->bytes();
+        $this->assertNull(Tnef::decode($tnef));
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
