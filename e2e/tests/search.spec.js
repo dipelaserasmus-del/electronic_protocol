@@ -30,12 +30,12 @@ test('subject, incoming number and related numbers: part of the text, Enter sear
   await expect(page.locator('#search-results')).toContainText(subject);
 
   // the middle of the incoming number
-  await page.locator('#search-clear').click();
+  await Promise.all([page.waitForURL(/\/find$/), page.locator('#search-clear').click()]);
   await search(page, { in_num: `${stamp}/Δ` }, { open: false });
   await expect(page.locator('#search-results')).toContainText(subject);
 
   // Enter in "Σχετικοί αριθμοί" searches too (the old page's field swallowed it)
-  await page.locator('#search-clear').click();
+  await Promise.all([page.waitForURL(/\/find$/), page.locator('#search-clear').click()]);
   await search(page, { sxetiko: '987654/1999' }, { open: false });
   await expect(page.locator('#search-count')).toContainText('Δεν βρέθηκε κανένα πρωτόκολλο');
 });

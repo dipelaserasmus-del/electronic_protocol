@@ -92,5 +92,8 @@
   Now every attachment condition must hold for the same attachment, as in the old search. This covers the name, the
   ΑΔΑ and "ΑΔΑ empty". Tested in `SearchTest::test_empty_fields_and_attachments`.
 
+- CI found a race in the browser test: text typed right after *Καθαρισμός* could be wiped by the late answer to the
+  clear request. *Καθαρισμός* now opens a fresh, empty search page instead, so nothing typed can be lost.
+
 ## Owner actions
 - None. Try *Αναζήτηση → Έλεγχος εκκρεμοτήτων* for a month of your real copy (8081).
