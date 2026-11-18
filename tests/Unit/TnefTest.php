@@ -78,6 +78,36 @@ class TnefTest extends TestCase
         $this->assertSame('<p>Γεια <b>σας</b></p>', $out['html']);
     }
 
+    /** Review of R5b: an HTML body stored in Windows-1253 comes out as UTF-8 (declared charset, or the code page). */
+    public function test_html_body_in_a_greek_code_page_becomes_utf8(): void
+    {
+        $page = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1253"></head><body>Καλημέρα</body></html>';
+        $plain = '<p>Γεια σας</p>';
+        foreach ([[$page, 'Καλημέρα'], [$plain, 'Γεια σας']] as [$html, $greek]) {
+            $tnef = (new TnefBuilder(1253))->messageClass('IPM.Note')
+                ->properties([[TnefBuilder::BINARY, 0x1013, iconv('UTF-8', 'CP1253', $html)]])->bytes();
+            $out = Tnef::decode($tnef)['html'];
+            $this->assertTrue(mb_check_encoding($out, 'UTF-8'));
+            $this->assertStringContainsString($greek, $out);
+        }
+    }
+
+    /**
+     * Review of R5b: counts are checked against the data left. Before, 29 bytes declaring a million multi-valued
+     * CLSIDs made a million loops (or 4 billion): an e-mail could make the inbox time out.
+     */
+    public function test_huge_counts_in_a_small_file_are_refused_at_once(): void
+    {
+        $props = pack('V', 1).pack('vv', 0x1048, 0x0001).pack('V', 1_000_000);   // 1 property, MV CLSID, a million values
+        $tnef = pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, strlen($props)).$props.pack('v', 0);
+        $started = microtime(true);
+        $this->assertNull(Tnef::decode($tnef));
+        $this->assertLessThan(0.1, microtime(true) - $started);
+
+        $props = pack('V', 4_000_000_000);   // a property count beyond the data
+        $this->assertNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, 4).$props.pack('v', 0)));
+    }
+
     public function test_anything_else_is_not_tnef(): void
     {
         $this->assertNull(Tnef::decode(''));

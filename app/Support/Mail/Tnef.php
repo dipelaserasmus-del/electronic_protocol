@@ -144,6 +144,7 @@ final class Tnef
             $text = $this->reportText($props, $zone);
         }
         $html = $props[self::PR_BODY_HTML] ?? null;
+        $html = is_string($html) ? $this->htmlUtf8($html) : null;
 
         return [
             'class' => $class,
@@ -153,6 +154,25 @@ final class Tnef
             'report' => $report,
             'attachments' => $files,
         ];
+    }
+
+    /**
+     * Review of R5b: PR_BODY_HTML is often stored as bytes in its own charset (Greek: windows-1253): as UTF-8, by the
+     * charset the page declares, else the message's code page (already UTF-8 stays as it is).
+     */
+    private function htmlUtf8(string $html): string
+    {
+        $declared = preg_match('/<meta[^>]+charset\s*=\s*["\']?([A-Za-z0-9_.:-]+)/i', $html, $m) ? strtolower($m[1]) : null;
+        if (in_array($declared, ['utf-8', 'utf8'], true) || ($declared === null && mb_check_encoding($html, 'UTF-8'))) {
+            return mb_scrub($html, 'UTF-8');
+        }
+        $from = match (true) {
+            $declared === null => $this->codepage,
+            (bool) preg_match('/^(windows|cp)-?(\d+)$/', $declared, $c) => 'CP'.$c[2],
+            default => strtoupper($declared),
+        };
+
+        return self::utf8($html, $from);
     }
 
     /** Read / delivery receipts: "IPM.Microsoft Mail.Read Receipt", "REPORT.IPM.Note.IPNRN", "REPORT.IPM.Note.DR" … */
@@ -188,6 +208,9 @@ final class Tnef
         $out = [];
         $count = unpack('V', $d)[1];
         $pos = 4;
+        // review of R5b: every count is checked against the bytes left (each value takes at least 4), so a crafted
+        // file can't make the inbox loop millions of times
+        self::fits($d, $pos, $count, 4);
         for ($i = 0; $i < $count && $pos + 4 <= strlen($d); $i++) {
             ['t' => $type, 'id' => $id] = unpack('vt/vid', $d, $pos);
             $pos += 4;
@@ -201,8 +224,10 @@ final class Tnef
             $type &= 0x0FFF;
             $values = 1;
             if ($multi || in_array($type, [0x001E, 0x001F, 0x0102, 0x000D], true)) {
+                self::fits($d, $pos, 1, 4);
                 $values = unpack('V', $d, $pos)[1];   // variable-length types always have a count
                 $pos += 4;
+                self::fits($d, $pos, $values, 4);
             }
             $value = null;
             for ($v = 0; $v < $values; $v++) {
@@ -222,6 +247,7 @@ final class Tnef
         $fixed = [0x0002 => 4, 0x0003 => 4, 0x0004 => 4, 0x000A => 4, 0x000B => 4, 0x0005 => 8, 0x0006 => 8, 0x0007 => 8,
             0x0014 => 8, 0x0040 => 8, 0x0048 => 16];
         if (isset($fixed[$type])) {
+            self::fits($d, $pos, 1, $fixed[$type]);
             $raw = substr($d, $pos, $fixed[$type]);
             $value = match ($type) {
                 0x0002, 0x0003, 0x000A, 0x000B => unpack('V', $raw)[1],
@@ -234,7 +260,9 @@ final class Tnef
         if (! in_array($type, [0x001E, 0x001F, 0x0102, 0x000D], true)) {
             throw new \UnexpectedValueException("TNEF: property type $type");   // can't know its length: stop reading
         }
+        self::fits($d, $pos, 1, 4);
         $len = unpack('V', $d, $pos)[1];
+        self::fits($d, $pos + 4, 1, $len);
         $raw = substr($d, $pos + 4, $len);
         $value = match ($type) {
             0x001E => $this->string8($raw),
@@ -244,6 +272,14 @@ final class Tnef
         };
 
         return [$value, $pos + 4 + self::pad($len)];
+    }
+
+    /** $count items of at least $size bytes each must fit in what is left from $pos, or the file is not readable */
+    private static function fits(string $d, int $pos, int $count, int $size): void
+    {
+        if ($pos < 0 || $count < 0 || $count * max(1, $size) > strlen($d) - $pos) {
+            throw new \UnexpectedValueException('TNEF: count or length beyond the data');
+        }
     }
 
     private static function pad(int $len): int
