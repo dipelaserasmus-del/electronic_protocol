@@ -129,7 +129,7 @@
                     <div class="card-body py-2">
                         <div class="d-flex align-items-baseline gap-2">
                             <h3 class="h6 mb-1 me-auto">{{ $r->role }}</h3>
-                            <button type="button" class="btn btn-link btn-sm p-0" wire:click="$set('roleFilter', '{{ $r->id }}')">@php $n = $roleCounts[$r->id] ?? 0; @endphp{{ $n }} {{ $n === 1 ? 'ενεργός' : 'ενεργοί' }}</button>
+                            <button type="button" class="btn btn-link btn-sm p-0" wire:click="$set('roleFilter', '{{ $r->id }}')">{{ $roleCounts[$r->id] ?? 0 }} {{ ($roleCounts[$r->id] ?? 0) == 1 ? 'ενεργός' : 'ενεργοί' }}</button>
                         </div>
                         <p class="small mb-0 text-body-secondary">{{ \App\Support\Roles::describe($r->role) }}</p>
                     </div>
