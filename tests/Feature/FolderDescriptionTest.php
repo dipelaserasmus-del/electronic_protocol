@@ -28,12 +28,17 @@ class FolderDescriptionTest extends FeatureTestCase
         $this->assertSame('text', Schema::getColumnType('keepvalues', 'describe'));
     }
 
+    private function folderPage(\App\Models\User $admin)
+    {
+        return \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\FolderAdmin::class);
+    }
+
     public function test_a_long_description_with_line_breaks_is_saved_as_typed(): void
     {
         $describe = $this->long(3000) . "\nδεύτερη γραμμή";
-        $this->actingAs($this->admin())
-            ->post('/keep', ['fakelos' => 'Φ.900', 'keep' => '5', 'keep_alt' => '', 'describe' => $describe, 'remarks' => $this->long(600)])
-            ->assertSessionHasNoErrors();
+        $this->folderPage($this->admin())->call('create')
+            ->set('form.fakelos', 'Φ.900')->set('form.keep', '5')->set('form.describe', $describe)->set('form.remarks', $this->long(600))
+            ->call('save')->assertHasNoErrors();
         $folder = Keepvalue::where('fakelos', 'Φ.900')->firstOrFail();
         $this->assertSame($describe, $folder->describe);
         $this->assertSame(600, mb_strlen($folder->remarks));
@@ -42,21 +47,20 @@ class FolderDescriptionTest extends FeatureTestCase
     public function test_editing_does_not_add_line_break_tags(): void
     {
         $folder = Keepvalue::create(['fakelos' => 'Φ.901', 'describe' => "πρώτη <γραμμή>\nδεύτερη"]);
-        $admin = $this->admin();
-        $this->setting('showRowsInPage', 10000);   // the new folder on the list's first page
-        $page = $this->actingAs($admin)->get('/keep/' . $folder->id)->assertOk();
+        $page = $this->actingAs($this->admin())->get('/keep/' . $folder->id)->assertOk();
         // the edit box shows the text itself (it used to show "<br />", which was then saved)
         $page->assertSee(">πρώτη &lt;γραμμή&gt;\nδεύτερη</textarea>", false);
-        // the list shows the line break and escapes the text
-        $page->assertSee('πρώτη &lt;γραμμή&gt;<br>', false);
+        // the list keeps the line break (pre-line) and escapes the text
+        $page->assertSee('white-space: pre-line">πρώτη &lt;γραμμή&gt;' . "\n" . 'δεύτερη</td>', false);
         $page->assertDontSee('πρώτη <γραμμή>', false);
+        $page->assertDontSee('&lt;br', false);
     }
 
     public function test_description_longer_than_the_limit_is_refused(): void
     {
-        $this->actingAs($this->admin())
-            ->post('/keep', ['fakelos' => 'Φ.902', 'keep' => '', 'keep_alt' => '', 'describe' => $this->long(Keepvalue::TEXT_MAX + 1), 'remarks' => ''])
-            ->assertSessionHasErrors('describe');
+        $this->folderPage($this->admin())->call('create')
+            ->set('form.fakelos', 'Φ.902')->set('form.describe', $this->long(Keepvalue::TEXT_MAX + 1))
+            ->call('save')->assertHasErrors('form.describe');
         $this->assertFalse(Keepvalue::where('fakelos', 'Φ.902')->exists());
     }
 }

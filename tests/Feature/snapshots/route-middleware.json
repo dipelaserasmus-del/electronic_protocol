@@ -105,11 +105,6 @@
         "auth",
         "web"
     ],
-    "GET keep/del/{keepvalue}": [
-        "admin:keep",
-        "auth",
-        "web"
-    ],
     "GET keep/{keepvalue}": [
         "auth",
         "web"
@@ -210,16 +205,6 @@
         "auth",
         "web",
         "writer:home/list"
-    ],
-    "POST keep": [
-        "admin:keep",
-        "auth",
-        "web"
-    ],
-    "POST keep/{keepvalue}": [
-        "admin:keep",
-        "auth",
-        "web"
     ],
     "POST login": [
         "guest",

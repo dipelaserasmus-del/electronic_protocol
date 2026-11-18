@@ -49,7 +49,7 @@ final class Navigation
             $manage[] = ['label' => 'Εκτύπωση πρωτοκόλλου', 'icon' => 'printer', 'url' => url('/print')];
             $manage[] = ['label' => 'Εκτύπωση συνημμένων', 'icon' => 'paperclip', 'url' => url('/printAttachments')];
         }
-        $manage[] = ['label' => 'Διατήρηση', 'icon' => 'archive', 'url' => url('/keep')];
+        $manage[] = ['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')];
         if ($role === self::ADMIN) {
             array_push($manage,
                 ['divider' => true],

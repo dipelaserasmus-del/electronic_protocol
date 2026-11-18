@@ -112,6 +112,7 @@ final class UserAccounts
         }
         DB::transaction(function () use ($user) {
             self::endSessions($user);
+            \App\Models\FolderAssignment::where('user_id', $user->id)->delete();   // R6b: no foreign key there
             $user->delete();
         });
     }

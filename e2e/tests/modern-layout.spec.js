@@ -34,7 +34,7 @@ test('new layout: readers get a shorter menu, and logging out works from the use
   await expect(bar.locator('.nav-link', { hasText: 'Εισερχόμενα' })).toHaveCount(0);
   // R3d: Διαχείριση holds Εκτύπωση/Διατήρηση for everybody; the administrators' items only for them
   await bar.getByRole('button', { name: 'Διαχείριση' }).click();
-  await expect(bar.getByRole('link', { name: 'Διατήρηση' })).toBeVisible();
+  await expect(bar.getByRole('link', { name: 'Φάκελοι και διατήρηση' })).toBeVisible();
   await expect(bar.getByRole('link', { name: 'Ρυθμίσεις' })).toHaveCount(0);
 
   await bar.locator('#nav-user').click();

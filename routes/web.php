@@ -42,11 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('users', [UserController::class, 'index']);   // R6a: App\Livewire\UserAdmin (save/delete are its actions)
     Route::get('users/{user}', [UserController::class, 'index'])->whereNumber('user');
 
-    Route::get('keep', [KeepvalueController::class, 'index']);
-    Route::post('keep', [KeepvalueController::class, 'store']);
-    Route::get('keep/{keepvalue}', [KeepvalueController::class, 'index']);
-    Route::post('keep/{keepvalue}', [KeepvalueController::class, 'update']);
-    Route::get('keep/del/{keepvalue}', [KeepvalueController::class, 'delete']);
+    Route::get('keep', [KeepvalueController::class, 'index']);   // R6b: App\Livewire\FolderAdmin (changes are its actions)
+    Route::get('keep/{keepvalue}', [KeepvalueController::class, 'index'])->whereNumber('keepvalue');
 
     Route::get('/home', [ProtocolFormController::class, 'create']);   // R1b
     Route::get('/chkForUpdates', [ProtocolController::class, 'chkForUpdates']);
