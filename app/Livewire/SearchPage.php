@@ -210,8 +210,10 @@ class SearchPage extends Component
         $c->dates += $typed->dates;
         $c->folder = $c->folder !== '' ? $c->folder : $typed->folder;
         $c->text += $typed->text;
-        $c->empty = array_values(array_unique([...$c->empty, ...$typed->empty]));
-        $c->assigneeName = $typed->assigneeName;
+        // the assignee chosen in the menu wins over ανάθεση: typed in «Οπουδήποτε» (review of R3b)
+        $typedEmpty = $this->assignee === '' ? $typed->empty : array_diff($typed->empty, ['diekperaiosi']);
+        $c->empty = array_values(array_unique([...$c->empty, ...$typedEmpty]));
+        $c->assigneeName = $this->assignee === '' ? $typed->assigneeName : null;
         $c->pending = $c->pending || $typed->pending;
 
         return $this->getErrorBag()->isEmpty() ? $c : null;
