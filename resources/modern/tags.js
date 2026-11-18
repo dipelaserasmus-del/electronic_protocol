@@ -143,6 +143,8 @@ function tagBox(field, withSuggestions = false) {
  * The folder picker: x-data="folderPicker". Typing filters the folders by code and description; ↑ ↓ Enter (or Tab, or
  * a click) chooses. The chosen code goes to form.fakelos (live: the retention "Διατήρηση" follows the folder).
  */
+const NONE = ['', 'Χωρίς φάκελο'];
+
 function folderPicker() {
     return {
         folders: [], open: false, typed: false, query: '', active: 0,
@@ -153,14 +155,15 @@ function folderPicker() {
             return f ? (f[1] ? `${f[0]} · ${f[1]}` : f[0]) : this.value;
         },
         get items() {
-            if (!this.typed) return this.folders;
+            // review of R1f: a protocol without attachments may have no folder, so "—" is offered first (as the old list did)
+            if (!this.typed) return [NONE, ...this.folders];
             return search(this.folders, this.query, { limit: 100, key: f => `${f[0]} ${f[0].replace(/^φ\.?/i, '')} ${f[1]}` });
         },
         mark(text) { return this.typed ? highlight(text, this.query) : escape(String(text ?? '')); },
         show() {
             if (this.open) return;
             this.open = true; this.typed = false; this.query = '';
-            this.active = Math.max(0, this.folders.findIndex(f => f[0] === this.value));
+            this.active = this.folders.findIndex(f => f[0] === this.value) + 1;   // 0 = no folder
             this.$nextTick(() => this.scroll());
         },
         close() { this.open = false; this.typed = false; this.query = ''; },
@@ -179,7 +182,8 @@ function folderPicker() {
                 this.$nextTick(() => this.scroll());
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (this.open && n) this.choose(this.items[this.active]); else this.show();
+                if (this.open && this.typed && !this.query.trim()) this.choose(NONE);   // text deleted: no folder
+                else if (this.open && n) this.choose(this.items[this.active]); else this.show();
             } else if (e.key === 'Tab') {
                 if (this.open && this.typed && n) this.choose(this.items[this.active]); else this.close();
             } else if (e.key === 'Escape') {

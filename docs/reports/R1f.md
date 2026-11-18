@@ -36,7 +36,8 @@
     ways.
   - Spellings already stored that differ only in case or accents are offered once, in the most used spelling.
 - **Φάκελος:**
-  - A search box instead of the drop-down. Clicking it shows every folder (code and description).
+  - A search box instead of the drop-down. Clicking it shows every folder (code and description), after "— Χωρίς
+    φάκελο".
   - Typing narrows the list by code (`19.2`) or by words of the description, ignoring accents ("αποζημιωσεις
     εκδρομων").
   - ↑ ↓ Enter, Tab or a click choose; Escape keeps the previous folder.
@@ -73,3 +74,6 @@ None.
 - After a suggestion was highlighted (↓) and the list closed with Escape, Enter failed instead of adding the typed
   keyword: the highlighted position was kept after the list was emptied. Closing the list now forgets it, and Enter
   only picks a suggestion that is still shown (browser test: ↓, Escape, Enter adds what was typed).
+- The folder could no longer be cleared (the old drop-down had "—"). A protocol without attachments may have no folder,
+  so the list starts with **— Χωρίς φάκελο**, and typing then deleting the text and pressing Enter also clears it
+  (browser test).

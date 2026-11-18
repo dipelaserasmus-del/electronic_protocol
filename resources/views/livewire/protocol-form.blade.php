@@ -123,7 +123,7 @@
                                 <li class="list-group-item list-group-item-action py-1" role="option" :aria-selected="n === active"
                                     :class="{ active: n === active }" :data-folder-active="n === active ? '' : null" :title="f[1]"
                                     x-on:mousedown.prevent="choose(f)" x-on:mousemove="active = n">
-                                    <span class="fw-semibold" x-html="mark(f[0])"></span>
+                                    <span class="fw-semibold" x-html="f[0] === '' ? '—' : mark(f[0])"></span>
                                     <span class="folder-describe" x-html="mark(f[1])"></span>
                                 </li>
                             </template>

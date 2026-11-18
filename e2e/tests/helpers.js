@@ -46,7 +46,7 @@ async function setSetting(page, name, value) {
 /**
  * R1b protocol form (Livewire): fill fields by name (form.<name> → #f-<name>), e.g.
  * fillProtocol(page, { thema: 'x', fakelos: 'first', in_date: '03/01/2025' }). fakelos: 'first' picks the first
- * folder, other text is typed into the folder picker (R1f) and its best match chosen. Each field is left with Tab,
+ * folder (not "— Χωρίς φάκελο"), other text is typed into the folder picker (R1f) and its best match chosen. Each field is left with Tab,
  * which sends it to the server (wire:model.blur).
  */
 async function fillProtocol(page, fields) {
@@ -54,9 +54,13 @@ async function fillProtocol(page, fields) {
     const field = page.locator(`#f-${name}`);
     if ((await field.getAttribute('data-combobox')) !== null) {
       await field.click();
-      if (value !== 'first') await field.fill(value);
       const chosen = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
-      await field.press('Enter');
+      if (value === 'first') {
+        await page.locator('#folder-list li[role=option]').nth(1).click();   // 0 is "— Χωρίς φάκελο"
+      } else {
+        await field.fill(value);
+        await field.press('Enter');
+      }
       await chosen;
     } else if ((await field.evaluate((el) => el.tagName)) === 'SELECT') {
       if (value === 'first') await field.selectOption({ index: 1 });
