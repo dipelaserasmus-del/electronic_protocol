@@ -98,3 +98,31 @@ test('folder picker: code without dots, «Χωρίς φάκελο»; the pending
   await expect(page.locator('#no-pending')).toContainText('Καμία εκκρεμότητα από 01/01/2001 έως 02/01/2001');
   await evidence(page, 'no-pending', { clip: { x: 0, y: 0, width: 1440, height: 900 } });
 });
+
+test('«Οπουδήποτε»: words anywhere and the search words (από:, φάκελος: …); the search shown as text (R3b)', async ({ page }) => {
+  const stamp = Date.now();
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, {
+    thema: `R3b μετάθεση ${stamp}`, fakelos: 'Φ.1.1', in_num: `Φ.9/${stamp}`, in_date: '03/01/2025',
+    in_topos_ekdosis: 'Δοκιμή', in_arxi_ekdosis: 'Δήμος Δοκιμαστικός', in_paraliptis: 'Διευθυντής',
+  });
+  await saveProtocol(page);
+
+  // two words in different fields (subject, sender), without accents
+  await search(page, { words: `μεταθεση ${stamp} δοκιμαστικοσ` });
+  await expect(page.locator('#search-results')).toContainText(`R3b μετάθεση ${stamp}`);
+  await expect(page.locator('#search-as-text')).toContainText(`μεταθεση ${stamp} δοκιμαστικοσ έτος:`);
+
+  // search words: the folder, without dots
+  await search(page, { words: `${stamp} φάκελος:φ11 από:δήμος` });
+  await expect(page.locator('#search-results')).toContainText(`R3b μετάθεση ${stamp}`);
+  await evidence(page, 'anywhere-with-operators', { clip: { x: 0, y: 0, width: 1440, height: 900 } });
+  await search(page, { words: `${stamp} φάκελος:κανένας` });
+  await expect(page.locator('#search-count')).toContainText('Δεν βρέθηκε');
+
+  // a value that cannot be used is shown on the field
+  await search(page, { words: 'έτος:πέρσι' });
+  await expect(page.locator('#s-words')).toHaveClass(/is-invalid/);
+  await expect(page.locator('.search-page')).toContainText('Δεν χρησιμοποιήθηκαν: «έτος:πέρσι»');
+});

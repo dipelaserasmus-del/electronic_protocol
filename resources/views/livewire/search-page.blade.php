@@ -62,6 +62,13 @@
                     <div class="card-header fw-semibold">Περιεχόμενο <small class="fw-normal text-body-secondary">· μέρος του κειμένου, χωρίς τόνους / κεφαλαία</small></div>
                     <div class="card-body">
                         <div class="row g-2">
+                            <div class="col-12">
+                                <label for="s-words" class="form-label small fw-semibold mb-1">Οπουδήποτε</label>
+                                <input id="s-words" class="form-control @if ($e('words')) is-invalid @endif" wire:model="words" value="{{ $words }}" autocomplete="off"
+                                       placeholder="λέξεις σε οποιοδήποτε πεδίο ή αριθμός (π.χ. μετάθεση 125/2026 ή &quot;άδεια μητρότητας&quot;)">
+                                @if ($e('words'))<div class="invalid-feedback">{{ $e('words') }}</div>
+                                @else<div class="form-text">Δέχεται και τις λέξεις της γρήγορης αναζήτησης, π.χ. <code>από:δήμος</code> <code>φάκελος:Φ.1</code> <code>είναι:εκκρεμές</code>.</div>@endif
+                            </div>
                             <div class="col-md-6">
                                 {{-- R1f's folder picker, with «Όλοι» and «Χωρίς φάκελο» first; code typed with or without dots --}}
                                 <div class="mb-2 position-relative" x-on:click.outside="close()"
@@ -167,6 +174,10 @@
                 {{ $this->rangeText($criteria) }}: χωρίς φάκελο ή με «ΕΚΚΡΕΜΟΤΗΤΑ» στο θέμα.
             </div>
         @endif
-        @include('search.results', ['hideEmpty' => $pendingOnly, 'protocols' => $protocols, 'terms' => $terms, 'names' => $names, 'folders' => $folders, 'showPending' => $criteria->pending])
+        @if ($asText)
+            {{-- R3b: the same search as text, for the search box (teaches the operators) --}}
+            <div class="small text-body-secondary mb-2" id="search-as-text">Ως κείμενο: <code class="user-select-all">{{ $asText }}</code></div>
+        @endif
+        @include('search.results', ['hideEmpty' => $pendingOnly, 'words' => $markWords, 'protocols' => $protocols, 'terms' => $terms, 'names' => $names, 'folders' => $folders, 'showPending' => $criteria->pending])
     @endif
 </div>

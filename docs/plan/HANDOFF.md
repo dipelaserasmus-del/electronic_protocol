@@ -73,6 +73,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-18 12:12 | R3b | #56 | `QueryParser::parse` (words, "phrases", αρ: έτος: ημ: ημεισ: ημεξ: φάκελος: θέμα: από: προς: … ανάθεση: κενό: είναι:εκκρεμές; names without accents, short/English forms; unknown op = word; wrong values in `ignored`) and `format` (round trip); free words anywhere (fields, folder, attachments, number); advanced screen: «Οπουδήποτε» + «Ως κείμενο» |
 | 2026-11-18 12:05 | R3a | #55 | `/find` = Livewire `SearchPage` (old find/getFindData removed); `SearchCriteria` + `ProtocolSearch` (access-limited, LIKE escaped, general_ci = no accents/case); year prefilled, Enter searches, number ranges, folder picker with «Όλοι»/«Χωρίς φάκελο» (code without dots), pending check (no folder or ΕΚΚΡΕΜΟΤΗΤΑ, clear "none" message), related numbers whole; `Highlight` accent-insensitive; state in the URL |
 | 2026-11-18 11:10 | R1g | #54 | number large in the middle (year small, date right), "Ελεύθερος" only after a change by hand or from a gap row; done-date card high; Ανάθεση + receipt cards below |
 | 2026-11-18 11:00 | R1f | #53 | related numbers green ✔ / orange ⚠, editable tags (both fields), keyword suggestions (all keywords, most used first, accents ignored, known spelling kept), folder search box; review fix: Enter after Escape |

@@ -196,4 +196,44 @@ class SearchTest extends FeatureTestCase
         $this->assertSame('<mark><strong>Οδός</strong></mark> και <mark><strong>πλατ</strong></mark>εία', Highlight::html('Οδός και πλατεία', ['οδοσ', 'πλατ']));
         $this->assertSame('χωρίς', Highlight::html('χωρίς', ''));
     }
+
+    /** R3b: free words must all be found, each in any field, the folder, an attachment, or as the number */
+    public function test_free_words_are_found_anywhere(): void
+    {
+        $p = Protocol::factory()->number(125, 2025)->create(['thema' => 'Αίτηση μετάθεσης', 'in_arxi_ekdosis' => 'Δήμος Πατρέων', 'fakelos' => 'Φ.1']);
+        Attachment::factory()->create(['protocol_id' => $p->id, 'name' => 'Βεβαίωση.pdf', 'ada' => null]);
+        Protocol::factory()->number(126, 2025)->create(['thema' => 'Αίτηση άδειας', 'in_arxi_ekdosis' => 'Υπουργείο']);
+        Protocol::factory()->number(125, 2026)->create(['thema' => 'Άλλο έτος']);
+
+        $find = fn (string $text) => $this->subjects((new \App\Services\Search\QueryParser())->parse($text));
+        $this->assertSame(['Αίτηση μετάθεσης'], $find('αιτηση πατρεων'), 'subject + sender');
+        $this->assertSame(['Αίτηση μετάθεσης'], $find('βεβαιωση'), 'attachment name');
+        $this->assertSame(['Αίτηση μετάθεσης'], $find('125/2025'), 'number/year');
+        $this->assertSame(['Άλλο έτος', 'Αίτηση μετάθεσης'], $find('125'), 'number in every year');
+        $this->assertSame(['Αίτηση άδειας', 'Αίτηση μετάθεσης'], $find('αίτηση έτος:2025'));
+        $this->assertSame([], $find('"μετάθεσης πατρέων"'), 'a phrase must be in one field');
+
+        // the advanced screen: «Οπουδήποτε» and its search written as text
+        $this->actingAs($this->reader())->get($this->find(['w' => 'αιτηση πατρεων', 'year' => 2025]))
+            ->assertSeeText('Αίτηση μετάθεσης')->assertDontSee('Αίτηση άδειας')
+            ->assertSee('Ως κείμενο: <code class="user-select-all">αιτηση πατρεων έτος:2025</code>', false)
+            ->assertSee('<mark><strong>Πατρέων</strong></mark>', false);
+    }
+
+    /** R3b: «Οπουδήποτε» on the advanced screen also takes operators; a field filled in on the form wins */
+    public function test_the_anywhere_field_takes_operators(): void
+    {
+        $this->setting('yearInUse', 2026);
+        Protocol::factory()->number(1, 2025)->create(['thema' => 'Περσινό χωρίς φάκελο', 'fakelos' => null]);
+        Protocol::factory()->number(2, 2026)->create(['thema' => 'Φετινό χωρίς φάκελο', 'fakelos' => null]);
+        Protocol::factory()->number(3, 2026)->create(['thema' => 'Φετινό με φάκελο', 'fakelos' => 'Φ.1']);
+
+        Livewire::actingAs($this->reader())->test(SearchPage::class)
+            ->set('words', 'φάκελος:κανένας')->call('search')
+            ->assertSee('Φετινό χωρίς φάκελο')->assertDontSee('Περσινό χωρίς')->assertDontSee('Φετινό με φάκελο')
+            ->set('words', 'φάκελος:κανένας έτος:όλα')->call('search')
+            ->assertSee('Περσινό χωρίς φάκελο')->assertSee('Φετινό χωρίς φάκελο')
+            ->set('words', 'έτος:abc')->call('search')
+            ->assertHasErrors('words')->assertSee('Δεν χρησιμοποιήθηκαν: «έτος:abc»');
+    }
 }
