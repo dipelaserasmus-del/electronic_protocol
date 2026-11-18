@@ -96,3 +96,22 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
     .number-head-year { justify-self: stretch; width: auto; padding-top: 1rem; }
     .number-head-date { grid-column: 1 / -1; justify-self: stretch; max-width: none; padding-top: 0; }
 }
+
+/* R1i: the protocol page's sections, arranged by each user: two columns and a full-width row below them, or one column.
+   Below a wide window (or a narrow page width) everything is one column. */
+.form-sections { display: grid; gap: 0 1rem; grid-template-columns: minmax(0, 1fr); }
+.form-zone { min-width: 0; }
+@media (min-width: 1200px) {
+    .form-sections.two-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .form-sections.two-columns .form-zone-bottom { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; align-items: start; }
+}
+@container (max-width: 1099.98px) {
+    .layout-narrow .form-sections.two-columns { grid-template-columns: minmax(0, 1fr); }
+    .layout-narrow .form-sections.two-columns .form-zone-bottom { display: block; }
+}
+.section-head { cursor: default; }
+.section-handle { cursor: grab; opacity: .55; }
+.section-handle:hover { opacity: 1; }
+.section-toggle { opacity: .7; text-decoration: none; }
+/* while a section is dragged, every place can take it, the empty ones too */
+body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-primary-rgb), .35); outline-offset: 2px; border-radius: .5rem; }

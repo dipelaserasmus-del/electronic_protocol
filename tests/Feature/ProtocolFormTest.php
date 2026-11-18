@@ -51,9 +51,71 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertTrue($pos('number-head-year') < $pos('number-head-number') && $pos('number-head-number') < $pos('number-head-date'));
         $this->assertTrue($pos('id="done-card"') < $pos('id="f-out_to"'), 'done date above the outgoing section');
         $this->assertTrue($pos('id="f-diekp_date"') < $pos('id="attachments"'));
-        $this->assertTrue($pos('id="attachments"') < $pos('id="less-used"'));
-        $this->assertTrue($pos('id="less-used"') < $pos('id="f-handle"'), 'assignment below the attachments');
-        $this->assertTrue($pos('id="less-used"') < $pos('id="receipt-title"'), 'receipt by e-mail below too');
+        // R1i: the default arrangement keeps this; the row below the columns is the "bottom" place
+        $this->assertTrue($pos('id="attachments"') < $pos('data-zone="bottom"'));
+        $this->assertTrue($pos('data-zone="bottom"') < $pos('id="f-handle"'), 'assignment below the attachments');
+        $this->assertTrue($pos('data-zone="bottom"') < $pos('id="receipt-title"'), 'receipt by e-mail below too');
+    }
+
+    /** R1i (owner, 2026-11-18): each user moves and collapses the sections, one or two columns; saved per user */
+    public function test_each_user_arranges_the_sections(): void
+    {
+        [$me, $other] = [$this->writer(), $this->writer()];
+        $order = fn ($user) => \App\Support\UserPreferences::formLayout($user->fresh());
+
+        $form = Livewire::actingAs($me)->test(ProtocolForm::class, ['protocol' => new Protocol()]);
+        $form->call('moveSection', 'attachments', 0, 'left');
+        $this->assertSame(['attachments', 'general', 'incoming'], $order($me)['zones']['left']);
+        $this->assertSame(['done', 'outgoing'], $order($me)['zones']['right']);
+
+        $form->call('moveSection', 'assign', 1, 'right')->call('moveSection', 'receipt', 99, 'right');
+        $this->assertSame(['done', 'assign', 'outgoing', 'receipt'], $order($me)['zones']['right']);
+        $this->assertSame([], $order($me)['zones']['bottom'], 'a place may be left empty');
+
+        $form->call('toggleSection', 'incoming')->call('setColumns', 1)
+            ->assertSee('one-column', false)
+            ->assertSeeHtml('data-section-toggle="incoming"');
+        $this->assertSame(['incoming'], $order($me)['collapsed']);
+        $this->assertSame(1, $order($me)['columns']);
+        // a collapsed section's fields are hidden, but still there (their values are kept)
+        $html = $form->html();
+        $this->assertMatchesRegularExpression('~id="f-in_num"~', $html);
+        $this->assertMatchesRegularExpression('~data-section-toggle="incoming"[^>]*>\s*<i class="bi bi-chevron-down"~', $html);
+
+        // unknown sections or places change nothing
+        $form->call('moveSection', 'nonsense', 0, 'left')->call('moveSection', 'general', 0, 'roof');
+        $this->assertSame(['attachments', 'general', 'incoming'], $order($me)['zones']['left']);
+
+        // another user still has the default; the reset brings it back
+        $this->assertSame(\App\Support\UserPreferences::FORM_DEFAULT, $order($other));
+        $form->call('resetLayout');
+        $this->assertSame(\App\Support\UserPreferences::FORM_DEFAULT, $order($me));
+    }
+
+    /** R1i: a collapsed section opens by itself when one of its fields has an error */
+    public function test_a_collapsed_section_with_an_error_opens(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $me = $this->writer();
+        \App\Support\UserPreferences::setFormLayout($me, ['collapsed' => ['incoming']] + \App\Support\UserPreferences::FORM_DEFAULT);
+
+        $form = Livewire::actingAs($me)->test(ProtocolForm::class, ['protocol' => new Protocol()]);
+        $this->assertMatchesRegularExpression('~data-section-toggle="incoming"[^>]*>\s*<i class="bi bi-chevron-down"~', $form->html());
+        $form->set('form.thema', 'Με εισερχόμενο')->set('form.in_num', '12')->call('save');
+        $this->assertNotEmpty($form->errors()->get('in_date'), 'incoming without date is refused while checks are on');
+        $this->assertMatchesRegularExpression('~data-section-toggle="incoming"[^>]*>\s*<i class="bi bi-chevron-up"~', $form->html());
+    }
+
+    /** review of R1i: a file refused when dropped on a collapsed Συνημμένα opens it, so the reason is seen */
+    public function test_a_refused_drop_opens_a_collapsed_attachments_section(): void
+    {
+        $me = $this->writer();
+        \App\Support\UserPreferences::setFormLayout($me, ['collapsed' => ['attachments']] + \App\Support\UserPreferences::FORM_DEFAULT);
+
+        $form = Livewire::actingAs($me)->test(ProtocolForm::class, ['protocol' => new Protocol()]);
+        $this->assertMatchesRegularExpression('~data-section-toggle="attachments"[^>]*>\s*<i class="bi bi-chevron-down"~', $form->html());
+        $form->set('picked', [UploadedFile::fake()->createWithContent('κακό.vbs', 'x')])->assertHasErrors('picked');
+        $this->assertMatchesRegularExpression('~data-section-toggle="attachments"[^>]*>\s*<i class="bi bi-chevron-up"~', $form->html());
     }
 
     public function test_users_who_can_not_choose_see_the_number_given_on_save(): void

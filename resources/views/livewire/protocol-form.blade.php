@@ -2,6 +2,13 @@
 @php
     $tone = ['new' => 'primary', 'edit' => 'success', 'readonly' => 'secondary', 'admin' => 'danger'][$access->tone] ?? 'primary';
     $e = fn (string $f) => $errors->first($f) ?: null;
+    // R1i: a collapsed section opens by itself when one of its fields has an error
+    $sectionFields = ['general' => ['fakelos', 'thema', 'sxetiko', 'keywords', 'paratiriseis'],
+        'incoming' => ['in_num', 'in_date', 'in_topos_ekdosis', 'in_paraliptis', 'in_arxi_ekdosis', 'in_perilipsi'],
+        'done' => ['diekp_date'], 'outgoing' => ['out_to', 'out_date', 'out_perilipsi'], 'attachments' => ['picked', 'uploads', 'ada', 'keep'],
+        'assign' => ['diekperaiosi', 'diekp_eos'], 'receipt' => ['receipt_email', 'reply_to_email']];
+    $open = fn (string $id) => ! in_array($id, $layout['collapsed'], true)
+        || collect($sectionFields[$id] ?? [])->contains(fn ($f) => $errors->has($f) || $errors->has($f.'.*'));
 @endphp
 {{-- progress: upload in progress (0–100) or null; the save buttons wait for it (review of R1c) --}}
 <form wire:submit="save" class="protocol-form" id="protocol-form" novalidate x-data="{ progress: null }"
@@ -104,12 +111,31 @@
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-12 col-xl-6">
-            {{-- general --}}
+    {{-- R1i (owner, 2026-11-18): each user arranges the sections: drag one by ⠿ to another place (two columns and a row
+         below them), ▴/▾ collapses it, one or two columns, back to the default. Saved with the account (UserPreferences). --}}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small layout-tools" id="layout-tools">
+        <span class="text-body-secondary me-auto"><i class="bi bi-grip-vertical" aria-hidden="true"></i> Σύρετε μια ενότητα από τη λαβή της για να την μετακινήσετε.</span>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Στήλες">
+            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 1) active @endif" wire:click="setColumns(1)" id="layout-one"
+                    aria-pressed="{{ $layout['columns'] === 1 ? 'true' : 'false' }}" title="Μία στήλη"><i class="bi bi-view-stacked" aria-hidden="true"></i> Μία στήλη</button>
+            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 2) active @endif" wire:click="setColumns(2)" id="layout-two"
+                    aria-pressed="{{ $layout['columns'] === 2 ? 'true' : 'false' }}" title="Δύο στήλες"><i class="bi bi-layout-split" aria-hidden="true"></i> Δύο στήλες</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetLayout" id="layout-reset" title="Η αρχική διάταξη των ενοτήτων">
+            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Επαναφορά διάταξης</button>
+    </div>
+
+    <div class="form-sections {{ $layout['columns'] === 1 ? 'one-column' : 'two-columns' }}" id="form-sections">
+        @foreach (\App\Support\UserPreferences::FORM_ZONES as $zone)
+            <div class="form-zone form-zone-{{ $zone }}" data-zone="{{ $zone }}" wire:key="zone-{{ $zone }}"
+                 wire:sort="moveSection" wire:sort:group="form-sections" wire:sort:group-id="{{ $zone }}">
+                @foreach ($layout['zones'][$zone] as $sectionId)
+                    <div class="form-section" data-section="{{ $sectionId }}" wire:key="section-{{ $sectionId }}" wire:sort:item="{{ $sectionId }}">
+                    @switch($sectionId)
+                        @case('general')
             <fieldset class="card shadow-sm mb-3" @disabled(! $access->head)>
-                <legend class="card-header h6 mb-0 w-100">Γενικά</legend>
-                <div class="card-body">
+                <legend class="card-header h6 mb-0 w-100 section-head"><x-form.section-head id="general" :open="$open('general')">Γενικά</x-form.section-head></legend>
+                <div class="card-body" @unless ($open('general')) hidden @endunless>
                     {{-- R1f: folder picker — typing filters by code and description (no case/accents); ↑ ↓ Enter/Tab or a click --}}
                     <div class="mb-2 position-relative" x-data="folderPicker" x-on:click.outside="close()">
                         <label for="f-fakelos" class="form-label small fw-semibold mb-1">Φάκελος</label>
@@ -225,11 +251,11 @@
                     <x-form.text name="paratiriseis" :value="$form['paratiriseis']" label="Παρατηρήσεις" rows="2" :error="$e('paratiriseis')" />
                 </div>
             </fieldset>
-
-            {{-- incoming --}}
+                        @break
+                        @case('incoming')
             <fieldset class="card shadow-sm mb-3 border-success-subtle" @disabled(! $access->in)>
-                <legend class="card-header h6 mb-0 w-100 bg-success-subtle">Εισερχόμενο</legend>
-                <div class="card-body">
+                <legend class="card-header h6 mb-0 w-100 bg-success-subtle section-head"><x-form.section-head id="incoming" :open="$open('incoming')">Εισερχόμενο</x-form.section-head></legend>
+                <div class="card-body" @unless ($open('incoming')) hidden @endunless>
                     <div class="row g-2">
                         <x-form.text class="col-md-5" name="in_num" :value="$form['in_num']" live label="Αριθμός εισερχομένου" :error="$e('in_num')" />
                         <div class="col-md-7 mb-2">
@@ -251,13 +277,11 @@
                     <x-form.text name="in_perilipsi" :value="$form['in_perilipsi']" label="Περίληψη" rows="2" :error="$e('in_perilipsi')" />
                 </div>
             </fieldset>
-        </div>
-
-        <div class="col-12 col-xl-6">
-            {{-- R1g: "Διεκπεραιώθηκε την" is used often: near the top; the assignment itself is lower (owner, 2026-11-18) --}}
+                        @break
+                        @case('done')
             <fieldset class="card shadow-sm mb-3" id="done-card">
-                <legend class="card-header h6 mb-0 w-100">Διεκπεραίωση</legend>
-                <div class="card-body">
+                <legend class="card-header h6 mb-0 w-100 section-head"><x-form.section-head id="done" :open="$open('done')">Διεκπεραίωση</x-form.section-head></legend>
+                <div class="card-body" @unless ($open('done')) hidden @endunless>
                     <div class="row g-2 align-items-end">
                         <div class="col-md-7 mb-2">
                             <x-date-input name="diekp_date" label="Διεκπεραιώθηκε την" :value="$form['diekp_date']" id="f-diekp_date"
@@ -270,11 +294,11 @@
                     </div>
                 </div>
             </fieldset>
-
-            {{-- outgoing --}}
+                        @break
+                        @case('outgoing')
             <fieldset class="card shadow-sm mb-3 border-info-subtle" @disabled(! $access->out)>
-                <legend class="card-header h6 mb-0 w-100 bg-info-subtle">Εξερχόμενο</legend>
-                <div class="card-body">
+                <legend class="card-header h6 mb-0 w-100 bg-info-subtle section-head"><x-form.section-head id="outgoing" :open="$open('outgoing')">Εξερχόμενο</x-form.section-head></legend>
+                <div class="card-body" @unless ($open('outgoing')) hidden @endunless>
                     <div class="row g-2">
                         <x-form.text class="col-md-6" name="out_to" :value="$form['out_to']" label="Απευθύνεται σε" list="suggest-out_to" :error="$e('out_to')" />
                         <div class="col-md-6 mb-2">
@@ -286,7 +310,8 @@
                     <x-form.text name="out_perilipsi" :value="$form['out_perilipsi']" label="Περίληψη" rows="2" :error="$e('out_perilipsi')" />
                 </div>
             </fieldset>
-
+                        @break
+                        @case('attachments')
             {{-- attachments (R1c): open on new and copy, files can be dropped anywhere on the window --}}
             <section class="card shadow-sm mb-3" id="attachments" aria-labelledby="attachments-title"
                 @if ($access->canSave)
@@ -319,11 +344,11 @@
                      x-on:livewire-upload-start="progress = 0" x-on:livewire-upload-progress="progress = $event.detail.progress"
                      x-on:livewire-upload-finish="progress = null" x-on:livewire-upload-error="progress = null"
                 @endif>
-                <h2 class="card-header h6 mb-0 d-flex align-items-center gap-2" id="attachments-title">
-                    Συνημμένα
-                    <span class="badge rounded-pill text-bg-secondary">{{ count($attachments) + count((array) $uploads) }}</span>
+                <h2 class="card-header h6 mb-0 section-head" id="attachments-title">
+                    <x-form.section-head id="attachments" :open="$open('attachments')">Συνημμένα
+                        <span class="badge rounded-pill text-bg-secondary ms-1">{{ count($attachments) + count((array) $uploads) }}</span></x-form.section-head>
                 </h2>
-                <div class="card-body">
+                <div class="card-body" @unless ($open('attachments')) hidden @endunless>
                     @forelse ($attachments as $a)
                         <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row" wire:key="att-{{ $a->id }}">
                             <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
@@ -394,25 +419,22 @@
                             </div>
                         @endif
 
-                        {{-- whole-window drop target, shown while files are dragged over the page --}}
-                        <div class="drop-overlay position-fixed top-0 start-0 w-100 h-100"
-                             x-show="over" x-cloak x-transition.opacity aria-hidden="true">
-                            <div class="bg-body rounded-4 shadow p-4 fs-4 border border-primary border-2">📎 Αφήστε τα αρχεία για επισύναψη</div>
-                        </div>
                     @endif
                 </div>
+                @if ($access->canSave)
+                    {{-- whole-window drop target, shown while files are dragged over the page (outside the card body, so it
+                         also works while the section is collapsed, R1i) --}}
+                    <div class="drop-overlay position-fixed top-0 start-0 w-100 h-100"
+                         x-show="over" x-cloak x-transition.opacity aria-hidden="true">
+                        <div class="bg-body rounded-4 shadow p-4 fs-4 border border-primary border-2">📎 Αφήστε τα αρχεία για επισύναψη</div>
+                    </div>
+                @endif
             </section>
-
-        </div>
-    </div>
-
-    {{-- R1g: used less often, so below the rest (owner, 2026-11-18) --}}
-    <div class="row g-3" id="less-used">
-        <div class="col-12 col-xl-6">
-            {{-- assignment (the deadline is here; the done date has its own card above) --}}
+                        @break
+                        @case('assign')
             <fieldset class="card shadow-sm mb-3">
-                <legend class="card-header h6 mb-0 w-100">Ανάθεση</legend>
-                <div class="card-body">
+                <legend class="card-header h6 mb-0 w-100 section-head"><x-form.section-head id="assign" :open="$open('assign')">Ανάθεση</x-form.section-head></legend>
+                <div class="card-body" @unless ($open('assign')) hidden @endunless>
                     <div class="row g-2">
                         <div class="col-md-6 mb-2">
                             <label for="f-handle" class="form-label small fw-semibold mb-1">Διεκπεραίωση</label>
@@ -439,13 +461,12 @@
                     </div>
                 </div>
             </fieldset>
-
-        </div>
-        <div class="col-12 col-xl-6">
+                        @break
+                        @case('receipt')
             @if ($canEmailReceipt)
                 <section class="card shadow-sm mb-3" aria-labelledby="receipt-title">
-                    <h2 class="card-header h6 mb-0" id="receipt-title">Απόδειξη παραλαβής με email</h2>
-                    <div class="card-body">
+                    <h2 class="card-header h6 mb-0 section-head" id="receipt-title"><x-form.section-head id="receipt" :open="$open('receipt')">Απόδειξη παραλαβής με email</x-form.section-head></h2>
+                    <div class="card-body" @unless ($open('receipt')) hidden @endunless>
                         <label for="f-receipt" class="form-label small fw-semibold mb-1">Διεύθυνση email</label>
                         <div class="input-group">
                             <input id="f-receipt" type="email" class="form-control @if ($e('receipt_email')) is-invalid @endif"
@@ -460,13 +481,18 @@
 
             @if (! $protocol->exists && $access->canSave)
                 <fieldset class="card shadow-sm mb-3">
-                    <legend class="card-header h6 mb-0 w-100">Απόδειξη παραλαβής</legend>
-                    <div class="card-body">
+                    <legend class="card-header h6 mb-0 w-100 section-head"><x-form.section-head id="receipt" :open="$open('receipt')">Απόδειξη παραλαβής</x-form.section-head></legend>
+                    <div class="card-body" @unless ($open('receipt')) hidden @endunless>
                         <x-form.text name="reply_to_email" :value="$form['reply_to_email']" type="email" label="Αποστολή απόδειξης στο email" :error="$e('reply_to_email')" />
                     </div>
                 </fieldset>
             @endif
-        </div>
+                        @break
+                    @endswitch
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
     </div>
 
     @if ($access->canSave)
