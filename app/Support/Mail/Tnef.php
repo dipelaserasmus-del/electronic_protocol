@@ -319,6 +319,40 @@ final class Tnef
     }
 
     /** iconv's name of a Windows code page (mbstring has no Windows-1253, the Greek one) */
+    /**
+     * The code page of each font in the font table: its \cpgN, else its \fcharsetN, else the document's.
+     * @return array<int, string>
+     */
+    private static function rtfFonts(string $rtf, string $doc): array
+    {
+        $start = strpos($rtf, '{\\fonttbl');
+        if ($start === false) {
+            return [];
+        }
+        for ($i = $start, $depth = 0, $n = strlen($rtf); $i < $n; $i++) {   // to the table's closing brace
+            if ($rtf[$i] === '\\') {
+                $i++;
+            } elseif ($rtf[$i] === '{') {
+                $depth++;
+            } elseif ($rtf[$i] === '}' && --$depth === 0) {
+                break;
+            }
+        }
+        $charsets = [0 => 1252, 77 => 10000, 128 => 932, 129 => 949, 130 => 1361, 134 => 936, 136 => 950, 161 => 1253,
+            162 => 1254, 163 => 1258, 177 => 1255, 178 => 1256, 186 => 1257, 204 => 1251, 222 => 874, 238 => 1250, 254 => 437];
+        $fonts = [];
+        preg_match_all('/\\\\f(\d+)([^;]*)/', substr($rtf, $start, $i - $start), $all, PREG_SET_ORDER);
+        foreach ($all as [, $number, $rest]) {
+            $fonts[(int) $number] = match (true) {
+                (bool) preg_match('/\\\\cpg(\d+)/', $rest, $m) => self::codepageName((int) $m[1]),
+                (bool) preg_match('/\\\\fcharset(\d+)/', $rest, $m) && isset($charsets[(int) $m[1]]) => 'CP'.$charsets[(int) $m[1]],
+                default => $doc,
+            };
+        }
+
+        return $fonts;
+    }
+
     private static function codepageName(int $cp): string
     {
         return match ($cp) {
@@ -403,17 +437,20 @@ final class Tnef
 
     /**
      * The text of an RTF document: paragraphs and tabs kept, formatting dropped, hidden parts ({\*…}, font and colour
-     * tables, pictures) skipped, \'hh in the document's code page (\ansicpgN), \uN as Unicode. Enough to read and to
+     * tables, pictures) skipped, \'hh in the font's code page (else \ansicpgN), \uN as Unicode. Enough to read and to
      * register a message (the stored e-mail keeps the original); an HTML body is used when the message has one.
      */
     public static function rtfText(string $rtf): string
     {
-        $cp = preg_match('/\\\\ansicpg(\d+)/', $rtf, $m) ? self::codepageName((int) $m[1]) : 'CP1252';
+        $doc = preg_match('/\\\\ansicpg(\d+)/', $rtf, $m) ? self::codepageName((int) $m[1]) : 'CP1252';
+        // R5b review: each font may have its own code page (Greek fonts, \fcharset161, in an \ansicpg1252 document)
+        $fonts = self::rtfFonts($rtf, $doc);
+        $cp = preg_match('/\\\\deff(\d+)/', $rtf, $m) ? ($fonts[(int) $m[1]] ?? $doc) : $doc;
         $skipWords = ['fonttbl', 'colortbl', 'stylesheet', 'info', 'pict', 'object', 'header', 'footer', 'listtable',
             'listoverridetable', 'rsidtbl', 'generator', 'xmlnstbl', 'themedata', 'colorschememapping', 'latentstyles', 'datastore'];
         $out = '';
         $bytes = '';   // \'hh bytes waiting to be decoded together
-        $flush = function () use (&$out, &$bytes, $cp) {
+        $flush = function () use (&$out, &$bytes, &$cp) {
             if ($bytes !== '') {
                 $out .= self::utf8($bytes, $cp);
                 $bytes = '';
@@ -428,14 +465,15 @@ final class Tnef
         for ($i = 0; $i < $n; $i++) {
             $c = $rtf[$i];
             if ($c === '{') {
-                $stack[] = [$skip, $uc];
+                $stack[] = [$skip, $uc, $cp];
                 if (substr($rtf, $i + 1, 2) === '\\*') {
                     $skip = true;
                 }
                 continue;
             }
             if ($c === '}') {
-                [$skip, $uc] = array_pop($stack) ?? [false, 1];
+                $flush();   // the bytes so far are in this group's font
+                [$skip, $uc, $cp] = array_pop($stack) ?? [false, 1, $cp];
                 continue;
             }
             if ($c === '\\') {
@@ -472,6 +510,8 @@ final class Tnef
                         $flush();
                         if ($word === 'par' || $word === 'line' || $word === 'sect' || $word === 'row') {
                             $out .= "\n";
+                        } elseif ($word === 'f' && $arg !== null) {
+                            $cp = $fonts[$arg] ?? $doc;
                         } elseif ($word === 'tab' || $word === 'cell') {
                             $out .= "\t";
                         } elseif (isset(self::RTF_CHARACTERS[$word])) {

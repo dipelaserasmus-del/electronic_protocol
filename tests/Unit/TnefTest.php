@@ -131,6 +131,21 @@ class TnefTest extends TestCase
         $this->assertNotNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 2, 0x00069005, strlen($props)).$props.pack('v', 0)));
     }
 
+    /**
+     * Ninth review of R5b: Greek marked by its font (\\fcharset161) in a document declared \\ansicpg1252, as Outlook
+     * writes it, came out as Latin letters. Each font's code page is used, in its group.
+     */
+    public function test_rtf_text_in_the_code_page_of_its_font(): void
+    {
+        $rtf = <<<'RTF'
+{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset161 Calibri Greek;}{\f1\fnil\fcharset0 Arial;}{\f2\fnil\cpg1251 Times;}}\f0 \'ca\'e1\'eb\'e7\'ec\'dd\'f1\'e1 {\f1 caf\'e9 }\'f3\'e1\'f2 \f2\'c4\'e0}
+RTF;
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+
+        $this->assertSame('Καλημέρα café σας Да', Tnef::decode($tnef)['text']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
