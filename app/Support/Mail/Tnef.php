@@ -338,9 +338,20 @@ final class Tnef
     /** [MS-OXRTFCP]: a compressed ("LZFu") or uncompressed ("MELA") RTF body → the RTF. */
     public static function decompressRtf(string $data): string
     {
+        // R5b review: the sizes are checked, so a body cut short is unreadable instead of a part of the text
+        if (strlen($data) < 16) {
+            throw new \UnexpectedValueException('TNEF: RTF cut short');
+        }
         $h = unpack('VcompSize/VrawSize/Vmagic', $data);
-        $body = substr($data, 16, max(0, $h['compSize'] - 12));
+        if ($h['compSize'] < 12 || strlen($data) - 4 < $h['compSize']) {
+            throw new \UnexpectedValueException('TNEF: RTF cut short');
+        }
+        $body = substr($data, 16, $h['compSize'] - 12);
         if ($h['magic'] === 0x414C454D) {   // "MELA": stored as it is
+            if (strlen($body) < $h['rawSize']) {
+                throw new \UnexpectedValueException('TNEF: RTF cut short');
+            }
+
             return substr($body, 0, $h['rawSize']);
         }
         if ($h['magic'] !== 0x75465A4C) {   // not "LZFu"
@@ -355,12 +366,19 @@ final class Tnef
             $control = ord($body[$pos++]);
             for ($bit = 0; $bit < 8 && $pos < $n; $bit++) {
                 if (($control >> $bit) & 1) {   // a reference into the dictionary: 12-bit offset, 4-bit length
-                    $word = (ord($body[$pos]) << 8) | ord($body[$pos + 1] ?? "\0");
+                    if ($pos + 2 > $n) {
+                        throw new \UnexpectedValueException('TNEF: RTF cut short');
+                    }
+                    $word = (ord($body[$pos]) << 8) | ord($body[$pos + 1]);
                     $pos += 2;
                     $offset = $word >> 4;
                     $length = ($word & 0x0F) + 2;
-                    if ($offset === $write) {
-                        return $out;   // the end marker
+                    if ($offset === $write) {   // the end marker
+                        if (strlen($out) < $h['rawSize']) {
+                            throw new \UnexpectedValueException('TNEF: RTF cut short');
+                        }
+
+                        return substr($out, 0, $h['rawSize']);
                     }
                     for ($i = 0; $i < $length; $i++) {
                         $c = $dict[($offset + $i) % 4096];
@@ -377,7 +395,7 @@ final class Tnef
             }
         }
 
-        return $out;
+        throw new \UnexpectedValueException('TNEF: RTF without its end');
     }
 
     /**

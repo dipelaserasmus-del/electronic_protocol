@@ -86,6 +86,25 @@ class TnefTest extends TestCase
         $this->assertSame('O’Connor—ref. 10–12, “x” ‘y’• z w', Tnef::decode($tnef)['text']);
     }
 
+    /** Sixth review of R5b: an RTF body cut short (the sizes promise more) made a winmail.dat look complete. */
+    public function test_rtf_body_cut_short_makes_the_file_unreadable(): void
+    {
+        $rtf = '{\rtf1\ansi\deff0 Το πλήρες κείμενο, ως το τέλος.}';
+        foreach ([true, false] as $compress) {
+            $whole = TnefBuilder::compressedRtf($rtf, $compress);
+            foreach ([substr($whole, 0, -5), substr($whole, 0, 17)] as $cut) {
+                $tnef = (new TnefBuilder())->messageClass('IPM.Note')->properties([[TnefBuilder::BINARY, 0x1009, $cut]])->bytes();
+                $this->assertNull(Tnef::decode($tnef), $compress ? 'LZFu' : 'MELA');
+            }
+        }
+        // LZFu without its end marker
+        $lzfu = TnefBuilder::compressedRtf($rtf);
+        $noEnd = substr($lzfu, 0, -3).substr($lzfu, -3, 1);   // drop the final reference (2 bytes) …
+        $noEnd = substr_replace($noEnd, pack('V', strlen($noEnd) - 4), 0, 4);   // … with sizes that agree
+        $this->expectException(\UnexpectedValueException::class);
+        Tnef::decompressRtf($noEnd);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {

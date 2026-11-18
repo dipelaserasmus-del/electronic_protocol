@@ -18,10 +18,12 @@ the automated review had been checked.
   from its attachment. Fixed.
 - Review (Codex), R1i (Batch 7.5): a file refused when dropped on a collapsed *Συνημμένα* now opens the section, so the
   reason is seen.
-- Review (Codex), R5b: a crafted `winmail.dat` could make the inbox page time out (huge counts in a few bytes), and an
-  HTML body in Windows-1253 showed unreadable Greek; a second review found the e-mail kept as a page missing a winmail's
-  text, and Greek RTF written as plain bytes. A third found that very long texts were cut in that page, and a winmail.dat
-  cut inside a header was taken as complete; later ones, that emoji and punctuation such as dashes in Rich Text were dropped. All fixed.
+- Review (Codex), R5b, six rounds, all fixed with tests:
+  - a crafted `winmail.dat` could make the inbox page time out (huge counts in a few bytes);
+  - an HTML body in Windows-1253 showed unreadable Greek;
+  - the e-mail kept as a page missed a winmail's text, and very long texts were cut there;
+  - Greek RTF written as plain bytes, emoji and punctuation such as dashes in Rich Text were lost;
+  - a winmail.dat cut short (inside a header, or in its Rich Text) was taken as complete.
 - The old inbox's checks ran only in the browser (folder required, dates). They now run on the server: an over-long
   value is refused at its field instead of by the database.
 - Removed with the old page: `storeFromEmail`, `setEmailRead`, `checkSameEmail`, `getEmailNum` (about 600 lines).
@@ -32,4 +34,4 @@ All 12 e-mails in `local-data/emails/`, including the 2 new ones of today, regis
 computer only (nothing from them is published). This was done with a folder, all attachments and *Έλεγχοι καταχώρισης*
 on. Your read receipt (`winmail.dat` only) now reads as text instead of an empty e-mail.
 
-Tests: PHPUnit 450, browser 68.
+Tests: PHPUnit 451, browser 68.
