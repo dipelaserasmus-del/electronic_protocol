@@ -85,7 +85,7 @@
             </thead>
             <tbody>
                 @forelse ($users as $u)
-                    @php $blocked = $accounts->cannotDelete($u, auth()->user()); @endphp
+                    @php $blocked = $accounts->cannotDelete($u, auth()->user(), ['protocols' => (int) $u->protocols_count, 'assignments' => (int) $u->assignments_count]); @endphp
                     <tr wire:key="u-{{ $u->id }}" class="user-row @if (! $u->active) text-body-secondary @endif @if ($editing === $u->id) table-active @endif" data-username="{{ $u->username }}">
                         <td>
                             {{ $u->name }}

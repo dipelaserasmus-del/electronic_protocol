@@ -26,7 +26,7 @@ final class Roles
 
     public static function adminId(): int
     {
-        return (int) Role::whereRole(self::ADMIN)->value('id');
+        return once(fn () => (int) Role::whereRole(self::ADMIN)->value('id'));   // asked once per row on the users page
     }
 
     public static function describe(?string $role): string

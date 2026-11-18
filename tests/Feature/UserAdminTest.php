@@ -197,4 +197,21 @@ class UserAdminTest extends FeatureTestCase
         Livewire::actingAs($writer)->test(UserAdmin::class)->assertForbidden();
         $this->assertNotNull($victim->fresh());
     }
+
+    /** Review of R6a: the page's queries do not grow with the number of users (counts loaded for the page at once) */
+    public function test_the_number_of_queries_does_not_grow_with_the_users(): void
+    {
+        $admin = $this->admin();
+        $queries = function () use ($admin) {
+            \Illuminate\Support\Facades\DB::flushQueryLog();
+            \Illuminate\Support\Facades\DB::enableQueryLog();
+            $this->page($admin)->assertOk();
+            return count(\Illuminate\Support\Facades\DB::getQueryLog());
+        };
+        User::factory()->writer()->count(3)->create()->each(fn ($u) => Protocol::factory()->create(['user_id' => $u->id]));
+        $queries();   // the first render also fills per-request caches
+        $few = $queries();
+        User::factory()->writer()->count(12)->create()->each(fn ($u) => Protocol::factory()->create(['user_id' => $u->id]));
+        $this->assertSame($few, $queries());
+    }
 }
