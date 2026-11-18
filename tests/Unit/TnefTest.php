@@ -66,6 +66,16 @@ class TnefTest extends TestCase
         }
     }
 
+    /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
+    public function test_literal_code_page_bytes_in_rtf(): void
+    {
+        $rtf = '{\rtf1\ansi\ansicpg1253 '.iconv('UTF-8', 'CP1253', 'Καλημέρα σας').'\par}';
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+
+        $this->assertSame('Καλημέρα σας', Tnef::decode($tnef)['text']);
+    }
+
     public function test_html_body_and_unicode_subject_from_properties(): void
     {
         $tnef = (new TnefBuilder())->messageClass('IPM.Note')->properties([

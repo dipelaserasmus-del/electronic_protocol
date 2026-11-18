@@ -407,6 +407,19 @@ class InboxTest extends FeatureTestCase
         $this->assertStringStartsWith('Αναφορά: Ανάγνωση μηνύματος:', \App\Models\Protocol::sole()->in_perilipsi);
     }
 
+    /** Review of R5b: the e-mail kept as a page (saveEmailAs empty) has a winmail.dat's text, which is otherwise lost. */
+    public function test_email_kept_as_a_page_has_the_winmail_text(): void
+    {
+        $this->setting('saveEmailAs', '');
+        $tnef = (new \Tests\Support\TnefBuilder(1253))->messageClass('IPM.Note')->body('Το πλήρες κείμενο του μηνύματος από το Outlook.')->bytes();
+        $this->mailbox->messages = [6 => $this->winmailEml($tnef)];
+
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->call('register', 6, false)->assertHasNoErrors();
+
+        $page = \App\Models\Attachment::where('mimeType', 'text/html')->sole();
+        $this->assertStringContainsString('Το πλήρες κείμενο του μηνύματος από το Outlook.', Storage::get($page->savedPath));
+    }
+
     private function winmailEml(string $tnef): string
     {
         return implode("\r\n", ['From: =?UTF-8?B?'.base64_encode('Γραφείο Δοκιμής').'?= <grafeio@example.test>', 'To: protocol@example.org',

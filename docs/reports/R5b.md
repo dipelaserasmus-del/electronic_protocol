@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 444, browser 68/68.
+- Full suites: PHPUnit 446, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -76,6 +76,13 @@ read, Greek in code page 1253.
 - Codex (P2): an HTML body stored in Windows-1253 was served as if it were UTF-8 (unreadable Greek).
   - Fixed: converted by the charset the page declares, else the message's code page.
   - Test `test_html_body_in_a_greek_code_page_becomes_utf8` (it failed before).
+- Codex, second review (P1): with *saveEmailAs* empty (the e-mail kept as a page), the page had no text for a message
+  that came only as winmail.dat, and winmail.dat itself was no longer stored.
+  - Fixed: the page is written with the text the inbox shows.
+  - Test `test_email_kept_as_a_page_has_the_winmail_text` (it failed before).
+- Codex, second review (P2): Greek written in the RTF as plain code-page bytes (not `\'hh`) was not converted.
+  - Fixed.
+  - Test `test_literal_code_page_bytes_in_rtf` (it failed before).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.

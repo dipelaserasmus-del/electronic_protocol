@@ -19,7 +19,8 @@ the automated review had been checked.
 - Review (Codex), R1i (Batch 7.5): a file refused when dropped on a collapsed *Συνημμένα* now opens the section, so the
   reason is seen.
 - Review (Codex), R5b: a crafted `winmail.dat` could make the inbox page time out (huge counts in a few bytes), and an
-  HTML body in Windows-1253 showed unreadable Greek. Both fixed.
+  HTML body in Windows-1253 showed unreadable Greek; a second review found the e-mail kept as a page missing a winmail's
+  text, and Greek RTF written as plain bytes. All fixed.
 - The old inbox's checks ran only in the browser (folder required, dates). They now run on the server: an over-long
   value is refused at its field instead of by the database.
 - Removed with the old page: `storeFromEmail`, `setEmailRead`, `checkSameEmail`, `getEmailNum` (about 600 lines).
@@ -30,4 +31,4 @@ All 12 e-mails in `local-data/emails/`, including the 2 new ones of today, regis
 computer only (nothing from them is published). This was done with a folder, all attachments and *Έλεγχοι καταχώρισης*
 on. Your read receipt (`winmail.dat` only) now reads as text instead of an empty e-mail.
 
-Tests: PHPUnit 444, browser 68.
+Tests: PHPUnit 446, browser 68.

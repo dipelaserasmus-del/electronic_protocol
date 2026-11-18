@@ -465,6 +465,10 @@ final class Tnef
                 $skipChars--;
                 continue;
             }
+            if (ord($c) >= 0x80) {   // review of R5b: a byte of the code page written as it is, not as \'hh
+                $bytes .= $c;
+                continue;
+            }
             $flush();
             $out .= $c;
         }
