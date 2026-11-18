@@ -64,6 +64,9 @@ final class Tnef
         }
     }
 
+    /** Deepest RTF group nesting read; real documents stay far below it. */
+    private const RTF_MAX_DEPTH = 1000;
+
     /** RTF words that stand for a character ([MS-RTF] "special characters"). */
     private const RTF_CHARACTERS = [
         'lquote' => '‘', 'rquote' => '’', 'ldblquote' => '“', 'rdblquote' => '”', 'emdash' => '—', 'endash' => '–',
@@ -481,6 +484,9 @@ final class Tnef
             $c = $rtf[$i];
             if ($c === '{') {
                 $depth = count($stack);
+                if ($depth >= self::RTF_MAX_DEPTH) {   // R5b review: a crafted body can't use up the memory
+                    throw new \UnexpectedValueException('TNEF: RTF nested too deep');
+                }
                 $stack[] = [$skip, $uc, $cp];
                 if ($upr === $depth && preg_match('/\G\\\\\*\\\\ud(?![a-zA-Z])/', $rtf, $_, 0, $i + 1)) {
                     $skip = false;   // the Unicode alternative of \upr

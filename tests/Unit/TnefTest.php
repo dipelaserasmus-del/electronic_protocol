@@ -168,6 +168,20 @@ RTF;
         $this->assertSame('Reference αβγδ complete, end', Tnef::decode($tnef)['text']);
     }
 
+    /** Twelfth review of R5b: deeply nested RTF groups could use up the memory (a fatal error, not caught). */
+    public function test_deeply_nested_rtf_is_refused(): void
+    {
+        $rtf = '{\rtf1\ansi '.str_repeat('{', 200_000).'x'.str_repeat('}', 200_000).'}';
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf, false)]])->bytes();
+        $this->assertNull(Tnef::decode($tnef));
+
+        $rtf = '{\rtf1\ansi '.str_repeat('{', 100).'deep'.str_repeat('}', 100).'}';   // ordinary nesting is read
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf, false)]])->bytes();
+        $this->assertSame('deep', Tnef::decode($tnef)['text']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
