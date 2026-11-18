@@ -70,11 +70,18 @@ final class SearchCriteria
      */
     public bool $pending = false;
 
+    /**
+     * @var list<string> R3b: free words (or "quoted phrases"); each must be found in a text field, the folder, an
+     * attachment's name or ΑΔΑ, or be the protocol's number ("125" or "125/2026")
+     */
+    public array $words = [];
+
     public function isEmpty(): bool
     {
         return $this->number === null && $this->year === null && ! array_filter($this->dates, fn ($r) => $r[0] || $r[1])
             && $this->folder === '' && ! array_filter($this->text, fn ($t) => trim($t) !== '') && ! $this->empty
-            && $this->assigneeId === null && ($this->assigneeName ?? '') === '' && ! $this->pending;
+            && $this->assigneeId === null && ($this->assigneeName ?? '') === '' && ! $this->pending
+            && ! array_filter($this->words, fn ($w) => trim($w) !== '');
     }
 
     /**

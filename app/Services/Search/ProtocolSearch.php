@@ -96,11 +96,31 @@ final class ProtocolSearch
             $q->whereHas('assignments', fn ($a) => $a->where('type', 'd')->whereIn('user_id', $ids));
         }
 
+        foreach ($c->words as $word) {
+            if (($word = trim($word)) !== '') {
+                $q->where(fn ($w) => $this->anyField($w, $word));
+            }
+        }
+
         if ($c->pending) {
             $q->where(fn ($w) => $w->where(fn ($f) => self::isEmpty($f, 'fakelos'))->orWhere('thema', 'LIKE', '%' . self::PENDING_WORD . '%'));
         }
 
         return $q;
+    }
+
+    /** R3b: one free word, anywhere: a text field, the folder, an attachment, or the number (125 or 125/2026) */
+    private function anyField(Builder $w, string $word): void
+    {
+        $like = self::like($word);
+        foreach (array_diff(array_keys(SearchCriteria::TEXT_FIELDS), SearchCriteria::ATTACHMENT_FIELDS) as $field) {
+            $w->orWhere($field, 'LIKE', $like);
+        }
+        $w->orWhere('fakelos', 'LIKE', $like)
+            ->orWhereHas('attachments', fn ($a) => $a->where('name', 'LIKE', $like)->orWhere('ada', 'LIKE', $like));
+        if (preg_match('~^(\d{1,9})(?:/(\d{4}))?$~', $word, $m)) {
+            $w->orWhere(fn ($n) => isset($m[2]) ? $n->where('protocolnum', (int) $m[1])->where('etos', (int) $m[2]) : $n->where('protocolnum', (int) $m[1]));
+        }
     }
 
     /** Why a protocol is pending (for the badges of the pending check): 'folder' and/or 'subject' */

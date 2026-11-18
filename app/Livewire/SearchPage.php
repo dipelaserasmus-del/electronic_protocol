@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Config;
 use App\Models\User;
 use App\Services\Search\ProtocolSearch;
+use App\Services\Search\QueryParser;
 use App\Services\Search\SearchCriteria;
 use App\Support\DateInput;
 use Carbon\Carbon;
@@ -75,6 +76,10 @@ class SearchPage extends Component
     #[Url]
     public bool $pending = false;
 
+    /** R3b: words found anywhere ("quoted phrase" = one) */
+    #[Url(as: 'w')]
+    public string $words = '';
+
     /** a search was asked for (the results are shown) */
     #[Url(as: 's')]
     public bool $searched = false;
@@ -105,7 +110,7 @@ class SearchPage extends Component
      */
     public function pendingCheck(): void
     {
-        $this->reset('num', 'inFrom', 'inTo', 'outFrom', 'outTo', 'folder', 'text', 'empty', 'assignee');
+        $this->reset('num', 'inFrom', 'inTo', 'outFrom', 'outTo', 'folder', 'text', 'empty', 'assignee', 'words');
         $this->pending = true;
         $this->search();
     }
@@ -159,6 +164,27 @@ class SearchPage extends Component
             $c->assigneeId = (int) $this->assignee;
         }
         $c->pending = $this->pending;
+        // R3b: «Οπουδήποτε» also takes the search text's operators (φάκελος:Φ.1 …); a field filled in on the form wins
+        $parser = new QueryParser();
+        $typed = $parser->parse($this->words);
+        if ($parser->ignored) {
+            $this->addError('words', 'Δεν χρησιμοποιήθηκαν: ' . implode(' · ', $parser->ignored));
+        }
+        $c->words = $typed->words;
+        if ($c->number === null && $typed->number !== null) {
+            [$c->number, $c->numberTo] = [$typed->number, $typed->numberTo];
+        }
+        if ($parser->yearGiven) {
+            $c->year = $typed->year;   // typed (έτος:2025, έτος:όλα, αρ:125/2025): wins over the prefilled year
+        }
+        $c->dates += $typed->dates;
+        $c->folder = $c->folder !== '' ? $c->folder : $typed->folder;
+        $c->text += $typed->text;
+        // the assignee chosen in the menu wins over ανάθεση: typed in «Οπουδήποτε» (review of R3b)
+        $typedEmpty = $this->assignee === '' ? $typed->empty : array_diff($typed->empty, ['diekperaiosi']);
+        $c->empty = array_values(array_unique([...$c->empty, ...$typedEmpty]));
+        $c->assigneeName = $this->assignee === '' ? $typed->assigneeName : null;
+        $c->pending = $c->pending || $typed->pending;
 
         return $this->getErrorBag()->isEmpty() ? $c : null;
     }
@@ -201,7 +227,9 @@ class SearchPage extends Component
 
         return view('livewire.search-page', [
             'criteria' => $criteria,
+            'asText' => $criteria && ! $criteria->isEmpty() ? QueryParser::format($criteria) : null,
             'protocols' => $protocols,
+            'markWords' => $criteria?->words ?? [],
             'terms' => ($criteria?->text ?? []) + ($criteria && ! in_array($criteria->folder, ['', SearchCriteria::NO_FOLDER], true) ? ['fakelos' => $criteria->folder] : []),
             'users' => User::orderBy('name')->get(['id', 'name']),
             'names' => User::pluck('name', 'id'),

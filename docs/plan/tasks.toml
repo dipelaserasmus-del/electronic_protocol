@@ -78,7 +78,7 @@ tasks = [
 
   # ---------------- Batch 7 ----------------
   { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "done", pr = 55 },
-  { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "todo" },
+  { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "done", pr = 56 },
   { id = "R3c", title = "Global search box + results page", phase = "R", batch = 7, size = "M", deps = ["R3b"], status = "todo" },
 
   # ---------------- Batch 8 ----------------
