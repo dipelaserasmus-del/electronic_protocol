@@ -7,7 +7,7 @@ The old search page is replaced by three things:
 
 Each task is merged to `master` only after all CI jobs are green and the automated review has been checked.
 
-PHPUnit: **356 → 383 tests**; browser tests: **52 → 57**.
+PHPUnit: **356 → 386 tests**; browser tests: **52 → 57**.
 
 | Task | Result | PR | Report |
 |---|---|---|---|
@@ -23,6 +23,12 @@ PHPUnit: **356 → 383 tests**; browser tests: **52 → 57**.
   means only that one.
 - With the search box, the top bar was too full at 1440 px. The institution name next to the brand now shows only on
   screens at least 1600 px wide.
+- Review (Codex), all fixed with tests:
+  - a name filter and an ΑΔΑ filter could match two different attachments of one protocol (R3a);
+  - an assignee chosen in the menu was combined with a typed `ανάθεση:` instead of winning (R3b);
+  - a quoted word like `"θέμα:άδεια"` lost its quotes in *Ως κείμενο* and in the *Σύνθετη αναζήτηση* link (R3b, R3c);
+  - suggestions for the earlier text could still be opened with ↓ Enter while new ones loaded (R3c).
+- CI found a race in R3a: text typed right after *Καθαρισμός* could be wiped. *Καθαρισμός* now opens a fresh page.
 - The settings *searchField1–3* (default fields of the old page) are no longer used. They will go when the settings
   screen is rebuilt (R6c).
 
