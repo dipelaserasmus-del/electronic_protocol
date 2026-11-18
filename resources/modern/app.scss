@@ -16,9 +16,18 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 // N04 date input: a date doesn't need the full column width
 .date-input .input-group { max-width: 24rem; }
 
-.app-search {
-    min-width: 14rem;
-}
+/* R3c: the search box in the top bar and its suggestions */
+.app-search { min-width: 14rem; }
+@media (min-width: 992px) { .app-search { width: 14rem; } }
+@media (min-width: 1600px) { .app-search { width: 22rem; } }
+.app-topbar .navbar-brand { flex-shrink: 0; }
+/* the institution next to the brand only where the top bar has room for it and the search box */
+.brand-institution { display: none; }
+@media (min-width: 1600px) { .brand-institution { display: inline; } }
+.app-search-list { position: absolute; top: 100%; right: 0; z-index: 1060; width: max(100%, 26rem); max-width: 90vw; max-height: 70vh; overflow-y: auto; margin-top: 2px; }
+.app-search-list mark { padding: 0; background: rgba(var(--bs-warning-rgb), .35); color: inherit; }
+.app-search-list .active mark { background: rgba(255, 255, 255, .3); }
+.search-results-page details > summary { cursor: pointer; }
 
 /* R1c: attachments panel — drop zone and the whole-window drop overlay */
 .border-dashed { border-style: dashed !important; }

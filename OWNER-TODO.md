@@ -1,25 +1,28 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 11:10 (after Batch 6.6). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 12:22 (after Batch 7). Times are Greek time.
 
 ## ▶ Your next message
-Batch 6.6 is done ([summary](docs/reports/BATCH-6.6.md)): your notes on tags, folders, the number and the missing-number
-rows. Send more notes on the form or the list whenever you have them; otherwise start a **new conversation** and send:
+Batch 7 is done ([summary](docs/reports/BATCH-7.md)): the new search. Try it and send notes whenever you have them;
+otherwise start a **new conversation** and send:
 
 ```
-run batch 7
+run batch 8
 ```
 
-Batch 7 (R3a → R3b → R3c) rebuilds the search: the advanced search screen, Gmail-style search words (`από:`,
-`φάκελος:` …) and the search box in the top bar.
+Batch 8 (R5c → R5d → R5b) rebuilds the inbox: the e-mail screen, registering a protocol from an e-mail (with
+keywords) and `winmail.dat` attachments. 📧 If you have new e-mails that show a problem, put them in
+`local-data/emails/` first (they stay on your computer).
 
 ## Try it (5 minutes)
 After *Update: get latest version from GitHub* and *Demo: start*, log in as `admin`:
-1. *Νέο*: the number in the middle; type a number to see "Ελεύθερος".
-2. *Σχετικοί αριθμοί*: `1` Enter (green ✔), `999999,` (orange ⚠); click a tag's text to change it.
-3. *Λέξεις κλειδιά*: type part of a word without accents; choose with ↓ Enter.
-4. *Φάκελος*: click it and type a word of a description (e.g. `εκδρομ`).
-5. *Λίστα*: a green *ΚΕΝΟ* row (the demo has missing numbers).
+1. Press `/` on any page and type a word of a subject without accents (e.g. `εκδρομη`): matching protocols appear;
+   ↓ Enter opens one; Enter alone opens the results page.
+2. Type `φακ` in the box: it offers `φάκελος:`. Try `φάκελος:κανένας` or `είναι:εκκρεμές`.
+3. On the results page, *Σύνθετη αναζήτηση* opens the full screen with the same search.
+4. *Αναζήτηση* → *Έλεγχος εκκρεμοτήτων*: protocols without a folder or with ΕΚΚΡΕΜΟΤΗΤΑ in the subject for the year or
+   the dates you give; with none, it says so in green. Worth trying on your real copy (port 8081) for a past month.
+5. In *Φάκελος* type a code without dots (`φ11`) or a word of its description.
 
 ## Questions for you
 1. **Folders list:** send the full list (code, title, description) as a spreadsheet or text file; I'll add an import so

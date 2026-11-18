@@ -1,7 +1,7 @@
 {{--
     N03: layout of the rebuilt pages. Bootstrap 5 + Livewire 4 (Alpine included), built by Vite.
     Legacy pages keep layouts/app until their module is rebuilt.
-    Sections: title, search (global search box in the top bar, R3c), content.
+    Sections: title, content. The top bar has the search box (R3c, search/box.blade.php).
 --}}
 @php
     $user = auth()->user();
@@ -29,7 +29,7 @@
      aria-label="Κύριο μενού">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ $user ? \App\Support\Navigation::landing($user) : url('/') }}">
-            {{ $brandName }} @if ($institution)<small class="ms-2 d-none d-md-inline">{{ $institution }}</small>@endif
+            {{ $brandName }} @if ($institution)<small class="ms-2 brand-institution">{{ $institution }}</small>@endif
         </a>
         @auth
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#app-nav"
@@ -72,9 +72,8 @@
                     @endforeach
                 </ul>
 
-                @hasSection('search')
-                    <div class="app-search me-lg-3 my-2 my-lg-0">@yield('search')</div>
-                @endif
+                {{-- R3c: the search box, on every page --}}
+                <div class="me-lg-3 my-2 my-lg-0">@include('search.box')</div>
 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">

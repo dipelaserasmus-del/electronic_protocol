@@ -145,6 +145,15 @@
         "guest",
         "web"
     ],
+    "GET search": [
+        "auth",
+        "web"
+    ],
+    "GET search/suggest": [
+        "auth",
+        "throttle:120,1",
+        "web"
+    ],
     "GET setEmailRead/{messageUid}": [
         "auth",
         "email",
