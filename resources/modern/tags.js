@@ -77,9 +77,10 @@ function tagBox(field, withSuggestions = false) {
             this.active = -1;
         },
         mark(text) { return highlight(text, this.query); },
+        close() { this.items = []; this.active = -1; },
         commit(input, index = null) {
             let value = input.value.trim();
-            input.value = ''; this.items = [];
+            input.value = ''; this.close();
             if (this.list.length) value = value.split(/[,;]/).map(p => this.canonical(p)).filter(Boolean).join(', ');
             if (index === null) {
                 if (value) this.$wire.addTag(field, value);
@@ -104,12 +105,13 @@ function tagBox(field, withSuggestions = false) {
                 this.active = this.active < 0 ? (down ? 0 : n - 1) : (this.active + (down ? 1 : n - 1)) % n;
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (this.active >= 0) this.pick(this.items[this.active][0]); else this.commit(input, index);
+                const chosen = this.items[this.active];   // none once the list was closed (review of R1f)
+                if (chosen) this.pick(chosen[0]); else this.commit(input, index);
             } else if (e.key === ',' || e.key === ';') {
                 e.preventDefault();
                 this.commit(input, index);
             } else if (e.key === 'Escape') {
-                if (this.items.length) { e.preventDefault(); this.items = []; }
+                if (this.items.length) { e.preventDefault(); this.close(); }
                 else if (index !== null) { e.preventDefault(); this.editing = null; }
             } else if (e.key === 'Backspace' && index === null && input.value === '') {
                 const n = this.current().length;
