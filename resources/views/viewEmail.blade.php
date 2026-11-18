@@ -10,6 +10,9 @@
 
     @php
         use ZBateson\MailMimeParser\Header\HeaderConsts;
+        // R5b review: the bodies as the inbox reads them (a winmail.dat's text/HTML when the e-mail has none)
+        $bodyHtml = (string) \App\Support\Mail\MailContent::html($mailMessage);
+        $bodyText = (string) ($bodyText ?? $mailMessage->getTextContent());
     @endphp
 
 
@@ -80,18 +83,18 @@
                 </div>
             @endif
             <hr>
-            @if (strlen($mailMessage->getHtmlContent()))
+            @if (strlen($bodyHtml))
                 <div class="row">
-                    <div class="form-control-static col-md-12 col-sm-12  ">{!! str_replace('iso-8859-7', 'utf-8', $mailMessage->getHtmlContent()) !!}</div>
+                    <div class="form-control-static col-md-12 col-sm-12  ">{!! str_replace('iso-8859-7', 'utf-8', $bodyHtml) !!}</div>
                 </div>
             @endif
-            @if (strlen($mailMessage->getHtmlContent()) && strlen($mailMessage->getTextContent()))
+            @if (strlen($bodyHtml) && strlen($bodyText))
                 <hr>
             @endif
-            @if (strlen($mailMessage->getTextContent()))
+            @if (strlen($bodyText))
                 <div class="row">
                     <div class="form-control-static col-md-12 col-sm-12  small"
-                        style="white-space: pre-wrap; overflow: hidden">{{ $mailMessage->getTextContent() }}</div>
+                        style="white-space: pre-wrap; overflow: hidden">{{ $bodyText }}</div>
                 </div>
             @endif
             <hr>

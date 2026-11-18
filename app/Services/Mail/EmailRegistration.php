@@ -106,7 +106,9 @@ final class EmailRegistration
         $as = (string) Config::getConfigValueOf('saveEmailAs');
         $row = $as !== ''
             ? ['content' => $raw, 'name' => "email_$stamp.$as", 'mime' => 'message/rfc822']
-            : ['content' => view('viewEmail', ['mailMessage' => $mail])->render(), 'name' => "email_$stamp.html", 'mime' => 'text/html'];
+            // R5b review: the whole text, a winmail.dat's when the e-mail itself has none
+            : ['content' => view('viewEmail', ['mailMessage' => $mail, 'bodyText' => MailContent::text($mail)])->render(),
+                'name' => "email_$stamp.html", 'mime' => 'text/html'];
 
         // never stamped; without a folder it goes to arxeio/emails (as before)
         return $row + ['stamp' => false, 'dir' => 'arxeio/emails'];

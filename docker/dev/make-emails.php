@@ -290,6 +290,27 @@ $cases[] = [
     ],
 ];
 
+// 11. Outlook "Rich Text": the whole message is a winmail.dat (TNEF) with the text as compressed RTF and two files with
+//     long Greek names (R5b). Built by tests/Support/TnefBuilder.php, plain PHP.
+require_once __DIR__ . '/../../tests/Support/TnefBuilder.php';
+$rtf = '{\\rtf1\\ansi\\ansicpg1253\\deff0{\\fonttbl{\\f0 Calibri;}}\\pard\\f0 '
+    . implode('', array_map(fn ($c) => sprintf("\\'%02x", ord($c)), str_split(iconv('UTF-8', 'CP1253', 'Σας στέλνουμε την αίτηση μετακίνησης και τον πίνακα.'))))
+    . '\\par}';
+$tnef = (new \Tests\Support\TnefBuilder(1253))->messageClass('IPM.Note')
+    ->properties([[\Tests\Support\TnefBuilder::BINARY, 0x1009, \Tests\Support\TnefBuilder::compressedRtf($rtf)]])
+    ->attachment('AITHSH~1.PDF', minimalPdf('Aitisi metakinisis'), 'Αίτηση μετακίνησης εκπαιδευτικών.pdf', 'application/pdf')
+    ->attachment('PINAKA~1.CSV', "Επώνυμο;Όνομα\r\nΔοκιμαστικός;Μαθητής\r\n", 'Πίνακας μετακινήσεων.csv', 'text/csv')
+    ->bytes();
+$cases[] = [
+    'case' => 'outlook-winmail-dat',
+    'fromAddr' => 'outlook@example.test',
+    'from' => b64h('Γραφείο Outlook Δοκιμής') . ' <outlook@example.test>',
+    'subject' => b64h('Αίτηση μετακίνησης (Outlook winmail)'),
+    'parts' => [
+        ['type' => 'application/ms-tnef', 'body' => $tnef, 'cte' => 'base64', 'filename' => 'filename="winmail.dat"', 'name' => 'name="winmail.dat"'],
+    ],
+];
+
 $written = [];
 foreach ($cases as $i => $c) {
     $c['id'] = 'syn' . ($i + 1);

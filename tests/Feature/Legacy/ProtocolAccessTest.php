@@ -82,10 +82,10 @@ class ProtocolAccessTest extends FeatureTestCase
         $this->setting('limitProtocolAccessList', 1);
         $writer = $this->writer();
         Protocol::factory()->number(1)->assignedTo($writer)->create(['thema' => 'Δικό μου θέμα']);
-        Protocol::factory()->number(2)->create(['thema' => 'Ξένο θέμα']);
+        Protocol::factory()->number(2)->create(['thema' => 'Ξένο-Χ7 θέμα']);   // a marker no random user name contains
 
         $this->actingAs($writer)->get($this->findUrl(['t' => ['thema' => 'θέμα']]))
-            ->assertOk()->assertSee('Δικό μου')->assertDontSee('Ξένο');
+            ->assertOk()->assertSee('Δικό μου')->assertDontSee('Ξένο-Χ7');
     }
 
     public function test_goto_by_number_respects_limit_setting(): void
