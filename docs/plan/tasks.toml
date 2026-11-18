@@ -93,7 +93,7 @@ tasks = [
 
   # ---------------- Batch 9 ----------------
   { id = "R6a", title = "Users & roles screens", phase = "R", batch = 9, size = "M", deps = ["N04"], status = "done", pr = 65 },
-  { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 9, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R6b", title = "Folders + auto-assignment rules", phase = "R", batch = 9, size = "M", deps = ["N04", "D02"], status = "done", pr = 66 },
   { id = "R1d", title = "Apply auto-assignment on save", phase = "R", batch = 9, size = "S", deps = ["R1a", "R6b"], status = "todo" },
   { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 9, size = "M", deps = ["N04", "R4b"], status = "todo" },
   { id = "R7", title = "Printing & exports", phase = "R", batch = 9, size = "M", deps = ["R2"], status = "todo" },

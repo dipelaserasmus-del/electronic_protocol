@@ -35,8 +35,8 @@ class ModernLayoutTest extends FeatureTestCase
         $this->assertSame(['Νέο', 'Λίστα', 'Διαχείριση'], $this->labels($this->reader()), 'readers never register e-mails');
 
         $manage = fn ($user) => array_values(array_filter(array_column($this->children($user, 'Διαχείριση'), 'label')));
-        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Διατήρηση', 'Χρήστες', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Ρυθμίσεις'], $manage($admin));
-        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Διατήρηση'], $manage($this->writer()), 'only administrators manage the rest');
+        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Φάκελοι και διατήρηση', 'Χρήστες', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Ρυθμίσεις'], $manage($admin));
+        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Φάκελοι και διατήρηση'], $manage($this->writer()), 'only administrators manage the rest');
         foreach (Navigation::for($admin) as $item) {
             $this->assertNotEmpty($item['icon'] ?? null, "icon for {$item['label']}");
             foreach ($item['children'] ?? [] as $child) {
@@ -71,7 +71,7 @@ class ModernLayoutTest extends FeatureTestCase
         $manage = fn ($user) => array_column($this->children($user, 'Διαχείριση'), 'label');
         $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->writer()));
         $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->reader()));
-        $this->assertContains('Διατήρηση', $manage($this->reader()));
+        $this->assertContains('Φάκελοι και διατήρηση', $manage($this->reader()));
         $this->assertContains('Εκτύπωση πρωτοκόλλου', $manage($this->assigner()), 'the limit only applies to writers/readers');
     }
 

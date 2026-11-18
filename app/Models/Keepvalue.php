@@ -51,12 +51,25 @@ class Keepvalue extends Model
         'fakelos', 'keep', 'keep_alt', 'describe', 'remarks',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
+    /** R6b: users who get protocols of this folder automatically (App\Models\FolderAssignment) */
+    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(FolderAssignment::class);
+    }
 
+    /** Folders in their usual order: Φ.1, Φ.2 … Φ.10 (by the number after "Φ."), then the rest by code */
+    public function scopeOrdered($query)
+    {
+        return $query->orderByRaw('SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-3)+0<>0 DESC, SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-(3))+0, `fakelos`');
+    }
 
+    /** "Διατήρηση": years, or the alternative text (e.g. "Μόνιμα") */
+    public function keepLabel(): string
+    {
+        if ($this->keep) {
+            return $this->keep.' '.((int) $this->keep === 1 ? 'έτος' : 'έτη');
+        }
+        return (string) $this->keep_alt;
+    }
 
 }

@@ -60,7 +60,7 @@ test('suggestions while typing, results page, advanced screen with the same sear
 
 test('the old pages have the box too; it opens the results page (R3c)', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('/keep');
+  await page.goto('/print');
   const box = page.locator('form[role=search] input[name=q]');
   await box.fill('αρ:1');
   await Promise.all([page.waitForURL(/\/search\?q=/), box.press('Enter')]);
