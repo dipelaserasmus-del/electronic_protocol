@@ -51,6 +51,8 @@ class KeepvalueController extends Controller implements HasMiddleware
         $this->validate(request(), [
             'fakelos' => 'required|max:255|unique:keepvalues',
             'keep' => 'nullable|integer',
+            'describe' => 'nullable|string|max:'.Keepvalue::TEXT_MAX,
+            'remarks' => 'nullable|string|max:'.Keepvalue::TEXT_MAX,
         ]); // 'describe' => 'required',
         // 'keep' => 'nullable|integer|required_without:keep_alt',
         // 'keep_alt' => 'nullable|max:255|required_without:keep',
@@ -95,6 +97,8 @@ class KeepvalueController extends Controller implements HasMiddleware
         $validatevalues = [
             'fakelos' => "required|max:255|unique:keepvalues,fakelos,$id,id",
             'keep' => 'nullable|integer',
+            'describe' => 'nullable|string|max:'.Keepvalue::TEXT_MAX,
+            'remarks' => 'nullable|string|max:'.Keepvalue::TEXT_MAX,
         ]; // 'describe' => 'required',
         // 'keep' => 'nullable|integer|required_without:keep_alt',
         // 'keep_alt' => 'nullable|max:255|required_without:keep',
