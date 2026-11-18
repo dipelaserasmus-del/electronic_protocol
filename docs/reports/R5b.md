@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 449, browser 68/68.
+- Full suites: PHPUnit 450, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -96,6 +96,10 @@ read, Greek in code page 1253.
   was dropped.
   - Fixed: the halves are joined.
   - Test `test_rtf_unicode_beyond_the_basic_plane` (it failed before).
+- Codex, fifth review (P2): punctuation written as RTF words (`\rquote`, `\emdash`, `\endash`, quotes, bullet) was
+  dropped, e.g. "10–12" became "1012".
+  - Fixed: these words become their characters.
+  - Test `test_rtf_punctuation_words` (it failed before).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.

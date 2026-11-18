@@ -64,6 +64,12 @@ final class Tnef
         }
     }
 
+    /** RTF words that stand for a character ([MS-RTF] "special characters"). */
+    private const RTF_CHARACTERS = [
+        'lquote' => '‘', 'rquote' => '’', 'ldblquote' => '“', 'rdblquote' => '”', 'emdash' => '—', 'endash' => '–',
+        'bullet' => '•', 'emspace' => ' ', 'enspace' => ' ', 'qmspace' => ' ',
+    ];
+
     private function read(string $d, \DateTimeZone $zone): ?array
     {
         if (strlen($d) < 6 || unpack('V', $d)[1] !== self::SIGNATURE) {
@@ -445,6 +451,8 @@ final class Tnef
                             $out .= "\n";
                         } elseif ($word === 'tab' || $word === 'cell') {
                             $out .= "\t";
+                        } elseif (isset(self::RTF_CHARACTERS[$word])) {
+                            $out .= self::RTF_CHARACTERS[$word];   // R5b review
                         } elseif ($word === 'u' && $arg !== null) {
                             $unit = $arg < 0 ? $arg + 65536 : $arg;
                             if ($unit >= 0xD800 && $unit <= 0xDBFF) {

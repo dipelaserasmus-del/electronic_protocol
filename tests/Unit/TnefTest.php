@@ -76,6 +76,16 @@ class TnefTest extends TestCase
         $this->assertSame('Reference 😀 complete, alone', Tnef::decode($tnef)['text']);
     }
 
+    /** Fifth review of R5b: punctuation written as RTF words (quotes, dashes, bullet) was dropped. */
+    public function test_rtf_punctuation_words(): void
+    {
+        $rtf = '{\rtf1\ansi\deff0 O\rquote Connor\emdash ref. 10\endash 12, \ldblquote x\rdblquote  \lquote y\rquote \bullet  z\~w}';
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+
+        $this->assertSame('O’Connor—ref. 10–12, “x” ‘y’• z w', Tnef::decode($tnef)['text']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
