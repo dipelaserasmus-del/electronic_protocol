@@ -39,7 +39,6 @@ final class MailContent
         foreach ($files as $key => $file) {
             $attachments[] = ['key' => (string) $key, 'name' => $file['shown'], 'mime' => $file['mime'], 'size' => $file['size']()];
         }
-        $text = (string) $mail->getTextContent();
         $html = strlen((string) $mail->getHtmlContent()) > 0;
         $subject = self::clean((string) $mail->getHeaderValue(HeaderConsts::SUBJECT));
 
@@ -51,11 +50,24 @@ final class MailContent
             'reply_to' => $replyTo ? (self::clean($replyTo->getEmail()) ?: null) : null,
             'date' => self::date($mail)?->format(DATE_ATOM),
             'subject' => $subject !== '' ? $subject : self::clean($tnef['subject'] ?? ''),
-            'text' => mb_substr(trim($text) !== '' ? $text : (string) ($tnef['text'] ?? ''), 0, self::TEXT_MAX),
+            'text' => mb_substr(self::bodyText($mail, $tnef), 0, self::TEXT_MAX),
             'has_html' => $html || ($tnef['html'] ?? null) !== null,
             'attachments' => $attachments,
             'winmail' => $tnef === null ? null : ['class' => $tnef['class'], 'report' => $tnef['report']],
         ];
+    }
+
+    /** The whole text (a winmail.dat's when the e-mail itself has none): for the copy kept with the protocol. */
+    public static function text(Message $mail): string
+    {
+        return self::bodyText($mail, self::contents($mail)['tnef']);
+    }
+
+    private static function bodyText(Message $mail, ?array $tnef): string
+    {
+        $text = (string) $mail->getTextContent();
+
+        return trim($text) !== '' ? $text : (string) ($tnef['text'] ?? '');
     }
 
     /** "Name <email>", or the address alone (Αρχή έκδοσης, as the old inbox filled it in). */

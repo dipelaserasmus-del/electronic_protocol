@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 446, browser 68/68.
+- Full suites: PHPUnit 448, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -83,6 +83,15 @@ read, Greek in code page 1253.
 - Codex, second review (P2): Greek written in the RTF as plain code-page bytes (not `\'hh`) was not converted.
   - Fixed.
   - Test `test_literal_code_page_bytes_in_rtf` (it failed before).
+- Codex, third review (P2): the page copy used the inbox's text, which is cut at 100 000 characters, so a longer
+  e-mail lost its end (any e-mail, not only winmail).
+  - Fixed: the page gets the whole text (`MailContent::text`).
+  - Test `test_email_kept_as_a_page_has_its_whole_text` (it failed before).
+- Codex, third review (P2): a winmail.dat ending inside an attribute's header was read as complete, so an attachment
+  could go missing without notice.
+  - Fixed: a file not read to its last byte is unreadable, and it is shown as plain `winmail.dat`, as before.
+  - Test `test_a_file_ending_inside_an_attribute_header_is_not_read` (it failed before).
+  - The owner's read receipt still decodes (checked on this computer only).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.

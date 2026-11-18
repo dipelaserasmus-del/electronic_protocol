@@ -120,6 +120,9 @@ final class Tnef
                     break;
             }
         }
+        if ($pos !== $n) {
+            return null;   // ends inside an attribute's header: cut short (R5b review)
+        }
         if ($current !== null) {
             $attachments[] = $current;
         }

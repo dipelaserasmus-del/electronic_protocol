@@ -420,6 +420,22 @@ class InboxTest extends FeatureTestCase
         $this->assertStringContainsString('Το πλήρες κείμενο του μηνύματος από το Outlook.', Storage::get($page->savedPath));
     }
 
+    /** Second review of R5b: the page kept the inbox's text, cut at 100 000 characters; it keeps the whole text. */
+    public function test_email_kept_as_a_page_has_its_whole_text(): void
+    {
+        $this->setting('saveEmailAs', '');
+        $text = str_repeat("Γραμμή κειμένου της αναφοράς.\n", 4000).'ΤΕΛΟΣ ΚΕΙΜΕΝΟΥ';   // over MailContent::TEXT_MAX
+        $this->assertGreaterThan(\App\Support\Mail\MailContent::TEXT_MAX, mb_strlen($text));
+        $this->mailbox->messages = [6 => implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org',
+            'Subject: =?UTF-8?B?'.base64_encode('Μεγάλη αναφορά').'?=', 'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0',
+            'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', chunk_split(base64_encode($text)), ''])];
+
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->call('register', 6, false)->assertHasNoErrors();
+
+        $page = \App\Models\Attachment::where('mimeType', 'text/html')->sole();
+        $this->assertStringContainsString('ΤΕΛΟΣ ΚΕΙΜΕΝΟΥ', Storage::get($page->savedPath));
+    }
+
     private function winmailEml(string $tnef): string
     {
         return implode("\r\n", ['From: =?UTF-8?B?'.base64_encode('Γραφείο Δοκιμής').'?= <grafeio@example.test>', 'To: protocol@example.org',

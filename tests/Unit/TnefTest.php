@@ -125,4 +125,18 @@ class TnefTest extends TestCase
         $whole = (new TnefBuilder())->attachment('A.PDF', str_repeat('x', 100))->bytes();
         $this->assertNull(Tnef::decode(substr($whole, 0, -30)), 'cut short');
     }
+
+    /**
+     * Second review of R5b: a file ending inside the next attribute's 9-byte header (level, id, length) was taken as
+     * complete, its attachment silently lost, and winmail.dat itself no longer offered.
+     */
+    public function test_a_file_ending_inside_an_attribute_header_is_not_read(): void
+    {
+        $whole = (new TnefBuilder())->attachment('A.PDF', str_repeat('x', 100))->bytes();   // attAttachData is last
+        $dataAttribute = 9 + 100 + 2;
+        for ($kept = 1; $kept <= 8; $kept++) {
+            $this->assertNull(Tnef::decode(substr($whole, 0, strlen($whole) - $dataAttribute + $kept)), "$kept header bytes");
+        }
+        $this->assertNotNull(Tnef::decode($whole));
+    }
 }
