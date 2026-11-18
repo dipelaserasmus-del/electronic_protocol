@@ -219,6 +219,21 @@ test('the folder picker narrows the list while typing (R1f)', async ({ page }) =
   await folder.press('Escape');
   await expect(folder).toHaveValue(/^Φ\.14\.1\.4/);
 
+  // review of R1f: the folder can be cleared again: "—" first in the list, or the text deleted and Enter
+  await folder.click();
+  await expect(list.locator('li[role=option]').first()).toContainText('Χωρίς φάκελο');
+  await list.locator('li[role=option]').first().click();
+  await expect(folder).toHaveValue('');
+  await expect(page.locator('#folder-help')).toHaveCount(0);
+  await fillProtocol(page, { fakelos: 'αποζημιωσεις εκδρομων' });
+  await expect(folder).toHaveValue(/^Φ\.14\.1\.4/);
+  await folder.click();
+  await folder.pressSequentially('φ');
+  await folder.press('Backspace');                           // typed, then deleted: no folder
+  await folder.press('Enter');
+  await expect(folder).toHaveValue('');
+  await fillProtocol(page, { fakelos: 'αποζημιωσεις εκδρομων' });
+
   await fillProtocol(page, { thema: `R1f φάκελος ${Date.now()}` });
   await saveProtocol(page);
   await expect(folder).toHaveValue(/^Φ\.14\.1\.4/);
