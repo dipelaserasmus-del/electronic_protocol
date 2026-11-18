@@ -27,7 +27,7 @@ test('a program is refused at once, the PDF is kept (R4a)', async ({ page }) => 
 test('inbox attachments come with safe headers (R4a)', async ({ page }) => {
   // the first attachment shown in the inbox: never served as a page, opened only when PDF/image/text
   await login(page, 'admin');
-  await page.goto('/viewEmails');
+  await page.goto('/inbox');
   const link = page.locator('a[href*="/viewEmailAttachment/"]').first();
   await expect(link).toBeVisible();
   const response = await page.request.get(await link.getAttribute('href'));

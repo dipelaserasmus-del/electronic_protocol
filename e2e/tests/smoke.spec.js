@@ -42,9 +42,9 @@ test.describe('@smoke', () => {
 
   test('inbox shows the mock mailbox with Greek subjects decoded', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/viewEmails');
+    await page.goto('/inbox');
     const body = page.locator('body');
-    await expect(body).toContainText(/από \d+ εισερχόμενα/);
+    await expect(page.locator('#inbox-count')).toContainText(/από \d+|\d+ email/);
     // the order of the mock e-mails differs between machines: check whichever ones are on page 1
     const subjects = ['Πρόσκληση σε επιμορφωτική ημερίδα', 'Εγκύκλιος για την έναρξη', 'Διαβιβαστικό εγγράφων μαθητή',
       'Αποστολή στοιχείων', 'Αίτηση γονέα', 'Ενημέρωση για τη διαδικασία', 'Μεγάλο σαρωμένο', 'αρχικό μήνυμα', 'εισαγωγικά'];

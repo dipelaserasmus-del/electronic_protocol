@@ -19,8 +19,13 @@ function remember(kind, open) {
 /** Height of an HTML frame = its content (same origin; the frame runs no scripts). */
 export function fit(frame) {
     try {
-        const body = frame.contentWindow?.document?.body;
-        if (body && body.scrollHeight) frame.style.height = (body.scrollHeight + 16) + 'px';
+        const doc = frame.contentWindow?.document;
+        if (!doc?.body || !frame.offsetParent) return;   // closed section: measured when opened
+        // an e-mail without <!DOCTYPE> is shown in quirks mode, where the body is at least as tall as the frame:
+        // shrink the frame first, then take the content's height
+        frame.style.height = '0px';
+        const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+        frame.style.height = (height + 16) + 'px';
     } catch { /* not readable: keep the default height */ }
 }
 
