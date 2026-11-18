@@ -19,7 +19,7 @@ final class Inbox
     private const LOCK_WAIT = 60;
 
     /** Changes when MailContent::summary changes, so older cached summaries are not used. */
-    private const SUMMARY_VERSION = 1;
+    private const SUMMARY_VERSION = 2;   // 2: R5b, winmail.dat opened
 
     public function __construct(private MailCache $cache) {}
 

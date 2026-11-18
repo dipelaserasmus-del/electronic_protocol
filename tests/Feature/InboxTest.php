@@ -366,6 +366,55 @@ class InboxTest extends FeatureTestCase
             base64_encode("%PDF-1.4\nfake\n%%EOF\n"), '--b--', '']);
     }
 
+    /** R5b: a winmail.dat is opened: its files are shown (type, size), registered instead of it, its text used. */
+    public function test_winmail_files_are_shown_and_registered_instead_of_it(): void
+    {
+        $tnef = (new \Tests\Support\TnefBuilder(1253))->messageClass('IPM.Note')->body('Σας στέλνω την αίτηση.')
+            ->attachment('AITHSH~1.PDF', "%PDF-1.4\nfake\n%%EOF\n", 'Αίτηση άδειας.pdf', 'application/pdf')
+            ->attachment('PINAKAS.XLS', 'xls bytes', 'Πίνακας μαθητών.xls')->bytes();
+        $this->mailbox->messages = [6 => $this->winmailEml($tnef)];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        $page->assertSee('Αίτηση άδειας.pdf')->assertSee('Πίνακας μαθητών.xls')->assertDontSee('winmail.dat</a>', false)
+            ->assertSee('Το email ήρθε ως')->assertSeeHtml('/viewEmailAttachment/6/0-1');
+        $this->assertSame([ '0-0' => true, '0-1' => true], $page->get('forms.6.files'));
+        $this->assertSame('Σας στέλνω την αίτηση.', $page->get('forms.6.in_perilipsi'), 'the text inside, for Περίληψη');
+
+        $file = $this->get('/viewEmailAttachment/6/0-1')->assertOk();
+        $this->assertStringContainsString("filename*=utf-8''".rawurlencode('Πίνακας μαθητών.xls'), $file->headers->get('Content-Disposition'));
+        $this->assertSame('xls bytes', $file->getContent());
+        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.files.0-1', false)->call('register', 6, false)->assertHasNoErrors();
+        $names = \App\Models\Attachment::orderBy('id')->pluck('name')->all();
+        $this->assertSame('Αίτηση άδειας.pdf', $names[1]);
+        $this->assertCount(2, $names, 'the e-mail + the ticked file (not winmail.dat)');
+        $pdf = \App\Models\Attachment::where('name', 'Αίτηση άδειας.pdf')->sole();
+        $this->assertStringEndsWith('_0-0_Αίτηση άδειας.pdf', $pdf->savedPath);
+        $this->assertSame("%PDF-1.4\nfake\n%%EOF\n", Storage::get($pdf->savedPath));
+    }
+
+    /** R5b: a read receipt (winmail.dat only): no file to store, its details are the text. A broken one: a plain file. */
+    public function test_read_receipt_and_broken_winmail(): void
+    {
+        $receipt = (new \Tests\Support\TnefBuilder())->messageClass('IPM.Microsoft Mail.Read Receipt')
+            ->properties([[\Tests\Support\TnefBuilder::STRING8, 0x1001, 'Ανάγνωση μηνύματος:'], [\Tests\Support\TnefBuilder::STRING8, 0x0049, 'Ημερίδα']])->bytes();
+        $this->mailbox->messages = [6 => $this->winmailEml($receipt), 7 => $this->winmailEml('not tnef at all')];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        $page->assertSee('Αναφορά ανάγνωσης')->assertSee('Θέμα: Ημερίδα');
+        $this->assertSame([], $page->get('forms.6.files'));
+        $this->assertSame(['0' => true], $page->get('forms.7.files'), 'unreadable: winmail.dat itself, as before');
+        $page->call('register', 6, false)->assertHasNoErrors();
+        $this->assertStringStartsWith('Αναφορά: Ανάγνωση μηνύματος:', \App\Models\Protocol::sole()->in_perilipsi);
+    }
+
+    private function winmailEml(string $tnef): string
+    {
+        return implode("\r\n", ['From: =?UTF-8?B?'.base64_encode('Γραφείο Δοκιμής').'?= <grafeio@example.test>', 'To: protocol@example.org',
+            'Subject: =?UTF-8?B?'.base64_encode('Αίτηση (Outlook)').'?=', 'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0',
+            'Content-Type: application/ms-tnef; name="winmail.dat"', 'Content-Disposition: attachment; filename="winmail.dat"',
+            'Content-Transfer-Encoding: base64', '', chunk_split(base64_encode($tnef)), '']);
+    }
+
     /** @return list<string> */
     private function cachedFiles(): array
     {

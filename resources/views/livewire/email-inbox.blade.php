@@ -288,6 +288,16 @@
                                 @if (! empty($m['reply_to']))<dt class="col-sm-2">Απάντηση σε</dt><dd class="col-sm-10 text-break mb-1">{{ $m['reply_to'] }}</dd>@endif
                             </dl>
 
+                            @if (! empty($m['winmail']))
+                                {{-- R5b: Outlook's winmail.dat, opened --}}
+                                <x-notice type="info" class="inbox-winmail">
+                                    @if ($m['winmail']['report'])
+                                        <strong>Αναφορά ανάγνωσης / παράδοσης</strong> (Outlook): τα στοιχεία της φαίνονται στο κείμενο.
+                                    @else
+                                        Το email ήρθε ως <code>winmail.dat</code> (Outlook): εμφανίζονται το κείμενο και τα αρχεία που περιέχει.
+                                    @endif
+                                </x-notice>
+                            @endif
                             @if ($m['attachments'])
                                 <div class="inbox-attachments mb-2" role="group" aria-label="Συνημμένα">
                                     <div class="fw-semibold mb-1">Συνημμένα @unless ($state)<span class="fw-normal text-body-secondary">(✓ = αποθηκεύεται με το πρωτόκολλο)</span>@endunless</div>

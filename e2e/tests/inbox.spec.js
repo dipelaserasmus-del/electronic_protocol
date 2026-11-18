@@ -99,3 +99,32 @@ test('inbox: text and HTML open and close together, and the browser remembers it
   await page.locator('[data-part-toggle="text"]').first().click();
   await expect(texts.first()).toBeVisible();
 });
+
+test('winmail.dat (Outlook): its text and files are shown and registered instead of it (R5b)', async ({ page }) => {
+  await login(page, 'admin');
+  const message = await findEmail(page, 'Outlook winmail');   // synthetic e-mail 11
+  const uid = await message.getAttribute('data-uid');
+  await expect(message.locator('.inbox-winmail')).toContainText('winmail.dat');
+  await expect(message.locator('.inbox-text')).toContainText('Σας στέλνουμε την αίτηση μετακίνησης');   // from the compressed RTF
+  await expect(message.getByRole('link', { name: 'Αίτηση μετακίνησης εκπαιδευτικών.pdf' })).toBeVisible();
+  await expect(message.getByRole('link', { name: 'Πίνακας μετακινήσεων.csv' })).toBeVisible();
+  await expect(message.getByRole('link', { name: 'winmail.dat' })).toHaveCount(0);
+  const pdf = await page.request.get(await message.getByRole('link', { name: 'Αίτηση μετακίνησης εκπαιδευτικών.pdf' }).getAttribute('href'));
+  expect(pdf.headers()['content-type']).toBe('application/pdf');
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
+  await message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5b-winmail', { clip: await message.boundingBox() });
+
+  await message.locator(`#f-${uid}-fakelos`).click();
+  await message.locator(`#folder-list-${uid} li[role=option]`).nth(1).click();
+  await message.locator('[data-action="register"]').click();
+  const anyway = message.locator('[data-action="register-anyway"]');   // a run before left the same protocol
+  const done = message.locator('.inbox-done');
+  await expect(done.or(anyway)).toBeVisible();
+  if (await anyway.isVisible()) await anyway.click();
+  await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
+  const [, num, year] = (await done.innerText()).match(/(\d+)\/(\d{4})/);
+  await page.goto(`/goto/${year}/${num}?find=1`);
+  await expect(page.locator('a[href*="/download/"]', { hasText: 'Αίτηση μετακίνησης εκπαιδευτικών.pdf' })).toHaveCount(1);
+  await expect(page.locator('a[href*="/download/"]', { hasText: /\.csv$/ })).toHaveCount(1);
+});

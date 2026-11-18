@@ -15,6 +15,10 @@ use ZBateson\MailMimeParser\Message\IMessagePart;
  * summary() is a plain array, so it can be cached: the inbox page re-renders on every click (Livewire) and parsing a
  * 20 MB e-mail each time would be slow. Attachments are addressed by a key: the part's position among the
  * attachments ("0", "1", …), the same key the old inbox used.
+ *
+ * R5b: a winmail.dat (TNEF, Outlook) is opened: its files are shown and stored instead of it (keys "<part>-<n>", e.g.
+ * "0-1"), and its text, HTML and subject are used when the e-mail itself has none (a read receipt: what it reports).
+ * A winmail.dat that can't be read stays a plain attachment, as before.
  */
 final class MailContent
 {
@@ -24,17 +28,20 @@ final class MailContent
     /**
      * @return array{from_name: ?string, from_email: ?string, to: list<string>, cc: list<string>, reply_to: ?string,
      *     date: ?string, subject: string, text: string, has_html: bool,
-     *     attachments: list<array{key: string, name: string, mime: string, size: int}>}
+     *     attachments: list<array{key: string, name: string, mime: string, size: int}>, winmail: ?array{class: string, report: bool}}
      */
     public static function summary(Message $mail): array
     {
         $from = self::addresses($mail, HeaderConsts::FROM)[0] ?? null;
         $replyTo = self::addresses($mail, HeaderConsts::REPLY_TO)[0] ?? null;
+        ['files' => $files, 'tnef' => $tnef] = self::contents($mail);
         $attachments = [];
-        foreach (self::parts($mail) as $key => $part) {
-            $attachments[] = ['key' => (string) $key, 'name' => self::name($part), 'mime' => strtolower((string) $part->getContentType()),
-                'size' => self::size($part)];
+        foreach ($files as $key => $file) {
+            $attachments[] = ['key' => (string) $key, 'name' => $file['shown'], 'mime' => $file['mime'], 'size' => $file['size']()];
         }
+        $text = (string) $mail->getTextContent();
+        $html = strlen((string) $mail->getHtmlContent()) > 0;
+        $subject = self::clean((string) $mail->getHeaderValue(HeaderConsts::SUBJECT));
 
         return [
             'from_name' => $from ? (self::clean($from->getName()) ?: null) : null,
@@ -43,10 +50,11 @@ final class MailContent
             'cc' => array_map(self::label(...), self::addresses($mail, HeaderConsts::CC)),
             'reply_to' => $replyTo ? (self::clean($replyTo->getEmail()) ?: null) : null,
             'date' => self::date($mail)?->format(DATE_ATOM),
-            'subject' => self::clean((string) $mail->getHeaderValue(HeaderConsts::SUBJECT)),
-            'text' => mb_substr((string) $mail->getTextContent(), 0, self::TEXT_MAX),
-            'has_html' => strlen((string) $mail->getHtmlContent()) > 0,
+            'subject' => $subject !== '' ? $subject : self::clean($tnef['subject'] ?? ''),
+            'text' => mb_substr(trim($text) !== '' ? $text : (string) ($tnef['text'] ?? ''), 0, self::TEXT_MAX),
+            'has_html' => $html || ($tnef['html'] ?? null) !== null,
             'attachments' => $attachments,
+            'winmail' => $tnef === null ? null : ['class' => $tnef['class'], 'report' => $tnef['report']],
         ];
     }
 
@@ -66,22 +74,63 @@ final class MailContent
      */
     public static function attachment(Message $mail, string $key): ?array
     {
-        if (! ctype_digit($key)) {
-            return null;
-        }
-        $part = self::parts($mail)[(int) $key] ?? null;
+        $file = self::contents($mail)['files'][$key] ?? null;
 
         // the name as sent: ProtocolWriter cleans it for storing (FileNames, F08)
-        return $part === null ? null : ['name' => (string) $part->getFilename(), 'mime' => strtolower((string) $part->getContentType()),
-            'content' => (string) $part->getContent()];
+        return $file === null ? null : ['name' => $file['name'], 'mime' => $file['mime'], 'content' => $file['content']()];
     }
 
-    /** The HTML part, as UTF-8 (null when there is none). */
+    /** The HTML part, as UTF-8; R5b: or the HTML inside a winmail.dat (null when there is none). */
     public static function html(Message $mail): ?string
     {
         $html = (string) $mail->getHtmlContent();
+        if ($html !== '') {
+            return $html;
+        }
+        return self::contents($mail)['tnef']['html'] ?? null;
+    }
 
-        return $html === '' ? null : $html;
+    /**
+     * The files of an e-mail by key: each attachment part, or the files inside a readable winmail.dat (R5b), and the
+     * message found in the (first) winmail.dat. Contents and sizes are read only when asked.
+     *
+     * @return array{files: array<string, array{name: string, shown: string, mime: string, content: \Closure, size: \Closure}>, tnef: ?array}
+     */
+    private static function contents(Message $mail): array
+    {
+        $files = [];
+        $found = null;
+        foreach (self::parts($mail) as $i => $part) {
+            $tnef = self::isTnef($part) ? Tnef::decode((string) $part->getContent(), self::zone()) : null;
+            if ($tnef === null) {
+                $files[(string) $i] = ['name' => (string) $part->getFilename(), 'shown' => self::name($part),
+                    'mime' => strtolower((string) $part->getContentType()), 'content' => fn () => (string) $part->getContent(),
+                    'size' => fn () => self::size($part)];
+                continue;
+            }
+            $found ??= $tnef;
+            foreach ($tnef['attachments'] as $j => $inner) {
+                $shown = self::clean($inner['name']);
+                $files["$i-$j"] = ['name' => $inner['name'], 'shown' => $shown !== '' ? $shown : \App\Support\FileNames::clean(null, $inner['mime']),
+                    'mime' => $inner['mime'], 'content' => fn () => $inner['content'], 'size' => fn () => strlen($inner['content'])];
+            }
+        }
+
+        return ['files' => $files, 'tnef' => $found];
+    }
+
+    /** application/ms-tnef, or a part named winmail.dat (some servers send it as application/octet-stream) */
+    private static function isTnef(IMessagePart $part): bool
+    {
+        $type = strtolower((string) $part->getContentType());
+
+        return in_array($type, ['application/ms-tnef', 'application/vnd.ms-tnef'], true)
+            || strtolower(trim((string) $part->getFilename())) === 'winmail.dat';
+    }
+
+    private static function zone(): \DateTimeZone
+    {
+        return \App\Services\Mail\EmailRegistration::zone();
     }
 
     /** The Date header (null when missing or unreadable). */
