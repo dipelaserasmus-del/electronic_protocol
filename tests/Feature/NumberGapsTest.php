@@ -16,6 +16,12 @@ class NumberGapsTest extends FeatureTestCase
         }
     }
 
+    /** The page's text without tags, spaces collapsed. */
+    private function text(string $html): string
+    {
+        return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html))));
+    }
+
     private function gaps(string $today = '2026-11-12'): array
     {
         return app(NumberGaps::class)->find(Carbon::parse($today));
@@ -160,17 +166,20 @@ class NumberGapsTest extends FeatureTestCase
         $admin = $this->admin();
 
         $html = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolList::class)->html();
+        $text = $this->text($html);
         $this->assertSame(2, substr_count($html, 'class="gap-row"'));
-        $this->assertStringContainsString("Κενοί αριθμοί 5–7/$year", $html);
-        $this->assertStringContainsString('· 3 αριθμοί', $html);
-        $this->assertStringContainsString("Κενός αριθμός 3/$year", $html);
+        // R2d: the number first, then ΚΕΝΟ / ΚΕΝΑ
+        $this->assertStringContainsString("5–7/$year ΚΕΝΑ · 3 αριθμοί", $text);
+        $this->assertStringContainsString("3/$year ΚΕΝΟ", $text);
+        $this->assertStringContainsString('Καταχώριση με αριθμό 7', $text);
+        $this->assertStringContainsString('icon-plus', $html);
         // newest first: 9, 8, [7–5], 4, [3], 2, 1 — the button offers the highest number of the run
-        $order = array_map(fn ($t) => strpos($html, $t), ["8/$year", "Κενοί αριθμοί 5–7", "4/$year", "Κενός αριθμός 3", "2/$year"]);
+        $order = array_map(fn ($t) => strpos($text, $t), ["8/$year", "5–7/$year ΚΕΝΑ", "4/$year", "3/$year ΚΕΝΟ", "2/$year"]);
         $sorted = $order; sort($sorted);
         $this->assertSame($sorted, $order, 'rows in number order');
         $this->assertStringContainsString('/home?num=7', $html);
         $this->assertStringContainsString('/home?num=3', $html);
-        $this->assertStringContainsString('Φαίνονται στη λίστα με διακεκομμένο πλαίσιο', $html);
+        $this->assertStringContainsString('Φαίνονται στη λίστα σε πράσινες γραμμές «ΚΕΝΟ»', $html);
 
         // ascending: the run follows the protocol below it, the button offers its lowest number
         $asc = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ProtocolList::class)->call('sortBy', 'protocolnum')->html();
@@ -207,8 +216,9 @@ class NumberGapsTest extends FeatureTestCase
         $this->book($year, [1, 10], now()->format('md'));   // checked: 5–9
 
         $asc = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\ProtocolList::class)->call('sortBy', 'protocolnum')->html();
-        $this->assertStringContainsString("Κενοί αριθμοί 5–9/$year", $asc);
         $this->assertStringContainsString('/home?num=5', $asc);
-        $this->assertTrue(strpos($asc, "1/$year") < strpos($asc, 'Κενοί αριθμοί 5–9') && strpos($asc, 'Κενοί αριθμοί 5–9') < strpos($asc, "10/$year"));
+        $asc = $this->text($asc);
+        $this->assertStringContainsString("5–9/$year ΚΕΝΑ", $asc);
+        $this->assertTrue(strpos($asc, "1/$year") < strpos($asc, '5–9/') && strpos($asc, '5–9/') < strpos($asc, "10/$year"));
     }
 }
