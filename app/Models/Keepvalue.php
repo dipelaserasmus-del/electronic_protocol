@@ -39,6 +39,9 @@ class Keepvalue extends Model
 
     use Notifiable;
 
+    /** D06: describe and remarks are TEXT; room for 4-byte characters (like Protocol::LONG_TEXT_MAX). */
+    public const TEXT_MAX = 16000;
+
     /**
      * The attributes that are mass assignable.
      *
