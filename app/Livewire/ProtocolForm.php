@@ -409,6 +409,9 @@ class ProtocolForm extends Component
             'related' => \App\Support\RelatedNumbers::resolve($this->form['sxetiko'], (int) ($this->form['etos'] ?: $this->activeYear())),
             'keywords' => \App\Support\TagList::keywords()->tokens($this->form['keywords']),
             'folder' => $this->form['fakelos'] !== '' ? Keepvalue::where('fakelos', $this->form['fakelos'])->first(['fakelos', 'describe']) : null,
+            // R1d: the folder's automatic assignments, when this save will apply them (new protocol, or a new folder)
+            'autoAssign' => (! $protocol->exists || trim((string) $protocol->fakelos) !== trim($this->form['fakelos']))
+                && ($rules = \App\Support\FolderRules::for($this->form['fakelos'])) ? \App\Support\FolderRules::describe($this->form['fakelos'], $rules) : null,
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),
