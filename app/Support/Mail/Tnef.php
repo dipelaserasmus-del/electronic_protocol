@@ -475,12 +475,17 @@ final class Tnef
         $uc = 1;
         $skipChars = 0;
         $high = null;   // first half of a UTF-16 surrogate pair (\uN\uN), R5b review
+        $upr = null;    // depth of a \upr group: its {\*\ud …} (Unicode) is read, the rest skipped (R5b review)
         $n = strlen($rtf);
         for ($i = 0; $i < $n; $i++) {
             $c = $rtf[$i];
             if ($c === '{') {
+                $depth = count($stack);
                 $stack[] = [$skip, $uc, $cp];
-                if (substr($rtf, $i + 1, 2) === '\\*') {
+                if ($upr === $depth && preg_match('/\G\\\\\*\\\\ud(?![a-zA-Z])/', $rtf, $_, 0, $i + 1)) {
+                    $skip = false;   // the Unicode alternative of \upr
+                    $i += 2;         // past "\*"
+                } elseif (substr($rtf, $i + 1, 2) === '\\*') {
                     $skip = true;
                 }
                 continue;
@@ -488,6 +493,9 @@ final class Tnef
             if ($c === '}') {
                 $flush();   // the bytes so far are in this group's font
                 [$skip, $uc, $cp] = array_pop($stack) ?? [false, 1, $cp];
+                if ($upr !== null && count($stack) < $upr) {
+                    $upr = null;
+                }
                 continue;
             }
             if ($c === '\\') {
@@ -514,7 +522,10 @@ final class Tnef
                     $i += strlen($w[0]) - 1;
                     $word = $w[1];
                     $arg = isset($w[2]) && $w[2] !== '' ? (int) $w[2] : null;
-                    if ($word === 'bin') {   // N bytes of binary data, never RTF (R5b review)
+                    if ($word === 'upr' && ! $skip) {
+                        $upr = count($stack);
+                        $skip = true;   // the ANSI alternative
+                    } elseif ($word === 'bin') {   // N bytes of binary data, never RTF (R5b review)
                         $i += max(0, $arg ?? 0);
                     } elseif (in_array($word, $skipWords, true)) {
                         $skip = true;

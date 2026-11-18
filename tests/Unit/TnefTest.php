@@ -156,6 +156,18 @@ RTF;
         $this->assertNull(Tnef::decode(str_replace('100 EUR', '900 EUR', $whole)));
     }
 
+    /** Eleventh review of R5b: in \upr{ANSI}{\*\ud{Unicode}} the Unicode text is the one to keep. */
+    public function test_rtf_upr_keeps_the_unicode_text(): void
+    {
+        $rtf = <<<'RTF'
+{\rtf1\ansi Reference {\upr{????}{\*\ud{\u945?\u946?\u947?\u948?}}} complete{\*\ud hidden}, {\*\generator {\upr{x}{\*\ud{y}}}}end}
+RTF;
+        $tnef = (new TnefBuilder())->messageClass('IPM.Note')
+            ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
+
+        $this->assertSame('Reference αβγδ complete, end', Tnef::decode($tnef)['text']);
+    }
+
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
     public function test_literal_code_page_bytes_in_rtf(): void
     {
