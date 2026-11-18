@@ -1,11 +1,10 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-17 12:10 (after Batch 6.5). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 11:10 (after Batch 6.6). Times are Greek time.
 
 ## ▶ Your next message
-Batch 6.5 is done ([summary](docs/reports/BATCH-6.5.md)): your notes on the form and the list.
-Send your notes on moving rarely used fields and controls whenever you have them; otherwise start a **new
-conversation** and send:
+Batch 6.6 is done ([summary](docs/reports/BATCH-6.6.md)): your notes on tags, folders, the number and the missing-number
+rows. Send more notes on the form or the list whenever you have them; otherwise start a **new conversation** and send:
 
 ```
 run batch 7
@@ -16,19 +15,24 @@ Batch 7 (R3a → R3b → R3c) rebuilds the search: the advanced search screen, G
 
 ## Try it (5 minutes)
 After *Update: get latest version from GitHub* and *Demo: start*, log in as `admin`:
-1. **Firefox:** drag a file from *Files* into the middle of the *Νέο* form. If it is not attached, try again and keep
-   the mouse still for a second before letting go. Tell me which worked.
-2. *Σχετικοί αριθμοί*: type `1` and press Enter, then `999999,`.
-3. *Λίστα*: choose a user; switch on *Αναλυτικά*; look for a dashed *Κενός αριθμός* row.
+1. *Νέο*: the number in the middle; type a number to see "Ελεύθερος".
+2. *Σχετικοί αριθμοί*: `1` Enter (green ✔), `999999,` (orange ⚠); click a tag's text to change it.
+3. *Λέξεις κλειδιά*: type part of a word without accents; choose with ↓ Enter.
+4. *Φάκελος*: click it and type a word of a description (e.g. `εκδρομ`).
+5. *Λίστα*: a green *ΚΕΝΟ* row (the demo has missing numbers).
 
 ## Questions for you
-1. **Attachments shown as missing in your real-data copy** (port 8081): run *Real data: load newest backup from
-   local-data/db* and send me the two counts it prints (attachments measured / files not found). If almost all are
-   not found, the files are not in `local-data/storage/app/arxeio/…`.
-2. **The `--` problem** you mentioned: I could not find it in the old code. Saving and showing `--` (and `' " ; % _ \
+1. **Folders list:** send the full list (code, title, description) as a spreadsheet or text file; I'll add an import so
+   nobody types it. Should a folder have a short **title** separate from its long description? Today it has a code, a
+   description and remarks (see [D06](docs/reports/D06.md)).
+2. **Firefox on Fedora crashes when a file is dropped:** a Firefox/GNOME bug, not the page (see
+   [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
+3. **Attachments shown as missing in your real-data copy** (port 8081): run *Real data: load newest backup from
+   local-data/db* and send me the two counts it prints (attachments measured / files not found).
+4. **The `--` problem** you mentioned: I could not find it in the old code. Saving and showing `--` (and `' " ; % _ \
    < > &`, Greek, emoji) works and is now tested. If it still happens, send the screen and what you typed (no real
    data).
-3. **Writers and the protocol date:** new setting *Ρυθμίσεις → Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία
+5. **Writers and the protocol date:** new setting *Ρυθμίσεις → Ο Συγγραφέας μπορεί να αλλάξει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
 
 ## Final deployment (when all tasks are completed and verified)
