@@ -20,7 +20,6 @@ use App\Models\Keepvalue;
 use Carbon\Carbon;
 use App\Models\Attachment;
 use Illuminate\Http\Request;
-use App\Exports\ProtocolExport;
 use Webklex\IMAP\Facades\Client;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
@@ -68,8 +67,7 @@ class ProtocolController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            new Middleware('writer:home/list', except: ['gotonum', 'download', 'printprotocols', 'printed', 'about']),
-            new Middleware('limitList', only: ['printprotocols', 'printed', 'printAttachments', 'printedAttachments']),
+            new Middleware('writer:home/list', except: ['gotonum', 'download', 'about']),
         ];
     }
 
@@ -267,134 +265,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return back();
     }
 
-    /**
-     * B07: search / print filters typed by users ("from number", dates…) crashed the page with a 500 when they
-     * were not numbers or dd/mm/yyyy dates. Invalid values are removed from the request and reported back.
-     * @return string[] labels of the ignored filters
-     */
-    private function dropInvalidFilters(): array
-    {
-        $numbers = ['aponum' => 'Από αριθμό', 'eosnum' => 'Έως αριθμό', 'etosForMany' => 'Έτος'];
-        $dates = ['apoProtocolDate' => 'Από ημ/νία', 'eosProtocolDate' => 'Έως ημ/νία', 'apoEiserxDate' => 'Από ημ/νία εισερχ.',
-                  'eosEiserxDate' => 'Έως ημ/νία εισερχ.', 'apoExerxDate' => 'Από ημ/νία εξερχ.', 'eosExerxDate' => 'Έως ημ/νία εξερχ.'];
-        $ignored = [];
-        foreach ($numbers as $field => $label) {
-            $v = trim((string) request($field));
-            if ($v !== '' && !ctype_digit($v)) {
-                $ignored[] = "$label «" . e($v) . "»";
-                request()->merge([$field => null]);
-            }
-        }
-        foreach ($dates as $field => $label) {
-            $v = trim((string) request($field));
-            if ($v !== '' && (!preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $v) || !Carbon::canBeCreatedFromFormat($v, 'd/m/Y'))) {
-                $ignored[] = "$label «" . e($v) . "»";
-                request()->merge([$field => null]);
-            }
-        }
-        return $ignored;
-    }
-
-    public function printprotocols()
-    {
-        return view('print');
-    }
-
-    public function printed()
-    {
-        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
-
-        $etos = Config::getConfigValueOf('yearInUse');
-        $datetime = Carbon::now()->format('d/m/Y H:i:s');
-        $target = request('target');
-
-        $wherevalues = [];
-
-        if (request('aponum')) {
-            $wherevalues[] = ['protocolnum', '>', request('aponum') - 1];
-        }
-        if (request('eosnum')) {
-            $wherevalues[] = ['protocolnum', '<', request('eosnum') + 1];
-        }
-        if (request('etosForMany')) {
-            $wherevalues[] = ['etos', request('etosForMany')];
-            $etos = request('etosForMany');
-        }
-        if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        $foundProtocolsCount = null;
-        if (!$wherevalues) {
-            return back();
-        } else {
-            // βρίσκω τον αριθμό των Πρωτοκόλλων
-            $foundProtocolsCount = Protocol::where($wherevalues)->count();
-            // διαβάζω στις ρυθμίσεις πόσα πρέπι να πάρω
-            $take = Config::getConfigValueOf('maxRowsInXlsExport');
-            // default 5000
-            if (!$take) $take = 5000;
-            $protocols = Protocol::where($wherevalues)->orderby('etos', 'asc')->orderby('protocolnum', 'asc')->take($take)->get();
-        }
-        foreach ($protocols as $protocol) {
-            if ($protocol->protocoldate) {
-                $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-            }
-            if ($protocol->in_date) {
-                $protocol->in_date = Carbon::createFromFormat('Ymd', $protocol->in_date)->format('d/m/Y');
-            }
-            if ($protocol->out_date) {
-                $protocol->out_date = Carbon::createFromFormat('Ymd', $protocol->out_date)->format('d/m/Y');
-            }
-            if ($protocol->diekp_date) {
-                $protocol->diekp_date = Carbon::createFromFormat('Ymd', $protocol->diekp_date)->format('d/m/Y');
-            }
-        }
-
-        if ($target == 'xls') {
-            $filename = $this->filter_filename(Config::getConfigValueOf('ipiresiasName') . " - εξαγωγή πρωτοκόλλου σε xls - " . Carbon::now()->format('Ymd-Hms') . '.xlsx', false);
-            $response = Excel::download(new ProtocolExport("printedXls", compact('protocols', 'etos', 'datetime')), $filename);
-            ob_end_clean();
-            return $response;
-        }
-        return view('printed', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
-    }
-
-    public function receipt(Protocol $protocol)
-    {
-        abort_if(Gate::denies('view', $protocol), 404);   // S02
-        if ($protocol->protocoldate) {
-            $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-        }
-
-        $datetime = Carbon::now()->format('d/m/Y H:i:s');
-        return view('receipt', compact('protocol', 'datetime'));
-    }
-
-    public function receiptToEmail(Request $request)
-    {
-        $protocol = Protocol::findOrFail($request->id);
-        abort_if(Gate::denies('view', $protocol), 404);   // S02
-        $emaildate = Carbon::now()->format('d/m/Y H:i:s');
-        $protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-        $sendReplyTo = $request->email;
-        $html = view('receiptProtocol', compact('protocol', 'protocoldate'))->render();
-
-        $mailer = app(\App\Services\OutgoingMail::class);
-        if ($mailer->sendHtml($sendReplyTo, "Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.", $html)) {
-            $parMessage = $protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '';
-            $parMessage .= "$emaildate απόδειξη παραλαβής σε $sendReplyTo";
-            //$parMessage = mb_strlen($parMessage) > 250 ? mb_substr($parMessage, 0, 250) . ' ...' : $parMessage;
-            $protocol->paratiriseis = $parMessage;
-            $protocol->update();
-            return response()->json($parMessage);
-        } else {
-            return response()->json(['error' => 'Αποτυχία αποστολής email. Η αιτία καταγράφηκε στο αρχείο καταγραφής.'], 502);
-        }
-    }
-
     public function about()
     {
         return view('about');
@@ -407,58 +277,6 @@ class ProtocolController extends Controller implements HasMiddleware
 
         Config::setConfigValueOf('needsUpdate', 0);
         return redirect("home/list");
-    }
-
-    public function printAttachments()
-    {
-        return view('printAttachments');
-    }
-
-    public function printedAttachments()
-    {
-        $ignoredFilters = $this->dropInvalidFilters();   // B07: invalid numbers/dates crashed the page; shown on the printout
-
-        $etos = Config::getConfigValueOf('yearInUse');
-        $datetime = Carbon::now()->format('d/m/Y H:i:s');
-
-        $wherevalues = [];
-
-        if (request('aponum')) {
-            $wherevalues[] = ['protocolnum', '>', request('aponum') - 1];
-        }
-        if (request('eosnum')) {
-            $wherevalues[] = ['protocolnum', '<', request('eosnum') + 1];
-        }
-        if (request('etosForMany')) {
-            $wherevalues[] = ['etos', request('etosForMany')];
-            $etos = request('etosForMany');
-        }
-        if (request('apoProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '>=', Carbon::createFromFormat('d/m/Y', request('apoProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-        if (request('eosProtocolDate')) {
-            $wherevalues[] = ['protocoldate', '<=', Carbon::createFromFormat('d/m/Y', request('eosProtocolDate'))->format('Y-m-d')];   // D04: DATE column
-        }
-
-        $foundProtocolsCount = null;
-        if (!$wherevalues) {
-            return back();
-        } else {
-            $protocols = Protocol::has('attachments')->with('attachments')->where($wherevalues)->orderby('protocolnum', 'asc')->get();
-        }
-        foreach ($protocols as $protocol) {
-            if ($protocol->protocoldate) {
-                $protocol->protocoldate = Carbon::createFromFormat('Ymd', $protocol->protocoldate)->format('d/m/Y');
-            }
-            if ($protocol->in_date) {
-                $protocol->in_date = Carbon::createFromFormat('Ymd', $protocol->in_date)->format('d/m/Y');
-            }
-            if ($protocol->out_date) {
-                $protocol->out_date = Carbon::createFromFormat('Ymd', $protocol->out_date)->format('d/m/Y');
-            }
-        }
-
-        return view('printedAttachments', compact('protocols', 'etos', 'datetime', 'ignoredFilters'));
     }
 
     // βρίσκει τις καταχωρίσεις που ταιριάζουν με αυτά που πληκτρολογεί ο χρήστης και επιστρέφει λίστα

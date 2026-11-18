@@ -9,6 +9,7 @@ use App\Http\Controllers\InboxController;
 use App\Http\Controllers\KeepvalueController;
 use App\Http\Controllers\ProtocolFormController;
 use App\Http\Controllers\PreferencesController;
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\UserController;
@@ -68,13 +69,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/getValues/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValuesQuery']);
     Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValues']);
 
-    Route::get('/print', [ProtocolController::class, 'printprotocols']);
-    Route::post('/printed', [ProtocolController::class, 'printed']);
-    Route::get('/printAttachments', [ProtocolController::class, 'printAttachments']);
-    Route::post('/printedAttachments', [ProtocolController::class, 'printedAttachments']);
-
-    Route::get('/receipt/{protocol}', [ProtocolController::class, 'receipt']);
-    Route::post('receiptToEmail', [ProtocolController::class, 'receiptToEmail'])->name('receiptToEmail');
+    // R7: printing (App\Http\Controllers\PrintController, App\Livewire\PrintPage); the e-mail receipt is the protocol
+    // form's action (ProtocolWriter::sendReceipt), the old POST receiptToEmail is gone
+    Route::get('/print', [PrintController::class, 'page']);
+    Route::match(['get', 'post'], '/printed', [PrintController::class, 'book']);
+    Route::get('/printAttachments', [PrintController::class, 'attachmentsPage']);
+    Route::match(['get', 'post'], '/printedAttachments', [PrintController::class, 'attachments']);
+    Route::get('/receipt/{protocol}', [PrintController::class, 'receipt']);
     Route::get('/about', [ProtocolController::class, 'about']);
     Route::get('/updated', [ProtocolController::class, 'updated']);
 

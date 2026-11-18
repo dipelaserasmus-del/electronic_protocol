@@ -58,7 +58,7 @@ test('suggestions while typing, results page, advanced screen with the same sear
   await expect(page.locator('#search-results')).toContainText(subject);
 });
 
-test('the old pages have the box too; it opens the results page (R3c)', async ({ page }) => {
+test('the box on another page opens the results page (R3c)', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/print');
   const box = page.locator('form[role=search] input[name=q]');

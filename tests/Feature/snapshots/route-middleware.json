@@ -112,6 +112,17 @@
         "web",
         "writer:home/list"
     ],
+    "GET printed": [
+        "auth",
+        "limitList",
+        "web"
+    ],
+    "GET printedAttachments": [
+        "auth",
+        "limitList",
+        "web",
+        "writer:home/list"
+    ],
     "GET receipt/{protocol}": [
         "auth",
         "web",
@@ -205,22 +216,6 @@
         "auth",
         "throttle:60,1",
         "web"
-    ],
-    "POST printed": [
-        "auth",
-        "limitList",
-        "web"
-    ],
-    "POST printedAttachments": [
-        "auth",
-        "limitList",
-        "web",
-        "writer:home/list"
-    ],
-    "POST receiptToEmail": [
-        "auth",
-        "web",
-        "writer:home/list"
     ],
     "POST register": [
         "guest",
