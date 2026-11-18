@@ -61,6 +61,11 @@ final class EmailRegistration
             $files[] = ['content' => $part['content'], 'name' => $part['name'], 'mime' => $part['mime'], 'prefix' => $key.'_'];
         }
 
+        // review of R5c: the number is given on save, dated today, in the year in use, whoever registers (also users who
+        // may choose the number or the date in the protocol form: the inbox has neither field)
+        $input['etos'] = (int) (Config::getConfigValueOf('yearInUse') ?: Carbon::now()->year);
+        $input['protocoldate'] = Carbon::today()->format('d/m/Y');
+        $input['protocolnum'] = '';
         $input['paratiriseis'] = trim((string) ($input['paratiriseis'] ?? '')) !== '' ? $input['paratiriseis'] : 'παρελήφθη με email';
         $input['reply_to_email'] = $receiptTo;
         $input['email_date'] = ($date ?? new \DateTimeImmutable())->setTimezone(self::zone())->format('d/m/Y H:i:s');

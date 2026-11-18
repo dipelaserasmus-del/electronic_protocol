@@ -285,6 +285,24 @@ class InboxTest extends FeatureTestCase
         $this->get('/inbox')->assertRedirect('/login');
     }
 
+    /**
+     * Review of R5c: users who may choose the number (administrators, checks off) or the date (allowWriterChangeDate)
+     * register e-mails too: the number is given on save, dated today. Before the fix: refused on fields the page lacks.
+     */
+    public function test_users_who_may_choose_number_or_date_register_too(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $this->setting('allowWriterChangeDate', 1);
+        foreach ([[$this->admin(), 2], [$this->writer(), 3]] as [$user, $uid]) {
+            Livewire::actingAs($user)->test(EmailInbox::class)->set("forms.$uid.files", [])->call('register', $uid, false)->assertHasNoErrors();
+        }
+        $this->assertSame(2, \App\Models\Protocol::count());
+        foreach (\App\Models\Protocol::all() as $p) {
+            $this->assertSame((int) now()->year, (int) $p->etos);
+            $this->assertSame(now()->format('Y-m-d'), $p->dateOf('protocoldate')->format('Y-m-d'));
+        }
+    }
+
     /** @return list<string> */
     private function cachedFiles(): array
     {

@@ -32,6 +32,10 @@ use Livewire\Component;
  */
 class EmailInbox extends Component
 {
+    /** The fields each e-mail's form shows (errors about anything else go above the form) */
+    private const FIELDS = ['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis',
+        'in_perilipsi', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
+
     #[Url(as: 'page', except: 1)]
     public int $page = 1;
 
@@ -136,7 +140,8 @@ class EmailInbox extends Component
         } catch (ValidationException $e) {
             foreach ($e->errors() as $field => $messages) {
                 $field = $field === 'diekperaiosi' ? 'handle' : $field;
-                $this->addError("forms.$uid.$field", $messages[0]);
+                // an error about something the page has no field for is said above the form, never lost (review of R5c)
+                $this->addError('forms.'.$uid.'.'.(in_array($field, self::FIELDS, true) ? $field : 'form'), $messages[0]);
             }
             return;
         } catch (AttachmentsNotSaved $e) {
