@@ -50,6 +50,8 @@ class ProtocolForm extends Component
     public array $inform = [];
 
     public bool $replacePlaceholder = false;
+    /** R1g: the user changed the number or year (or came from a missing-number row): only then "✔ Ελεύθερος" is said. */
+    public bool $numberTouched = false;
     public bool $noStamp = false;
 
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> new files, saved with the protocol */
@@ -90,6 +92,7 @@ class ProtocolForm extends Component
         $this->copyOf = $copy && $protocol->exists ? $protocol->id : null;
         $this->form['etos'] = (string) $this->activeYear();
         $this->form['protocolnum'] = $prefillNum && $access->number ? (string) $prefillNum : '';
+        $this->numberTouched = $this->form['protocolnum'] !== '';
         if (! $this->copyOf || ! $access->date || $this->form['protocoldate'] === '') {
             $this->form['protocoldate'] = Carbon::today()->format(DateInput::FORMAT);
         }
@@ -127,8 +130,14 @@ class ProtocolForm extends Component
         $this->form['keep'] = $this->keepFor($value);
     }
 
+    public function updatedFormEtos(): void
+    {
+        $this->numberTouched = true;
+    }
+
     public function updatedFormProtocolnum(): void
     {
+        $this->numberTouched = true;
         $this->replacePlaceholder = false;
     }
 
@@ -305,6 +314,13 @@ class ProtocolForm extends Component
         if (! $access->number) {
             return null;
         }
+        $status = $this->checkNumber();
+        // R1g (owner, 2026-11-18): nothing to say about a number the user did not touch, unless it is a problem
+        return ! $this->numberTouched && in_array($status[0], ['free', 'auto'], true) ? ['quiet'] : $status;
+    }
+
+    private function checkNumber(): array
+    {
         $num = trim($this->form['protocolnum']);
         if ($num === '') {
             return $this->protocolId ? ['invalid'] : ['auto'];

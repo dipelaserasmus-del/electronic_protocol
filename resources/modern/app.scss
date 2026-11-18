@@ -60,3 +60,17 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .folder-help { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .folder-input { text-overflow: ellipsis; }
 .tag-suggest .active mark, .folder-list .active mark { background: rgba(255, 255, 255, .3); }
+
+/* R1g: the form's head — the protocol number large in the middle, the year small to its left, the date to its right */
+.number-head { display: grid; grid-template-columns: 1fr minmax(12rem, 17rem) 1fr; gap: .75rem 1.25rem; align-items: start; }
+.number-head-year { justify-self: end; width: 5.5rem; padding-top: 1rem; }
+.number-head-date { justify-self: start; width: 100%; max-width: 24rem; padding-top: .35rem; }
+.number-head-date .form-label { font-size: .875em; font-weight: 600; margin-bottom: .25rem; }
+.protocol-number { font-size: 2.1rem; line-height: 1.2; padding: .3rem .75rem; letter-spacing: .02em; }
+.protocol-number.is-valid, .protocol-number.is-invalid { border-width: 2px; background-image: none; padding-right: .75rem; }
+.pill-actions-center .pill-actions-row { justify-content: center; }
+@media (max-width: 767.98px) {
+    .number-head { grid-template-columns: 5rem 1fr; }
+    .number-head-year { justify-self: stretch; width: auto; padding-top: 1rem; }
+    .number-head-date { grid-column: 1 / -1; justify-self: stretch; max-width: none; padding-top: 0; }
+}

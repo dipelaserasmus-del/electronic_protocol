@@ -2,7 +2,10 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-17 12:10 (after Batch 6.5; times are Greek time)
+## Current state — 2026-11-18 11:10 (after Batch 6.6; times are Greek time)
+- **Batch 6.6 complete** (D06 #51, R2d #52, R1f #53, R1g #54; summary [`docs/reports/BATCH-6.6.md`](../reports/BATCH-6.6.md); 356 PHPUnit, 52 browser tests). **Next: Batch 7** (R3a → R3b → R3c, search). D06: `keepvalues.describe`/`remarks` TEXT (`Keepvalue::TEXT_MAX` 16000), folders page escapes and no `<br />` in the edit box; owner will send the full folder list (import to write; ask about a separate title). R2d: green `.gap-row`, "N/YYYY ΚΕΝΟ", centred button; `<x-icon name="plus|check|warning">` (inline SVG). R1f: `App\Support\TagList` (related/keywords: add, replace in place, remove, `fold` = no case/accents, shared cases `tests/fixtures/fold-cases.json`), `ProtocolForm::addTag/editTag/removeTag`, `RelatedNumbers::resolve` → `exists` + viewable `protocol`; `Suggestions::keywords()` / `folders()` as JSON in the page (`#suggest-keywords`, `#suggest-folders`), searched in the browser (`resources/modern/tags.js`: Alpine `tagBox`, `folderPicker`); `#f-fakelos` is now a combobox (`data-combobox`; e2e `fillProtocol` handles it). R1g: number grid `.number-head`, `$numberTouched` (status `quiet` until changed), `#done-card`, `#less-used` (Ανάθεση + receipts). Firefox on Fedora/GNOME Wayland **crashes** when a file from Nautilus is dropped (Wayland protocol error in Firefox's main process: known Firefox bug); works on Windows; no page change.
+
+## Earlier state — 2026-11-17 12:10 (after Batch 6.5)
 - **Batch 6.5 complete** (R1e #48, R2b #49, R2c #50; summary [`docs/reports/BATCH-6.5.md`](../reports/BATCH-6.5.md); 346 PHPUnit, 48 browser tests). **Next: Batch 7** (R3a → R3b → R3c, search), unless the owner first sends UI-layout notes (rarely used fields/controls to move). Owner's feedback on Batch 6 (2026-11-17): R1e (form: drop on Firefox/Wayland, related numbers as tags (`addRelated`/`removeRelated`, stored text unchanged), toasts top-centre + click-to-close + optional link, restore notice links to the protocol), R2b (list: user filter also under *Όλα*, user menu grouped by open assignments, richer *Αναλυτικά*, attachment names), R2c (missing numbers as dashed rows from *Αρ.Πρωτοκόλλου για ξεκίνημα*, one setting instead of two: `gapCheckFromNumber` migrated into `firstProtocolNum` and removed; `firstProtocolNum` 0 = 1, the installer's value). Batch numbers may be decimals in tasks.toml (6.5). The owner's real copy (8081) showed attachments as missing: owner to rerun *Real data: load newest backup from local-data/db* and send the counts. Toasts: `appToast(message, type, {url,label})` / `dispatch('toast', message:, type:, url:, label:)`. Native file drag in e2e: CDP `Input.dispatchDragEvent` (Chromium only).
 
 ## Earlier state — 2026-11-16 23:54 (after Batch 6)
@@ -70,6 +73,10 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-18 11:10 | R1g | #54 | number large in the middle (year small, date right), "Ελεύθερος" only after a change by hand or from a gap row; done-date card high; Ανάθεση + receipt cards below |
+| 2026-11-18 11:00 | R1f | #53 | related numbers green ✔ / orange ⚠, editable tags (both fields), keyword suggestions (all keywords, most used first, accents ignored, known spelling kept), folder search box; review fix: Enter after Escape |
+| 2026-11-18 10:55 | R2d | #52 | gap row green, grey text, "N/YYYY ΚΕΝΟ", centred button with +; `<x-icon>` |
+| 2026-11-18 10:45 | D06 | #51 | folder description/remarks → TEXT, folders page escaping and `<br />` fix |
 | 2026-11-16 23:53 | R4b | #47 | trash keeps path for restore, never overwrites; deleted protocol's files to the trash with its label; Κάδος page (restore/delete now/empty, purge dates); daily clean-up without scheduler; legacy Εκκαθάριση uses it and no longer wipes trash/ |
 | 2026-11-16 23:45 | R4a | #46 | downloads: safe Content-Type/Disposition (Greek names encoded), nosniff/sandbox, streamed; uploads: size + code-running types refused (also double extension and renamed content), at once in the form and in the service |
 | 2026-11-16 23:39 | R2 | #45 | Livewire list: filter pills (all/mine/d/e/f) + whose list (admin/assigner), sortable columns, sticky header, deadline colours, assignees, attachments, Αναλυτικά remembered (localStorage), A02 banner, poll refresh; old list removed |
