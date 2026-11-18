@@ -35,7 +35,7 @@
                                     @foreach ($activeUsers as $u)
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="rule-{{ $type }}-{{ $u->id }}" value="{{ $u->id }}" wire:model="form.{{ $type }}">
-                                            <label class="form-check-label small" for="rule-{{ $type }}-{{ $u->id }}">{{ $u->name }}</label>
+                                            <label class="form-check-label small" for="rule-{{ $type }}-{{ $u->id }}">{{ $u->name }}@if (! $u->active) <span class="badge text-bg-secondary">ανενεργός: δεν παίρνει αναθέσεις</span>@endif</label>
                                         </div>
                                     @endforeach
                                 </div>
