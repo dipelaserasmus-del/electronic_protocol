@@ -98,13 +98,13 @@
                                         class="col-md-{{ $pl4 }} col-sm-{{ $pl4 }} {{ $errors->has('describe') ? ' has-error' : '' }}">
                                         <textarea id="describe" type="text" class="form-control" name="describe"
                                             placeholder="describe" value=""
-                                            required>{{ old('describe') ? old('describe') : nl2br($keepvalue->describe) }}</textarea>
+                                            required>{{ old('describe') ? old('describe') : $keepvalue->describe }}</textarea>
                                     </div>
                                     <div
                                         class="col-md-{{ $pl5 }} col-sm-{{ $pl5 }} {{ $errors->has('remarks') ? ' has-error' : '' }}">
                                         <textarea id="remarks" type="text" class="form-control" name="remarks"
                                             placeholder="remarks"
-                                            value="">{{ old('remarks') ? old('remarks') : nl2br($keepvalue->remarks) }}</textarea>
+                                            value="">{{ old('remarks') ? old('remarks') : $keepvalue->remarks }}</textarea>
                                     </div>
                                     <div class="col-md-{{ $pl6 }} col-sm-{{ $pl6 }}  text-center">
                                         <a href="javascript:document.forms['myForm'].submit();"
@@ -144,10 +144,10 @@
                                     {{ $keep->keep_alt }}
                                 </div>
                                 <div class='col-md-{{ $pl4 }} col-sm-{{ $pl4 }} form-control-static'>
-                                    {!! nl2br($keep->describe, false) !!}
+                                    {!! nl2br(e($keep->describe), false) !!}
                                 </div>
                                 <div class='col-md-{{ $pl5 }} col-sm-{{ $pl5 }} form-control-static'>
-                                    {!! nl2br($keep->remarks, false) !!}
+                                    {!! nl2br(e($keep->remarks), false) !!}
                                 </div>
                                 <div
                                     class='col-md-{{ $pl6 }} col-sm-{{ $pl6 }} form-control-static  text-center'>
