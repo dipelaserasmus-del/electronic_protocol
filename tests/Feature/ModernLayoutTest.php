@@ -133,22 +133,6 @@ class ModernLayoutTest extends FeatureTestCase
     {
         return collect(Navigation::for($user))->firstWhere('label', $label)['children'];
     }
-}
-
-/** Minimal component, only to prove the Livewire wiring. */
-class N03Counter extends Component
-{
-    public int $count = 0;
-
-    public function increment(): void
-    {
-        $this->count++;
-    }
-
-    public function render(): string
-    {
-        return '<div><span>{{ $count }}</span><button wire:click="increment">+</button></div>';
-    }
 
     /** R3d: the institution under the name, the search box with its two buttons, icons */
     public function test_top_bar_brand_search_buttons_and_icons(): void
@@ -178,5 +162,21 @@ class N03Counter extends Component
 
         auth()->logout();
         $this->postJson('/preferences', ['key' => 'width', 'value' => 'full'])->assertUnauthorized();
+    }
+}
+
+/** Minimal component, only to prove the Livewire wiring. */
+class N03Counter extends Component
+{
+    public int $count = 0;
+
+    public function increment(): void
+    {
+        $this->count++;
+    }
+
+    public function render(): string
+    {
+        return '<div><span>{{ $count }}</span><button wire:click="increment">+</button></div>';
     }
 }
