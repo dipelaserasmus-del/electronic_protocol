@@ -1,210 +1,63 @@
-<!DOCTYPE html>
-<html lang="el">
+{{--
+    R7: the protocol book, on the print layout. Same 13 numbered columns as the legacy printout (and the Excel file,
+    printedXls): ✧ and ✦ mark the second and third value of a cell. Dates as dates (D04), handlers by name, also
+    inactive users (before: their id).
+--}}
+@extends('layouts.print')
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('title', 'Πρωτόκολλο '.$range->describe())
+@section('heading')
+    {{ $protocols->count() }} {{ $protocols->count() === 1 ? 'πρωτόκολλο' : 'πρωτόκολλα' }}@if ($total > $protocols->count()) <strong>από {{ $total }}: τα υπόλοιπα δεν χωρούν στο όριο των Ρυθμίσεων</strong>@endif
+@endsection
+@section('toolbar')<a class="secondary" href="{{ url('/printed').'?'.http_build_query($range->params() + ['target' => 'xls']) }}">Excel</a>@endsection
 
-    <title>Εκτύπωση Ηλ. Πρωτοκόλλου</title>
-
-    <!-- Styles -->
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <style>
-        @media print {
-            table {
-                page-break-after: auto
-            }
-
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto
-            }
-
-            td {
-                page-break-inside: avoid;
-                page-break-after: auto
-            }
-
-            thead {
-                display: table-header-group
-            }
-
-            tfoot {
-                display: table-footer-group
-            }
-        }
-
-        .table thead>tr>th.middle {
-            vertical-align: top;
-        }
-
-        .table tbody>tr>td.middle {
-            vertical-align: top;
-        }
-
-        .table tfoot>tr>td.middle {
-            vertical-align: middle;
-        }
-
-        .table-bordered td,
-        .table-bordered th {
-            border-color: black !important;
-        }
-
-    </style>
-</head>
-
-<body>
+@section('content')
     @include('partials.ignoredFiltersNotice')
-    <div class="col-md-12 ">
-        <div class="table-responsive">
-
-            <table class="table table-condensed table-bordered">
-                <thead>
-                    <tr>
-                        <th colspan=8>
-                            <div class="col-md-3">{{ $ipiresiasName }}</div>
-                            <div class="col-md-6 text-center">ΠΡΩΤΟΚΟΛΛΟ ΕΤΟΥΣ {{ $etos }}</div>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th rowspan=2 class="small middle"><span class='small'>Αύξ.Αριθ.<br><span
-                                    class='small'>Ημ.Παραλ.</span></th>
-                        <th colspan=3 class="small">
-                            <center><span class='small'>ΕΙΣΕΡΧΟΜΕΝΑ</center>
-                        </th>
-                        <th colspan=2 class="small">
-                            <center><span class='small'>ΕΞΕΡΧΟΜΕΝΑ</center>
-                        </th>
-                        <th class="small">
-                            <center><span class='small'>ΔΙΕΚΠΕΡΑΙΩΣΗ</center>
-                        </th>
-                        <th rowspan=2 class="small middle"><span
-                                class='small'>Φάκελος<br>&#x2727;Σχετ.αριθμοί<br>&#x2726;Παρατηρήσεις</span></th>
-                    </tr>
-                    <tr>
-                        <th class="small middle"><span class='small'>
-                                Αριθ/Ημ.Εισερχ.<br>&#x2727;Τόπος έκδοσης<br>&#x2726;Αρχή Έκδοσης</span></th>
-                        <th class="small middle"><span class='small'>Θέμα<br>&#x2727;Περίληψη Εισερχομένου</span></th>
-                        <th class="small middle"><span class='small'>Παραλήπτης</span></th>
-                        <th class="small middle"><span class='small'>Ημνια Εξερχ.<br>&#x2727;Απευθύνεται</span></th>
-                        <th class="small middle"><span class='small'>Περίληψη Εξερχόμενου</span></th>
-                        <th class="small middle"><span class='small'>Διεκπεραίωση<br>&#x2727;Ημνια Διεκπ.</span></th>
-                    </tr>
-                    <tr>
-                        <th class="small text-center"><span class='small'>1, 2</span></th>
-                        <th class="small text-center"><span class='small'>3, 4, 5</span></th>
-                        <th class="small text-center"><span class='small'>6</span></th>
-                        <th class="small text-center"><span class='small'>7</span></th>
-                        <th class="small text-center"><span class='small'>10, 8</span></span></th>
-                        <th class="small text-center"><span class='small'>9</span></th>
-                        <th class="small text-center"><span class='small'>11</span></th>
-                        <th class="small text-center"><span class='small'>13, 12</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($protocols as $protocol)
-                        <tr>
-                            <td class="small middle">
-                                <strong>{{ $protocol->protocolnum }}</strong><br>
-                                <span class='small'>{{ $protocol->protocoldate }}</span>
-                            </td>
-                            <td class="small middle">
-                                <span class='small'>
-                                    @if ($protocol->in_num)
-                                        {{ $protocol->in_num }}/
-                                    @endif
-                                    {{ $protocol->in_date }}
-                                    @if ($protocol->in_date and $protocol->in_topos_ekdosis)
-                                        <br>
-                                    @endif
-                                    @if ($protocol->in_topos_ekdosis)
-                                        &#x2727;{{ $protocol->in_topos_ekdosis }}
-                                    @endif
-                                    @if ($protocol->in_topos_ekdosis and $protocol->in_arxi_ekdosis)
-                                        <br>
-                                    @endif
-                                    @if (!$protocol->in_topos_ekdosis and ($protocol->in_date and $protocol->in_arxi_ekdosis))
-                                        <br>
-                                    @endif
-                                    @if ($protocol->in_arxi_ekdosis)
-                                        &#x2726;{{ $protocol->in_arxi_ekdosis }}
-                                    @endif
-                                </span>
-                            </td>
-                            <td class="small middle"><span class='small'>{{ $protocol->thema }}
-                                    @if ($protocol->in_perilipsi)
-                                        <br>&#x2727;{{ $protocol->in_perilipsi }}
-                                </span>
-                    @endif
+    @php $d = fn ($p, $c) => $p->dateOf($c)?->format('d/m/Y'); @endphp
+    <table class="print" id="protocol-book">
+        <thead>
+            <tr>
+                <th rowspan="2">Αύξ. αριθ.<br>Ημ. παραλ.</th>
+                <th colspan="3" style="text-align:center">ΕΙΣΕΡΧΟΜΕΝΑ</th>
+                <th colspan="2" style="text-align:center">ΕΞΕΡΧΟΜΕΝΑ</th>
+                <th style="text-align:center">ΔΙΕΚΠΕΡΑΙΩΣΗ</th>
+                <th rowspan="2">Φάκελος<br>✧ Σχετ. αριθμοί<br>✦ Παρατηρήσεις</th>
+            </tr>
+            <tr>
+                <th>Αριθ./Ημ. εισερχ.<br>✧ Τόπος έκδοσης<br>✦ Αρχή έκδοσης</th>
+                <th>Θέμα<br>✧ Περίληψη εισερχομένου</th>
+                <th>Παραλήπτης</th>
+                <th>Ημ/νία εξερχ.<br>✧ Απευθύνεται</th>
+                <th>Περίληψη εξερχομένου</th>
+                <th>Διεκπεραίωση<br>✧ Ημ/νία διεκπ.</th>
+            </tr>
+            <tr class="small">
+                <th>1, 2</th><th>3, 4, 5</th><th>6</th><th>7</th><th>10, 8</th><th>9</th><th>11</th><th>13, 12</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($protocols as $p)
+                <tr class="book-row">
+                    <td class="nowrap"><span class="num">{{ $p->protocolnum }}</span>@if ($range->year === null)<span class="small">/{{ $p->etos }}</span>@endif<br><span class="small">{{ $d($p, 'protocoldate') }}</span></td>
+                    <td class="break">
+                        {{ $p->in_num }}@if ($p->in_num && $p->in_date)/@endif{{ $d($p, 'in_date') }}
+                        @if ($p->in_topos_ekdosis)<br>✧ {{ $p->in_topos_ekdosis }}@endif
+                        @if ($p->in_arxi_ekdosis)<br>✦ {{ $p->in_arxi_ekdosis }}@endif
                     </td>
-                    <td class="small middle"><span class='small'>{{ $protocol->in_paraliptis }}</span></td>
-                    <td class="small middle"><span class='small'>
-                            {{ $protocol->out_date }}
-                            @if ($protocol->out_date and $protocol->out_to)
-                                <br>
-                            @endif
-                            @if ($protocol->out_to)
-                                &#x2727;{{ $protocol->out_to }}
-                            @endif
-                        </span></td>
-                    <td class="small middle"><span class='small'>{{ $protocol->out_perilipsi }}</span></td>
-                    <td class="small middle"><span class='small'>
-                            @if ($protocol->diekperaiosi)
-                                @php($str = 'd')
-                                @foreach (explode(',', $protocol->diekperaiosi) as $d)
-                                    @if ($d && strpos($str, substr($d, 0, 1)) !== false)
-                                        @if ($myUsers->where('id', '==', ltrim($d, $str))->count())
-                                            {{ $myUsers->where('id', '==', ltrim($d, $str))->first()->name }}
-                                        @else
-                                            {{ ltrim($d, $str) }}
-                                        @endif
-                                    @endif
-                                @endforeach
-                            @endif
-                            @if ($protocol->diekp_date)
-                                <br>&#x2727;{{ $protocol->diekp_date }}
-                            @endif
-                        </span></td>
-                    <td class="small middle"><span class='small'>
-                            {{ $protocol->fakelos }}
-                            @if ($protocol->fakelos and $protocol->sxetiko)
-                                <br>
-                            @endif
-                            @if ($protocol->sxetiko)
-                                &#x2727;{{ $protocol->sxetiko }}
-                            @endif
-                            @if ($protocol->sxetiko and $protocol->paratiriseis)
-                                <br>
-                            @endif
-                            @if (!$protocol->sxetiko and ($protocol->fakelos and $protocol->paratiriseis))
-                                <br>
-                            @endif
-                            @if ($protocol->paratiriseis)
-                                &#x2726;{{ $protocol->paratiriseis }}
-                            @endif
-                        </span>
+                    <td class="break">{{ $p->thema }}@if ($p->in_perilipsi)<br>✧ {{ $p->in_perilipsi }}@endif</td>
+                    <td class="break">{{ $p->in_paraliptis }}</td>
+                    <td class="break">{{ $d($p, 'out_date') }}@if ($p->out_to)@if ($p->out_date)<br>@endif✧ {{ $p->out_to }}@endif</td>
+                    <td class="break">{{ $p->out_perilipsi }}</td>
+                    <td class="break">{{ $handlers[$p->id] ?? '' }}@if ($p->diekp_date)<br>✧ {{ $d($p, 'diekp_date') }}@endif</td>
+                    <td class="break">
+                        {{ $p->fakelos }}
+                        @if ($p->sxetiko)<br>✧ {{ $p->sxetiko }}@endif
+                        @if ($p->paratiriseis)<br>✦ {{ $p->paratiriseis }}@endif
                     </td>
-                    </tr>
-                    @endforeach
-                    @if (!count($protocols))
-                        <tr>
-                            <td class="small" colspan=8>Δεν υπάρχουν Πρωτόκολλα τα οποία ικανοποιούν τα
-                                κριτήρια που θέσατε.</td>
-                        </tr>
-                    @endif
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td class="small" colspan=7>Εκτυπώθηκε: {{ $datetime }}</td>
-                        <td class="small text-right">Σελ ........</td>
-                    </tr>
-                </tfoot>
-            </table>
-
-        </div>
-    </div>
-</body>
-
-</html>
+                </tr>
+            @empty
+                <tr><td colspan="8" class="empty">Δεν υπάρχουν πρωτόκολλα που να ταιριάζουν.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+@endsection

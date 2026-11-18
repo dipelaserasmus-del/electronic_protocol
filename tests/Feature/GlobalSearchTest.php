@@ -11,7 +11,7 @@ class GlobalSearchTest extends FeatureTestCase
     {
         $admin = $this->admin();
         $this->actingAs($admin)->get('/home/list')->assertOk()->assertSee('id="app-search-q"', false)->assertSee('action="' . url('/search') . '"', false);
-        $this->actingAs($admin)->get('/print')->assertOk()->assertSee('action="' . url('/search') . '"', false);   // legacy layout
+        $this->actingAs($admin)->get('/print')->assertOk()->assertSee('action="' . url('/search') . '"', false);   // R7: no logged-in page is on the old layout any more
         auth()->logout();
         $this->get('/login')->assertDontSee('id="app-search-q"', false);
     }

@@ -31,17 +31,17 @@ class MailSendingTest extends FeatureTestCase
         $this->assertStringContainsString('απόδειξη παραλαβής σε sender@example.test', $p->paratiriseis);
     }
 
-    /** was: known_bug_send_receipt_button_fails */
+    /** was: known_bug_send_receipt_button_fails; R7: the button is the protocol form's (the old POST /receiptToEmail is gone) */
     public function test_send_receipt_button_sends_the_email(): void
     {
         $p = Protocol::factory()->number(1)->create();
 
-        $this->actingAs($this->writer())
-            ->post('/receiptToEmail', ['id' => $p->id, 'email' => 'sender@example.test'])
-            ->assertOk();
+        \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])
+            ->set('receiptEmail', 'sender@example.test')->call('sendReceipt')->assertDispatched('toast', type: 'success');
 
         $this->assertCount(1, $this->sentMails());
         $this->assertStringContainsString('απόδειξη παραλαβής', $p->fresh()->paratiriseis);
+        $this->actingAs($this->writer())->post('/receiptToEmail', ['id' => $p->id, 'email' => 'sender@example.test'])->assertNotFound();
     }
 
     public function test_assignment_notifies_the_assignees_through_the_internal_mailer(): void
@@ -79,9 +79,8 @@ class MailSendingTest extends FeatureTestCase
         config(['mail.mailers.smtp' => ['transport' => 'smtp', 'host' => '127.0.0.1', 'port' => 1, 'timeout' => 2], 'mail.default' => 'smtp']);
         $p = Protocol::factory()->number(1)->create();
 
-        $this->actingAs($this->writer())
-            ->post('/receiptToEmail', ['id' => $p->id, 'email' => 'sender@example.test'])
-            ->assertStatus(502)
-            ->assertJsonPath('error', 'Αποτυχία αποστολής email. Η αιτία καταγράφηκε στο αρχείο καταγραφής.');
+        \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\ProtocolForm::class, ['protocol' => $p])
+            ->set('receiptEmail', 'sender@example.test')->call('sendReceipt')->assertDispatched('toast', type: 'error');
+        $this->assertStringNotContainsString('απόδειξη παραλαβής', (string) $p->fresh()->paratiriseis);
     }
 }
