@@ -160,6 +160,15 @@ class SearchTest extends FeatureTestCase
         $this->assertSame(['Χωρίς ΑΔΑ'], $this->subjects($this->criteria(['text' => ['name' => 'εγγραφο']])));
         $this->assertSame(['Χωρίς ΑΔΑ'], $this->subjects($this->criteria(['empty' => ['ada']])), 'an attachment without ΑΔΑ');
         $this->assertSame(['Χωρίς συνημμένο', 'Χωρίς ΑΔΑ'], $this->subjects($this->criteria(['empty' => ['keywords']])), 'NULL and empty text');
+
+        // review of R3a: name and ΑΔΑ must be on the same attachment
+        $two = Protocol::factory()->number(4)->create(['thema' => 'Δύο συνημμένα']);
+        Attachment::factory()->create(['protocol_id' => $two->id, 'name' => 'Τιμολόγιο.pdf', 'ada' => null]);
+        Attachment::factory()->create(['protocol_id' => $two->id, 'name' => 'Απόφαση.pdf', 'ada' => '9ΧΥΖ46ΜΤΛΗ-ΔΕΖ']);
+        $this->assertSame([], $this->subjects($this->criteria(['text' => ['name' => 'τιμολογιο', 'ada' => '9ΧΥΖ']])));
+        $this->assertSame(['Δύο συνημμένα'], $this->subjects($this->criteria(['text' => ['name' => 'αποφαση', 'ada' => '9ΧΥΖ']])));
+        $this->assertSame(['Δύο συνημμένα'], $this->subjects($this->criteria(['text' => ['name' => 'τιμολογιο'], 'empty' => ['ada']])));
+        $this->assertSame([], $this->subjects($this->criteria(['text' => ['name' => 'αποφαση', 'ada' => '9ΧΥΖ'], 'empty' => ['ada']])));
     }
 
     public function test_limited_writers_only_find_their_own_or_assigned_protocols(): void

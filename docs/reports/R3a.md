@@ -87,5 +87,10 @@
   ![pending check](img/R3a/pending-check.png)
   ![nothing pending](img/R3a/no-pending.png)
 
+## Review (Codex)
+- A filter on the attachment name and one on the ΑΔΑ could be met by two different attachments of the same protocol.
+  Now every attachment condition must hold for the same attachment, as in the old search. This covers the name, the
+  ΑΔΑ and "ΑΔΑ empty". Tested in `SearchTest::test_empty_fields_and_attachments`.
+
 ## Owner actions
 - None. Try *Αναζήτηση → Έλεγχος εκκρεμοτήτων* for a month of your real copy (8081).
