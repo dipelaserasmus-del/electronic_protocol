@@ -11,11 +11,6 @@
         "auth",
         "web"
     ],
-    "GET backup": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
     "GET backups": [
         "admin:home",
         "auth",
@@ -25,21 +20,6 @@
         "auth",
         "web",
         "writer:home/list"
-    ],
-    "GET delDeleted": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
-    "GET delExpired": [
-        "admin:home",
-        "auth",
-        "web"
-    ],
-    "GET deleteBackup/{name}": [
-        "admin:home",
-        "auth",
-        "web"
     ],
     "GET download/{attachment}": [
         "auth",
@@ -245,11 +225,6 @@
     "POST register": [
         "guest",
         "throttle:5,1",
-        "web"
-    ],
-    "POST settings": [
-        "admin:home",
-        "auth",
         "web"
     ]
 }

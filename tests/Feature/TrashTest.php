@@ -185,26 +185,26 @@ class TrashTest extends FeatureTestCase
 
     public function test_retention_setting_is_validated(): void
     {
-        $admin = $this->admin();
-        $base = \App\Models\Config::getConfigValues()->all();
-        $this->actingAs($admin)->from('/settings')->post('/settings', ['trashRetentionDays' => '-1'] + $base)->assertSessionHasErrors('trashRetentionDays');
-        $this->actingAs($admin)->post('/settings', ['trashRetentionDays' => '7'] + $base)->assertSessionHasNoErrors();
+        $page = Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class);
+        $page->set('values.trashRetentionDays', '-1')->call('save')->assertHasErrors('values.trashRetentionDays');
+        $page->set('values.trashRetentionDays', '7')->call('save')->assertHasNoErrors();
         $this->assertSame(7, app(Trash::class)->retentionDays());
     }
 
-    public function test_legacy_clean_up_pages_use_the_trash(): void
+    /** R6c: "Εκκαθάριση" moves expired files to the trash (was GET /delExpired); emptying it is the trash page's */
+    public function test_clean_up_page_uses_the_trash(): void
     {
         $p = Protocol::factory()->number(1)->create();
         $expired = $this->file($p, 'ληγμένο.pdf');
         DB::table('attachments')->where('id', $expired->id)->update(['expires' => '2000-01-01']);
         $admin = $this->admin();
 
-        $this->actingAs($admin)->from('/arxeio')->get('/delExpired')->assertRedirect('/arxeio');
+        Livewire::actingAs($admin)->test(\App\Livewire\ArchivePage::class)->call('trashExpired')->assertDispatched('toast');
         $row = Attachment::withTrashed()->find($expired->id);
         $this->assertSame(['trash/Φ.1/ληγμένο.pdf', 'arxeio/Φ.1/ληγμένο.pdf', $admin->id], [$row->savedPath, $row->trashed_from, $row->deleted_by]);
 
         Storage::put('trash/άσχετο.txt', 'not an attachment');
-        $this->actingAs($admin)->from('/arxeio')->get('/delDeleted')->assertRedirect('/arxeio');
+        Livewire::actingAs($admin)->test(TrashPage::class)->call('purgeAll');
         $this->assertNull(Attachment::withTrashed()->find($expired->id));
         Storage::assertMissing('trash/Φ.1/ληγμένο.pdf');
         Storage::assertExists('trash/άσχετο.txt');

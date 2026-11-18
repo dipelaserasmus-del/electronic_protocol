@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Storage;
  */
 class BackupTest extends FeatureTestCase
 {
+    /** R6c: "Νέο αντίγραφο" on the backups page (was GET /backup); the message's type (success / error) */
+    private function createBackup(string $expected): void
+    {
+        \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\BackupPage::class)->call('create')
+            ->assertDispatched('toast', type: $expected);
+    }
+
     private function backupFiles(): array
     {
         return Storage::disk('local')->files(DatabaseBackup::DIR);
@@ -20,9 +27,7 @@ class BackupTest extends FeatureTestCase
     {
         $this->setting('mysqldumpPath', '/usr/bin/mysqldump');
 
-        $this->actingAs($this->admin())->from('/backups')->get('/backup')
-            ->assertRedirect('/backups')
-            ->assertSessionHas('notification.alert-type', 'success');
+        $this->createBackup('success');
 
         $files = $this->backupFiles();
         $this->assertCount(1, $files);
@@ -38,8 +43,7 @@ class BackupTest extends FeatureTestCase
     {
         config(['database.connections.mysql.password' => 'wrong-password']);
 
-        $this->actingAs($this->admin())->from('/backups')->get('/backup')
-            ->assertSessionHas('notification.alert-type', 'error');
+        $this->createBackup('error');
 
         $this->assertSame([], $this->backupFiles());
     }
@@ -49,7 +53,7 @@ class BackupTest extends FeatureTestCase
         // the old code put the password unquoted into a shell command; this one would have broken it
         config(['database.connections.mysql.password' => 'a b$c&d"e\\f']);
 
-        $this->actingAs($this->admin())->get('/backup')->assertSessionHas('notification.alert-type', 'error');
+        $this->createBackup('error');
         $this->assertSame([], $this->backupFiles(), 'only the login fails; nothing is run by a shell');
     }
 
@@ -63,7 +67,7 @@ class BackupTest extends FeatureTestCase
     {
         $this->setting('mysqldumpPath', 'c:\xampp\mysql\bin\mysqldump.exe');
 
-        $this->actingAs($this->admin())->get('/backup')->assertSessionHas('notification.alert-type', 'success');
+        $this->createBackup('success');
         $this->assertCount(1, $this->backupFiles());
     }
 
@@ -77,10 +81,13 @@ class BackupTest extends FeatureTestCase
             ->assertOk()->assertHeader('Content-Type', 'application/gzip');
         $this->actingAs($admin)->get('/downloadBackup/..%2F..%2Fsecret.txt')->assertNotFound();
         $this->actingAs($admin)->get('/downloadBackup/missing_back_1.sql.gz')->assertNotFound();
-        $this->actingAs($admin)->get('/deleteBackup/..%2Fsecret.txt')->assertNotFound();
+        $page = \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\BackupPage::class)->assertSee('testing_back_20261116120000.sql.gz');
+        $page->call('delete', '../secret.txt')->assertNotFound();
         $this->assertTrue(Storage::disk('local')->exists('secret.txt'));
+        $this->actingAs($admin)->get('/deleteBackup/testing_back_20261116120000.sql.gz')->assertNotFound();   // R6c: no GET delete
 
-        $this->actingAs($admin)->get('/deleteBackup/testing_back_20261116120000.sql.gz')->assertRedirect();
+        \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\BackupPage::class)->call('delete', 'testing_back_20261116120000.sql.gz')
+            ->assertDontSee('testing_back_20261116120000.sql.gz');
         $this->assertSame([], $this->backupFiles());
     }
 
@@ -120,7 +127,9 @@ class BackupTest extends FeatureTestCase
 
     public function test_backup_pages_are_for_admins_only(): void
     {
-        $this->actingAs($this->writer())->get('/backup')->assertRedirect();
+        $this->actingAs($this->writer())->get('/backups')->assertRedirect();
+        \Livewire\Livewire::actingAs($this->writer())->test(\App\Livewire\BackupPage::class)->assertForbidden();
+        $this->actingAs($this->admin())->get('/backup')->assertNotFound();   // R6c: creating is an action of the page, not a link
         $this->assertSame([], $this->backupFiles());
     }
 }

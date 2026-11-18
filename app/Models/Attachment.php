@@ -122,4 +122,11 @@ class Attachment extends Model
         }
         return null;
     }
+
+    /** R6c: the end of the keeping time as a date (the attribute itself is Ymd for legacy code until Z01), or null */
+    public function expiresDate(): ?\Carbon\CarbonImmutable
+    {
+        $raw = $this->getAttributes()['expires'] ?? null;
+        return is_string($raw) && preg_match('/^\d{4}-\d{2}-\d{2}/', $raw) ? \Carbon\CarbonImmutable::parse(substr($raw, 0, 10))->startOfDay() : null;
+    }
 }

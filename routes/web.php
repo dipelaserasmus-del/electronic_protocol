@@ -84,18 +84,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/viewEmailAttachment/{uid}/{key}', [InboxController::class, 'attachment']);
     Route::get('/viewEmailHtml/{uid}', [InboxController::class, 'html']);
 
+    // R6c: Livewire pages; saving, creating and deleting are their actions (no more GET links that change things)
     Route::get('/settings', [ConfigController::class, 'index']);
-    Route::post('/settings', [ConfigController::class, 'store']);
-
     Route::get('/backups', [ConfigController::class, 'backups']);
-    Route::get('/backup', [ConfigController::class, 'backup']);
     Route::get('/downloadBackup/{name}', [ConfigController::class, 'downloadBackup']);
-    Route::get('/deleteBackup/{name}', [ConfigController::class, 'deleteBackup']);
-
     Route::get('/arxeio', [ConfigController::class, 'arxeio']);
     Route::get('/expired/{deleted?}', [ConfigController::class, 'expired']);
-    Route::get('/delExpired', [ConfigController::class, 'delExpired']);
-    Route::get('/delDeleted', [ConfigController::class, 'delDeleted']);
 });
 
 // N04: the shared components in one page (browser tests, trying them out). Never in production.
