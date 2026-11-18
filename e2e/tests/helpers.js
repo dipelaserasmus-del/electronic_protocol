@@ -27,19 +27,26 @@ async function toasts(page) {
 
 /**
  * Change one setting through Ρυθμίσεις (logged in as admin) and return its previous value, so the test can put it
- * back. The settings form posts every setting, as a user would.
+ * back. R6c: the settings page (Livewire) saves every setting, as a user would; switches take 0/1.
  */
 async function setSetting(page, name, value) {
   await page.goto('/settings');
-  const field = page.locator(`[name="${name}"]`);
-  const previous = await field.inputValue();
-  if ((await field.evaluate((el) => el.tagName)) === 'SELECT') await field.selectOption(String(value));
-  else await field.fill(String(value));
-  // the page stays at /settings: wait for the saved page itself, not for an address the browser is already on
-  const saved = page.waitForEvent('framenavigated', (frame) => frame === page.mainFrame());
-  await page.evaluate(() => document.forms['configform'].submit());
+  const field = page.locator(`#s-${name}`);
+  let previous;
+  if ((await field.getAttribute('type')) === 'checkbox') {
+    previous = (await field.isChecked()) ? '1' : '0';
+    await field.setChecked(String(value) === '1');
+  } else if ((await field.evaluate((el) => el.tagName)) === 'SELECT') {
+    previous = await field.inputValue();
+    await field.selectOption(String(value));
+  } else {
+    previous = await field.inputValue();
+    await field.fill(String(value));
+  }
+  const saved = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+  await page.locator('#settings-save').click();
   await saved;
-  await page.waitForLoadState('load');
+  await page.locator('#app-toasts .toast', { hasText: /Αποθηκεύτηκαν|Καμία αλλαγή/ }).first().waitFor();
   return previous;
 }
 

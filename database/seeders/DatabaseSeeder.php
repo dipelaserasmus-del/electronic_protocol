@@ -111,27 +111,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('configs')->insert([
-            'key' => 'searchField1',
-            'value' => 'thema',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
-            'key' => 'searchField2',
-            'value' => 'in_arxi_ekdosis',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
-            'key' => 'searchField3',
-            'value' => 'ada',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
             'key' => 'maxRowsInFindPage',
             'value' => 30,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
@@ -197,13 +176,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('configs')->insert([
-            'key' => 'showUserInfo',
-            'value' => 2,
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
             'key' => 'allowEmptyProtocol',
             'value' => null,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
@@ -248,13 +220,6 @@ class DatabaseSeeder extends Seeder
         DB::table('configs')->insert([
             'key' => 'emailFetchOrderDesc',
             'value' => 0,
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
-            'key' => 'allowListValuesMatchingInput',
-            'value' => 1,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);

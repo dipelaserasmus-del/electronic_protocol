@@ -93,7 +93,7 @@ class DateColumnsTest extends FeatureTestCase
         $old = Attachment::factory()->withFile()->create(['expires' => 20200101]);
         $current = Attachment::factory()->withFile()->create(['expires' => 29990101]);
 
-        $this->actingAs($this->admin())->from('/settings')->get('/delExpired')->assertRedirect();
+        \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\ArchivePage::class)->call('trashExpired');   // R6c (was GET /delExpired)
 
         $this->assertTrue(Attachment::withTrashed()->find($old->id)->trashed());
         $this->assertFalse(Attachment::withTrashed()->find($current->id)->trashed());

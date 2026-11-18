@@ -92,7 +92,7 @@ class AttachmentMetadataTest extends FeatureTestCase
         $old = Attachment::factory()->withFile()->create(['expires' => 20200101]);
         $current = Attachment::factory()->withFile()->create(['expires' => 29990101]);
 
-        $this->actingAs($admin)->from('/settings')->get('/delExpired')->assertRedirect();
+        \Livewire\Livewire::actingAs($admin)->test(\App\Livewire\ArchivePage::class)->call('trashExpired');   // R6c (was GET /delExpired)
 
         $this->assertSame($admin->id, Attachment::withTrashed()->find($old->id)->deleted_by);
         $this->assertNull(Attachment::find($current->id)->deleted_by);

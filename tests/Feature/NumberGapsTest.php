@@ -142,19 +142,17 @@ class NumberGapsTest extends FeatureTestCase
 
     public function test_settings_are_saved_and_validated(): void
     {
-        $admin = $this->admin();
-        $base = ['ipiresiasName' => 'Σχολείο', 'firstProtocolNum' => 1, 'showRowsInPage' => 25,
-                 'protocolArrowStep' => 10, 'minutesRefreshInterval' => 5];
-
-        $this->actingAs($admin)->post('/settings', ['firstProtocolNum' => 1000] + $base + ['gapCheckFromNumber' => 7, 'gapCheckMonths' => 4])
-            ->assertRedirect('/settings');
+        $page = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class);
+        $page->set('values.firstProtocolNum', '1000')->set('values.gapCheckMonths', '4')
+            ->set('values.gapCheckFromNumber', '7')   // R2c: the old setting is not stored (R6c: only known keys are)
+            ->call('save')->assertHasNoErrors();
         $this->assertSame('1000', \App\Models\Config::getConfigValueOf('firstProtocolNum'));
         $this->assertFalse(\App\Models\Config::where('key', 'gapCheckFromNumber')->exists(), 'R2c: the old setting is not stored');
         // 0 is the installer's value (= 1): the page must still save
-        $this->actingAs($admin)->post('/settings', ['firstProtocolNum' => 0] + $base)->assertSessionHasNoErrors();
+        $page->set('values.firstProtocolNum', '0')->call('save')->assertHasNoErrors();
         $this->assertSame('4', \App\Models\Config::getConfigValueOf('gapCheckMonths'));
 
-        $this->actingAs($admin)->post('/settings', $base + ['gapCheckMonths' => 99])->assertSessionHasErrors('gapCheckMonths');
+        $page->set('values.gapCheckMonths', '99')->call('save')->assertHasErrors('values.gapCheckMonths');
     }
 
     /** R2c (owner): missing numbers are rows of the list, a run of them one row, with a button for its first number. */
