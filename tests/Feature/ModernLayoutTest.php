@@ -27,12 +27,24 @@ class ModernLayoutTest extends FeatureTestCase
         $this->setting('defaultImapEmail', 'default');
         $this->setting('allowedEmailUsers', '');
 
-        $admin = $this->labels($this->admin());
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Αναζήτηση', 'Εκτύπωση', 'Διατήρηση', 'Διαχείριση'], $admin);
+        // R3d (owner, 2026-11-18): Εκτύπωση and Διατήρηση are under Διαχείριση; Αναζήτηση is in the search box
+        $admin = $this->admin();
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($admin));
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($this->assigner()));
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($this->writer()));
+        $this->assertSame(['Νέο', 'Λίστα', 'Διαχείριση'], $this->labels($this->reader()), 'readers never register e-mails');
 
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Αναζήτηση', 'Εκτύπωση', 'Διατήρηση'], $this->labels($this->assigner()));
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Αναζήτηση', 'Εκτύπωση', 'Διατήρηση'], $this->labels($this->writer()));
-        $this->assertSame(['Νέο', 'Λίστα', 'Αναζήτηση', 'Εκτύπωση', 'Διατήρηση'], $this->labels($this->reader()), 'readers never register e-mails');
+        $manage = fn ($user) => array_values(array_filter(array_column($this->children($user, 'Διαχείριση'), 'label')));
+        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Διατήρηση', 'Χρήστες', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Ρυθμίσεις'], $manage($admin));
+        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Διατήρηση'], $manage($this->writer()), 'only administrators manage the rest');
+        foreach (Navigation::for($admin) as $item) {
+            $this->assertNotEmpty($item['icon'] ?? null, "icon for {$item['label']}");
+            foreach ($item['children'] ?? [] as $child) {
+                if (isset($child['label']) && ! isset($child['links'])) {
+                    $this->assertNotEmpty($child['icon'] ?? null, "icon for {$child['label']}");
+                }
+            }
+        }
     }
 
     public function test_inbox_link_needs_an_account_and_the_user_in_the_allowed_list(): void
@@ -56,9 +68,11 @@ class ModernLayoutTest extends FeatureTestCase
     {
         $this->setting('limitProtocolAccessList', 1);
 
-        $this->assertNotContains('Εκτύπωση', $this->labels($this->writer()));
-        $this->assertNotContains('Εκτύπωση', $this->labels($this->reader()));
-        $this->assertContains('Εκτύπωση', $this->labels($this->assigner()), 'the limit only applies to writers/readers');
+        $manage = fn ($user) => array_column($this->children($user, 'Διαχείριση'), 'label');
+        $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->writer()));
+        $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->reader()));
+        $this->assertContains('Διατήρηση', $manage($this->reader()));
+        $this->assertContains('Εκτύπωση πρωτοκόλλου', $manage($this->assigner()), 'the limit only applies to writers/readers');
     }
 
     public function test_admin_and_assigner_get_lists_of_all_users_and_per_user(): void
@@ -118,6 +132,36 @@ class ModernLayoutTest extends FeatureTestCase
     private function children(User $user, string $label): array
     {
         return collect(Navigation::for($user))->firstWhere('label', $label)['children'];
+    }
+
+    /** R3d: the institution under the name, the search box with its two buttons, icons */
+    public function test_top_bar_brand_search_buttons_and_icons(): void
+    {
+        $this->setting('ipiresiasName', 'Σχολείο Δοκιμών');
+        $this->actingAs($this->writer())->get('/about')->assertOk()
+            ->assertSeeInOrder(['app-brand', 'brand-institution', 'Σχολείο Δοκιμών'], false)
+            ->assertSee('id="app-search-advanced"', false)->assertSee('href="'.url('/find').'"', false)
+            ->assertSee('bi bi-file-earmark-plus', false)->assertSee('bi bi-search', false)
+            ->assertDontSee('>Αναζήτηση</a>', false);
+    }
+
+    /** R3d: page width, saved per user (owner, 2026-11-18) */
+    public function test_page_width_is_saved_per_user(): void
+    {
+        [$a, $b] = [$this->writer(), $this->writer()];
+        $this->actingAs($a)->get('/about')->assertDontSee('layout-narrow', false);
+
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'width', 'value' => 'narrow'])->assertOk()->assertJson(['saved' => true, 'value' => 'narrow']);
+        $this->actingAs($a)->get('/about')->assertSee('layout-narrow', false)->assertSee('data-value="narrow" data-url="'.url('/preferences').'"', false);
+        $this->actingAs($b)->get('/about')->assertDontSee('layout-narrow', false);   // another user keeps the default
+
+        // only known choices are kept
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'width', 'value' => '50%'])->assertStatus(422);
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'role_id', 'value' => 1])->assertStatus(422);
+        $this->assertSame(['width' => 'narrow'], $a->fresh()->preferences);
+
+        auth()->logout();
+        $this->postJson('/preferences', ['key' => 'width', 'value' => 'full'])->assertUnauthorized();
     }
 }
 

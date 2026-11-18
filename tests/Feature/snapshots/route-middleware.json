@@ -251,6 +251,11 @@
         "guest",
         "web"
     ],
+    "POST preferences": [
+        "auth",
+        "throttle:60,1",
+        "web"
+    ],
     "POST printed": [
         "auth",
         "limitList",

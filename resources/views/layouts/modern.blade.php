@@ -11,6 +11,8 @@
     $topbarColor = (string) \App\Models\Config::getConfigValueOf('titleColor');
     $topbarColor = preg_match('/^(#[0-9a-fA-F]{3,8}|[a-zA-Z]{3,20})$/', $topbarColor) ? $topbarColor : null;
     $notification = session('notification');
+    // R3d: the user's page width (full window, or narrow and centred), saved with the account
+    $narrow = $user && \App\Support\UserPreferences::get($user, 'width') === 'narrow';
 @endphp
 <!DOCTYPE html>
 <html lang="el">
@@ -23,13 +25,15 @@
     @vite(['resources/modern/app.scss', 'resources/modern/app.js'])
     @livewireStyles
 </head>
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
      aria-label="Κύριο μενού">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ $user ? \App\Support\Navigation::landing($user) : url('/') }}">
-            {{ $brandName }} @if ($institution)<small class="ms-2 brand-institution">{{ $institution }}</small>@endif
+        {{-- R3d: the institution under the application's name (two short lines instead of one long one) --}}
+        <a class="navbar-brand app-brand" href="{{ $user ? \App\Support\Navigation::landing($user) : url('/') }}">
+            <span class="d-block">{{ $brandName }}</span>
+            @if ($institution)<small class="d-block brand-institution" title="{{ $institution }}">{{ $institution }}</small>@endif
         </a>
         @auth
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#app-nav"
@@ -42,7 +46,7 @@
                         @if (isset($item['children']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                   aria-expanded="false" id="nav-{{ $i }}">{{ $item['label'] }}</a>
+                                   aria-expanded="false" id="nav-{{ $i }}"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
                                 <ul class="dropdown-menu" aria-labelledby="nav-{{ $i }}">
                                     @foreach ($item['children'] as $child)
                                         @if (isset($child['divider']))
@@ -51,13 +55,13 @@
                                             <li><h6 class="dropdown-header">{{ $child['header'] }}</h6></li>
                                         @elseif (isset($child['links']))
                                             <li class="d-flex align-items-center pe-2">
-                                                <a class="dropdown-item flex-grow-1" href="{{ $child['url'] }}">{{ $child['label'] }}</a>
+                                                <a class="dropdown-item flex-grow-1" href="{{ $child['url'] }}"><i class="bi bi-person me-2" aria-hidden="true"></i>{{ $child['label'] }}</a>
                                                 @foreach ($child['links'] as $short => $url)
                                                     <a class="badge rounded-pill text-bg-light text-decoration-none ms-1" href="{{ $url }}">{{ $short }}</a>
                                                 @endforeach
                                             </li>
                                         @else
-                                            <li><a class="dropdown-item" href="{{ $child['url'] }}">{{ $child['label'] }}</a></li>
+                                            <li><a class="dropdown-item" href="{{ $child['url'] }}">@if (isset($child['icon']))<i class="bi bi-{{ $child['icon'] }} me-2" aria-hidden="true"></i>@endif{{ $child['label'] }}</a></li>
                                         @endif
                                     @endforeach
                                 </ul>
@@ -66,7 +70,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @if (url()->current() === $item['url']) active @endif"
                                    @if (url()->current() === $item['url']) aria-current="page" @endif
-                                   href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                                   href="{{ $item['url'] }}"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
                             </li>
                         @endif
                     @endforeach
@@ -79,15 +83,24 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                            aria-expanded="false" id="nav-user">
-                            {{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span>
+                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-user">
-                            <li><a class="dropdown-item" href="{{ url('/about') }}">Περί…</a></li>
+                            {{-- R3d: page width, saved with the account (resources/modern/preferences.js) --}}
+                            <li><h6 class="dropdown-header">Πλάτος σελίδας</h6></li>
+                            <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="full" data-url="{{ url('/preferences') }}"
+                                        aria-pressed="{{ $narrow ? 'false' : 'true' }}"><i class="bi bi-arrows-angle-expand me-2" aria-hidden="true"></i>Όλη η οθόνη
+                                    <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
+                            <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="narrow" data-url="{{ url('/preferences') }}"
+                                        aria-pressed="{{ $narrow ? 'true' : 'false' }}"><i class="bi bi-arrows-angle-contract me-2" aria-hidden="true"></i>Στενό, στο κέντρο
+                                    <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url('/about') }}"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Περί…</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ url('/logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item">Έξοδος</button>
+                                    <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Έξοδος</button>
                                 </form>
                             </li>
                         </ul>

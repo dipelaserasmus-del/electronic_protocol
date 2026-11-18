@@ -25,35 +25,43 @@ final class Navigation
         return url(config('landing-page.page.'.$user->role_id, Home::LIST));
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * R3d (owner, 2026-11-18): four items so the bar fits a 1920 × 1080 screen with the search box: Νέο, Λίστα,
+     * Εισερχόμενα and Διαχείριση, which now also holds Εκτύπωση and Διατήρηση (every role) above the administrators'
+     * items. Αναζήτηση moved into the search box. Every item has an icon (Bootstrap Icons name in 'icon').
+     *
+     * @return list<array<string, mixed>>
+     */
     public static function for(User $user): array
     {
         $role = $user->role?->role;
-        $items = [['label' => 'Νέο', 'url' => url('/home')]];
-        $items[] = ['label' => 'Λίστα', 'children' => self::lists($user, $role)];
+        $items = [['label' => 'Νέο', 'icon' => 'file-earmark-plus', 'url' => url('/home')]];
+        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'children' => self::lists($user, $role)];
 
         if ($role !== self::READER && InboxAccess::allows($user)) {
-            $items[] = ['label' => 'Εισερχόμενα', 'url' => url('/viewEmails')];
+            $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/viewEmails')];
         }
-        $items[] = ['label' => 'Αναζήτηση', 'url' => url('/find')];
+
+        $manage = [];
         // printing lists every protocol, so it is hidden when the list is limited for writers/readers
         // (same rule as ProtocolController::limitProtocolAccessList, but for this user, not the logged-in one)
         if (! (in_array($role, [self::WRITER, self::READER], true) && Config::getConfigValueOf('limitProtocolAccessList'))) {
-            $items[] = ['label' => 'Εκτύπωση', 'children' => [
-                ['label' => 'Πρωτόκολλο', 'url' => url('/print')],
-                ['label' => 'Συνημμένα', 'url' => url('/printAttachments')],
-            ]];
+            $manage[] = ['label' => 'Εκτύπωση πρωτοκόλλου', 'icon' => 'printer', 'url' => url('/print')];
+            $manage[] = ['label' => 'Εκτύπωση συνημμένων', 'icon' => 'paperclip', 'url' => url('/printAttachments')];
         }
-        $items[] = ['label' => 'Διατήρηση', 'url' => url('/keep')];
+        $manage[] = ['label' => 'Διατήρηση', 'icon' => 'archive', 'url' => url('/keep')];
         if ($role === self::ADMIN) {
-            $items[] = ['label' => 'Διαχείριση', 'children' => [
-                ['label' => 'Χρήστες', 'url' => url('/users')],
-                ['label' => 'Backup', 'url' => url('/backups')],
-                ['label' => 'Εκκαθάριση', 'url' => url('/arxeio')],
-                ['label' => 'Κάδος', 'url' => url('/trash')],
-                ['label' => 'Ρυθμίσεις', 'url' => url('/settings')],
-            ]];
+            array_push($manage,
+                ['divider' => true],
+                ['header' => 'Διαχειριστής'],
+                ['label' => 'Χρήστες', 'icon' => 'people', 'url' => url('/users')],
+                ['label' => 'Backup', 'icon' => 'database-down', 'url' => url('/backups')],
+                ['label' => 'Εκκαθάριση', 'icon' => 'eraser', 'url' => url('/arxeio')],
+                ['label' => 'Κάδος', 'icon' => 'trash3', 'url' => url('/trash')],
+                ['label' => 'Ρυθμίσεις', 'icon' => 'sliders', 'url' => url('/settings')],
+            );
         }
+        $items[] = ['label' => 'Διαχείριση', 'icon' => 'gear', 'children' => $manage];
 
         return $items;
     }
@@ -61,12 +69,12 @@ final class Navigation
     private static function lists(User $user, ?string $role): array
     {
         $lists = [
-            ['label' => 'Όλα τα πρωτόκολλα', 'url' => self::landing($user)],
+            ['label' => 'Όλα τα πρωτόκολλα', 'icon' => 'collection', 'url' => self::landing($user)],
             ['divider' => true],
             ['header' => 'Δικά μου'],
-            ['label' => 'προς Διεκπεραίωση', 'url' => url('/home/list/d')],
-            ['label' => 'προς Ενημέρωση', 'url' => url('/home/list/e')],
-            ['label' => 'Διεκπεραιώθηκε', 'url' => url('/home/list/f')],
+            ['label' => 'προς Διεκπεραίωση', 'icon' => 'hourglass-split', 'url' => url('/home/list/d')],
+            ['label' => 'προς Ενημέρωση', 'icon' => 'bell', 'url' => url('/home/list/e')],
+            ['label' => 'Διεκπεραιώθηκε', 'icon' => 'check2-circle', 'url' => url('/home/list/f')],
         ];
         if (! in_array($role, [self::ADMIN, self::ASSIGNER], true)) {
             return $lists;
@@ -75,9 +83,9 @@ final class Navigation
         array_push($lists,
             ['divider' => true],
             ['header' => 'Όλοι οι χρήστες'],
-            ['label' => 'προς Διεκπεραίωση', 'url' => url('/home/list/d/a')],
-            ['label' => 'προς Ενημέρωση', 'url' => url('/home/list/e/a')],   // the old menu's link here went to /d by mistake
-            ['label' => 'Διεκπεραιώθηκε', 'url' => url('/home/list/f/a')],
+            ['label' => 'προς Διεκπεραίωση', 'icon' => 'hourglass-split', 'url' => url('/home/list/d/a')],
+            ['label' => 'προς Ενημέρωση', 'icon' => 'bell', 'url' => url('/home/list/e/a')],   // the old menu's link here went to /d by mistake
+            ['label' => 'Διεκπεραιώθηκε', 'icon' => 'check2-circle', 'url' => url('/home/list/f/a')],
             ['divider' => true],
             ['header' => 'Ανά χρήστη'],
         );

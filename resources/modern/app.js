@@ -2,9 +2,11 @@
 // The shared components work with plain event delegation, so they also work on pages without Livewire and on
 // content Livewire adds later.
 import * as bootstrap from 'bootstrap';
+import 'bootstrap-icons/font/bootstrap-icons.min.css';   // R3d: icons in the top bar (<i class="bi bi-…">)
 import { expandDate, shiftDate, toIso, fromIso } from './date-input';
 import './tags';
 import './search';
+import './preferences';
 
 window.bootstrap = bootstrap;
 

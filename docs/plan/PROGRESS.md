@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **47 / 67** `█████████████████████░░░░░░░░░` 70% |
-| Effort done (PERT) | **22.2 / 32.4 h** `█████████████████████░░░░░░░░░` 69% |
-| Remaining effort, one agent in sequence | **10.2 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **48 / 67** `█████████████████████░░░░░░░░░` 72% |
+| Effort done (PERT) | **22.5 / 32.4 h** `█████████████████████░░░░░░░░░` 70% |
+| Remaining effort, one agent in sequence | **9.9 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 2.5 h ± 0.3 |
 | In progress | — |
-| Next task | **R3d** — Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name |
+| Next task | **R1i** — Protocol page sections: collapsible, movable, one/two columns, saved per user |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** R5b → Z01 → Z02 → Z03
@@ -30,7 +30,7 @@
 | 6.5 | ✅R1e ✅R2b ✅R2c | 3/3 | `██████████` |
 | 6.6 | ✅D06 ✅R1f ✅R1g ✅R2d | 4/4 | `██████████` |
 | 7 | ✅R3a ✅R3b ✅R3c | 3/3 | `██████████` |
-| 7.5 | ✅R1h ⬜R3d ⬜R1i | 1/3 | `███░░░░░░░` |
+| 7.5 | ✅R1h ✅R3d ⬜R1i | 2/3 | `███████░░░` |
 | 8 | ⬜R5c ⬜R5d ⬜R5b | 0/3 | `░░░░░░░░░░` |
 | 9 | ⬜R6a ⬜R6b ⬜R1d ⬜R6c ⬜R7 | 0/5 | `░░░░░░░░░░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
@@ -98,7 +98,7 @@ flowchart LR
     R3b["R3b<br/>Gmail-style query parser"]
     R3c["R3c<br/>Global search box + results page"]
     R1h["R1h<br/>Folder codes: φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match"]
-    R3d["R3d<br/>Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name"]
+    R3d["R3d<br/>Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user"]
     R1i["R1i<br/>Protocol page sections: collapsible, movable, one/two columns, saved per user"]
     R5c["R5c<br/>Inbox screen (sidebar, collapsible)"]
     R5d["R5d<br/>Register-from-email flow, keywords"]
@@ -217,8 +217,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h done
-  class R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d done
+  class R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R5b,Z01,Z02,Z03 critical
 ```
@@ -289,7 +289,7 @@ gantt
   R3c Global search box + results page :done, r3c, 2026-11-13 06:11, 33m
   section Batch 7.5
   R1h Folder codes  φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match :done, r1h, 2026-11-13 06:44, 19m
-  R3d Top bar  fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name :r3d, 2026-11-13 07:03, 19m
+  R3d Top bar  fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user :done, r3d, 2026-11-13 07:03, 19m
   R1i Protocol page sections  collapsible, movable, one/two columns, saved per user :r1i, 2026-11-13 07:22, 33m
   section Batch 8
   R5c Inbox screen (sidebar, collapsible) :r5c, 2026-11-13 07:55, 33m
@@ -367,7 +367,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R3b** 🔴 | Gmail-style query parser | R3a | 0.5 | 0.1 | 4.2 | 4.7 | 4.2 | 4.7 | 0.0 | #56 |
 | ✅ | **R3c** 🔴 | Global search box + results page | R3b | 0.5 | 0.1 | 4.7 | 5.3 | 4.7 | 5.3 | 0.0 | #57 |
 | ✅ | **R1h** | Folder codes: φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #59 |
-| ⬜ | **R3d** | Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 |  |
+| ✅ | **R3d** | Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #60 |
 | ⬜ | **R1i** | Protocol page sections: collapsible, movable, one/two columns, saved per user | R1g | 0.5 | 0.1 | 5.9 | 6.5 | 6.1 | 6.7 | 0.2 |  |
 | ⬜ | **R5c** | Inbox screen (sidebar, collapsible) | R5a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 |  |
 | ⬜ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 4.7 | 5.3 | 0.5 |  |
