@@ -128,7 +128,8 @@ class TnefTest extends TestCase
             $this->assertNull(Tnef::decode($tnef), "$declared declared, 1 present");
         }
         $props = pack('V', 1).$one;
-        $this->assertNotNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 2, 0x00069005, strlen($props)).$props.pack('v', 0)));
+        $this->assertNotNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 2, 0x00069005, strlen($props)).$props
+            .pack('v', array_sum(unpack('C*', $props)) % 65536)));
     }
 
     /**
@@ -144,6 +145,15 @@ RTF;
             ->properties([[TnefBuilder::BINARY, 0x1009, TnefBuilder::compressedRtf($rtf)]])->bytes();
 
         $this->assertSame('Καλημέρα café σας Да', Tnef::decode($tnef)['text']);
+    }
+
+    /** Tenth review of R5b: an attribute changed without its checksum (same length) was accepted as it was. */
+    public function test_a_damaged_attribute_makes_the_file_unreadable(): void
+    {
+        $whole = (new TnefBuilder())->attachment('NOTE.TXT', 'IMPORTANT: 100 EUR')->bytes();
+        $this->assertSame('IMPORTANT: 100 EUR', Tnef::decode($whole)['attachments'][0]['content']);
+
+        $this->assertNull(Tnef::decode(str_replace('100 EUR', '900 EUR', $whole)));
     }
 
     /** Review of R5b: Greek written in the RTF as code-page bytes (not \'hh) is converted too. */
@@ -189,13 +199,14 @@ RTF;
     public function test_huge_counts_in_a_small_file_are_refused_at_once(): void
     {
         $props = pack('V', 1).pack('vv', 0x1048, 0x0001).pack('V', 1_000_000);   // 1 property, MV CLSID, a million values
-        $tnef = pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, strlen($props)).$props.pack('v', 0);
+        $tnef = pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, strlen($props)).$props.pack('v', array_sum(unpack('C*', $props)) % 65536);
         $started = microtime(true);
         $this->assertNull(Tnef::decode($tnef));
         $this->assertLessThan(0.1, microtime(true) - $started);
 
         $props = pack('V', 4_000_000_000);   // a property count beyond the data
-        $this->assertNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, 4).$props.pack('v', 0)));
+        $this->assertNull(Tnef::decode(pack('Vv', 0x223E9F78, 1).pack('CVV', 1, 0x00069003, 4).$props
+            .pack('v', array_sum(unpack('C*', $props)) % 65536)));
     }
 
     public function test_anything_else_is_not_tnef(): void

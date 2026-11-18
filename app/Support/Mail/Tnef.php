@@ -88,6 +88,9 @@ final class Tnef
                 return null;   // cut short
             }
             $value = substr($d, $pos + 9, $len);
+            if (self::checksum($value) !== unpack('v', $d, $pos + 9 + $len)[1]) {
+                return null;   // damaged: shown as winmail.dat, not as altered content (R5b review)
+            }
             $pos += 9 + $len + 2;   // level, id, length, data, checksum
 
             switch ($id) {
@@ -287,6 +290,17 @@ final class Tnef
     }
 
     /** $count items of at least $size bytes each must fit in what is left from $pos, or the file is not readable */
+    /** An attribute's checksum: the sum of its bytes, modulo 65536 (count_chars: no array per byte). */
+    private static function checksum(string $data): int
+    {
+        $sum = 0;
+        foreach (count_chars($data, 1) as $byte => $times) {
+            $sum += $byte * $times;
+        }
+
+        return $sum % 65536;
+    }
+
     private static function fits(string $d, int $pos, int $count, int $size): void
     {
         if ($pos < 0 || $count < 0 || $count * max(1, $size) > strlen($d) - $pos) {

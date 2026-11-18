@@ -64,7 +64,7 @@ read, Greek in code page 1253.
   `winmail.dat`. The PDF opens as a PDF; after registering, the protocol has the PDF and the CSV.
 - On this computer only (nothing committed): the owner's read receipt now reads as six lines (report, subject, from,
   to, sent, read) and registers without a file. All 12 private e-mails still register.
-- Full suites: PHPUnit 454, browser 68/68.
+- Full suites: PHPUnit 455, browser 68/68.
 
   ![winmail.dat opened](img/R5b/r5b-winmail.png)
 
@@ -116,6 +116,11 @@ read, Greek in code page 1253.
   (`\ansicpg1252`), as Outlook often writes it, came out as Latin letters (`ÊáëçìÝñá`).
   - Fixed: each font's code page is read from the font table and used for its text.
   - Test `test_rtf_text_in_the_code_page_of_its_font` (Greek, Latin and Cyrillic fonts in one text; it failed before).
+- Codex, tenth review (P2): each part of a winmail.dat carries a checksum, which was not checked, so a damaged part
+  (e.g. "100 EUR" turned into "900 EUR") was shown as if it were fine.
+  - Fixed: a checksum that does not match makes the file unreadable, and it is shown as plain `winmail.dat`.
+  - Test `test_a_damaged_attribute_makes_the_file_unreadable` (it failed before). The owner's read receipt passes
+    (checked on this computer only).
 
 ## Owner actions
 None. When an Outlook e-mail arrives, its files appear in the inbox instead of `winmail.dat`.
