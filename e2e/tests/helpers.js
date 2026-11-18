@@ -46,12 +46,19 @@ async function setSetting(page, name, value) {
 /**
  * R1b protocol form (Livewire): fill fields by name (form.<name> → #f-<name>), e.g.
  * fillProtocol(page, { thema: 'x', fakelos: 'first', in_date: '03/01/2025' }). fakelos: 'first' picks the first
- * folder. Each field is left with Tab, which sends it to the server (wire:model.blur).
+ * folder, other text is typed into the folder picker (R1f) and its best match chosen. Each field is left with Tab,
+ * which sends it to the server (wire:model.blur).
  */
 async function fillProtocol(page, fields) {
   for (const [name, value] of Object.entries(fields)) {
     const field = page.locator(`#f-${name}`);
-    if ((await field.evaluate((el) => el.tagName)) === 'SELECT') {
+    if ((await field.getAttribute('data-combobox')) !== null) {
+      await field.click();
+      if (value !== 'first') await field.fill(value);
+      const chosen = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+      await field.press('Enter');
+      await chosen;
+    } else if ((await field.evaluate((el) => el.tagName)) === 'SELECT') {
       if (value === 'first') await field.selectOption({ index: 1 });
       else await field.selectOption(value);
     } else {

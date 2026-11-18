@@ -41,3 +41,22 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .table-sticky thead th { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 3; background: var(--bs-tertiary-bg); box-shadow: inset 0 -1px 0 var(--bs-border-color); }
 .protocol-row { position: relative; }
 .stretched-link-row::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+
+/* R1f: tags (related numbers, keywords) and the folder picker */
+.tag-pill { font-weight: 500; font-size: .85em; padding: .3em .55em; color: var(--bs-body-color); background: var(--bs-tertiary-bg); }
+.tag-pill.tag-ok { color: var(--bs-success-text-emphasis); background: var(--bs-success-bg-subtle); border-color: var(--bs-success) !important; }
+.tag-pill.tag-missing { color: var(--bs-warning-text-emphasis); background: var(--bs-warning-bg-subtle); border-color: var(--bs-orange, #fd7e14) !important; }
+.tag-pill.tag-ok .tag-icon { color: var(--bs-success); }
+.tag-pill.tag-missing .tag-icon { color: var(--bs-orange, #fd7e14); }
+.tag-pill .tag-text { all: unset; cursor: text; }
+.tag-pill .tag-text:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; border-radius: .2rem; }
+.tag-pill .tag-open { font-weight: 700; padding: 0 .1em; }
+.tag-pill .tag-open:hover { color: var(--bs-primary) !important; }
+.tag-edit { border: 0; outline: none; background: transparent; color: inherit; font: inherit; min-width: 4rem; width: 10ch; padding: 0; }
+.tag-input { min-width: 6rem; outline: none; }
+.tag-suggest, .folder-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 18rem; overflow-y: auto; margin-top: 2px; }
+.tag-suggest mark, .folder-list mark { padding: 0; background: rgba(var(--bs-warning-rgb), .35); color: inherit; }
+.folder-list .folder-describe { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .85em; opacity: .8; }
+.folder-help { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.folder-input { text-overflow: ellipsis; }
+.tag-suggest .active mark, .folder-list .active mark { background: rgba(255, 255, 255, .3); }

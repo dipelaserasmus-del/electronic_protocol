@@ -89,7 +89,7 @@ test('a 2 MB attachment is uploaded and saved (R1b: nginx allowed only 1 MB)', a
   await evidence(page, 'r1b-attachment-saved', { fullPage: true });
 });
 
-test('related numbers are tags; an existing one opens in a new tab (R1e)', async ({ page }) => {
+test('related numbers: green ✔ when the protocol exists (↗ opens it), orange ⚠ otherwise, editable (R1e, R1f)', async ({ page }) => {
   await login(page, 'writer');
   await page.goto('/home');
   await fillProtocol(page, { thema: `R1e σχετικό ${Date.now()}`, fakelos: 'first' });
@@ -99,23 +99,125 @@ test('related numbers are tags; an existing one opens in a new tab (R1e)', async
 
   await page.goto('/home');
   const box = page.locator('#f-sxetiko');
-  await box.fill(`${num}/${year}`);
-  await box.press('Enter');                                   // Enter makes a pill (and does not save)
+  const pills = page.locator('#related-box .related-pill');
+  await box.fill(num);
+  await box.press('Enter');                                   // Enter makes a pill (and does not save); the year is added
+  await expect(pills.first()).toHaveClass(/tag-ok/);
+  await expect(pills.first()).toContainText(`${num}/${year}`);
+  await expect(pills.first().locator('svg.icon-check')).toHaveCount(1);
   const link = page.locator('#related-box a');
-  await expect(link).toHaveText(`↗ ${num}/${year}`);
+  await expect(link).toHaveText('↗');
   await expect(link).toHaveAttribute('href', first);
   await expect(link).toHaveAttribute('target', '_blank');
   await expect(page).toHaveURL(/\/home$/);
-  await box.pressSequentially('999999,');                     // a comma too; unknown number = grey pill
-  await expect(page.locator('#related-box .related-pill')).toHaveCount(2);
-  await expect(page.locator('#related-box .related-pill').last()).toContainText(`999999/${year}`);
+  await box.pressSequentially('999999,');                     // a comma too; no such protocol = orange with ⚠
+  await expect(pills).toHaveCount(2);
+  await expect(pills.last()).toHaveClass(/tag-missing/);
+  await expect(pills.last().locator('svg.icon-warning')).toHaveCount(1);
+  await expect(pills.last()).toHaveAttribute('title', `Δεν υπάρχει πρωτόκολλο 999999/${year}`);
   await expect(box).toHaveValue('');
+
+  // a click on a tag's text edits it in place; Enter keeps it where it was
+  await pills.last().locator('.tag-text').click();
+  const edit = pills.last().locator('.tag-edit');
+  await expect(edit).toBeVisible();
+  await expect(edit).toHaveValue(`999999/${year}`);
+  await edit.fill('888888');
+  await edit.press('Enter');
+  await expect(pills).toHaveCount(2);
+  await expect(pills.last()).toContainText(`888888/${year}`);
+  await expect(pills.last()).toHaveClass(/tag-missing/);
+  // Escape leaves a tag unchanged
+  await pills.first().locator('.tag-text').click();
+  await pills.first().locator('.tag-edit').fill('1');
+  await pills.first().locator('.tag-edit').press('Escape');
+  await expect(pills.first()).toContainText(`${num}/${year}`);
+  await box.click();
   await box.pressSequentially('5');
-  await evidence(page, 'r1e-related-links', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
+  await evidence(page, 'r1f-related-tags', { clip: { x: 0, y: 0, width: 1440, height: 700 } });
   await box.press('Backspace');
   await box.press('Backspace');                               // empty box: removes the last pill
-  await expect(page.locator('#related-box .related-pill')).toHaveCount(1);
+  await expect(pills).toHaveCount(1);
   const [tab] = await Promise.all([page.context().waitForEvent('page'), link.click()]);
   await tab.waitForLoadState();
   expect(tab.url()).toBe(first);
+});
+
+test('keywords are tags with suggestions that ignore case and accents (R1f)', async ({ page }) => {
+  const stamp = String(Date.now()).slice(-6);
+  const keyword = `Ψηφιακός Φάκελος ${stamp}`;
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R1f λέξεις ${stamp}`, fakelos: 'first' });
+  const box = page.locator('#f-keywords');
+  const pills = page.locator('#keywords-box .keyword-pill');
+  await box.fill(keyword);
+  await box.press('Enter');
+  await expect(pills).toHaveCount(1);
+  await saveProtocol(page);
+
+  await page.goto('/home');
+  await box.pressSequentially(`ψηφιακος ${stamp}`);         // no accents, lower case, any order of words
+  const suggestions = page.locator('#keywords-suggest li');
+  await expect(suggestions.first()).toContainText(keyword);
+  await expect(suggestions.first().locator('mark').first()).toHaveText('Ψηφιακός');
+  await evidence(page, 'r1f-keyword-suggestions', { clip: { x: 0, y: 0, width: 1440, height: 760 } });
+  await box.press('ArrowDown');
+  await expect(suggestions.first()).toHaveClass(/active/);
+  await box.press('Enter');
+  await expect(pills).toHaveCount(1);
+  await expect(pills.first()).toHaveAttribute('data-tag', keyword);   // the known spelling
+  await expect(page.locator('#keywords-suggest')).toBeHidden();
+
+  // typed again without accents: the same keyword, not a second one
+  await box.fill(`ψηφιακος φακελος ${stamp}`);
+  await box.press('Enter');
+  await expect(pills).toHaveCount(1);
+  // a new keyword with a comma; then edited in place
+  await box.pressSequentially('νέα λέξη,');
+  await expect(pills).toHaveCount(2);
+  await pills.last().locator('.tag-text').click();
+  await pills.last().locator('.tag-edit').fill('άλλη λέξη');
+  await pills.last().locator('.tag-edit').press('Enter');
+  await expect(pills.last()).toHaveAttribute('data-tag', 'άλλη λέξη');
+  await expect(pills.first()).toHaveAttribute('data-tag', keyword);
+});
+
+test('the folder picker narrows the list while typing (R1f)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  const folder = page.locator('#f-fakelos');
+  const list = page.locator('#folder-list');
+  await folder.click();
+  await expect(list).toBeVisible();
+  expect(await list.locator('li[role=option]').count()).toBeGreaterThan(20);   // everything until something is typed
+  await folder.fill('αποζημιωσεις εκδρομων');                // words of the description, no accents
+  await expect(list.locator('li[role=option]')).toHaveCount(1);
+  await expect(list.locator('li[role=option]').first()).toContainText('Φ.14.1.4');
+  await evidence(page, 'r1f-folder-filter', { clip: { x: 0, y: 0, width: 1440, height: 760 } });
+  await folder.press('Enter');
+  await expect(list).toBeHidden();
+  await expect(folder).toHaveValue(/^Φ\.14\.1\.4 · Αποζημιώσεις εκδρομών/);
+  await expect(page.locator('#folder-help')).toContainText('Αποζημιώσεις εκδρομών');
+
+  // by code; Escape keeps the chosen folder
+  await folder.click();
+  await folder.fill('19.2');
+  await expect(list.locator('li[role=option]').first()).toContainText('Φ.19.2');
+  await folder.press('Escape');
+  await expect(folder).toHaveValue(/^Φ\.14\.1\.4/);
+
+  await fillProtocol(page, { thema: `R1f φάκελος ${Date.now()}` });
+  await saveProtocol(page);
+  await expect(folder).toHaveValue(/^Φ\.14\.1\.4/);
+});
+
+test('the browser ignores case and accents like the server (R1f)', async ({ page }) => {
+  const fs = require('fs');
+  const path = require('path');
+  const cases = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'tests', 'fixtures', 'fold-cases.json'), 'utf8'));
+  await login(page, 'writer');
+  await page.goto('/home');
+  const got = await page.evaluate((cases) => cases.map(([input]) => window.appFold(input)), cases);
+  expect(got).toEqual(cases.map(([, out]) => out));
 });

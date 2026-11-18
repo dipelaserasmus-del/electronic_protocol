@@ -108,17 +108,28 @@
             <fieldset class="card shadow-sm mb-3" @disabled(! $access->head)>
                 <legend class="card-header h6 mb-0 w-100">Γενικά</legend>
                 <div class="card-body">
-                    <div class="mb-2">
+                    {{-- R1f: folder picker — typing filters by code and description (no case/accents); ↑ ↓ Enter/Tab or a click --}}
+                    <div class="mb-2 position-relative" x-data="folderPicker" x-on:click.outside="close()">
                         <label for="f-fakelos" class="form-label small fw-semibold mb-1">Φάκελος</label>
-                        <select id="f-fakelos" class="form-select @if ($e('fakelos')) is-invalid @endif" wire:model.live="form.fakelos">
-                            <option value="">—</option>
-                            @foreach ($folders as $folder)
-                                <option value="{{ $folder->fakelos }}" @selected($folder->fakelos === $form['fakelos'])>{{ $folder->fakelos }}{{ $folder->describe ? ' · '.$folder->describe : '' }}</option>
-                            @endforeach
-                            @if ($form['fakelos'] !== '' && ! $folders->contains('fakelos', $form['fakelos']))
-                                <option value="{{ $form['fakelos'] }}" selected>{{ $form['fakelos'] }}</option>
-                            @endif
-                        </select>
+                        <input id="f-fakelos" class="form-control folder-input @if ($e('fakelos')) is-invalid @endif" autocomplete="off" data-combobox
+                               role="combobox" aria-autocomplete="list" aria-controls="folder-list" :aria-expanded="open"
+                               :value="open ? query : label()" :placeholder="open ? (label() || 'Γράψτε κωδικό ή λέξη της περιγραφής') : '—'"
+                               x-on:focus="show()" x-on:click="show()" x-on:input="input($event)" x-on:keydown="key($event)"
+                               x-on:blur="setTimeout(() => { if (! $root.contains(document.activeElement)) close() }, 150)">
+                        <ul class="list-group shadow folder-list" id="folder-list" role="listbox" x-show="open" x-cloak>
+                            <template x-for="(f, n) in items" :key="f[0]">
+                                <li class="list-group-item list-group-item-action py-1" role="option" :aria-selected="n === active"
+                                    :class="{ active: n === active }" :data-folder-active="n === active ? '' : null" :title="f[1]"
+                                    x-on:mousedown.prevent="choose(f)" x-on:mousemove="active = n">
+                                    <span class="fw-semibold" x-html="mark(f[0])"></span>
+                                    <span class="folder-describe" x-html="mark(f[1])"></span>
+                                </li>
+                            </template>
+                            <li class="list-group-item text-body-secondary py-1" x-show="! items.length">Κανένας φάκελος δεν ταιριάζει.</li>
+                        </ul>
+                        @if ($folder?->describe)
+                            <div class="form-text folder-help" id="folder-help" title="{{ $folder->describe }}">{{ $folder->describe }}</div>
+                        @endif
                         @if ($e('fakelos'))<div class="invalid-feedback">{{ $e('fakelos') }}</div>@endif
                     </div>
                     <x-form.text name="thema" :value="$form['thema']" live label="Θέμα" rows="2" :error="$e('thema')" :placeholder="$suggestedSubject">
@@ -132,37 +143,82 @@
                         @endif
                     </x-form.text>
                     <div class="row g-2">
-                        {{-- R1e: related numbers as tags. Enter, a comma or leaving the box turns what was typed into a pill
-                             (a bare number gets the year); an existing protocol is a link ↗ (new tab); ✕ or Backspace in the
-                             empty box removes one. The stored value stays "12/2026, 40/2025". --}}
-                        <div class="col-md-6 mb-2">
+                        {{-- R1e/R1f: related numbers as tags. Enter, a comma or leaving the box adds what was typed (a bare
+                             number gets the year); a click on a tag's text edits it; ✕ or Backspace in the empty box removes.
+                             Green ✔ = the protocol exists (↗ opens it in a new tab), orange ⚠ = no such protocol. --}}
+                        <div class="col-md-6 mb-2" x-data="tagBox('sxetiko')">
                             <label for="f-sxetiko" class="form-label small fw-semibold mb-1">Σχετικοί αριθμοί</label>
                             <div class="form-control d-flex flex-wrap align-items-center gap-1 tag-box @if ($e('sxetiko')) is-invalid @endif" id="related-box"
-                                 x-on:click="$el.querySelector('input')?.focus()">
+                                 x-on:click.self="$el.querySelector('#f-sxetiko')?.focus()">
                                 @foreach ($related as $i => $r)
-                                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 related-pill {{ $r['protocol'] ? 'bg-primary-subtle text-primary-emphasis border-primary-subtle' : 'text-body-secondary bg-body-tertiary' }}"
-                                          wire:key="rel-{{ $i }}-{{ $r['text'] }}"
-                                          title="{{ $r['protocol'] ? $r['protocol']->thema : 'Δεν βρέθηκε πρωτόκολλο που μπορείτε να ανοίξετε' }}">
-                                        @if ($r['protocol'])
-                                            <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="text-reset text-decoration-none">↗ {{ $r['protocol']->protocolnum }}/{{ $r['protocol']->etos }}</a>
-                                        @else
-                                            {{ $r['text'] }}
-                                        @endif
-                                        <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeRelated({{ $i }})"
-                                                aria-label="Αφαίρεση {{ $r['text'] }}"></button>
+                                    @php
+                                        $title = match (true) {
+                                            $r['protocol'] !== null => $r['protocol']->thema,
+                                            $r['exists'] => 'Υπάρχει πρωτόκολλο με αυτόν τον αριθμό',
+                                            (bool) preg_match('~^\d+/\d{4}$~', $r['text']) => 'Δεν υπάρχει πρωτόκολλο '.$r['text'],
+                                            default => 'Δεν είναι αριθμός πρωτοκόλλου (π.χ. 12/2026)',
+                                        };
+                                    @endphp
+                                    <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 tag-pill related-pill {{ $r['exists'] ? 'tag-ok' : 'tag-missing' }}"
+                                          wire:key="rel-{{ $i }}-{{ $r['text'] }}" data-tag="{{ $r['text'] }}" title="{{ $title }}">
+                                        <span class="d-inline-flex align-items-center gap-1" x-show="editing !== {{ $i }}">
+                                            @if ($r['exists'])<x-icon name="check" class="tag-icon" />@else<x-icon name="warning" class="tag-icon" />@endif
+                                            <button type="button" class="tag-text" x-on:click="edit({{ $i }})" aria-label="Αλλαγή {{ $r['text'] }}">{{ $r['text'] }}</button>
+                                            @if ($r['protocol'])
+                                                <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="tag-open text-reset text-decoration-none"
+                                                   aria-label="Άνοιγμα του {{ $r['text'] }} σε νέα καρτέλα">↗</a>
+                                            @endif
+                                            <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('sxetiko', {{ $i }})"
+                                                    aria-label="Αφαίρεση {{ $r['text'] }}"></button>
+                                        </span>
+                                        <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $r['text'] }}"
+                                               x-on:keydown="key($event, {{ $i }})" x-on:blur="left($event, {{ $i }})">
                                     </span>
                                 @endforeach
-                                <input id="f-sxetiko" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" style="min-width: 6rem; outline: none" autocomplete="off"
+                                <input id="f-sxetiko" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" autocomplete="off"
                                        placeholder="{{ $related ? '' : 'π.χ. 12/2026' }}" aria-describedby="sxetiko-help"
-                                       x-data="{ add() { const v = $el.value.trim(); $el.value = ''; if (v) $wire.addRelated(v) } }"
-                                       x-on:keydown="if ($event.key === 'Enter' || $event.key === ',' || $event.key === ';') { $event.preventDefault(); add() }
-                                                     else if ($event.key === 'Backspace' && $el.value === '' && {{ count($related) }} > 0) $wire.removeRelated({{ count($related) - 1 }})"
-                                       x-on:input="if (/[,;]/.test($el.value)) add()" x-on:blur="add()">
+                                       x-on:keydown="key($event)" x-on:input="typed($event)" x-on:blur="left($event)">
                             </div>
                             @if ($e('sxetiko'))<div class="invalid-feedback d-block">{{ $e('sxetiko') }}</div>@endif
-                            <div class="form-text" id="sxetiko-help">Γράψτε αριθμό (π.χ. 12/2026 ή 12) και πατήστε Enter ή κόμμα.</div>
+                            <div class="form-text" id="sxetiko-help">Αριθμός (π.χ. 12/2026 ή 12) και Enter ή κόμμα. Κλικ σε ετικέτα για αλλαγή.</div>
                         </div>
-                        <x-form.text class="col-md-6" name="keywords" :value="$form['keywords']" label="Λέξεις κλειδιά" list="suggest-keywords" :error="$e('keywords')" />
+                        {{-- R1f: keywords as tags, with suggestions from the keywords already used (most used first) --}}
+                        <div class="col-md-6 mb-2" x-data="tagBox('keywords', true)">
+                            <label for="f-keywords" class="form-label small fw-semibold mb-1">Λέξεις κλειδιά</label>
+                            <div class="position-relative">
+                                <div class="form-control d-flex flex-wrap align-items-center gap-1 tag-box @if ($e('keywords')) is-invalid @endif" id="keywords-box"
+                                     x-on:click.self="$el.querySelector('#f-keywords')?.focus()">
+                                    @foreach ($keywords as $i => $k)
+                                        <span class="badge rounded-pill border d-inline-flex align-items-center gap-1 tag-pill keyword-pill"
+                                              wire:key="kw-{{ $i }}-{{ $k }}" data-tag="{{ $k }}">
+                                            <span class="d-inline-flex align-items-center gap-1" x-show="editing !== {{ $i }}">
+                                                <button type="button" class="tag-text" x-on:click="edit({{ $i }})" aria-label="Αλλαγή {{ $k }}">{{ $k }}</button>
+                                                <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('keywords', {{ $i }})"
+                                                        aria-label="Αφαίρεση {{ $k }}"></button>
+                                            </span>
+                                            <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $k }}"
+                                                   x-on:keydown="key($event, {{ $i }})" x-on:input="typed($event, {{ $i }})" x-on:blur="left($event, {{ $i }})">
+                                        </span>
+                                    @endforeach
+                                    <input id="f-keywords" class="border-0 flex-grow-1 p-0 bg-transparent tag-input" autocomplete="off"
+                                           role="combobox" aria-autocomplete="list" aria-controls="keywords-suggest" :aria-expanded="items.length > 0"
+                                           placeholder="{{ $keywords ? '' : 'π.χ. εκδρομή' }}" aria-describedby="keywords-help"
+                                           x-on:keydown="key($event)" x-on:input="typed($event)" x-on:blur="left($event)">
+                                </div>
+                                <ul class="list-group shadow tag-suggest" id="keywords-suggest" role="listbox" x-show="items.length" x-cloak>
+                                    <template x-for="(it, n) in items" :key="it[0]">
+                                        <li class="list-group-item list-group-item-action py-1 d-flex justify-content-between gap-2" role="option"
+                                            :class="{ active: n === active }" :aria-selected="n === active"
+                                            x-on:mousedown.prevent="pick(it[0])" x-on:mousemove="active = n">
+                                            <span x-html="mark(it[0])"></span>
+                                            <small class="opacity-75" x-text="it[1] + (it[1] === 1 ? ' φορά' : ' φορές')"></small>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                            @if ($e('keywords'))<div class="invalid-feedback d-block">{{ $e('keywords') }}</div>@endif
+                            <div class="form-text" id="keywords-help">Enter ή κόμμα μετά από κάθε λέξη· ↑ ↓ για τις προτάσεις.</div>
+                        </div>
                     </div>
                     <x-form.text name="paratiriseis" :value="$form['paratiriseis']" label="Παρατηρήσεις" rows="2" :error="$e('paratiriseis')" />
                 </div>

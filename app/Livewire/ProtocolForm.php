@@ -132,15 +132,34 @@ class ProtocolForm extends Component
         $this->replacePlaceholder = false;
     }
 
-    /** R1e: "Σχετικοί αριθμοί" as tags — Enter, comma or leaving the box adds what was typed; ✕ removes one. */
-    public function addRelated(string $typed): void
+    /**
+     * R1e/R1f: "Σχετικοί αριθμοί" and "Λέξεις κλειδιά" as tags. Enter, a comma or leaving the box adds what was typed;
+     * a click on a tag edits it in place; ✕ removes it. The stored value stays the same text (App\Support\TagList).
+     */
+    public function addTag(string $field, string $typed): void
     {
-        $this->form['sxetiko'] = \App\Support\RelatedNumbers::add($this->form['sxetiko'], $typed, (int) ($this->form['etos'] ?: $this->activeYear()));
+        $this->form[$this->tagField($field)] = $this->tags($field)->add($this->form[$field], $typed);
     }
 
-    public function removeRelated(int $index): void
+    public function editTag(string $field, int $index, string $typed): void
     {
-        $this->form['sxetiko'] = \App\Support\RelatedNumbers::remove($this->form['sxetiko'], $index);
+        $this->form[$this->tagField($field)] = $this->tags($field)->replace($this->form[$field], $index, $typed);
+    }
+
+    public function removeTag(string $field, int $index): void
+    {
+        $this->form[$this->tagField($field)] = $this->tags($field)->remove($this->form[$field], $index);
+    }
+
+    private function tagField(string $field): string
+    {
+        abort_unless(in_array($field, ['sxetiko', 'keywords'], true), 400);
+        return $field;
+    }
+
+    private function tags(string $field): \App\Support\TagList
+    {
+        return \App\Support\TagList::for($this->tagField($field), (int) ($this->form['etos'] ?: $this->activeYear()));
     }
 
     public function save(ProtocolWriter $writer)
@@ -346,7 +365,8 @@ class ProtocolForm extends Component
             'sameSubject' => $this->similar('thema'),
             'sameIncoming' => $this->similar('in_num'),
             'related' => \App\Support\RelatedNumbers::resolve($this->form['sxetiko'], (int) ($this->form['etos'] ?: $this->activeYear())),
-            'folders' => Keepvalue::orderByRaw('SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-3)+0<>0 DESC, SUBSTR(`fakelos`,3,LENGTH(`fakelos`)-(3))+0, `fakelos`')->get(['fakelos', 'describe']),
+            'keywords' => \App\Support\TagList::keywords()->tokens($this->form['keywords']),
+            'folder' => $this->form['fakelos'] !== '' ? Keepvalue::where('fakelos', $this->form['fakelos'])->first(['fakelos', 'describe']) : null,
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),

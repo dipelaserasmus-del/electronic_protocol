@@ -12,4 +12,7 @@
             @foreach ($values as $value)<option value="{{ $value }}"></option>@endforeach
         </datalist>
     @endforeach
+    {{-- R1f: searched in the browser while typing (keywords: most used first; folders: code + description) --}}
+    <script type="application/json" id="suggest-keywords">@json(\App\Support\Suggestions::keywords(auth()->user()), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE)</script>
+    <script type="application/json" id="suggest-folders">@json(\App\Support\Suggestions::folders(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE)</script>
 @endsection
