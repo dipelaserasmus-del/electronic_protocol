@@ -1,29 +1,33 @@
 <?php
 
-namespace Tests\Feature\Legacy;
+namespace Tests\Feature;
 
 use App\Models\Attachment;
 use App\Models\Protocol;
+use App\Livewire\EmailInbox;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
-use Tests\Feature\FeatureTestCase;
+use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
+use Tests\Support\FakeMailbox;
 
 /**
- * Characterization of "register an e-mail" (ProtocolController::storeFromEmail), the only user of
- * zbateson/mail-mime-parser. Written before upgrading that library (N01) so the upgrade can't silently
- * change what gets stored. The inbox page leaves each message in the mail cache (R5a; before: public/tmp) and
- * remembers in the session which mailbox it showed; storeFromEmail reads the message from there.
+ * Registering an inbox e-mail (R5c: the inbox page EmailInbox → EmailRegistration → ProtocolWriter; before:
+ * ProtocolController::storeFromEmail). Started as the characterization written before upgrading mail-mime-parser
+ * (N01); every rule found since (D01, D03, D05, F08, R5a) stays here. The page reads the e-mails from an in-memory
+ * mailbox (FakeMailbox) through the mail cache.
  */
-class StoreFromEmailTest extends FeatureTestCase
+class EmailRegistrationTest extends FeatureTestCase
 {
     private const UID = 4711;
+
+    private FakeMailbox $mailbox;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->setting('defaultImapEmail', 'default');
-        // the final step moves the message on the IMAP server; point it at a closed local port so it fails at once
-        config(['imap.accounts.default.host' => '127.0.0.1', 'imap.accounts.default.port' => 1,
-            'imap.accounts.default.encryption' => false, 'imap.options.fetch_timeout' => 1]);
+        $this->mailbox = FakeMailbox::install($this->app);
     }
 
     public function test_email_is_registered_with_decoded_headers_body_and_attachment(): void
@@ -31,10 +35,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->post('/storeFromEmail', [
-            'uid' => self::UID,
-            'chk'.self::UID.'-0' => 'on',
-        ]);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0'])->assertHasNoErrors();
 
         $p = Protocol::firstOrFail();
         $this->assertSame('Πρόσκληση σε σύσκεψη', $p->thema, 'RFC 2047 subject (ISO-8859-7) decoded');
@@ -57,6 +58,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $this->assertSame('application/pdf', $pdf->mimeType);
         $this->assertSame('Πρόσκληση.pdf', $pdf->name, 'RFC 2231 file name decoded');
         $this->assertSame("%PDF-1.4\nfake pdf for tests\n%%EOF\n", Storage::get($pdf->savedPath));
+        $this->assertSame([[self::UID, 'INBOX.inProtocol']], $this->mailbox->moves, 'the e-mail moves to the registered ones');
 
         // D03: size and hash of each stored file
         foreach ([$eml, $pdf] as $a) {
@@ -71,7 +73,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
+        $this->register($user);
 
         $p = Protocol::firstOrFail();
         $html = Attachment::where('protocol_id', $p->id)->sole();
@@ -84,9 +86,12 @@ class StoreFromEmailTest extends FeatureTestCase
 
     public function test_missing_saved_email_is_reported_and_nothing_is_created(): void
     {
-        $this->actingAs($this->writer())->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID])
-            ->assertRedirect('/viewEmails')
-            ->assertSessionHas('notification.alert-type', 'error');
+        $user = $this->writer();
+        $this->putEml($user->id, $this->sampleEml());
+        $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        Storage::disk('local')->deleteDirectory('mail-cache');   // e.g. registered meanwhile by another user
+
+        $page->call('register', self::UID, false)->assertHasErrors('forms.'.self::UID.'.form');
 
         $this->assertSame(0, Protocol::count());
     }
@@ -101,7 +106,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml($this->encodedWords(self::longSubject())));
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID]);
+        $this->register($user);
 
         $this->assertSame(self::longSubject(), Protocol::firstOrFail()->thema);
         $this->assertSame(280, mb_strlen(Protocol::firstOrFail()->thema));
@@ -113,7 +118,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'thema' => self::longSubject()]);
+        $this->register($user, ['thema' => self::longSubject()]);
 
         $this->assertSame(self::longSubject(), Protocol::firstOrFail()->thema);
     }
@@ -126,32 +131,30 @@ class StoreFromEmailTest extends FeatureTestCase
         $this->putEml($user->id, str_replace('From: grafeio@example.org', 'From: '.$this->encodedWords($name).' <grafeio@example.org>',
             $this->emlWithAttachmentName('a.pdf')));
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
+        $this->register($user, [], []);
 
         $this->assertSame($name.' <grafeio@example.org>', Protocol::firstOrFail()->in_arxi_ekdosis);
         $this->assertGreaterThan(255, mb_strlen(Protocol::firstOrFail()->in_arxi_ekdosis));
     }
 
     /**
-     * D01: when the database refuses the protocol (here: an incoming number longer than its column), the message
-     * says what happened and gives the log's reference code. Before, it showed the raw database error, which
-     * contains the whole SQL statement with the e-mail's data.
+     * D01: an incoming number longer than its column was refused by the database, and the message showed the raw
+     * database error (the whole SQL statement with the e-mail's data). R5c: ProtocolWriter checks it first and the
+     * page says so at the field; nothing is registered and the e-mail stays.
      */
-    public function test_database_error_shows_a_reference_code_never_the_sql(): void
+    public function test_too_long_value_is_shown_at_its_field_never_the_sql(): void
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'in_num' => str_repeat('1', 300)])
-            ->assertRedirect('/viewEmails')
-            ->assertSessionHas('notification.alert-type', 'error');
+        $page = $this->register($user, ['in_num' => str_repeat('1', 300)], [])->assertHasErrors('forms.'.self::UID.'.in_num');
 
         $this->assertSame(0, Protocol::count());
-        $message = session('notification.message');
-        $this->assertMatchesRegularExpression('/Κωδικός σφάλματος: E-[A-Z0-9]{6}/', $message);
-        $this->assertStringContainsString('παραμένει στα εισερχόμενα', $message);
-        foreach (['SQLSTATE', 'insert into', 'Data too long', 'Πρόσκληση σε σύσκεψη'] as $leak) {
-            $this->assertStringNotContainsStringIgnoringCase($leak, $message);
+        $this->assertSame([], $this->mailbox->moves, 'the e-mail stays in the inbox');
+        $html = $page->html();
+        $this->assertStringContainsString('Έως 255 χαρακτήρες.', $html);
+        foreach (['SQLSTATE', 'insert into', 'Data too long'] as $leak) {
+            $this->assertStringNotContainsStringIgnoringCase($leak, $html);
         }
     }
 
@@ -170,7 +173,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, str_replace("From: =?UTF-8?B?".base64_encode('Γραφείο Σχολικών Δραστηριοτήτων').'?=', 'From: '.$from, $this->sampleEml()));
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID]);
+        $this->register($user, [], []);
 
         $p = Protocol::firstOrFail();
         $this->assertSame('Γραφείο Σχολικών Δραστηριοτήτων <grafeio@example.org>', $p->in_arxi_ekdosis);
@@ -188,7 +191,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, file_get_contents(base_path('tests/fixtures/emails/synthetic/10-attachment-name-split-inside-letter.eml')));
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0']);
 
         $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
         // decoded name 'ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf'; the file-name filter turns ( ) into - as always
@@ -209,21 +212,20 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->sampleEml());
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'fakelos'.self::UID => 'Φ.1', 'chk'.self::UID.'-0' => 'on'])
-            ->assertRedirect('/viewEmails')
-            ->assertSessionHas('notification.alert-type', 'error');
+        $page = $this->register($user, ['fakelos' => 'Φ.1'], ['0'])->assertHasErrors('forms.'.self::UID.'.form');
 
         $this->assertSame(0, Protocol::count(), 'no protocol');
         $this->assertSame(0, Attachment::withTrashed()->count(), 'no attachment rows, not even in the trash (review finding)');
         $this->assertSame([], Storage::allFiles('arxeio'), 'the e-mail file written first is removed again');
-        $message = session('notification.message');
+        $this->assertSame([], $this->mailbox->moves, 'the e-mail stays in the inbox');
+        $message = $page->errors()->first('forms.'.self::UID.'.form');
         $this->assertStringContainsString('δεν καταχωρίστηκε', $message);
         $this->assertStringContainsString('παραμένει στα εισερχόμενα', $message);
         $this->assertMatchesRegularExpression('/E-[A-Z0-9]{6}/', $message);
 
-        // the e-mail can be registered once the problem is gone: exactly one protocol
+        // the e-mail can be registered once the problem is gone (the form kept what was chosen): exactly one protocol
         Storage::deleteDirectory($blocked);
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'fakelos'.self::UID => 'Φ.1', 'chk'.self::UID.'-0' => 'on']);
+        $page->call('register', self::UID, false)->assertHasNoErrors();
         $this->assertSame(1, Protocol::count());
         $this->assertSame(2, Attachment::count());
     }
@@ -237,13 +239,12 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName('Αίτηση 📎 άδειας.pdf'));
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0'])->assertHasNoErrors();
 
         $this->assertSame(1, Protocol::count());
         $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
         $this->assertSame('Αίτηση 📎 άδειας.pdf', $pdf->name);
         $this->assertSame("%PDF-1.4\nfake\n%%EOF\n", Storage::get($pdf->savedPath));
-        $this->assertStringNotContainsString('συνημμένων', (string) session('notification.message'), 'no error about attachments');
     }
 
     /** D05: owner's case, an e-mail with an emoji in the subject, the sender's name and the text could not be registered. */
@@ -257,7 +258,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $eml);
 
-        $this->actingAs($user)->from('/viewEmails')->post('/storeFromEmail', ['uid' => self::UID]);
+        $this->register($user, [], []);
 
         $p = Protocol::firstOrFail();
         $this->assertSame('Συγχαρητήρια 🎉 στους μαθητές', $p->thema);
@@ -277,7 +278,7 @@ class StoreFromEmailTest extends FeatureTestCase
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName($name));
 
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0']);
 
         $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
         $this->assertSame($name, $pdf->name, 'shown with its whole name');
@@ -296,12 +297,12 @@ class StoreFromEmailTest extends FeatureTestCase
     {
         $user = $this->writer();
         $this->putEml($user->id, $this->emlWithAttachmentName('???.pdf'));
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0']);
         $this->assertSame('συνημμένο.pdf', Attachment::where('mimeType', 'application/pdf')->sole()->name);
 
         Attachment::query()->delete();
         $this->putEml($user->id, $this->emlWithAttachmentName(null));
-        $this->actingAs($user)->post('/storeFromEmail', ['uid' => self::UID, 'chk'.self::UID.'-0' => 'on']);
+        $this->register($user, ['fakelos' => 'Φ.1'], ['0']);
         $pdf = Attachment::where('mimeType', 'application/pdf')->sole();
         $this->assertSame('συνημμένο.pdf', $pdf->name, 'extension from the attachment type');
         $this->assertStringEndsWith('_0_συνημμένο.pdf', $pdf->savedPath);
@@ -336,11 +337,31 @@ class StoreFromEmailTest extends FeatureTestCase
         return implode("\r\n ", $words);
     }
 
-    /** What the inbox page leaves behind: the message in the mail cache and the mailbox in the session. */
+    /** The e-mail is the one message of the inbox (UID self::UID). */
     private function putEml(int $userId, string $eml): void
     {
-        app(\App\Services\Mail\MailCache::class)->put('test/INBOX', '1001', self::UID, $eml);
-        $this->withSession(['inbox' => ['mailbox' => 'test/INBOX', 'uidValidity' => '1001']]);
+        $this->mailbox->messages = [self::UID => $eml];
+    }
+
+    /**
+     * Opens the inbox as $user, changes the fields given, keeps ticked only the attachments $keys (none by default, as
+     * the old tests posted them; null: as the page offers them, all ticked) and presses «Καταχώριση».
+     *
+     * @param list<string>|null $keys
+     */
+    private function register(User $user, array $fields = [], ?array $keys = [], bool $receipt = false): Testable
+    {
+        $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        foreach ($fields as $field => $value) {
+            $page->set('forms.'.self::UID.'.'.$field, $value);
+        }
+        if ($keys !== null) {
+            foreach (array_keys($page->get('forms.'.self::UID.'.files')) as $key) {
+                $page->set('forms.'.self::UID.'.files.'.$key, in_array((string) $key, $keys, true));
+            }
+        }
+
+        return $page->call('register', self::UID, $receipt);
     }
 
     /** Invented message in the legacy Greek encodings that trip the current inbox. */

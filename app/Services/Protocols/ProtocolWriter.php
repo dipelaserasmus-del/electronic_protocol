@@ -60,10 +60,15 @@ final class ProtocolWriter
     ) {}
 
     /**
-     * @param list<array{file?: ?UploadedFile, ada?: ?string}> $attachments
+     * @param list<array{file?: ?UploadedFile, ada?: ?string, content?: string, name?: string, mime?: string, stamp?: bool, dir?: string, prefix?: string}> $attachments
+     *        a row is an uploaded file, a ΑΔΑ, or (R5c, e-mail registration) a file's content with its name and type
+     * @param bool $allOrNothing R5c (e-mail registration, R5a rule): if a file cannot be stored, nothing is kept (files,
+     *        attachment rows, the protocol itself) and AttachmentsNotSaved is thrown, so the e-mail can be registered
+     *        again; otherwise a file that fails is a warning on the saved protocol
      * @throws ValidationException
+     * @throws AttachmentsNotSaved
      */
-    public function create(User $user, array $input, array $attachments = []): SaveResult
+    public function create(User $user, array $input, array $attachments = [], bool $allOrNothing = false): SaveResult
     {
         $access = ProtocolAccess::for($user, new Protocol());
         // readers may not register protocols (review of R1b: the form's save could be called directly; the old POST
@@ -115,10 +120,21 @@ final class ProtocolWriter
         if ($replaced) {
             $result->messages[] = "Αντικαταστάθηκε το «" . self::PLACEHOLDER . "» πρωτόκολλο {$protocol->protocolnum}/{$protocol->etos}.";
         }
+        if ($allOrNothing) {
+            $written = [];
+            try {
+                $this->storeAttachments($result, $attachments, $v, $written);
+            } catch (\Throwable $e) {
+                report($e);
+                $this->undoCreate($result->protocol, $written);
+                throw new AttachmentsNotSaved(previous: $e);
+            }
+            $attachments = [];
+        }
         // the protocol is saved: from here on a failure is a warning on the saved protocol, never a reason to register
         // it again (review of R1a: a retry created a second protocol)
         $this->afterCommit($result, fn () => $this->afterSave($result, $v, [], $assignments, $attachments, $user));
-        $this->afterCommit($result, fn () => $this->sendReceipt($result, $v['reply_to_email']));
+        $this->afterCommit($result, fn () => $this->sendReceipt($result, $v['reply_to_email'], $v['email_date']));
 
         return $result;
     }
@@ -323,6 +339,8 @@ final class ProtocolWriter
         $v['etos'] = (int) ($input['etos'] ?? 0);
         $v['keep'] = TextInput::clean($input['keep'] ?? null);
         $v['reply_to_email'] = TextInput::clean($input['reply_to_email'] ?? null);
+        // R5c: registering an e-mail: its date ("the message you sent on …") and the e-mail form of the receipt
+        $v['email_date'] = TextInput::clean($input['email_date'] ?? null);
         $v['replace_placeholder'] = filter_var($input['replace_placeholder'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $v['no_stamp'] = ! empty($input['explicityNoStamp']);
 
@@ -433,6 +451,9 @@ final class ProtocolWriter
                 'out_date' => [['out_to', 'out_perilipsi'], 'Συμπληρώστε την ημερομηνία εξερχομένου.'],
                 'out_to' => [['out_date', 'out_perilipsi'], 'Συμπληρώστε σε ποιον απευθύνεται.'],
             ];
+            if ($v['email_date'] !== null) {
+                unset($need['in_topos_ekdosis']);   // an e-mail has no place of issue (the old inbox did not ask for it)
+            }
             foreach ($need as $f => [$with, $message]) {
                 if (! $filled($f) && collect($with)->contains($filled)) {
                     $errors[$f] ??= $message;
@@ -513,53 +534,93 @@ final class ProtocolWriter
         }
     }
 
-    /** @param list<array{file?: ?UploadedFile, ada?: ?string}> $attachments */
-    private function storeAttachments(SaveResult $result, array $attachments, array $v): void
+    /**
+     * @param list<array{file?: ?UploadedFile, ada?: ?string, content?: string, name?: string, mime?: string, stamp?: bool, dir?: string, prefix?: string}> $attachments
+     * @param list<string>|null $written strict mode (all or nothing): the paths stored so far; a file that fails throws
+     */
+    private function storeAttachments(SaveResult $result, array $attachments, array $v, ?array &$written = null): void
     {
         $protocol = $result->protocol;
+        $strict = $written !== null;
         $stamp = null;
-        $dir = self::folderPath($protocol->fakelos);
         $date = $protocol->dateOf('protocoldate');
         $keep = $v['keep'];
         $expires = ($keep !== null && is_numeric($keep) && $date) ? $date->addYears((int) $keep)->format('Y-m-d') : null;
 
-        foreach ($attachments as $row) {
-            $file = $row['file'] ?? null;
-            $ada = TextInput::clean($row['ada'] ?? null);
-            if (! $file && $ada === null) {
-                continue;
-            }
-            $name = $mime = $path = null;
-            if ($file) {
-                $name = FileNames::clean($file->getClientOriginalName(), $file->getClientMimeType());
-                $mime = $file->getMimeType();
-                $storeAs = FileNames::fit($protocol->protocolnum . '-' . $date?->format('Ymd') . '_', $name, $dir);
-                try {
-                    $path = $file->isValid() ? $file->storeAs($dir, $storeAs) : false;
-                } catch (\Throwable $e) {
-                    report($e);
-                    $path = false;
-                }
-                if (! $path) {
-                    // before R1a the row was saved anyway, with an empty path, and the save reported success
-                    $result->warnings[] = "Το αρχείο «{$name}» δεν αποθηκεύτηκε. Επισυνάψτε το ξανά.";
+        try {
+            foreach ($attachments as $row) {
+                $file = $row['file'] ?? null;
+                $content = $row['content'] ?? null;
+                $ada = TextInput::clean($row['ada'] ?? null);
+                if (! $file && $content === null && $ada === null) {
                     continue;
                 }
-                if ($stamp === null) {
-                    $stamp = new Stamp();
-                    if (! Config::getConfigValueOf('putStamp') || $v['no_stamp'] || ! $stamp->prepare($protocol)) {
-                        $stamp->cleanup();
+                // "dir": where the file goes when the protocol has no folder (the e-mail's own copy: arxeio/emails)
+                $dir = $protocol->fakelos === null && isset($row['dir']) ? $row['dir'] : self::folderPath($protocol->fakelos);
+                $name = $mime = $path = null;
+                if ($file || $content !== null) {
+                    $name = $file
+                        ? FileNames::clean($file->getClientOriginalName(), $file->getClientMimeType())
+                        : FileNames::clean((string) ($row['name'] ?? ''), $row['mime'] ?? null);
+                    $mime = $file ? $file->getMimeType() : ($row['mime'] ?? null);
+                    $storeAs = FileNames::fit($protocol->protocolnum . '-' . $date?->format('Ymd') . '_' . ($row['prefix'] ?? ''), $name, $dir);
+                    try {
+                        $path = $file
+                            ? ($file->isValid() ? $file->storeAs($dir, $storeAs) : false)
+                            : (Storage::put("$dir/$storeAs", $content) ? "$dir/$storeAs" : false);
+                    } catch (\Throwable $e) {
+                        if ($strict) {
+                            throw $e;
+                        }
+                        report($e);
+                        $path = false;
+                    }
+                    if (! $path) {
+                        if ($strict) {
+                            throw new \RuntimeException("file not written: $dir/$storeAs");
+                        }
+                        // before R1a the row was saved anyway, with an empty path, and the save reported success
+                        $result->warnings[] = "Το αρχείο «{$name}» δεν αποθηκεύτηκε. Επισυνάψτε το ξανά.";
+                        continue;
+                    }
+                    if ($strict) {
+                        $written[] = $path;
+                    }
+                    if ($row['stamp'] ?? true) {
+                        if ($stamp === null) {
+                            $stamp = new Stamp();
+                            if (! Config::getConfigValueOf('putStamp') || $v['no_stamp'] || ! $stamp->prepare($protocol)) {
+                                $stamp->cleanup();
+                            }
+                        }
+                        $stamp->apply($path);
                     }
                 }
-                $stamp->apply($path);
+                Attachment::updateOrCreate(
+                    ['protocol_id' => $protocol->id, 'ada' => $ada, 'name' => $name, 'mimeType' => $mime, 'savedPath' => $path],
+                    ['keep' => $keep, 'expires' => $expires],
+                );
+                $result->attachmentsAdded++;
             }
-            Attachment::updateOrCreate(
-                ['protocol_id' => $protocol->id, 'ada' => $ada, 'name' => $name, 'mimeType' => $mime, 'savedPath' => $path],
-                ['keep' => $keep, 'expires' => $expires],
-            );
-            $result->attachmentsAdded++;
+        } finally {
+            $stamp?->cleanup();
         }
-        $stamp?->cleanup();
+    }
+
+    /** R5c: remove a protocol whose files could not all be stored: its files, attachment rows, assignments, the row. */
+    private function undoCreate(Protocol $protocol, array $written): void
+    {
+        try {
+            foreach ($written as $path) {
+                Storage::delete($path);
+            }
+            // Attachment has SoftDeletes: delete for good, or "ghosts" stay in the trash
+            Attachment::withTrashed()->where('protocol_id', $protocol->id)->forceDelete();
+            $protocol->assignments()->delete();
+            $protocol->delete();
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** arxeio/<folder> (arxeio/ when there is no folder), as the legacy code built it */
@@ -633,15 +694,17 @@ final class ProtocolWriter
     }
 
     /** "Απόδειξη παραλαβής" to the sender's e-mail, noted in Παρατηρήσεις (legacy rule). */
-    private function sendReceipt(SaveResult $result, ?string $to): void
+    private function sendReceipt(SaveResult $result, ?string $to, ?string $emaildate = null): void
     {
         if ($to === null) {
             return;
         }
         $protocol = $result->protocol;
         $protocoldate = $protocol->dateOf('protocoldate')?->format('d/m/Y');
-        $html = view('receiptProtocol', compact('protocol', 'protocoldate'))->render();
-        if ($this->outgoing->sendHtml($to, 'Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.', $html)) {
+        // an e-mail registered from the inbox gets the e-mail form of the receipt (as before R5c)
+        $html = view($emaildate === null ? 'receiptProtocol' : 'receiptEmail', compact('protocol', 'protocoldate', 'emaildate'))->render();
+        $subject = $emaildate === null ? 'Καταχώριση στο Ηλεκτρονικό Πρωτόκολλο.' : 'Καταχώριση email στο Ηλεκτρονικό Πρωτόκολλο.';
+        if ($this->outgoing->sendHtml($to, $subject, $html)) {
             $note = Carbon::now()->format('d/m/Y H:i:s') . " απόδειξη παραλαβής σε $to";
             $protocol->paratiriseis = ($protocol->paratiriseis ? $protocol->paratiriseis . ', ' : '') . $note;
             $protocol->save();

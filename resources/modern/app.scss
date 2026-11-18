@@ -115,3 +115,14 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .section-toggle { opacity: .7; text-decoration: none; }
 /* while a section is dragged, every place can take it, the empty ones too */
 body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-primary-rgb), .35); outline-offset: 2px; border-radius: .5rem; }
+
+/* R5c: the inbox. The list on the left stays in view; a message scrolled to stops below the top bar. */
+.inbox-sidebar { position: sticky; top: calc(var(--app-topbar-height, 3.2rem) + .75rem); max-height: calc(100vh - var(--app-topbar-height, 3.2rem) - 1.5rem); overflow-y: auto; }
+.inbox-sidebar-item.is-done { opacity: .65; }
+.inbox-message { scroll-margin-top: calc(var(--app-topbar-height, 3.2rem) + .75rem); }
+.inbox-message.is-done > .card-header { background: rgba(var(--bs-success-rgb), .08); }
+.inbox-headers dt { font-weight: 600; color: var(--bs-secondary-color); }
+.inbox-text { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 32rem; overflow-y: auto; padding: .5rem; background: var(--bs-tertiary-bg); border-radius: .375rem; }
+.inbox-html { min-height: 3rem; height: 16rem; background: #fff; }
+.inbox-more > summary { cursor: pointer; color: var(--bs-secondary-color); }
+.inbox-part-toggle { text-decoration: none; }
