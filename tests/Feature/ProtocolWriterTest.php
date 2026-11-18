@@ -62,7 +62,7 @@ class ProtocolWriterTest extends FeatureTestCase
         $this->actingAs($admin)->get("/home/{$p->id}")->assertOk()->assertSee($escaped, false)->assertDontSee('<script>alert(1)', false);
         $this->actingAs($admin)->get('/home/list')->assertOk()->assertSee($escaped, false)->assertDontSee('<script>alert(1)', false);
         // search results printed the value and the term raw before R1a
-        $this->actingAs($admin)->get('/getFindData?searchField1=thema&searchData1=' . urlencode('<script>') . '&searchField2=fakelos&searchField3=in_num')
+        $this->actingAs($admin)->get('/find?' . http_build_query(['s' => 1, 'year' => '', 't' => ['thema' => '<script>']]))
             ->assertOk()->assertDontSee('<script>alert(1)', false)
             ->assertSee('<mark><strong>&lt;script&gt;</strong></mark>alert(1)', false);
     }

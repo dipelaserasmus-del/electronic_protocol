@@ -140,36 +140,46 @@ function tagBox(field, withSuggestions = false) {
 }
 
 /**
- * The folder picker: x-data="folderPicker". Typing filters the folders by code and description; ↑ ↓ Enter (or Tab, or
- * a click) chooses. The chosen code goes to form.fakelos (live: the retention "Διατήρηση" follows the folder).
+ * The folder picker: x-data="folderPicker" (protocol form) or x-data="folderPicker({ … })". Typing filters the folders
+ * by code (dots and spaces optional: "φ221" finds "Φ.22.1") and description; ↑ ↓ Enter (or Tab, or a click) chooses.
+ * Options: model = the Livewire property (form: form.fakelos, sent at once so the retention "Διατήρηση" follows the
+ * folder), live = send the choice at once, choices = the entries above the folders ([value, label]), submit = Enter
+ * with the list closed submits the form (R3a search).
  */
 const NONE = ['', 'Χωρίς φάκελο'];
 
-function folderPicker() {
+/** Lower case, no accents, no symbols or spaces: "Φ.22.1" → "φ221" (ProtocolSearch::loose on the server). */
+export const loose = text => fold(text).replace(/[^\p{L}\p{N}]+/gu, '');
+
+function folderPicker({ model = 'form.fakelos', live = true, choices = [NONE], submit = false } = {}) {
     return {
         folders: [], open: false, typed: false, query: '', active: 0,
         init() { this.folders = readJson('suggest-folders'); },
-        get value() { return this.$wire.form?.fakelos ?? ''; },
+        get value() { return model.split('.').reduce((o, k) => o?.[k], this.$wire) ?? ''; },
         label() {
+            const c = choices.find(c => c[0] === this.value);
+            if (c && c[0] !== '') return c[1];
             const f = this.folders.find(f => f[0] === this.value);
             return f ? (f[1] ? `${f[0]} · ${f[1]}` : f[0]) : this.value;
         },
         get items() {
             // review of R1f: a protocol without attachments may have no folder, so "—" is offered first (as the old list did)
-            if (!this.typed) return [NONE, ...this.folders];
-            return search(this.folders, this.query, { limit: 100, key: f => `${f[0]} ${f[0].replace(/^φ\.?/i, '')} ${f[1]}` });
+            if (!this.typed) return [...choices, ...this.folders];
+            return search(this.folders, this.query, { limit: 100, key: f => `${f[0]} ${f[0].replace(/^φ\.?/i, '')} ${loose(f[0])} ${f[1]}` });
         },
+        isChoice(f) { return choices.includes(f); },
         mark(text) { return this.typed ? highlight(text, this.query) : escape(String(text ?? '')); },
         show() {
             if (this.open) return;
             this.open = true; this.typed = false; this.query = '';
-            this.active = this.folders.findIndex(f => f[0] === this.value) + 1;   // 0 = no folder
+            const c = choices.findIndex(c => c[0] === this.value);
+            this.active = c >= 0 ? c : this.folders.findIndex(f => f[0] === this.value) + choices.length;
             this.$nextTick(() => this.scroll());
         },
         close() { this.open = false; this.typed = false; this.query = ''; },
         input(e) { this.open = true; this.typed = true; this.query = e.target.value; this.active = 0; },
         choose(folder) {
-            if (folder && folder[0] !== this.value) this.$wire.set('form.fakelos', folder[0]);
+            if (folder && folder[0] !== this.value) this.$wire.$set(model, folder[0], live);
             this.close();
         },
         scroll() { this.$root.querySelector('[data-folder-active]')?.scrollIntoView({ block: 'nearest' }); },
@@ -181,8 +191,9 @@ function folderPicker() {
                 if (n) this.active = (this.active + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
                 this.$nextTick(() => this.scroll());
             } else if (e.key === 'Enter') {
+                if (!this.open && submit) return;   // R3a: Enter searches
                 e.preventDefault();
-                if (this.open && this.typed && !this.query.trim()) this.choose(NONE);   // text deleted: no folder
+                if (this.open && this.typed && !this.query.trim()) this.choose(choices[0]);   // text deleted: the first choice
                 else if (this.open && n) this.choose(this.items[this.active]); else this.show();
             } else if (e.key === 'Tab') {
                 if (this.open && this.typed && n) this.choose(this.items[this.active]); else this.close();

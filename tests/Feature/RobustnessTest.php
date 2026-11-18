@@ -7,32 +7,27 @@ use App\Models\Protocol;
 /** B07: inputs that used to crash with HTTP 500. */
 class RobustnessTest extends FeatureTestCase
 {
+    /** R3a: the search screen (fields in the address; year empty: all years) */
     private function find(array $q): string
     {
-        $q += ['searchField1' => 'thema', 'searchField2' => 'in_arxi_ekdosis', 'searchField3' => 'ada',
-               'searchData1' => '', 'searchData2' => '', 'searchData3' => ''];
-        return '/getFindData?' . http_build_query($q);
+        return '/find?' . http_build_query($q + ['s' => 1, 'year' => '']);
     }
 
-    public function test_non_numeric_number_filter_is_ignored_with_a_note(): void
+    public function test_non_numeric_number_is_marked_on_the_field_without_crashing(): void
     {
         Protocol::factory()->number(1)->create(['thema' => 'Ορατό θέμα']);
 
-        // with another valid criterion the search still runs
-        $this->actingAs($this->reader())->get($this->find(['aponum' => 'abc', 'eosnum' => '5x', 'searchData1' => 'Ορατό']))
-            ->assertOk()
-            ->assertSee('Αγνοήθηκαν μη έγκυρα κριτήρια')
-            ->assertSee('Ορατό');
-
-        // with only invalid criteria: the note, no crash
-        $this->actingAs($this->reader())->get($this->find(['aponum' => 'abc']))
-            ->assertOk()->assertSee('Αγνοήθηκαν μη έγκυρα κριτήρια');
+        // R3a: the wrong field is marked and nothing is searched until it is corrected (B07: it was a 500)
+        $this->actingAs($this->reader())->get($this->find(['num' => 'abc', 't' => ['thema' => 'Ορατό']]))
+            ->assertOk()->assertSee('Ένας αριθμός (π.χ. 125)')->assertDontSee('id="search-results"', false);
+        $this->actingAs($this->reader())->get($this->find(['year' => '20x6']))
+            ->assertOk()->assertSee('Τέσσερα ψηφία');
     }
 
-    public function test_invalid_date_filter_is_ignored(): void
+    public function test_invalid_date_is_marked_on_the_field(): void
     {
-        $this->actingAs($this->reader())->get($this->find(['apoProtocolDate' => '31/02/2026', 'eosProtocolDate' => 'yesterday']))
-            ->assertOk()->assertSee('Αγνοήθηκαν μη έγκυρα κριτήρια');
+        $this->actingAs($this->reader())->get($this->find(['from' => '31/02/2026', 'to' => 'yesterday']))
+            ->assertOk()->assertSee('Μη έγκυρη ημερομηνία')->assertDontSee('id="search-results"', false);
     }
 
     public function test_valid_filters_still_work_without_note(): void
@@ -40,17 +35,16 @@ class RobustnessTest extends FeatureTestCase
         Protocol::factory()->number(3)->create(['thema' => 'Τρία']);
         Protocol::factory()->number(9)->create(['thema' => 'Εννέα']);
 
-        $this->actingAs($this->reader())->get($this->find(['aponum' => '2', 'eosnum' => '4', 'etosForMany' => now()->year]))
-            ->assertOk()->assertSee('Τρία')->assertDontSee('Εννέα')->assertDontSee('Αγνοήθηκαν');
+        $this->actingAs($this->reader())->get($this->find(['num' => '2-4', 'year' => now()->year]))
+            ->assertOk()->assertSee('Τρία')->assertDontSee('Εννέα')->assertDontSee('is-invalid');
     }
 
     public function test_search_by_unknown_assignee_returns_no_results_instead_of_500(): void
     {
         Protocol::factory()->number(1)->assignedTo($this->writer())->create(['thema' => 'Ανατεθειμένο']);
 
-        $this->actingAs($this->reader())
-            ->get($this->find(['searchField1' => 'diekperaiosi', 'searchData1' => 'Κανένας Τέτοιος']))
-            ->assertOk()->assertDontSee('Ανατεθειμένο');
+        $this->actingAs($this->reader())->get($this->find(['assignee' => '999999']))
+            ->assertOk()->assertDontSee('Ανατεθειμένο')->assertSee('Δεν βρέθηκε κανένα πρωτόκολλο');
     }
 
     public function test_print_with_invalid_filters_does_not_crash(): void

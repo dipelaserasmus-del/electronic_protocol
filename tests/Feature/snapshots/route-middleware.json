@@ -64,10 +64,6 @@
         "web",
         "writer:home/list"
     ],
-    "GET getFindData": [
-        "auth",
-        "web"
-    ],
     "GET getKeep4Fakelos/{fakelos}": [
         "auth",
         "web",

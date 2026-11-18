@@ -77,7 +77,7 @@ tasks = [
   { id = "R2d", title = "Missing-number rows: new look", phase = "R", batch = 6.6, size = "S", deps = ["R2c"], status = "done", pr = 52 },
 
   # ---------------- Batch 7 ----------------
-  { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "todo" },
+  { id = "R3a", title = "Advanced search screen", phase = "R", batch = 7, size = "M", deps = ["N04", "D02"], status = "done", pr = 55 },
   { id = "R3b", title = "Gmail-style query parser", phase = "R", batch = 7, size = "M", deps = ["R3a"], status = "todo" },
   { id = "R3c", title = "Global search box + results page", phase = "R", batch = 7, size = "M", deps = ["R3b"], status = "todo" },
 

@@ -26,6 +26,12 @@ class ProtocolFormController extends Controller
         return view('protocols.list', ['filter' => $filter, 'userId' => $userId]);
     }
 
+    /** R3a: the advanced search (App\Livewire\SearchPage) */
+    public function search()
+    {
+        return view('protocols.search');
+    }
+
     public function show(Protocol $protocol, $copyAsNew = null)
     {
         abort_if(Auth::user()->cannot('view', $protocol), 404);   // S02 (also before a copy)
