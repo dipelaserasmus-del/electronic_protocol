@@ -159,6 +159,9 @@
                             <div class="form-text folder-help" id="folder-help" title="{{ $folder->describe }}">{{ $folder->describe }}</div>
                         @endif
                         @if ($e('fakelos'))<div class="invalid-feedback">{{ $e('fakelos') }}</div>@endif
+                        @if ($autoAssign)
+                            <x-notice type="info" class="mt-1" id="notice-auto-assign">Με την αποθήκευση: {{ $autoAssign }}</x-notice>
+                        @endif
                     </div>
                     <x-form.text name="thema" :value="$form['thema']" live label="Θέμα" rows="2" :error="$e('thema')" :placeholder="$suggestedSubject">
                         @if ($suggestedSubject)

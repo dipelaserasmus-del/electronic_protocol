@@ -10,6 +10,7 @@ use App\Services\OutgoingMail;
 use App\Services\ProtocolNumberTaken;
 use App\Services\ProtocolNumbering;
 use App\Support\Assignments;
+use App\Support\FolderRules;
 use App\Support\DateInput;
 use App\Support\FileNames;
 use App\Support\TextInput;
@@ -90,6 +91,8 @@ final class ProtocolWriter
 
         $raw = $this->rawNumberErrors($input, $access->number, $manual);
         $this->validate($v, $record, $assignments, $assignments, $access, null, $etos, $manual ? $posted : null, $raw, $attachments);
+        // R1d: the folder's automatic assignments, whoever registers (after the checks: they are not the user's doing)
+        [$assignments, $auto] = FolderRules::merge($assignments, FolderRules::for($record['fakelos'] ?? null));
 
         $data = $this->toColumns($record) + ['user_id' => $user->id, 'etos' => $etos];
         $replaced = false;
@@ -119,6 +122,9 @@ final class ProtocolWriter
         $result = new SaveResult($protocol->fresh(), $replaced);
         if ($replaced) {
             $result->messages[] = "Αντικαταστάθηκε το «" . self::PLACEHOLDER . "» πρωτόκολλο {$protocol->protocolnum}/{$protocol->etos}.";
+        }
+        if ($auto) {
+            $result->messages[] = FolderRules::describe((string) $record['fakelos'], $auto);
         }
         if ($allOrNothing) {
             $written = [];
@@ -196,6 +202,12 @@ final class ProtocolWriter
         }
 
         $oldFolder = (string) $protocol->fakelos;
+        // R1d: moved into a folder with automatic assignments: its users are added (the same folder again adds nothing,
+        // so a user an assigner removed by hand stays removed)
+        $auto = [];
+        if (trim((string) ($record['fakelos'] ?? '')) !== trim($oldFolder)) {
+            [$assignments, $auto] = FolderRules::merge($assignments, FolderRules::for($record['fakelos'] ?? null));
+        }
         $data = $this->toColumns($record) + ['etos' => $etos, 'protocolnum' => $num, 'user_id' => $user->id];
         try {
             $this->numbering->locked(function () use ($protocol, $data, $assignments, $etos, $num) {
@@ -211,6 +223,9 @@ final class ProtocolWriter
         }
 
         $result = new SaveResult($protocol->fresh());
+        if ($auto) {
+            $result->messages[] = FolderRules::describe((string) $record['fakelos'], $auto);
+        }
         if ($oldFolder !== (string) $result->protocol->fakelos) {
             $this->afterCommit($result, fn () => $this->moveFiles($result, $oldFolder));
         }
