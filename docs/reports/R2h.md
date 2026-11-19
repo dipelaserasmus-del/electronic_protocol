@@ -36,3 +36,11 @@ all times: put them under a three-dot button, to save space.
 
 ## Owner actions
 None. To try it: step 36 in [OWNER-TODO.md](../../OWNER-TODO.md).
+
+## Review
+- Codex (P2): an open menu over the next rows was drawn under their attachment links, which could take the click
+  meant for the menu. The menu's wrapper and those links are on the same layer, and later rows win.
+  - Fixed: while open, the menu's wrapper is raised above the rows. Bootstrap's `z-2` helper is `!important`, so the
+    rule is too.
+  - Browser test: wherever the open menu overlaps a later row's link, the menu is on top. It failed before the fix,
+    with an attachment link on top.
