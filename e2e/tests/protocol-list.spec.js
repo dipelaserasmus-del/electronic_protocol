@@ -162,6 +162,12 @@ test('pager above and below the list: previous, next and any page (R2e)', async 
     await expect(top.locator('[data-pager=previous]')).toBeDisabled();
     const pages = await top.locator('[data-pager=select] option').count();
     expect(pages).toBeGreaterThan(2);
+    // both on the right: they end where the list ends (owner, 2026-11-19)
+    const listRight = await page.locator('.protocol-list .card').evaluate((el) => el.getBoundingClientRect().right);
+    for (const pager of [top, bottom]) {
+      const right = await pager.evaluate((el) => Math.max(...[...el.children].map((c) => c.getBoundingClientRect().right)));
+      expect(Math.abs(right - listRight)).toBeLessThan(2);
+    }
     await evidence(page, 'r2e-pager-top', { clip: await top.boundingBox() });
 
     const firstRow = await page.locator('.protocol-row').first().getAttribute('data-id');

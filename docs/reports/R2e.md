@@ -27,6 +27,7 @@ A pager (`x-list-pager`, [resources/views/components/list-pager.blade.php](../..
 - **Σελίδα [ ▾ ] από N**: a list of **every** page. Choosing one goes there at once.
 - **Εμφάνιση 26–50 από 1161**: the rows shown.
 - *Σύνολο: N* stays at the bottom left.
+- Both pagers on the **right**, ending where the list ends (owner, after seeing the first version, 2026-11-19).
 
 Behaviour:
 - The lower pager brings the top of the list into view after a change; the upper one is already there.
@@ -57,6 +58,7 @@ Behaviour:
     in view;
   - *Προηγούμενη* below → the page before;
   - a reload keeps the page.
+  - both pagers end at the list's right edge.
 - Full suites: PHPUnit 510, browser list tests 5/5.
 
 ## Owner actions
