@@ -33,8 +33,31 @@ class KeywordSuggestionsTest extends TestCase
         $this->assertSame([['Διαύγεια', true], ['ΑΙΤΗΣΗ', true]], $out);
     }
 
-    public function test_at_most_six(): void
+    public function test_at_most_max(): void
     {
-        $this->assertCount(KeywordSuggestions::MAX, KeywordSuggestions::for('αλφαβητο βιβλίο γεωγραφία δεντρο ελαιόλαδο ζωγραφική ηλιοβασίλεμα θάλασσα', '', []));
+        $this->assertCount(KeywordSuggestions::MAX, KeywordSuggestions::for(
+            'αλφαβητο βιβλίο γεωγραφία δεντρο ελαιόλαδο ζωγραφική ηλιοβασίλεμα θάλασσα ιστορία καλοκαίρι λεμόνι', '', []));
+    }
+
+    /**
+     * R5e (owner, 2026-11-19): the attachments' file names count too, after the subject; their extensions do not; a word
+     * in capitals takes its spelling from earlier subjects when there is one.
+     */
+    public function test_words_of_the_file_names_after_the_subject(): void
+    {
+        $names = ['ΑΙΤΗΣΗ-ΔΙΑΒΙΒΑΣΤΙΚΟ.pdf', 'ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf', 'ΥΠΕΡΗΧΟΓΡΑΦΗΜΑ.bmp', 'scan_0001.jpeg'];
+        $spellings = ['γνωματευση' => 'γνωμάτευση', 'αιτηση' => 'αίτηση'];
+
+        $out = KeywordSuggestions::for('Αναρρωτική άδεια', '', [], [], $names, $spellings);
+
+        $this->assertSame([['αναρρωτική', false], ['άδεια', false], ['αίτηση', false], ['ιατρικη', false], ['γνωμάτευση', false], ['υπερηχογραφημα', false]], $out,
+            'the subject\'s words first; then the names\' (διαβιβαστικό is a common word; pdf, bmp, jpeg and scan are not kept)');
+    }
+
+    public function test_keywords_in_use_are_found_in_the_file_names(): void
+    {
+        $out = KeywordSuggestions::for('Fwd: έγγραφα', '', [['Δικαιολογητικά', 9], ['Γνωμάτευση', 4]], [], ['ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf']);
+
+        $this->assertSame([['Γνωμάτευση', true], ['ιατρικη', false]], $out, 'in its usual spelling, first');
     }
 }

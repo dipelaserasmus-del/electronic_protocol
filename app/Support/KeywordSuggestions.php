@@ -7,10 +7,13 @@ namespace App\Support;
  * text). First the keywords already used in protocols whose words appear there (most used first, in their usual
  * spelling); then other significant words of the subject: long enough, not a common word, not a number.
  * Matching ignores case and accents (TagList::fold), and keywords already chosen are left out.
+ *
+ * R5e (owner, 2026-11-19): the attachments' file names count too ("ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf"), after the subject; and a
+ * word in capitals (no accents) takes the spelling it has in earlier subjects ("γνωμάτευση"), when there is one.
  */
 final class KeywordSuggestions
 {
-    public const MAX = 6;
+    public const MAX = 8;
 
     /** Shortest word offered as a new keyword. */
     private const MIN_LETTERS = 5;
@@ -41,12 +44,15 @@ final class KeywordSuggestions
     /**
      * @param list<array{0: string, 1: int}> $known keywords in use, most used first (Suggestions::keywords)
      * @param list<string> $chosen keywords already in the field
+     * @param list<string> $fileNames the attachments' names ("ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf")
+     * @param array<string, string> $spellings folded word => its usual spelling in subjects (Suggestions::spellings)
      * @return list<array{0: string, 1: bool}> [keyword, already in use]
      */
-    public static function for(string $subject, string $text, array $known, array $chosen = []): array
+    public static function for(string $subject, string $text, array $known, array $chosen = [], array $fileNames = [], array $spellings = []): array
     {
         $taken = array_flip(array_map(TagList::fold(...), $chosen));
-        $haystack = ' '.implode(' ', self::words($subject.' '.mb_substr($text, 0, self::TEXT_CHARS))).' ';
+        $names = implode(' ', array_map(fn ($n) => preg_replace('/\.[\p{L}\p{N}]{1,5}$/u', '', (string) $n), $fileNames));
+        $haystack = ' '.implode(' ', self::words($subject.' '.mb_substr($text, 0, self::TEXT_CHARS).' '.$names)).' ';
         $out = [];
         $add = function (string $keyword, bool $inUse) use (&$out, &$taken): void {
             $f = TagList::fold($keyword);
@@ -72,12 +78,13 @@ final class KeywordSuggestions
         foreach ($known as [$keyword]) {
             $spelling[TagList::fold($keyword)] ??= $keyword;
         }
-        foreach (preg_split('/[^\p{L}\p{N}]+/u', $subject, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $word) {
+        // the subject's words first, then the file names'
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', $subject.' '.$names, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $word) {
             $f = TagList::fold($word);
             if (mb_strlen($f) < self::MIN_LETTERS || preg_match('/\p{N}/u', $f) || in_array($f, self::COMMON, true) || isset($covered[$f])) {
                 continue;
             }
-            $add($spelling[$f] ?? self::lower($word), isset($spelling[$f]));
+            $add($spelling[$f] ?? self::spelled($word, $spellings), isset($spelling[$f]));
         }
 
         return $out;
@@ -89,9 +96,18 @@ final class KeywordSuggestions
         return preg_split('/[^\p{L}\p{N}]+/u', TagList::fold($text), -1, PREG_SPLIT_NO_EMPTY) ?: [];
     }
 
-    /** "ΑΣΘΕΝΕΙΑΣ" → "ασθενειας" (final ς; capitals have no accents to keep); "Εκδρομή" → "εκδρομή". */
-    private static function lower(string $word): string
+    /**
+     * "Εκδρομή" → "εκδρομή"; "ΓΝΩΜΑΤΕΥΣΗ" → "γνωμάτευση" when earlier subjects spell it so (capitals have no accents to
+     * keep), else "γνωματευση" (with final ς).
+     */
+    private static function spelled(string $word, array $spellings): string
     {
-        return mb_strtolower($word, 'UTF-8');
+        $lower = mb_strtolower($word, 'UTF-8');
+        $accented = preg_match('/\p{Mn}/u', \Normalizer::normalize($word, \Normalizer::FORM_D) ?: $word);
+        if (! $accented) {
+            $lower = $spellings[TagList::fold($word)] ?? $lower;
+        }
+
+        return preg_replace('/σ(?!\p{L})/u', 'ς', $lower);
     }
 }

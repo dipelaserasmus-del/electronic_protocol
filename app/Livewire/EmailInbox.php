@@ -331,6 +331,7 @@ class EmailInbox extends Component
         $user = Auth::user();
         // R5d: per e-mail still to register: similar protocols, keyword suggestions, the subject offered when it has none
         $known = \Illuminate\Support\Facades\Cache::remember('inbox-keywords:'.$user->id, 60, fn () => Suggestions::keywords($user));
+        $spellings = \Illuminate\Support\Facades\Cache::remember('inbox-spellings:'.$user->id, 600, fn () => Suggestions::spellings($user));   // R5e
         $extra = [];
         foreach ($messages as $uid => $m) {
             if (isset($this->done[$uid])) {
@@ -340,7 +341,9 @@ class EmailInbox extends Component
             $extra[$uid] = [
                 'similar' => $this->similar($uid),
                 'keywords' => $tags,
-                'suggested' => KeywordSuggestions::for((string) ($m['subject'] ?? ''), (string) ($m['text'] ?? ''), $known, $tags),
+                // R5e: the attachments' names too
+                'suggested' => KeywordSuggestions::for((string) ($m['subject'] ?? ''), (string) ($m['text'] ?? ''), $known, $tags,
+                    array_column($m['attachments'] ?? [], 'name'), $spellings),
                 'subjectGuess' => ($m['subject'] ?? '') === '' ? $this->subjectGuess($uid) : null,
             ];
         }

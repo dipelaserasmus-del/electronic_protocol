@@ -128,18 +128,19 @@
                                             </x-notice>
                                         </div>
                                     @endif
-                                    <div class="col-6 col-md-2">
+                                    <div class="col-12 col-sm-4 col-md-2">
                                         <label for="f-{{ $uid }}-in_num" class="form-label small fw-semibold mb-1">Αριθ. εισερχ.</label>
                                         <input id="f-{{ $uid }}-in_num" class="form-control @if ($err($uid, 'in_num')) is-invalid @endif" autocomplete="off" wire:model="forms.{{ $uid }}.in_num" value="{{ $f['in_num'] ?? '' }}">
                                         @if ($err($uid, 'in_num'))<div class="invalid-feedback">{{ $err($uid, 'in_num') }}</div>@endif
                                     </div>
-                                    <div class="col-6 col-md-3">
-                                        <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημνία εισερχ.</label>
-                                        <input id="f-{{ $uid }}-in_date" class="form-control @if ($err($uid, 'in_date')) is-invalid @endif" autocomplete="off" inputmode="numeric" placeholder="ηη/μμ/εεεε"
-                                               wire:model="forms.{{ $uid }}.in_date" value="{{ $f['in_date'] ?? '' }}">
-                                        @if ($err($uid, 'in_date'))<div class="invalid-feedback">{{ $err($uid, 'in_date') }}</div>@endif
+                                    <div class="col-12 col-sm-8 col-md-4">
+                                        <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημ/νία εισερχ.</label>
+                                        {{-- R5e (owner, 2026-11-19): the app's date field: "9" → 09/this month, ◀ ▶, Σήμερα, calendar --}}
+                                        <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :value="$f['in_date'] ?? ''" :help="false"
+                                                      wire:model="forms.{{ $uid }}.in_date" />
+                                        @if ($err($uid, 'in_date'))<div class="text-danger small">{{ $err($uid, 'in_date') }}</div>@endif
                                     </div>
-                                    <div class="col-md-7">
+                                    <div class="col-md-6">
                                         <label for="f-{{ $uid }}-in_arxi_ekdosis" class="form-label small fw-semibold mb-1">Αρχή έκδοσης</label>
                                         <input id="f-{{ $uid }}-in_arxi_ekdosis" class="form-control @if ($err($uid, 'in_arxi_ekdosis')) is-invalid @endif" autocomplete="off" list="suggest-in_arxi_ekdosis"
                                                wire:model="forms.{{ $uid }}.in_arxi_ekdosis" value="{{ $f['in_arxi_ekdosis'] ?? '' }}">
@@ -198,7 +199,7 @@
                                         @if ($err($uid, 'keywords'))<div class="invalid-feedback d-block">{{ $err($uid, 'keywords') }}</div>@endif
                                         @if ($x['suggested'])
                                             <div class="d-flex flex-wrap align-items-center gap-1 mt-1 keyword-suggestions">
-                                                <small class="text-body-secondary me-1">Προτάσεις από το θέμα:</small>
+                                                <small class="text-body-secondary me-1">Προτάσεις από το θέμα και τα συνημμένα:</small>
                                                 @foreach ($x['suggested'] as [$word, $inUse])
                                                     <button type="button" class="btn btn-sm rounded-pill py-0 {{ $inUse ? 'btn-outline-primary' : 'btn-outline-secondary' }}"
                                                             wire:click="addTag('keywords', @js($word), {{ $uid }})" data-suggest="{{ $word }}"

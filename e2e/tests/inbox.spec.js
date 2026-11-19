@@ -128,3 +128,42 @@ test('winmail.dat (Outlook): its text and files are shown and registered instead
   await expect(page.locator('a[href*="/download/"]', { hasText: 'Αίτηση μετακίνησης εκπαιδευτικών.pdf' })).toHaveCount(1);
   await expect(page.locator('a[href*="/download/"]', { hasText: /\.csv$/ })).toHaveCount(1);
 });
+
+test('incoming date: the app\'s date field; keyword suggestions from the file names too (R5e)', async ({ page }) => {
+  await login(page, 'admin');
+  // synthetic e-mail 10, which no test registers: subject «Διαβιβαστικό αίτησης άδειας εκπαιδευτικού»,
+  // file «ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf» (αιτηση and δοκιμη are only in the file's name)
+  const message = await findEmail(page, 'Διαβιβαστικό αίτησης άδειας');
+  const pad = (n) => String(n).padStart(2, '0');
+  const now = new Date();
+
+  // the date field: "9" → 09/<this month>/<this year>; ◀ one day earlier
+  const date = message.locator('input[id$="-in_date"]');
+  await date.fill('9');
+  await date.press('Tab');
+  await expect(date).toHaveValue(`09/${pad(now.getMonth() + 1)}/${now.getFullYear()}`);
+  await message.locator('[data-date-input]').locator('[data-date-action=prev]').click();
+  await expect(date).toHaveValue(`08/${pad(now.getMonth() + 1)}/${now.getFullYear()}`);
+  await expect(message.locator('[data-date-input] [data-date-action=calendar]')).toBeVisible();
+
+  // suggestions: words of the file names, not only of the subject
+  const suggestions = message.locator('.keyword-suggestions');
+  await expect(suggestions).toContainText('Προτάσεις από το θέμα και τα συνημμένα');
+  const fold = (w) => w.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase().replace(/ς/g, 'σ');
+  await expect(suggestions.locator('[data-suggest]').first()).toBeVisible();
+  const offered = (await suggestions.locator('[data-suggest]').evaluateAll((els) => els.map((e) => e.dataset.suggest))).map(fold);
+  expect(offered).toContain('αιτηση');   // with its accents when earlier subjects have the word
+  expect(offered).toContain('δοκιμη');
+  const box = await date.evaluate((el) => {
+    const form = el.closest('.row, form') || el;
+    const r = form.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
+  await evidence(page, 'r5e-date-and-suggestions', { clip: { x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 520) } });
+  await suggestions.scrollIntoViewIfNeeded();
+  const field = await suggestions.evaluate((el) => {
+    const r = el.parentElement.getBoundingClientRect();
+    return { x: r.x, y: r.y - 6, width: r.width, height: r.height + 12 };
+  });
+  await evidence(page, 'r5e-suggestions', { clip: field });
+});

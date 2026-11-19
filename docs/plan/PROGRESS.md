@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **62 / 72** `██████████████████████████░░░░` 86% |
-| Effort done (PERT) | **29.9 / 34.5 h** `██████████████████████████░░░░` 87% |
+| Tasks done | **63 / 73** `██████████████████████████░░░░` 86% |
+| Effort done (PERT) | **30.2 / 34.8 h** `██████████████████████████░░░░` 87% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h | 5/5 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e | 6/6 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -114,6 +114,7 @@ flowchart LR
     R2f["R2f<br/>Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form"]
     R2g["R2g<br/>List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page"]
     R2h["R2h<br/>List: the row actions (copy, receipt) under a ⋮ menu"]
+    R5e["R5e<br/>Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -205,6 +206,8 @@ flowchart LR
   R1b --> R2f
   R2e --> R2g
   R2 --> R2h
+  R5d --> R5e
+  N04 --> R5e
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -230,7 +233,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -320,17 +323,18 @@ gantt
   R2f Dates out of order with the numbers, or in the future  flagged in the list (⚠ + explanation) and warned in the form :done, r2f, 2026-11-13 13:30, 33m
   R2g List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page :done, r2g, 2026-11-13 14:03, 19m
   R2h List  the row actions (copy, receipt) under a ⋮ menu :done, r2h, 2026-11-13 14:22, 19m
+  R5e Inbox  the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects :done, r5e, 2026-11-13 14:41, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 14:41, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 15:14, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 15:33, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 15:52, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 16:25, 19m
-  X01 Audit log — recording :x01, 2026-11-13 16:44, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 17:17, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 17:50, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 18:23, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 18:42, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 15:00, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 15:33, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 15:52, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 16:11, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 16:44, 19m
+  X01 Audit log — recording :x01, 2026-11-13 17:03, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 17:36, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 18:09, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 18:42, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 19:01, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -401,6 +405,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 6.1 | 6.7 | 1.6 | #73 |
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.4 | 6.7 | 1.9 | #74 |
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 6.4 | 6.7 | 2.2 | #75 |
+| ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 | #76 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.6 | 6.1 | 1.4 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |
