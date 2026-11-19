@@ -73,7 +73,15 @@ the mistake nor makes a right date look wrong.
   - not shown to a writer who cannot set the date.
 - Browser (`protocol-list.spec.js`): a date 20 days back gives the warning in the form; the protocol is saved; its
   row is flagged; hovering the ⚠ shows the explanation and stays on the list; correcting the date removes both.
-- Full suites: PHPUnit 524; browser list tests 6/6.
+- Full suites: PHPUnit 525; browser list tests 6/6.
 
 ## Owner actions
 None. To try it: step 34 in [OWNER-TODO.md](../../OWNER-TODO.md).
+
+## Review
+- Codex (P2): with *Περιορισμός λίστας* on, the explanation named the protocols around (number and date) even when
+  the user may not see them, which revealed another user's protocol date.
+  - Fixed: a neighbour is named only if the user may see it. Otherwise the text says *«… δεν ταιριάζει με τη σειρά
+    των αριθμών γύρω του»*. The check itself still uses all the protocols.
+  - Test `ProtocolListTest::test_the_explanation_hides_protocols_the_user_may_not_see` (list and form; it failed
+    before).
