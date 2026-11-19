@@ -4,6 +4,7 @@ namespace App\Services\Protocols;
 
 use App\Models\Attachment;
 use App\Models\Config;
+use App\Models\Keepvalue;
 use App\Models\Protocol;
 use App\Models\User;
 use App\Services\OutgoingMail;
@@ -86,8 +87,10 @@ final class ProtocolWriter
         $record['protocoldate'] = $access->date ? $v['protocoldate'] : Carbon::today()->format(DateInput::FORMAT);
 
         $manual = $access->number && $this->numbering->isManual($input['protocolnum'] ?? null, $input['protocolnum_proposed'] ?? null);
-        $posted = (int) ($input['protocolnum'] ?? 0);   // safe numbering off: the number the form showed (legacy rule)
-        $chosen = $manual ? $posted : (Config::getConfigValueOf('safeNewProtocolNum') ? null : ($posted ?: null));
+        $posted = (int) ($input['protocolnum'] ?? 0);
+        // R6d: only an administrator with "Έλεγχοι καταχώρισης" off chooses the number; for everyone else it is given
+        // on save (was: with safeNewProtocolNum off, any posted number was taken, from any user)
+        $chosen = $manual ? $posted : null;
 
         $raw = $this->rawNumberErrors($input, $access->number, $manual);
         $this->validate($v, $record, $assignments, $assignments, $access, null, $etos, $manual ? $posted : null, $raw, $attachments);
@@ -559,7 +562,8 @@ final class ProtocolWriter
         $strict = $written !== null;
         $stamp = null;
         $date = $protocol->dateOf('protocoldate');
-        $keep = $v['keep'];
+        // R6d: unless "Ελεύθερη επιλογή χρόνου διατήρησης" is on, the retention is the folder's, whatever was sent
+        $keep = Config::getConfigValueOf('allowUserChangeKeepSelect') ? $v['keep'] : (Keepvalue::retentionOf($protocol->fakelos) ?: null);
         $expires = ($keep !== null && is_numeric($keep) && $date) ? $date->addYears((int) $keep)->format('Y-m-d') : null;
 
         try {

@@ -408,7 +408,9 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="f-keep" class="form-label small fw-semibold mb-1">Διατήρηση</label>
-                                <select id="f-keep" class="form-select" wire:model="form.keep">
+                                {{-- R6d: when the settings do not allow a change, the folder's retention, as in the inbox --}}
+                                <select id="f-keep" class="form-select" wire:model="form.keep" @disabled(! $mayChangeKeep)
+                                        @unless ($mayChangeKeep) title="Οι ρυθμίσεις δεν επιτρέπουν αλλαγή: ακολουθεί τον φάκελο" @endunless>
                                     <option value="">—</option>
                                     @foreach ($keepYears as $y)<option value="{{ $y }}" @selected((string) $y === $form['keep'])>{{ $y }} {{ $y == 1 ? 'έτος' : 'έτη' }}</option>@endforeach
                                     @foreach ($keepWords as $w)<option value="{{ $w }}" @selected((string) $w === $form['keep'])>{{ $w }}</option>@endforeach

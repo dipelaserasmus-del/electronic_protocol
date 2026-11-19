@@ -72,4 +72,11 @@ class Keepvalue extends Model
         return (string) $this->keep_alt;
     }
 
+    /** The retention ("Διατήρηση") a folder gives its attachments: its years, else its text; '' without a folder. */
+    public static function retentionOf(?string $folder): string
+    {
+        $k = $folder ? static::whereFakelos($folder)->first() : null;
+
+        return (string) ($k?->keep ?: $k?->keep_alt ?: '');
+    }
 }

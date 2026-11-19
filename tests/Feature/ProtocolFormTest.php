@@ -372,6 +372,51 @@ class ProtocolFormTest extends FeatureTestCase
     }
 
     /** The browser can't switch the form to a protocol the user may not see. */
+    /**
+     * R6d (owner, 2026-11-19): «Ελεύθερη επιλογή χρόνου διατήρησης» off → the retention is the folder's, in the form
+     * too (it applied only in the inbox): the field cannot be changed and a value sent anyway is not used.
+     */
+    public function test_retention_follows_the_folder_unless_the_setting_allows_a_choice(): void
+    {
+        Storage::fake('local');
+        \App\Models\Keepvalue::create(['fakelos' => 'Φ.960', 'keep' => 5, 'describe' => 'Πενταετία']);
+        $save = function (string $thema) {
+            return Livewire::actingAs($this->writer())->test(ProtocolForm::class)
+                ->set('form.thema', $thema)->set('form.fakelos', 'Φ.960')->assertSet('form.keep', '5')
+                ->set('form.keep', '20')
+                ->set('uploads', [UploadedFile::fake()->createWithContent('έγγραφο.pdf', '%PDF-1.4 x')])
+                ->call('save')->assertHasNoErrors();
+        };
+
+        $this->setting('allowUserChangeKeepSelect', 0);
+        Livewire::actingAs($this->writer())->test(ProtocolForm::class)->assertSeeHtml('wire:model="form.keep" disabled');
+        $save('Του φακέλου');
+        $this->assertSame('5', (string) Protocol::where('thema', 'Του φακέλου')->firstOrFail()->attachments()->value('keep'));
+
+        $this->setting('allowUserChangeKeepSelect', 1);
+        Livewire::actingAs($this->writer())->test(ProtocolForm::class)->assertDontSeeHtml('wire:model="form.keep" disabled');
+        $save('Δική μου επιλογή');
+        $this->assertSame('20', (string) Protocol::where('thema', 'Δική μου επιλογή')->firstOrFail()->attachments()->value('keep'));
+    }
+
+    /**
+     * Review of R6d: editing (or copying) a protocol whose files kept another retention than the folder's now: without
+     * free choice the locked field showed the files' old value, while new files got the folder's.
+     */
+    public function test_a_locked_retention_shows_the_folders_when_editing_or_copying(): void
+    {
+        \App\Models\Keepvalue::create(['fakelos' => 'Φ.961', 'keep' => 5, 'describe' => 'Πενταετία']);
+        $p = Protocol::factory()->number(7)->create(['fakelos' => 'Φ.961']);
+        Attachment::factory()->create(['protocol_id' => $p->id, 'keep' => '20']);
+
+        $this->setting('allowUserChangeKeepSelect', 0);
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertSet('form.keep', '5');
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p, 'copy' => true])->assertSet('form.keep', '5');
+
+        $this->setting('allowUserChangeKeepSelect', 1);
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertSet('form.keep', '20');
+    }
+
     public function test_the_form_can_not_be_pointed_at_another_protocol(): void
     {
         $this->setting('limitProtocolAccessList', 1);

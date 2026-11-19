@@ -313,9 +313,7 @@ class EmailInbox extends Component
 
     public static function keepFor(?string $folder): string
     {
-        $k = $folder ? Keepvalue::whereFakelos($folder)->first() : null;
-
-        return (string) ($k?->keep ?: $k?->keep_alt ?: '');
+        return Keepvalue::retentionOf($folder);
     }
 
     public function render(Inbox $inbox)

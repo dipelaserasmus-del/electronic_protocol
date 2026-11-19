@@ -85,11 +85,45 @@ class SettingsPageTest extends FeatureTestCase
         }
     }
 
-    public function test_turning_off_the_update_check_clears_the_notice(): void
+    /**
+     * R6d (was: test_turning_off_the_update_check_clears_the_notice): three settings that do nothing in the new version
+     * are no longer shown (owner, 2026-11-19); saving the page leaves their stored values as they were.
+     */
+    public function test_settings_without_effect_are_hidden_and_kept(): void
     {
-        Config::setConfigValueOf('needsUpdate', 1);
-        Livewire::actingAs($this->admin())->test(SettingsPage::class)->set('values.updatesAutoCheck', '0')->call('save');
-        $this->assertSame('0', (string) Config::getConfigValueOf('needsUpdate'));
+        foreach (['updatesAutoCheck' => '1', 'protocolArrowStep' => '10', 'safeNewProtocolNum' => '0'] as $key => $value) {
+            Config::setConfigValueOf($key, $value);
+        }
+        $page = Livewire::actingAs($this->admin())->test(SettingsPage::class);
+        foreach (['updatesAutoCheck', 'protocolArrowStep', 'safeNewProtocolNum'] as $key) {
+            $page->assertDontSee('id="s-'.$key.'"', false);
+            $this->assertArrayNotHasKey($key, SettingsCatalog::all());
+        }
+        $page->set('values.ipiresiasName', 'Άλλο όνομα')->call('save')->assertHasNoErrors();
+        $this->assertSame('1', (string) Config::getConfigValueOf('updatesAutoCheck'));
+        $this->assertSame('10', (string) Config::getConfigValueOf('protocolArrowStep'));
+        $this->assertSame('0', (string) Config::getConfigValueOf('safeNewProtocolNum'));
+    }
+
+    /** R6d: every setting has its line and its fuller explanation (ⓘ); the two numbering settings are framed together. */
+    public function test_every_setting_has_help_and_an_explanation(): void
+    {
+        foreach (SettingsCatalog::all() as $key => $def) {
+            $this->assertNotEmpty($def['help'] ?? null, "$key: help");
+            $this->assertGreaterThan(mb_strlen($def['help']), mb_strlen($def['more'] ?? ''), "$key: a fuller explanation");
+        }
+        $html = Livewire::actingAs($this->admin())->test(SettingsPage::class)->html();
+        $this->assertSame(count(SettingsCatalog::all()), substr_count($html, 'class="btn btn-link p-0 ms-1 lh-1 align-baseline text-body-secondary setting-more"'));
+        $this->assertStringContainsString('data-bs-content="'.e(SettingsCatalog::all()['gapCheckMonths']['more']).'"', $html);
+
+        $box = substr($html, strpos($html, 'id="box-numbering"'));
+        $box = substr($box, 0, strpos($box, '</fieldset>'));
+        $this->assertStringContainsString('id="s-firstProtocolNum"', $box);
+        $this->assertStringContainsString('id="s-gapCheckMonths"', $box);
+        $this->assertStringContainsString('ο έλεγχος κενών ξεκινά από τον μεγαλύτερο', $box);
+        $this->assertStringNotContainsString('id="s-yearInUse"', $box);
+
+        $this->assertSame('Αποτελέσματα αναζήτησης ανά σελίδα', SettingsCatalog::all()['maxRowsInFindPage']['label']);
     }
 
     public function test_unused_settings_are_removed(): void

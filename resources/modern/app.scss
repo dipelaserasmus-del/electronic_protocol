@@ -126,3 +126,14 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-html { min-height: 3rem; height: 16rem; background: #fff; }
 .inbox-more > summary { cursor: pointer; color: var(--bs-secondary-color); }
 .inbox-part-toggle { text-decoration: none; }
+
+// R6d: the fuller explanation of a setting (its ⓘ in "Ρυθμίσεις")
+.setting-popover {
+  --bs-popover-max-width: 26rem;
+  --bs-popover-font-size: 0.875rem;
+}
+.setting-more:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
