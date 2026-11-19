@@ -124,6 +124,24 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertSame(2, substr_count($list->html(), '<option value="5" selected'), 'both choices show the page');
     }
 
+    /**
+     * Review of R2e: a page beyond the last (old bookmark, rows deleted, or typed) made the pager build a reversed
+     * window of page numbers; a huge one could use up the memory. It now shows the last page.
+     */
+    public function test_a_page_beyond_the_last_shows_the_last_page(): void
+    {
+        $this->setting('showRowsInPage', 2);
+        Protocol::factory()->count(9)->sequence(fn ($s) => ['protocolnum' => $s->index + 1, 'thema' => 'Γραμμή ' . ($s->index + 1)])->create();
+
+        foreach ([100, 10_000_000] as $page) {
+            $html = $this->actingAs($this->admin())->get("/home/list?page=$page")->assertOk()
+                ->assertSee('Γραμμή 1')->assertSee('Εμφάνιση 9–9 από 9')->getContent();
+            $this->assertSame(2, substr_count($html, '<option value="5" selected'), "page $page: the last page chosen");
+            $this->assertSame(0, substr_count($html, 'data-pager-page="6"'), "page $page: no pages beyond the last");
+            $this->assertLessThan(2 * 5 + 20, substr_count($html, 'data-pager-page='), "page $page: a bounded window");
+        }
+    }
+
     public function test_no_pager_for_a_single_page(): void
     {
         $this->setting('showRowsInPage', 25);

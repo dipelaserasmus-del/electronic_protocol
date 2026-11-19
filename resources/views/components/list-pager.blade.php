@@ -12,7 +12,9 @@
         $name = $paginator->getPageName();
         // the lower pager brings the top of the list into view; the upper one is already there
         $scroll = $position === 'bottom' ? "\$el.closest('.protocol-list').scrollIntoView()" : '';
-        $numbers = collect([1, $last])->merge(range(max(1, $current - 2), min($last, $current + 2)))->unique()->sort()->values();
+        // the window never leaves 1…last, whatever page was asked for (review of R2e)
+        $middle = min(max($current, 1), $last);
+        $numbers = collect([1, $last])->merge(range(max(1, $middle - 2), min($last, $middle + 2)))->unique()->sort()->values();
     @endphp
     <nav {{ $attributes->merge(['class' => 'list-pager d-flex flex-wrap align-items-center gap-2']) }} id="pager-{{ $position }}"
          aria-label="Σελίδες της λίστας ({{ $position === 'top' ? 'πάνω' : 'κάτω' }})">

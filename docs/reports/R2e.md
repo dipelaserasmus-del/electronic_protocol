@@ -59,7 +59,14 @@ Behaviour:
   - *Προηγούμενη* below → the page before;
   - a reload keeps the page.
   - both pagers end at the list's right edge.
-- Full suites: PHPUnit 510, browser list tests 5/5.
+- Full suites: PHPUnit 511, browser list tests 5/5.
 
 ## Owner actions
 None. To try it: step 31 in [OWNER-TODO.md](../../OWNER-TODO.md).
+
+## Review
+- Codex (P2): a page past the last one (an old bookmark, rows deleted since, or typed in the address) made the pager
+  build a reversed run of page numbers (94 for `?page=100` with 5 pages). A huge page number could use up the
+  memory.
+  - Fixed: the list shows the last page instead, and the pager's numbers never leave 1…last.
+  - Test `test_a_page_beyond_the_last_shows_the_last_page` (`?page=100` and `?page=10000000`; it failed before).
