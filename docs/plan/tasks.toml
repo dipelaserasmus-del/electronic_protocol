@@ -99,7 +99,7 @@ tasks = [
   { id = "R7", title = "Printing & exports", phase = "R", batch = 9, size = "M", deps = ["R2"], status = "done", pr = 69 },
 
   # ---------------- Batch 9.5 (owner's notes, 2026-11-19) ----------------
-  { id = "R2e", title = "List pager above the list too; previous / next; any page from a list", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "in-progress" },
+  { id = "R2e", title = "List pager above the list too; previous / next; any page from a list", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "done", pr = 71 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
