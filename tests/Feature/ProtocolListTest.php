@@ -142,6 +142,57 @@ class ProtocolListTest extends FeatureTestCase
         }
     }
 
+    /** R2f (owner, 2026-11-19): a date out of order with the numbers, or after today, is flagged in its row. */
+    public function test_dates_out_of_order_or_in_the_future_are_flagged(): void
+    {
+        $year = (int) now()->year;
+        $day = now()->subDays(5)->startOfDay();
+        $dates = [$day, $day, $day->copy()->addDays(3), $day, $day, now()->addDays(10)];   // 3: out of order; 6: future
+        foreach ($dates as $i => $d) {
+            Protocol::factory()->number($i + 1)->create(['etos' => $year, 'protocoldate' => $d->toDateString(), 'thema' => 'Θέμα '.($i + 1)]);
+        }
+
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($html, 'protocol-row  date-flagged'), 'two rows flagged');
+        $row = fn (int $n) => substr($html, strpos($html, 'data-id="'.Protocol::where('protocolnum', $n)->value('id').'"') - 120, 1500);
+        $this->assertStringContainsString('date-flagged', $row(3));
+        $this->assertStringContainsString('ο προηγούμενος (2) έχει '.$day->format('d/m/Y').' και ο επόμενος (4) '.$day->format('d/m/Y'), $row(3));
+        $this->assertStringContainsString('data-kinds="future"', $row(6));
+        $this->assertStringContainsString('Η ημερομηνία είναι μετά τη σημερινή.', $row(6));
+        $this->assertStringNotContainsString('date-flagged', $row(2));
+        $this->assertStringNotContainsString('date-flagged', $row(4));
+    }
+
+    /**
+     * Review of R2f: with "Περιορισμός λίστας", the explanation does not name (number, date) the protocols around
+     * that the user may not see; the check itself still uses all of them.
+     */
+    public function test_the_explanation_hides_protocols_the_user_may_not_see(): void
+    {
+        $this->setting('limitProtocolAccessList', 1);
+        $this->setting('allowWriterChangeDate', 1);
+        $writer = $this->writer();
+        $year = (int) now()->year;
+        $day = now()->subDays(10)->startOfDay();
+        Protocol::factory()->number(1)->create(['etos' => $year, 'protocoldate' => $day->toDateString()]);
+        Protocol::factory()->number(2)->create(['etos' => $year, 'protocoldate' => $day->copy()->addDays(5)->toDateString(), 'user_id' => $writer->id, 'thema' => 'Δικό μου']);
+        Protocol::factory()->number(3)->create(['etos' => $year, 'protocoldate' => $day->toDateString()]);
+        $hidden = $day->format('d/m/Y');
+
+        $html = $this->actingAs($writer)->get('/home/list')->assertOk()->assertSee('Δικό μου')->getContent();
+        $this->assertStringContainsString('date-flagged', $html, 'still flagged');
+        $this->assertStringContainsString('Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών γύρω του.', $html);
+        $this->assertStringNotContainsString('ο προηγούμενος (1)', $html);
+        $this->assertStringNotContainsString($hidden, $html, 'the hidden protocols\' date is not shown');
+
+        $this->actingAs($this->admin())->get('/home/list')->assertSee('ο προηγούμενος (1) έχει '.$hidden, false);
+
+        // the form too: a new protocol dated before the (hidden) last one
+        \Livewire\Livewire::actingAs($writer)->test(\App\Livewire\ProtocolForm::class)
+            ->set('form.protocoldate', $day->copy()->subDay()->format('d/m/Y'))
+            ->assertSee('γύρω του')->assertDontSee('ο προηγούμενος (3)');
+    }
+
     public function test_no_pager_for_a_single_page(): void
     {
         $this->setting('showRowsInPage', 25);

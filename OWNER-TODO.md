@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 10:44 (after Batch 9; R2e, R6d). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:04 (after Batch 9; R2e, R6d, R2f). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -99,6 +99,10 @@ Open *Εισερχόμενα*.
   nothing).
 - [ ] **33.** Untick *Ελεύθερη επιλογή χρόνου διατήρησης* and save. *Νέο*: choose a folder; *Διατήρηση* takes the
   folder's and cannot be changed. Tick it again: it can.
+- [ ] **34.** *Ρυθμίσεις → Ο Συγγραφέας αλλάζει την ημερομηνία πρωτοκόλλου*: on. *Νέο*: type a date some days
+  before today. Under the date: ⚠ *«Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών …»*. Save anyway: it is saved.
+  In *Λίστα* its row is coloured, with ⚠ next to the date; the mouse over ⚠ explains why. Correct the date: the warning
+  goes. A date after today is flagged the same way.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

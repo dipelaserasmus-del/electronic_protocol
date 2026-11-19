@@ -194,3 +194,51 @@ test('pager above and below the list: previous, next and any page (R2e)', async 
     await setSetting(page, 'showRowsInPage', previousRows);
   }
 });
+
+test('a date out of order: a warning in the form, ⚠ with its explanation in the list (R2f)', async ({ page }) => {
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'allowWriterChangeDate', 1);
+  const pad = (n) => String(n).padStart(2, '0');
+  const ddmmyyyy = (d) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const early = new Date();
+  early.setDate(early.getDate() - 20);   // earlier than the last protocol of the demo
+  try {
+    await page.goto('/home');
+    const thema = `R2f λάθος ημερομηνία ${Date.now()}`;
+    await fillProtocol(page, { thema, fakelos: 'first', protocoldate: ddmmyyyy(early) });
+    const warning = page.locator('#date-warning');
+    await expect(warning).toContainText('δεν ταιριάζει με τη σειρά των αριθμών');
+    await expect(warning).toContainText('ο προηγούμενος');
+    await evidence(page, 'r2f-form-warning', { clip: await page.locator('.number-head-date').evaluate((el) => {
+      const r = el.closest('.card, form').getBoundingClientRect();
+      return { x: r.x, y: Math.max(0, r.y), width: r.width, height: 240 };
+    }) });
+    await saveProtocol(page);   // a warning does not stop the save
+    const id = page.url().match(/\/home\/(\d+)$/)[1];
+
+    await page.goto('/home/list');
+    const row = page.locator(`.protocol-row[data-id="${id}"]`);
+    await expect(row).toHaveClass(/date-flagged/);
+    await row.locator('.date-flag').hover();
+    const tip = page.locator('.tooltip.date-flag-tooltip');
+    await expect(tip).toContainText('Μήπως γράφτηκε λάθος;');
+    await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.tooltip.date-flag-tooltip')).opacity) >= 0.85);   // faded in (Bootstrap stops at 0.9)
+    await evidence(page, 'r2f-list-flag', { clip: await row.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: Math.max(0, r.y - 70), width: r.width, height: r.height + 140 };
+    }) });
+    await expect(page).toHaveURL(/\/home\/list/);   // hovering the ⚠ does not open the protocol
+
+    // corrected: today → no warning, no flag
+    await page.goto(`/home/${id}`);
+    await page.locator('#f-protocoldate').fill(ddmmyyyy(new Date()));
+    await page.locator('#f-protocoldate').press('Tab');
+    await expect(page.locator('#date-warning')).toHaveCount(0);
+    await page.locator('#protocol-form button[type=submit]').first().click();   // same address: wait for the message
+    await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+    await page.goto('/home/list');
+    await expect(page.locator(`.protocol-row[data-id="${id}"]`)).not.toHaveClass(/date-flagged/);
+  } finally {
+    await setSetting(page, 'allowWriterChangeDate', previous);
+  }
+});

@@ -75,9 +75,14 @@
                 </div>
                 <div class="number-head-date">
                     <x-date-input name="protocoldate" label="Ημερομηνία παραλαβής" :value="$form['protocoldate']"
-                                  wire:model.change="form.protocoldate" id="f-protocoldate" :readonly="! $access->date"
+                                  wire:model.live.change="form.protocoldate" id="f-protocoldate" :readonly="! $access->date"
                                   :help="$access->date ? null : 'Η σημερινή, όπως ορίζουν οι ρυθμίσεις.'" />
                     @if ($e('protocoldate'))<div class="text-danger small">{{ $e('protocoldate') }}</div>@endif
+                    {{-- R2f: out of order with the numbers around it, or after today: a warning, it can be saved --}}
+                    @if ($dateWarning)
+                        <div class="small mt-1 text-warning-emphasis" id="date-warning" role="status">
+                            <i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> {{ $dateWarning }}</div>
+                    @endif
                 </div>
             </div>
 

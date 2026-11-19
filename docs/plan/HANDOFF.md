@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 10:44 (after Batch 9, R2e and R6d; times are Greek time)
+## Current state — 2026-11-19 11:04 (after Batch 9, R2e, R6d and R2f; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
@@ -14,9 +14,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   the number is given on save unless an administrator with protocolValidate off chooses it; retention is the folder's
   (`Keepvalue::retentionOf`) unless allowUserChangeKeepSelect. Not in the catalog but still read: timeZone,
   rowsToSearchGiaSimplirosi, rowsToShowGiaSimplirosi, wideListProtocol (old layout).
-- **Next (owner, 2026-11-19): R2f** — flag protocols whose date is out of order with the numbers around them, or in
-  the future: in the list (coloured row, ⚠ with an explanation) and in the form while typing (a warning, as for a
-  number that exists; the user may still save). Ask the owner first: may a future date be saved at all?
+- **R2f (Batch 9.5):** `App\Services\DateOrder`: `flags(years)` = protocols out of order (complement of the longest
+  non-decreasing run of dates by number, per year) or after today; `check(date, year, number|null, exceptId)` = the
+  form's warning against the nearest in-order neighbours; `message()`. List: row `.date-flagged` + `.date-flag` ⚠
+  (Bootstrap tooltip, above the row link). Form: `#date-warning` (only when the user may set the date; never blocks;
+  the date field is `wire:model.live.change`). Owner: a future date only warns. **A03 (Batch 10, "dates going
+  backwards")** should reuse `DateOrder`.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

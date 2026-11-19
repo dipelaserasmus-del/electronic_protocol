@@ -322,6 +322,26 @@ class ProtocolForm extends Component
         return ! $this->numberTouched && in_array($status[0], ['free', 'auto'], true) ? ['quiet'] : $status;
     }
 
+    /**
+     * R2f (owner, 2026-11-19): a date out of order with the numbers around this one, or after today. A warning, as for a
+     * number that exists: the user may still save. Said only to whoever can change the date.
+     */
+    private function dateWarning(ProtocolAccess $access): ?string
+    {
+        $typed = trim((string) $this->form['protocoldate']);
+        $text = $access->date && $typed !== '' ? DateInput::expand($typed) : null;
+        if ($text === null || $text === '' || ! ctype_digit(trim((string) $this->form['etos']))) {
+            return null;
+        }
+        $num = trim((string) $this->form['protocolnum']);
+        $number = ctype_digit($num) && (int) $num > 0 ? (int) $num
+            : ($this->protocolId ? (int) $this->protocol()->protocolnum : null);   // a new one numbered on save: after the last
+        $date = Carbon::createFromFormat(DateInput::FORMAT, $text)->startOfDay();
+        $flag = app(\App\Services\DateOrder::class)->check($date, (int) $this->form['etos'], $number, $this->protocolId);
+
+        return $flag ? \App\Services\DateOrder::message($flag, Auth::user()) : null;
+    }
+
     private function checkNumber(): array
     {
         $num = trim($this->form['protocolnum']);
@@ -405,6 +425,7 @@ class ProtocolForm extends Component
                 default => 'Πρωτόκολλο',
             },
             'numberStatus' => $this->numberStatus($access),
+            'dateWarning' => $this->dateWarning($access),
             'nextNumber' => $protocol->exists ? null : app(ProtocolNumbering::class)->next((int) ($this->form['etos'] ?: $this->activeYear())),
             'sameSubject' => $this->similar('thema'),
             'sameIncoming' => $this->similar('in_num'),
