@@ -155,3 +155,10 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 
 // R2g: the lower pager brings the upper one into view: not under the sticky top bar
 .list-pager { scroll-margin-top: 5rem; }
+
+// R2h: the row's actions under ⋮ (narrow column)
+.row-actions-cell { width: 2.5rem; }
+.row-actions { line-height: 1; padding: 0.25rem 0.4rem; }
+
+// R2h review: while open, the ⋮ menu is above the rows below it (their links are z-2 too, and later ones win)
+.protocol-row .dropdown:has(.dropdown-menu.show) { z-index: 1000 !important; }   // the z-2 utility is !important

@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 11:16 (after Batch 9, R2e, R6d, R2f and R2g; times are Greek time)
+## Current state — 2026-11-19 11:46 (after Batch 9, R2e, R6d, R2f, R2g and R2h; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
@@ -21,6 +21,8 @@ Read this first when (re)starting work. Update it at the end of every task.
   (Bootstrap tooltip, above the row link). Form: `#date-warning` (only when the user may set the date; never blocks;
   the date field is `wire:model.live.change`). Owner: a future date only warns. **A03 (Batch 10, "dates going
   backwards")** should reuse `DateOrder`.
+- **R2h (Batch 9.5):** the list row's actions are a Bootstrap dropdown (`.row-actions` ⋮, `data-action=copy|receipt`,
+  Popper `strategy: fixed` so the card does not clip it, `z-2` above the row link).
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

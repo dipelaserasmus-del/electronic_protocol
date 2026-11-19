@@ -242,3 +242,49 @@ test('a date out of order: a warning in the form, ⚠ with its explanation in th
     await setSetting(page, 'allowWriterChangeDate', previous);
   }
 });
+
+test('a row\'s actions are under ⋮: copy and receipt (R2h)', async ({ page, context }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  // a row followed by one with attachment links, which the open menu covers (review of R2h)
+  const id = await page.evaluate(() => [...document.querySelectorAll('.protocol-row')]
+    .find((tr) => tr.nextElementSibling?.matches('.protocol-row') && tr.nextElementSibling.querySelector('a.z-2[href*="/download/"]'))?.dataset.id);
+  expect(id, 'a row followed by one with attachments in the demo').toBeTruthy();
+  const row = page.locator(`.protocol-row[data-id="${id}"]`);
+  await expect(row.getByRole('link', { name: 'Αντιγραφή ως νέο' })).toBeHidden();   // only in the menu
+
+  await row.locator('.row-actions').click();
+  const menu = row.locator('.dropdown-menu');
+  await expect(menu).toBeVisible();
+  await expect(menu.locator('[data-action=copy]')).toBeVisible();
+  await expect(menu.locator('[data-action=receipt]')).toBeVisible();
+  await expect(page).toHaveURL(/\/home\/list/);   // the ⋮ does not open the protocol
+  // review of R2h: where the open menu overlaps a later row's link, the menu is on top (it gets the click)
+  const covered = await menu.evaluate((m) => {
+    const box = m.getBoundingClientRect();
+    const out = [];
+    for (const a of document.querySelectorAll('.protocol-row a.z-2, .protocol-row .z-2 a')) {
+      if (m.contains(a)) continue;
+      const r = a.getBoundingClientRect();
+      const x1 = Math.max(box.left, r.left), x2 = Math.min(box.right, r.right);
+      const y1 = Math.max(box.top, r.top), y2 = Math.min(box.bottom, r.bottom);
+      if (x2 - x1 < 2 || y2 - y1 < 2) continue;
+      out.push(m.contains(document.elementFromPoint((x1 + x2) / 2, (y1 + y2) / 2)));
+    }
+    return out;
+  });
+  expect(covered.length, 'the menu overlaps a link of the rows below').toBeGreaterThan(0);
+  expect(covered.every(Boolean), 'the menu is above those links').toBe(true);
+  const box = await row.boundingBox();
+  await evidence(page, 'r2h-row-menu', { clip: { x: box.x + box.width - 700, y: Math.max(0, box.y - 40), width: 700, height: box.height + 140 } });
+
+  const [receipt] = await Promise.all([context.waitForEvent('page'), menu.locator('[data-action=receipt]').click()]);
+  await receipt.waitForLoadState();
+  await expect(receipt.locator('#receipt')).toBeVisible();
+  await receipt.close();
+
+  await page.keyboard.press('Escape');
+  await row.locator('.row-actions').click();
+  await menu.locator('[data-action=copy]').click();
+  await expect(page).toHaveURL(new RegExp(`/home/${id}/1$`));
+});
