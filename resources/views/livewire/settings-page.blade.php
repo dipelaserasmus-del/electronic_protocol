@@ -19,40 +19,31 @@
                     <section class="card shadow-sm h-100" id="set-{{ $id }}">
                         <h2 class="card-header h6 mb-0"><i class="bi bi-{{ $g['icon'] }} me-1" aria-hidden="true"></i>{{ $g['title'] }}</h2>
                         <div class="card-body">
-                            @foreach ($g['settings'] as $key => $def)
-                                @php $err = $errors->first('values.'.$key); $fid = 's-'.$key; @endphp
-                                <div class="mb-3 setting" data-setting="{{ $key }}">
-                                    @if ($def['kind'] === 'bool')
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch" id="{{ $fid }}"
-                                                   @checked($values[$key] === '1')
-                                                   x-on:change="$wire.set('values.{{ $key }}', $event.target.checked ? '1' : '0', false)">
-                                            <label class="form-check-label fw-semibold small" for="{{ $fid }}">{{ $def['label'] }}</label>
-                                        </div>
-                                    @else
-                                        <label class="form-label fw-semibold small mb-1" for="{{ $fid }}">{{ $def['label'] }}</label>
-                                        @if ($def['kind'] === 'select')
-                                            <select id="{{ $fid }}" class="form-select @if ($err) is-invalid @endif" wire:model="values.{{ $key }}">
-                                                @foreach ($def['options'] as $v => $label)
-                                                    <option value="{{ $v }}">{{ $label }}</option>
-                                                @endforeach
-                                            </select>
-                                        @elseif ($def['kind'] === 'color')
-                                            <div class="input-group">
-                                                <input id="{{ $fid }}" type="text" class="form-control @if ($err) is-invalid @endif" wire:model.live.blur="values.{{ $key }}" autocomplete="off" placeholder="#1f4e79">
-                                                <input type="color" class="form-control form-control-color" aria-label="Επιλογή χρώματος"
-                                                       value="{{ preg_match('/^#[0-9a-fA-F]{6}$/', $values[$key]) ? $values[$key] : '#0d6efd' }}"
-                                                       x-on:change="$wire.set('values.{{ $key }}', $event.target.value)">
-                                                @if ($err)<div class="invalid-feedback">{{ $err }}</div>@endif
-                                            </div>
-                                        @else
-                                            <input id="{{ $fid }}" type="{{ $def['kind'] === 'url' ? 'url' : 'text' }}" class="form-control @if ($err) is-invalid @endif"
-                                                   wire:model="values.{{ $key }}" autocomplete="off" @if ($def['kind'] === 'int') inputmode="decimal" @endif>
-                                        @endif
-                                    @endif
-                                    @if ($err && $def['kind'] !== 'color')<div class="invalid-feedback d-block">{{ $err }}</div>@endif
-                                    @if (! empty($def['help']))<div class="form-text">{{ $def['help'] }}</div>@endif
-                                </div>
+                            @php
+                                // R6d: settings that work together ('box') are drawn in one frame
+                                $segments = [];
+                                foreach ($g['settings'] as $key => $def) {
+                                    $box = $def['box'] ?? null;
+                                    if ($box !== null && $segments && end($segments)['box'] === $box) {
+                                        $segments[array_key_last($segments)]['settings'][$key] = $def;
+                                    } else {
+                                        $segments[] = ['box' => $box, 'settings' => [$key => $def]];
+                                    }
+                                }
+                            @endphp
+                            @foreach ($segments as $segment)
+                                @if ($segment['box'])
+                                    @php $boxDef = $g['boxes'][$segment['box']]; @endphp
+                                    <fieldset class="setting-box border rounded-3 px-3 pt-1 pb-0 mb-3" id="box-{{ $segment['box'] }}">
+                                        <legend class="float-none w-auto px-2 mb-0 fs-6 fw-semibold"><i class="bi bi-link-45deg me-1" aria-hidden="true"></i>{{ $boxDef['title'] }}</legend>
+                                        <p class="small text-body-secondary mb-2">{{ $boxDef['help'] }}</p>
+                                @endif
+                                @foreach ($segment['settings'] as $key => $def)
+                                    @include('livewire.partials.setting-field')
+                                @endforeach
+                                @if ($segment['box'])
+                                    </fieldset>
+                                @endif
                             @endforeach
                         </div>
                     </section>

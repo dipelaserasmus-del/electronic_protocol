@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 10:11 (after Batch 9; R2e: list pager). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 10:44 (after Batch 9; R2e, R6d). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -93,6 +93,12 @@ Open *Εισερχόμενα*.
 - [ ] **31.** *Λίστα*: the pager is above the list as well as below it. Try *Επόμενη ›* and *‹ Προηγούμενη*, and choose
   a page from *Σελίδα [ ▾ ] από …*: both pagers go to that page. Reload: you stay on it. (On a phone: the buttons and
   the page list only.)
+- [ ] **32.** *Ρυθμίσεις*: move the mouse over (or tap) an **ⓘ** next to a setting: its fuller explanation appears.
+  *Αριθμός πρωτοκόλλου για ξεκίνημα* and *Έλεγχος κενών αριθμών* are now in one frame that says how they combine.
+  *Έλεγχος για νέα έκδοση*, *Βήμα των κουμπιών Προηγούμενο / Επόμενο* and *Ασφαλής νέος αριθμός* are gone (they did
+  nothing).
+- [ ] **33.** Untick *Ελεύθερη επιλογή χρόνου διατήρησης* and save. *Νέο*: choose a folder; *Διατήρηση* takes the
+  folder's and cannot be changed. Tick it again: it can.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

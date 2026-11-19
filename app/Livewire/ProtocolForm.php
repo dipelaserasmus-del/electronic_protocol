@@ -121,8 +121,7 @@ class ProtocolForm extends Component
 
     private function keepFor(?string $folder): string
     {
-        $k = $folder ? Keepvalue::whereFakelos($folder)->first() : null;
-        return (string) ($k?->keep ?: $k?->keep_alt ?: '');
+        return Keepvalue::retentionOf($folder);
     }
 
     /** A different folder suggests its retention ("Διατήρηση"), as the old form did. */
@@ -412,6 +411,7 @@ class ProtocolForm extends Component
             // R1d: the folder's automatic assignments, when this save will apply them (new protocol, or a new folder)
             'autoAssign' => (! $protocol->exists || trim((string) $protocol->fakelos) !== trim($this->form['fakelos']))
                 && ($rules = \App\Support\FolderRules::for($this->form['fakelos'])) ? \App\Support\FolderRules::describe($this->form['fakelos'], $rules) : null,
+            'mayChangeKeep' => (bool) Config::getConfigValueOf('allowUserChangeKeepSelect'),   // R6d
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),

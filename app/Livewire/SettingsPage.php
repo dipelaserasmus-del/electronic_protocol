@@ -52,9 +52,6 @@ class SettingsPage extends Component
                 $changed++;
             }
         }
-        if (($values['updatesAutoCheck'] ?? '1') === '0') {
-            Config::setConfigValueOf('needsUpdate', 0);
-        }
         $this->values = SettingsCatalog::values();
         $this->dispatch('toast', message: $changed ? "Αποθηκεύτηκαν ($changed ".($changed === 1 ? 'αλλαγή' : 'αλλαγές').').' : 'Καμία αλλαγή.', type: 'success');
     }

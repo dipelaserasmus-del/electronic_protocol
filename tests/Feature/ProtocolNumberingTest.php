@@ -64,11 +64,11 @@ class ProtocolNumberingTest extends FeatureTestCase
 
     public function test_store_with_manual_number_taken_returns_to_form_with_input(): void
     {
-        $this->setting('safeNewProtocolNum', 0);
+        $this->setting('protocolValidate', 0);   // R6d: only an administrator with checks off chooses a number
         $this->make(5, (int) now()->year);
 
-        $this->actingAs($this->writer())->from('/home')
-            ->post('/home', $this->protocolForm(['protocolnum' => 5, 'thema' => 'κρατήστε με']))
+        $this->actingAs($this->admin())->from('/home')
+            ->post('/home', $this->protocolForm(['protocolnum' => 5, 'protocolnum_proposed' => 6, 'thema' => 'κρατήστε με']))
             ->assertRedirect('/home')
             ->assertSessionHasErrors('protocolnum')
             ->assertSessionHasInput('thema', 'κρατήστε με');

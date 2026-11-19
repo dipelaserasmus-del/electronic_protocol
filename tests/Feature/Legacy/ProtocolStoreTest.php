@@ -154,22 +154,34 @@ class ProtocolStoreTest extends FeatureTestCase
         $this->assertSame('Επιλεγμένος', Protocol::where('protocolnum', 50)->value('thema'));
     }
 
-    public function test_manual_number_is_kept_when_safe_numbering_is_off(): void
+    /**
+     * R6d (was: test_manual_number_is_kept_when_safe_numbering_is_off): with safeNewProtocolNum off, a number posted by
+     * a writer used to be taken as it was. The setting is hidden now and the number is always given on save; only an
+     * administrator with "Έλεγχοι καταχώρισης" off chooses it.
+     */
+    public function test_a_number_posted_by_a_writer_is_ignored_whatever_the_old_setting(): void
     {
         Protocol::factory()->number(10)->create();
         $this->setting('safeNewProtocolNum', 0);
 
-        $this->actingAs($this->writer())->post('/home', $this->protocolForm(['protocolnum' => 50]));
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm(['protocolnum' => 50, 'thema' => 'Διάλεξα αριθμό']))
+            ->assertSessionHasNoErrors();
+        $this->actingAs($this->writer())->post('/home', $this->protocolForm(['protocolnum' => 10, 'thema' => 'Πήρα τον υπάρχοντα']))
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseHas('protocols', ['protocolnum' => 50]);
+        $this->assertDatabaseMissing('protocols', ['protocolnum' => 50]);
+        $this->assertSame(11, (int) Protocol::where('thema', 'Διάλεξα αριθμό')->value('protocolnum'));
+        $this->assertSame(12, (int) Protocol::where('thema', 'Πήρα τον υπάρχοντα')->value('protocolnum'));
     }
 
-    public function test_existing_number_is_rejected_when_safe_numbering_is_off(): void
+    /** R6d (was: …_when_safe_numbering_is_off): the one who may choose a number cannot take one that exists. */
+    public function test_an_existing_number_chosen_by_an_administrator_is_rejected(): void
     {
         Protocol::factory()->number(10)->create();
-        $this->setting('safeNewProtocolNum', 0);
+        $this->setting('protocolValidate', 0);
 
-        $this->actingAs($this->writer())->from('/home')->post('/home', $this->protocolForm(['protocolnum' => 10]))
+        $this->actingAs($this->admin())->from('/home')
+            ->post('/home', $this->protocolForm(['protocolnum' => 10, 'protocolnum_proposed' => 11]))
             ->assertSessionHasErrors('protocolnum');
         $this->assertSame(1, Protocol::count());
     }
@@ -188,15 +200,14 @@ class ProtocolStoreTest extends FeatureTestCase
     /** R1a: the date field is read-only for writers; a posted date used to be stored anyway. */
     public function test_writer_gets_todays_date_unless_the_setting_allows_changing_it(): void
     {
-        $this->setting('safeNewProtocolNum', 0);
         $writer = $this->writer();
 
-        $this->actingAs($writer)->post('/home', $this->protocolForm(['protocolnum' => 5, 'protocoldate' => '03/02/2020']));
-        $this->assertSame(now()->format('Y-m-d'), DB::table('protocols')->where('protocolnum', 5)->value('protocoldate'));
+        $this->actingAs($writer)->post('/home', $this->protocolForm(['thema' => 'Χωρίς αλλαγή', 'protocoldate' => '03/02/2020']));
+        $this->assertSame(now()->format('Y-m-d'), DB::table('protocols')->where('thema', 'Χωρίς αλλαγή')->value('protocoldate'));
 
         $this->setting('allowWriterChangeDate', 1);
-        $this->actingAs($writer)->post('/home', $this->protocolForm(['protocolnum' => 6, 'protocoldate' => '03/02/' . now()->year]));
-        $this->assertSame(now()->year . '-02-03', DB::table('protocols')->where('protocolnum', 6)->value('protocoldate'));
+        $this->actingAs($writer)->post('/home', $this->protocolForm(['thema' => 'Με αλλαγή', 'protocoldate' => '03/02/' . now()->year]));
+        $this->assertSame(now()->year . '-02-03', DB::table('protocols')->where('thema', 'Με αλλαγή')->value('protocoldate'));
     }
 
     /** R1a: short forms are completed as in the date input (N04); impossible dates are refused (31/02 became 03/03). */
@@ -257,17 +268,17 @@ class ProtocolStoreTest extends FeatureTestCase
 
     public function test_attachment_is_stored_with_protocol(): void
     {
-        $this->setting('safeNewProtocolNum', 0);
+        $this->setting('allowUserChangeKeepSelect', 1);   // the retention chosen here, not the folder's (R6d)
 
         $this->actingAs($this->writer())->post('/home', $this->protocolForm([
-            'protocolnum' => 12, 'fakelos' => 'Φ.1', 'keep' => '5',
+            'fakelos' => 'Φ.1', 'keep' => '5',
             'att1' => UploadedFile::fake()->create('Πρόσκληση.pdf', 20, 'application/pdf'),
         ]));
 
         $p = Protocol::firstOrFail();
         $a = $p->attachments()->firstOrFail();
         $this->assertSame('Πρόσκληση.pdf', $a->name);
-        $this->assertStringStartsWith('arxeio/Φ.1/12-', $a->savedPath);
+        $this->assertStringStartsWith('arxeio/Φ.1/' . $p->protocolnum . '-', $a->savedPath);
         Storage::disk('local')->assertExists($a->savedPath);
         $this->assertSame((int) now()->addYears(5)->format('Ymd'), (int) $a->expires);
     }
