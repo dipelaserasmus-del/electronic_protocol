@@ -18,7 +18,7 @@
         @else Βρέθηκαν {{ $protocols->total() }} {{ $protocols->total() === 1 ? 'πρωτόκολλο' : 'πρωτόκολλα' }}.
         @endif
     </span>
-    {{ $protocols->links() }}
+    <x-list-pager :paginator="$protocols" position="top" class="justify-content-end" />
 </div>
 @endif
 
@@ -82,5 +82,5 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-3 d-flex justify-content-end">{{ $protocols->links() }}</div>
+    <div class="mt-3 d-flex justify-content-end"><x-list-pager :paginator="$protocols" position="bottom" class="justify-content-end" /></div>
 @endif

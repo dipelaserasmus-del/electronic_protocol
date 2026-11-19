@@ -16,6 +16,7 @@ use Livewire\WithPagination;
 class ArchivePage extends Component
 {
     use WithPagination;
+    use \App\Livewire\Concerns\PagesWithinRange;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -41,7 +42,7 @@ class ArchivePage extends Component
     public function render(Expired $expired, Trash $trash)
     {
         return view('livewire.archive-page', [
-            'items' => $expired->query()->paginate(100),
+            'items' => $this->pageOf($expired->query(), 100),
             'total' => $expired->count(),
             'trashCount' => \App\Models\Attachment::onlyTrashed()->count(),
             'days' => $trash->retentionDays(),

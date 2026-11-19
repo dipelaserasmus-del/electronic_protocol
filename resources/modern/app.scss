@@ -152,3 +152,6 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .date-flag-tooltip {
   --bs-tooltip-max-width: 22rem;
 }
+
+// R2g: the lower pager brings the upper one into view: not under the sticky top bar
+.list-pager { scroll-margin-top: 5rem; }
