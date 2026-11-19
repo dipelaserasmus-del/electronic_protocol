@@ -128,19 +128,23 @@ class FolderGlossaryTest extends FeatureTestCase
         Storage::put('arxeio/Φ.46/κοινό.pdf', 'already there');
         $lower = $this->attach($p2, 'arxeio/φ.43/β.pdf');
         $gone = $this->attach($p2, 'arxeio/Φ.43/χαμένο.pdf', file: false);
-        $trashed = $this->attach($p2, 'trash/Φ.43/γ.pdf');
-        $trashed->delete();
+        Storage::put('arxeio/Φ.46/χαμένο.pdf', 'another document');   // the missing file's new name is taken
+        $trashed = $this->attach($p2, 'trash/Φ.43/γ.pdf');             // trashed after R4b
+        DB::table('attachments')->where('id', $trashed->id)->update(['trashed_from' => 'arxeio/Φ.43/γ.pdf', 'deleted_at' => now()]);
+        $legacy = $this->attach($p2, 'arxeio/Φ.43/παλιό.pdf', file: false);   // trashed before R4b: row says arxeio/
+        Storage::put('trash/Φ.43/παλιό.pdf', '%PDF legacy');
+        DB::table('attachments')->where('id', $legacy->id)->update(['deleted_at' => now()]);
         $sub = $this->attach($p1, 'arxeio/Φ.43/παλιά/δ.pdf');   // a sub-directory: left alone, as a folder change does
         $otherFile = $this->attach($other, 'arxeio/Φ.43.1/ε.pdf');
 
         $merge = app(FolderMerge::class);
         $plan = $merge->plan('Φ.43', 'Φ.46');
-        $this->assertSame([2, 5, 2], [$plan['protocols'], $plan['files'], $plan['rules']]);
+        $this->assertSame([2, 6, 2], [$plan['protocols'], $plan['files'], $plan['rules']]);
         $this->assertContains('Φ.43.1', $plan['subfolders'], 'named, not merged');
 
         $r = $merge->apply('Φ.43', 'Φ.46');
 
-        $this->assertSame(['protocols' => 2, 'moved' => 3, 'renamed' => 1, 'missing' => 1, 'failed' => 0, 'rules' => 2], $r);
+        $this->assertSame(['protocols' => 2, 'moved' => 4, 'renamed' => 1, 'missing' => 1, 'failed' => 0, 'rules' => 2], $r);
         $this->assertSame(['Φ.46', 'Φ.46', 'Φ.43.1'], [$p1->fresh()->fakelos, $p2->fresh()->fakelos, $other->fresh()->fakelos]);
         $this->assertEquals($stamp, $p1->fresh()->updated_at, 'not a change by a user');
         $this->assertSame('arxeio/Φ.46/α.pdf', $a->fresh()->savedPath);
@@ -149,9 +153,17 @@ class FolderGlossaryTest extends FeatureTestCase
         $this->assertSame('arxeio/Φ.46/κοινό (2).pdf', $taken->fresh()->savedPath, 'nothing is overwritten');
         $this->assertSame('already there', Storage::get('arxeio/Φ.46/κοινό.pdf'));
         $this->assertSame('arxeio/Φ.46/β.pdf', $lower->fresh()->savedPath);
-        $this->assertSame('arxeio/Φ.46/χαμένο.pdf', $gone->fresh()->savedPath);
-        $this->assertSame('trash/Φ.46/γ.pdf', Attachment::withTrashed()->find($trashed->id)->savedPath);
+        // review of D07: a file not found keeps its path, never the new one (that is another attachment's document)
+        $this->assertSame('arxeio/Φ.43/χαμένο.pdf', $gone->fresh()->savedPath);
+        $t = Attachment::withTrashed()->find($trashed->id);
+        $this->assertSame(['trash/Φ.46/γ.pdf', 'arxeio/Φ.46/γ.pdf'], [$t->savedPath, $t->trashed_from]);
         Storage::assertExists('trash/Φ.46/γ.pdf');
+        // review of D07: trashed before R4b — found where the trash keeps it, moved, and restored under Φ.46
+        $l = Attachment::withTrashed()->find($legacy->id);
+        $this->assertSame(['trash/Φ.46/παλιό.pdf', 'arxeio/Φ.46/παλιό.pdf'], [$l->savedPath, $l->trashed_from]);
+        $this->assertTrue(app(\App\Services\Attachments\Trash::class)->restore($l));
+        $this->assertSame('arxeio/Φ.46/παλιό.pdf', $l->fresh()->savedPath);
+        $this->assertSame('%PDF legacy', Storage::get('arxeio/Φ.46/παλιό.pdf'));
         $this->assertSame('arxeio/Φ.43/παλιά/δ.pdf', $sub->fresh()->savedPath);
         $this->assertSame('arxeio/Φ.43.1/ε.pdf', $otherFile->fresh()->savedPath);
         Storage::assertMissing('arxeio/φ.43');   // emptied, removed

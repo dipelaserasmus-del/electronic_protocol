@@ -6,6 +6,7 @@ use App\Models\Attachment;
 use App\Models\FolderAssignment;
 use App\Models\Keepvalue;
 use App\Models\Protocol;
+use App\Services\Attachments\Trash;
 use App\Services\Protocols\ProtocolWriter;
 use App\Support\FileNames;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,11 @@ use Illuminate\Support\Facades\Storage;
  * D07: one folder becomes part of another (owner, 2026-11-19: Φ.43 → Φ.46; list in database/data/folders.json, "merges").
  *
  * - The protocols of the old folder take the new code (their updated_at is kept: this is not a user's change).
- * - Their attachment files directly in arxeio/<old>/ (or trash/<old>/ for attachments in the trash) move to the new
- *   folder's directory, as a change of folder on the form moves them (ProtocolWriter::moveFiles); a name that is
- *   already taken there becomes "name (2).ext", nothing is overwritten. Retention stays as each attachment recorded it.
+ * - Their attachment files directly in arxeio/<old>/ move to arxeio/<new>/, as a change of folder on the form moves
+ *   them (ProtocolWriter::moveFiles); files in the trash move from trash/<old>/ to trash/<new>/ (found as the trash
+ *   finds them: rows trashed before R4b still say arxeio/…) and their restore address (trashed_from) follows. A name
+ *   already taken becomes "name (2).ext": nothing is overwritten. A file that is not found keeps its path (review of
+ *   D07: the new path could belong to another attachment's file). Retention stays as each attachment recorded it.
  * - The old folder's automatic assignments join the new folder's (διεκπεραίωση wins over ενημέρωση), then the old
  *   folder is removed from the list.
  * - Safe to run again: once merged there is nothing left to do. The same merge must be applied by any later data
@@ -94,21 +97,25 @@ final class FolderMerge
             }
         });
 
-        // files after the commit, one by one: a row's path changes only once its file has moved
-        foreach ($files as [$attachment, $newPath]) {
-            $path = (string) $attachment->savedPath;
-            if (! Storage::exists($path)) {
-                $result['missing']++;
-                DB::table('attachments')->where('id', $attachment->id)->update(['savedPath' => $newPath]);
+        // files after the commit, one by one: a row changes only once its file has moved
+        foreach ($files as $move) {
+            [$attachment, $current, $target, $from] = $move;
+            if ($current === null) {
+                $result['missing']++;   // the row keeps its path (review of D07)
                 continue;
             }
-            $free = FileNames::available($newPath);
-            if (! Storage::move($path, $free)) {
-                $result['failed']++;   // the row keeps the old path, where the file still is
+            $free = FileNames::available($target);
+            if (! Storage::move($current, $free)) {
+                $result['failed']++;   // the row still says where the file is
                 continue;
             }
-            $result[$free === $newPath ? 'moved' : 'renamed']++;
-            DB::table('attachments')->where('id', $attachment->id)->update(['savedPath' => $free]);
+            $result[$free === $target ? 'moved' : 'renamed']++;
+            $values = ['savedPath' => $free];
+            if ($attachment->trashed()) {
+                // restore puts it back under the new folder (rows trashed before R4b get the address they lacked)
+                $values['trashed_from'] = $this->target($attachment->trashed_from ?: (string) $attachment->savedPath, $from, $into);
+            }
+            DB::table('attachments')->where('id', $attachment->id)->update($values);
         }
         // the old folder's directories, if nothing is left in them
         foreach (array_unique(array_values($codes)) as $code) {
@@ -130,17 +137,31 @@ final class FolderMerge
     }
 
     /**
-     * The attachments (in the trash too) of these protocols whose file is directly in their folder's directory,
-     * each with its path in the new folder.
+     * The attachments (in the trash too) of these protocols whose file is directly in their folder's directory:
+     * [attachment, where its file is now (null: not found), where it goes, the protocol's old code].
      *
      * @param  array<int, string>  $codes  protocol id => code
-     * @return \Illuminate\Support\Collection<int, array{0: Attachment, 1: string}>
+     * @return \Illuminate\Support\Collection<int, array{0: Attachment, 1: ?string, 2: string, 3: string}>
      */
     private function attachments(array $codes, string $into)
     {
+        $trash = app(Trash::class);
+
         return Attachment::withTrashed()->whereIn('protocol_id', array_keys($codes))->orderBy('id')->get()
-            ->map(fn ($a) => [$a, $this->target((string) $a->savedPath, $codes[$a->protocol_id], $into)])
-            ->filter(fn ($pair) => $pair[1] !== (string) $pair[0]->savedPath)->values();
+            ->map(function (Attachment $a) use ($codes, $into, $trash) {
+                $from = $codes[$a->protocol_id];
+                $path = (string) $a->savedPath;
+                if ($a->trashed()) {
+                    // where the trash keeps it: trash/… (rows trashed before R4b still say arxeio/…)
+                    $logical = str_starts_with($path, 'trash/') ? $path : (preg_replace('~^arxeio/~', 'trash/', $path) ?? $path);
+                    $target = $this->target($logical, $from, $into);
+
+                    return $target === $logical ? null : [$a, $trash->fileInTrash($a), $target, $from];
+                }
+                $target = $this->target($path, $from, $into);
+
+                return $target === $path ? null : [$a, Storage::exists($path) ? $path : null, $target, $from];
+            })->filter()->values();
     }
 
     /** arxeio/<from>/name → arxeio/<into>/name (trash/ likewise); any other path (sub-folders too) is returned as it is */
