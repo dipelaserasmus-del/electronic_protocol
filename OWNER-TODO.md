@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:16 (after Batch 9; R2e, R6d, R2f, R2g). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:46 (after Batch 9; R2e, R6d, R2f, R2g, R2h). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -106,6 +106,8 @@ Open *Εισερχόμενα*.
 - [ ] **35.** The same pager as *Λίστα* (above and below, ‹ ›, *Σελίδα [ ▾ ]*) on the search results (the box and
   *Σύνθετη αναζήτηση*), *Κάδος*, *Χρήστες* and *Εκκαθάριση*, wherever there is more than one page. Choosing a page
   from the lower pager brings the upper one into view.
+- [ ] **36.** *Λίστα*: at the end of each row, **⋮** instead of the *Αντιγραφή* / *Απόδειξη* buttons. Click it: the menu
+  has *Αντιγραφή ως νέο* and *Απόδειξη* (opens in a new tab). The other columns have more room.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

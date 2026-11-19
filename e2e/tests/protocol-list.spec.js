@@ -242,3 +242,30 @@ test('a date out of order: a warning in the form, ⚠ with its explanation in th
     await setSetting(page, 'allowWriterChangeDate', previous);
   }
 });
+
+test('a row\'s actions are under ⋮: copy and receipt (R2h)', async ({ page, context }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  const row = page.locator('.protocol-row').first();
+  const id = await row.getAttribute('data-id');
+  await expect(row.getByRole('link', { name: 'Αντιγραφή ως νέο' })).toBeHidden();   // only in the menu
+
+  await row.locator('.row-actions').click();
+  const menu = row.locator('.dropdown-menu');
+  await expect(menu).toBeVisible();
+  await expect(menu.locator('[data-action=copy]')).toBeVisible();
+  await expect(menu.locator('[data-action=receipt]')).toBeVisible();
+  await expect(page).toHaveURL(/\/home\/list/);   // the ⋮ does not open the protocol
+  const box = await row.boundingBox();
+  await evidence(page, 'r2h-row-menu', { clip: { x: box.x + box.width - 700, y: Math.max(0, box.y - 40), width: 700, height: box.height + 140 } });
+
+  const [receipt] = await Promise.all([context.waitForEvent('page'), menu.locator('[data-action=receipt]').click()]);
+  await receipt.waitForLoadState();
+  await expect(receipt.locator('#receipt')).toBeVisible();
+  await receipt.close();
+
+  await page.keyboard.press('Escape');
+  await row.locator('.row-actions').click();
+  await menu.locator('[data-action=copy]').click();
+  await expect(page).toHaveURL(new RegExp(`/home/${id}/1$`));
+});

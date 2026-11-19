@@ -189,9 +189,20 @@
                                 </div>
                             @endforeach
                         </td>
-                        <td class="text-end text-nowrap">
-                            <a href="{{ url('/home/'.$p->id.'/1') }}" class="btn btn-sm btn-outline-secondary rounded-pill position-relative z-2" title="Αντιγραφή ως νέο">Αντιγραφή</a>
-                            <a href="{{ url('/receipt/'.$p->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill position-relative z-2 d-none d-xl-inline-block" title="Απόδειξη">Απόδειξη</a>
+                        {{-- R2h (owner, 2026-11-19): the row's actions under ⋮, to save space; above the row's link (z-2) --}}
+                        <td class="text-end row-actions-cell">
+                            <div class="dropdown position-relative z-2">
+                                <button type="button" class="btn btn-sm btn-link text-body-secondary row-actions" data-bs-toggle="dropdown"
+                                        data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false"
+                                        aria-label="Ενέργειες για το {{ $p->protocolnum }}/{{ $p->etos }}" title="Ενέργειες">
+                                    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    <li><a class="dropdown-item" href="{{ url('/home/'.$p->id.'/1') }}" data-action="copy">
+                                        <i class="bi bi-copy me-2" aria-hidden="true"></i>Αντιγραφή ως νέο</a></li>
+                                    <li><a class="dropdown-item" href="{{ url('/receipt/'.$p->id) }}" target="_blank" data-action="receipt">
+                                        <i class="bi bi-receipt me-2" aria-hidden="true"></i>Απόδειξη</a></li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                     @php $gap = $gapRows[$p->etos.':'.$p->protocolnum] ?? null; @endphp

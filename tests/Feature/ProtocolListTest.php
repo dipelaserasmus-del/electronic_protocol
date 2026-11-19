@@ -193,6 +193,21 @@ class ProtocolListTest extends FeatureTestCase
             ->assertSee('γύρω του')->assertDontSee('ο προηγούμενος (3)');
     }
 
+    /** R2h (owner, 2026-11-19): the row's actions (copy, receipt) under a ⋮ menu instead of two buttons. */
+    public function test_row_actions_are_under_a_menu(): void
+    {
+        $p = Protocol::factory()->number(12)->create(['etos' => 2026]);
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $row = substr($html, strpos($html, 'data-id="'.$p->id.'"'));
+        $row = substr($row, 0, strpos($row, '</tr>'));
+
+        $this->assertStringContainsString('aria-label="Ενέργειες για το 12/2026"', $row);
+        $this->assertStringContainsString('bi-three-dots-vertical', $row);
+        $this->assertMatchesRegularExpression('~class="dropdown-item" href="[^"]*/home/'.$p->id.'/1" data-action="copy"~', $row);
+        $this->assertMatchesRegularExpression('~class="dropdown-item" href="[^"]*/receipt/'.$p->id.'" target="_blank" data-action="receipt"~', $row);
+        $this->assertStringNotContainsString('rounded-pill', $row, 'no buttons in the row any more');
+    }
+
     public function test_no_pager_for_a_single_page(): void
     {
         $this->setting('showRowsInPage', 25);
