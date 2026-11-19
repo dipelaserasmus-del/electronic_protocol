@@ -4,6 +4,10 @@ Read this first when (re)starting work. Update it at the end of every task.
 
 ## Current state — 2026-11-18 23:35 (after Batch 9; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
+- **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
+  3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
+  wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the
+  next numbers; never replace the earlier ones. Batch 10 starts only when the owner says so.
 - **R6a:** `/users` = Livewire `UserAdmin`; rules `App\Services\Users\UserAccounts` (≥ 1 active admin, not own account, users with protocols/assignments deactivated not deleted, password ≥ 8, sessions ended on deactivate/password change); `App\Support\Roles` (names, descriptions, `adminId()` memoized with `once`); inactive users refused at login (`LoginController::credentials` closure) and logged out (`EnsureActiveUser`, web group); index `protocols.user_id`.
 - **R6b + R1d:** `/keep` = Livewire `FolderAdmin` (everybody sees; admins change, import pasted spreadsheet rows via `FolderCatalog::records` (quote-aware, separator per row)); table `folder_assignments` (FK to keepvalues only; user rows removed by `UserAccounts::delete`); `App\Support\FolderRules` applied in `ProtocolWriter::create` (after validation, any role) and `update` (only when the folder changes); form notice `#notice-auto-assign`.
 - **R6c:** `/settings` = `SettingsPage` from `App\Support\SettingsCatalog` (only its keys saved; e2e `setSetting` uses `#s-<key>`); `/backups` = `BackupPage`; `/arxeio` = `ArchivePage` + `App\Services\Attachments\Expired`; `layouts/print` (print pages); unused settings removed; `InboxAccess` whole usernames. All GET routes that changed data are gone.

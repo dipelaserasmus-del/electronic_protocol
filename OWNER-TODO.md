@@ -1,10 +1,12 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-18 23:35 (after Batch 9). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 09:42 (after Batch 9; try-it list by batch). Times are Greek time.
 
 ## ▶ Your next message
-Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt. Try
-it (below) and send notes if something looks wrong; otherwise start a **new conversation** and send:
+Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
+
+**No hurry.** Below is everything to try, batch by batch. Take the time you need. Batch 10 waits until you say so,
+and whatever you report I fix first. When you are ready, start a **new conversation** and send:
 
 ```
 run batch 10
@@ -13,16 +15,79 @@ run batch 10
 Batch 10 (A01–A06, X01–X02, Z01–Z03) is the last one: integrity checks, a log of who changed what, removing the old
 code, and a final security review. After it, I write the deployment guide.
 
-## Try it (10 minutes)
-After *Update: get latest version from GitHub* and *Demo: start*, log in as `admin`:
-1. *Διαχείριση → Χρήστες*: untick *Ενεργός* for `reader` and save. In another browser, `reader` cannot log in. Tick it
-   again.
-2. *Διαχείριση → Φάκελοι και διατήρηση → Εισαγωγή λίστας*: copy a few rows of your folder spreadsheet (code,
-   description, Διατήρηση, remarks), paste them and press *Έλεγχος*. Nothing is saved until *Εισαγωγή*.
-3. Open a folder (*Επεξεργασία*), tick a user under *Αυτόματη ανάθεση → για Διεκπεραίωση* and save. Log in as
-   `writer` and make a protocol in that folder: under *Φάκελος* it says who will get it.
-4. *Ρυθμίσεις*: read the explanations; type `abc` in *Γραμμές ανά σελίδα* and save: it is refused at the field.
-5. *Εκτύπωση πρωτοκόλλου*: choose one month (dates) and press *Εκτύπωση*; compare with an old printout.
+## Try it, batch by batch (optional)
+Before you start: *Update: get latest version from GitHub*, then *Demo: start*. Open http://localhost:8080 and log in
+as `admin` (password `password`) unless a step says otherwise.
+
+- Try them in any order, a few at a time.
+- Report each by its number: `12 ok`, or `14: nothing happens on Enter`.
+- I tick it off here and fix anything wrong.
+- Screenshots are welcome **from the demo (8080) only**, never from your real copy (8081).
+
+### Batch 3: the new layout
+- [ ] **1.** Your name (top right) → *Περί…*: the page has the new layout, with the menu at the top.
+- [ ] **2.** Open http://localhost:8080/dev/ui: the date field, buttons and dialogs that every new page uses.
+
+### Batch 4: the inbox's speed, Greek names
+- [ ] **3.** Open *Εισερχόμενα*, then open it again: the second time is much faster.
+- [ ] **4.** Senders' names in Greek show without `??`. E-mails with emoji or a very long subject register.
+
+*(Batch 5 has nothing to try: you sent its numbers on 2026-11-16.)*
+
+### Batch 6: the protocol form, the list, the trash
+- [ ] **5.** *Νέο*: type a number that already exists, then a free one: it says *Ελεύθερος*. Press TAB to reach the
+  date and type `9`: it becomes the 9th of this month.
+- [ ] **6.** Drag a PDF onto the window, leave *Θέμα* empty and save: the subject is taken from the file's name. (On
+  Fedora use *επιλέξτε* instead of dragging: see question 3.)
+- [ ] **7.** *Λίστα*: try the filter pills, click a column title (it sorts), switch on *Αναλυτικά* and reload the page:
+  your choice stays.
+- [ ] **8.** Delete that PDF from the protocol, then *Διαχείριση → Κάδος* → *Επαναφορά*: it is back on the protocol.
+
+### Batches 6.5 and 6.6: tags, folders, missing numbers
+- [ ] **9.** *Σχετικοί αριθμοί*: type `1` and Enter (green ✔: it exists), then `999999,` (orange ⚠: not found). Click a
+  tag's text to change it.
+- [ ] **10.** *Λέξεις κλειδιά*: type part of a word without accents; choose with ↓ and Enter.
+- [ ] **11.** *Φάκελος*: click it and type a word of a description (e.g. `εκδρομ`).
+- [ ] **12.** *Λίστα*: a *ΚΕΝΟ* row stands for a missing number (the demo has some).
+
+### Batch 7: search
+- [ ] **13.** Press `/` on any page and type a word of a subject without accents (e.g. `εκδρομη`): matching protocols
+  appear. ↓ and Enter open one; Enter alone opens the results page.
+- [ ] **14.** Type `φακ` in the box: it offers `φάκελος:`. Try `φάκελος:κανένας`, then `είναι:εκκρεμές`.
+- [ ] **15.** On the results page, *Σύνθετη αναζήτηση* opens the full search screen with the same search.
+- [ ] **16.** *Αναζήτηση* → *Έλεγχος εκκρεμοτήτων* for a past month: it lists protocols without a folder or with
+  ΕΚΚΡΕΜΟΤΗΤΑ in the subject; with none, it says so in green. Worth trying on your real copy (8081) too.
+
+### Batch 7.5: folder codes, the top bar, your own layout
+- [ ] **17.** *Νέο* → *Φάκελος*: type `12` (Φ.12 comes first), then `φ11` (only Φ.11, never Φ.1.1).
+- [ ] **18.** The top bar has four items with icons, and the organisation's name under your name. *Διαχείριση* holds
+  *Εκτύπωση* and *Διατήρηση*. The second button in the search box (sliders) opens *Σύνθετη αναζήτηση*.
+- [ ] **19.** Your name → *Πλάτος σελίδας* → *Στενό, στο κέντρο*, then back to *Όλη η οθόνη*.
+- [ ] **20.** *Νέο*: drag a section by ⠿ (left of its title) into the other column; ▴ collapses it. Try *Μία στήλη*,
+  then *Επαναφορά διάταξης*. Log in on another computer: your layout is there too.
+
+### Batch 8: the inbox
+Open *Εισερχόμενα*.
+- [ ] **21.** The list on the left: click the last e-mail and the page goes to it. Close *Κείμενο* in one e-mail: it
+  closes in all of them, and stays closed after a reload.
+- [ ] **22.** An e-mail with a PDF: press *Καταχώριση* without a *Φάκελος*, and the reason appears under *Φάκελος*.
+  Choose one and press again: *«Καταχωρίστηκε με αριθμό …»* appears in the e-mail's place, with a link.
+- [ ] **23.** *Λέξεις κλειδιά*: click a suggestion under the field (*+ …*): it becomes a tag.
+- [ ] **24.** Give an e-mail the subject of one you just registered and press *Καταχώριση*: it first asks *«Να
+  καταχωριστεί ούτως ή άλλως;»*.
+- [ ] **25.** The e-mail *«Αίτηση μετακίνησης (Outlook winmail)»* shows its text and two files instead of
+  `winmail.dat`.
+
+### Batch 9: users, folders, settings, printing
+- [ ] **26.** *Διαχείριση → Χρήστες*: untick *Ενεργός* for `reader` and save. In another browser, `reader` cannot log
+  in. Tick it again.
+- [ ] **27.** *Διαχείριση → Φάκελοι και διατήρηση → Εισαγωγή λίστας*: copy a few rows of your folder spreadsheet
+  (code, description, Διατήρηση, remarks), paste them and press *Έλεγχος*. Nothing is saved until *Εισαγωγή*.
+- [ ] **28.** Open a folder (*Επεξεργασία*), tick a user under *Αυτόματη ανάθεση → για Διεκπεραίωση* and save. Log in
+  as `writer` and make a protocol in that folder: under *Φάκελος* it says who will get it.
+- [ ] **29.** *Ρυθμίσεις*: read the explanations, then type `abc` in *Γραμμές ανά σελίδα* and save: it is refused at
+  the field.
+- [ ] **30.** *Εκτύπωση πρωτοκόλλου*: choose one month (dates) and press *Εκτύπωση*. Compare with an old printout.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
