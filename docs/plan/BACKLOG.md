@@ -31,6 +31,7 @@ Legend
 | Gaps | Reminder banner only, no auto-fill. Scope: "check from number" + "last N months" (default 6), per year. Saving onto an existing number keeps failing (correct). Deleting a protocol is only done to replace it. |
 | Collapsed sections | Remembered per browser. |
 | Audit log | Required, low priority: who did what and when. |
+| Folders | (2026-11-19) The owner's list is the folders glossary ([`docs/FOLDERS.md`](../FOLDERS.md)). Heading + text in one description. Φ.13 kept, «(Καταργήθηκε)». **Φ.43 is merged into Φ.46 — also in every later data migration / the move to the new version** (`merges` in `folders.json`). |
 
 ## Plan overview
 
@@ -93,6 +94,7 @@ Written as small reusable services so the rebuilt modules reuse them instead of 
 | D02 | 🔎 Assignments stored as text `"d14,e10,"` searched with `LIKE` → proper `protocol_assignments` table (user, type d/e, done date); backfill; enables E06 and fast, correct filtering | DATA | P1 | M | F04 |
 | D03 | Attachment metadata: size, SHA-256 hash, `deleted_by`; backfill command (for U05, A05, T01) | DATA | P2 | S | F04 |
 | D05 | 🔎 (from F03) Convert tables from `utf8` (3-byte) to `utf8mb4` so emoji/symbols can be stored without errors 👤. Real examples from the owner: an e-mail with an emoji fails to register; an emoji in an attachment name leaves a protocol without that attachment | DATA | P1 | S | F04 |
+| D07 | (owner, 2026-11-19) **Folder glossary**: the owner's official folder list with full descriptions (`database/data/folders.json`, `docs/FOLDERS.md`) applied with `php artisan folders:glossary [--apply]` (only descriptions; retention/remarks kept; Φ.37–Φ.42 untouched). **Merge Φ.43 → Φ.46**: protocols, attachment files, rules; Φ.43 removed. 👤 runs it on the real copy, then at deployment | DATA | P2 | S | R6b |
 | D04 | 🔎 Dates stored as integers `Ymd` → real DATE columns; backfill | DATA | P2 | M | F04 |
 
 ## Phase 4 — Module rebuilds

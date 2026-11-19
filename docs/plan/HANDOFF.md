@@ -2,7 +2,19 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 12:01 (after Batch 9, R2e, R6d, R2f, R2g, R2h and R5e; times are Greek time)
+## Current state — 2026-11-19 14:10 (after Batch 9, Batch 9.5 and D07; times are Greek time)
+- **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
+  (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
+  folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
+  importRecords`: descriptions only). `merges`: **Φ.43 → Φ.46** (`App\Services\Folders\FolderMerge`: protocols,
+  attachment files arxeio/ + trash/, rules; Φ.43 removed). **Owner: apply this merge in every later data migration /
+  the deployment** (in OWNER-TODO's deployment steps). Sub-folders Φ.43.x are only named (ask the owner). Import fixes:
+  cells trimmed by characters (trim() cut Π = CE A0), codes matched normalised on both sides (`matchKey`), existing
+  folders keep their code. `FileNames::available` (was Trash::free). Owner's try-it **38** = apply on the real copy.
+- Cloud sandbox note (2026-11-19): a cached app image without npm/mysqldump → build the frontend on the host
+  (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
+  `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
+  fail here only (also on master).
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
@@ -123,6 +135,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-19 14:10 | D07 | #77 | folder glossary (owner's list) + `folders:glossary`, merge Φ.43 → Φ.46; 2 import bugs fixed |
 | 2026-11-18 23:26 | R7 | #69 | `/print` = Livewire `PrintPage` (book / attachments tabs, live count, limit warning); `PrintController` (`/printed` GET+POST, xlsx via `target=xls`, `/printedAttachments`, `/receipt`) on `layouts/print`; `App\\Services\\Printing\\PrintRange` (old param names, ignored list, `limit()`, `describe()`, `params()`); handlers by name incl. inactive; each attachment its own keep/expiry; POST /receiptToEmail removed (form's sendReceipt); only auth pages left on the old layout |
 | 2026-11-18 23:17 | R6c | #68 | `/settings` = Livewire `SettingsPage` from `App\\Support\\SettingsCatalog` (groups, label, help, kind, rules; only known keys saved; errors at the field); `/backups` = `BackupPage` (create/delete actions); `/arxeio` = `ArchivePage` + `App\\Services\\Attachments\\Expired`; `/expired` print on new `layouts/print` (R7 reuses); removed POST /settings, GET /backup, /deleteBackup, /delExpired, /delDeleted; unused settings removed (migration + seeder); `InboxAccess` whole usernames; e2e `setSetting` uses `#s-<key>` |
 | 2026-11-18 23:10 | R1d | #67 | `App\\Support\\FolderRules` (`for`, `merge`, `describe`) applied by `ProtocolWriter::create` (any role, after validation) and `update` (only when the folder changes); d replaces e for the same user, hand-made assignments kept, inactive skipped; message in SaveResult; form notice `#notice-auto-assign` |
