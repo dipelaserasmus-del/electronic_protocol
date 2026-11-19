@@ -234,8 +234,15 @@ class ProtocolList extends Component
 
         $gaps = $seesGaps ? app(NumberGaps::class)->find() : [];
 
+        $perPage = (int) (Config::getConfigValueOf('showRowsInPage') ?: 25);
+        $protocols = $this->query()->paginate($perPage);
+        if ($protocols->currentPage() > $protocols->lastPage()) {   // review of R2e: past the end → the last page
+            $this->setPage($protocols->lastPage());
+            $protocols = $this->query()->paginate($perPage, page: $protocols->lastPage());
+        }
+
         return view('livewire.protocol-list', [
-            'protocols' => $this->query()->paginate((int) (Config::getConfigValueOf('showRowsInPage') ?: 25)),
+            'protocols' => $protocols,
             'gapRows' => $this->gapRows($gaps),
             'gapCount' => array_sum(array_map('count', $gaps)),
             'gapFrom' => (int) Config::getConfigValueOf('firstProtocolNum'),
