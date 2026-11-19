@@ -82,7 +82,10 @@ class ProtocolForm extends Component
         foreach ($protocol->exists ? $protocol->assignments : [] as $a) {
             $a->type === 'd' ? $this->handle[] = (string) $a->user_id : $this->inform[] = (string) $a->user_id;
         }
-        $this->form['keep'] = (string) ($protocol->exists ? $protocol->attachments()->value('keep') : '') ?: $this->keepFor($this->form['fakelos']);
+        // R6d review: without free choice the field shows the folder's retention, which is what new files get
+        $this->form['keep'] = Config::getConfigValueOf('allowUserChangeKeepSelect')
+            ? ((string) ($protocol->exists ? $protocol->attachments()->value('keep') : '') ?: $this->keepFor($this->form['fakelos']))
+            : $this->keepFor($this->form['fakelos']);
 
         if ($protocol->exists && ! $copy) {
             $this->protocolId = $protocol->id;

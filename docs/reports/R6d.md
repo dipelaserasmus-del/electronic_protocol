@@ -76,7 +76,13 @@ missing (10 settings had none) or incomplete, it found:
   - the explanation appears on hover and goes away after;
   - by keyboard too;
   - pressing the ⓘ of a switch does not flip it.
-- Full suites: PHPUnit 513; browser (settings) 3/3.
+- Full suites: PHPUnit 514; browser (settings) 3/3.
 
 ## Owner actions
 None. To try it: steps 32–33 in [OWNER-TODO.md](../../OWNER-TODO.md).
+
+## Review
+- Codex (P2): opening an existing protocol, or a copy, whose files kept another retention than the folder's now, with
+  free choice off: the locked field showed the files' old value (e.g. 20 years). New files got the folder's (5).
+  - Fixed: without free choice, the field shows the folder's retention, which is what new files get.
+  - Test `test_a_locked_retention_shows_the_folders_when_editing_or_copying` (it failed before).

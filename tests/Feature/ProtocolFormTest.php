@@ -399,6 +399,24 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame('20', (string) Protocol::where('thema', 'Δική μου επιλογή')->firstOrFail()->attachments()->value('keep'));
     }
 
+    /**
+     * Review of R6d: editing (or copying) a protocol whose files kept another retention than the folder's now: without
+     * free choice the locked field showed the files' old value, while new files got the folder's.
+     */
+    public function test_a_locked_retention_shows_the_folders_when_editing_or_copying(): void
+    {
+        \App\Models\Keepvalue::create(['fakelos' => 'Φ.961', 'keep' => 5, 'describe' => 'Πενταετία']);
+        $p = Protocol::factory()->number(7)->create(['fakelos' => 'Φ.961']);
+        Attachment::factory()->create(['protocol_id' => $p->id, 'keep' => '20']);
+
+        $this->setting('allowUserChangeKeepSelect', 0);
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertSet('form.keep', '5');
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p, 'copy' => true])->assertSet('form.keep', '5');
+
+        $this->setting('allowUserChangeKeepSelect', 1);
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertSet('form.keep', '20');
+    }
+
     public function test_the_form_can_not_be_pointed_at_another_protocol(): void
     {
         $this->setting('limitProtocolAccessList', 1);
