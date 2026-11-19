@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\Protocol;
+use App\Models\User;
+use App\Policies\ProtocolPolicy;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * R2f (owner, 2026-11-19): protocol dates that look like typing mistakes.
@@ -26,7 +29,7 @@ final class DateOrder
      * The flagged protocols of these years.
      *
      * @param  iterable<int>  $years
-     * @return array<int, array{kinds: list<string>, prev: ?array{num: int, date: Carbon}, next: ?array{num: int, date: Carbon}}>
+     * @return array<int, array{kinds: list<string>, prev: ?array{id: int, num: int, date: Carbon}, next: ?array{id: int, num: int, date: Carbon}}>
      *         by protocol id
      */
     public function flags(iterable $years, ?Carbon $today = null): array
@@ -46,8 +49,8 @@ final class DateOrder
                 }
                 if ($kinds) {
                     $flags[$r['id']] = ['kinds' => $kinds,
-                        'prev' => $i > 0 ? ['num' => $rows[$i - 1]['num'], 'date' => $rows[$i - 1]['date']] : null,
-                        'next' => $i < count($rows) - 1 ? ['num' => $rows[$i + 1]['num'], 'date' => $rows[$i + 1]['date']] : null];
+                        'prev' => $i > 0 ? $rows[$i - 1] : null,
+                        'next' => $i < count($rows) - 1 ? $rows[$i + 1] : null];
                 }
             }
         }
@@ -60,7 +63,7 @@ final class DateOrder
      * whose dates are in order (so one wrongly dated neighbour does not hide the mistake, or cause a false one).
      * $number null: a new protocol numbered on save, so it comes after the last one of the year.
      *
-     * @return array{kinds: list<string>, prev: ?array{num: int, date: Carbon}, next: ?array{num: int, date: Carbon}}|null
+     * @return array{kinds: list<string>, prev: ?array{id: int, num: int, date: Carbon}, next: ?array{id: int, num: int, date: Carbon}}|null
      */
     public function check(Carbon $date, int $year, ?int $number, ?int $exceptId = null, ?Carbon $today = null): ?array
     {
@@ -78,8 +81,6 @@ final class DateOrder
                 $next = $r;
             }
         }
-        $prev = $prev ? ['num' => $prev['num'], 'date' => $prev['date']] : null;
-        $next = $next ? ['num' => $next['num'], 'date' => $next['date']] : null;
 
         $kinds = [];
         if (($prev && $date->lessThan($prev['date'])) || ($next && $date->greaterThan($next['date']))) {
@@ -101,22 +102,38 @@ final class DateOrder
             ->filter(fn ($r) => $r['date'] !== null)->values()->all();
     }
 
-    /** The explanation shown with the ⚠ (list tooltip and form warning). */
-    public static function message(array $flag): string
+    /**
+     * The explanation shown with the ⚠ (list tooltip and form warning). A neighbour is named (number and date) only if
+     * $viewer may see it: with "Περιορισμός λίστας", another user's protocol stays hidden (review of R2f).
+     */
+    public static function message(array $flag, ?User $viewer = null): string
     {
         $parts = [];
         if (in_array(self::ORDER, $flag['kinds'], true)) {
+            $shown = fn (?array $n) => $n !== null && ($viewer === null || self::visible($viewer, $n['id']));
             $around = array_filter([
-                $flag['prev'] ? 'ο προηγούμενος ('.$flag['prev']['num'].') έχει '.$flag['prev']['date']->format('d/m/Y') : null,
-                $flag['next'] ? 'ο επόμενος ('.$flag['next']['num'].') '.$flag['next']['date']->format('d/m/Y') : null,
+                $shown($flag['prev']) ? 'ο προηγούμενος ('.$flag['prev']['num'].') έχει '.$flag['prev']['date']->format('d/m/Y') : null,
+                $shown($flag['next']) ? 'ο επόμενος ('.$flag['next']['num'].') '.$flag['next']['date']->format('d/m/Y') : null,
             ]);
-            $parts[] = 'Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών: '.implode(' και ', $around).'. Μήπως γράφτηκε λάθος;';
+            $parts[] = $around
+                ? 'Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών: '.implode(' και ', $around).'. Μήπως γράφτηκε λάθος;'
+                : 'Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών γύρω του. Μήπως γράφτηκε λάθος;';
         }
         if (in_array(self::FUTURE, $flag['kinds'], true)) {
             $parts[] = 'Η ημερομηνία είναι μετά τη σημερινή.';
         }
 
         return implode(' ', $parts);
+    }
+
+    private static function visible(User $viewer, int $id): bool
+    {
+        if (! ProtocolPolicy::isLimited($viewer)) {
+            return true;
+        }
+        $protocol = Protocol::find($id);
+
+        return $protocol !== null && Gate::forUser($viewer)->allows('view', $protocol);
     }
 
     /**

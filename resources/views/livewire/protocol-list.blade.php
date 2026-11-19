@@ -107,8 +107,9 @@
                             <div class="small @if ($dateFlag) text-warning-emphasis fw-semibold @else text-body-secondary @endif">{{ $p->dateOf('protocoldate')?->format('d/m/Y') }}
                                 @if ($dateFlag)
                                     {{-- R2f: above the row's link, so the tooltip opens without opening the protocol --}}
-                                    <span class="date-flag position-relative" tabindex="0" role="img" aria-label="{{ \App\Services\DateOrder::message($dateFlag) }}"
-                                          data-bs-title="{{ \App\Services\DateOrder::message($dateFlag) }}" data-kinds="{{ implode(' ', $dateFlag['kinds']) }}"
+                                    @php $dateText = \App\Services\DateOrder::message($dateFlag, auth()->user()); @endphp
+                                    <span class="date-flag position-relative" tabindex="0" role="img" aria-label="{{ $dateText }}"
+                                          data-bs-title="{{ $dateText }}" data-kinds="{{ implode(' ', $dateFlag['kinds']) }}"
                                           x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i></span>
                                 @endif
                             </div>

@@ -339,7 +339,7 @@ class ProtocolForm extends Component
         $date = Carbon::createFromFormat(DateInput::FORMAT, $text)->startOfDay();
         $flag = app(\App\Services\DateOrder::class)->check($date, (int) $this->form['etos'], $number, $this->protocolId);
 
-        return $flag ? \App\Services\DateOrder::message($flag) : null;
+        return $flag ? \App\Services\DateOrder::message($flag, Auth::user()) : null;
     }
 
     private function checkNumber(): array
