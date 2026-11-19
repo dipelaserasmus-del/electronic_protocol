@@ -15,6 +15,7 @@ use Livewire\WithPagination;
 class TrashPage extends Component
 {
     use WithPagination;
+    use \App\Livewire\Concerns\PagesWithinRange;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -62,7 +63,7 @@ class TrashPage extends Component
     public function render(Trash $trash)
     {
         return view('livewire.trash-page', [
-            'items' => Attachment::onlyTrashed()->with('protocol')->orderByDesc('deleted_at')->orderByDesc('id')->paginate(50),
+            'items' => $this->pageOf(Attachment::onlyTrashed()->with('protocol')->orderByDesc('deleted_at')->orderByDesc('id'), 50),
             'total' => Attachment::onlyTrashed()->count(),
             'totalSize' => (int) Attachment::onlyTrashed()->sum('size'),
             'days' => $trash->retentionDays(),

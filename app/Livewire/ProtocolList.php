@@ -24,6 +24,7 @@ use Livewire\WithPagination;
 class ProtocolList extends Component
 {
     use WithPagination;
+    use \App\Livewire\Concerns\PagesWithinRange;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -235,11 +236,7 @@ class ProtocolList extends Component
         $gaps = $seesGaps ? app(NumberGaps::class)->find() : [];
 
         $perPage = (int) (Config::getConfigValueOf('showRowsInPage') ?: 25);
-        $protocols = $this->query()->paginate($perPage);
-        if ($protocols->currentPage() > $protocols->lastPage()) {   // review of R2e: past the end → the last page
-            $this->setPage($protocols->lastPage());
-            $protocols = $this->query()->paginate($perPage, page: $protocols->lastPage());
-        }
+        $protocols = $this->pageOf($this->query(), $perPage);   // review of R2e: past the end → the last page
 
         return view('livewire.protocol-list', [
             'protocols' => $protocols,

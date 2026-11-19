@@ -1,7 +1,7 @@
 // R3a: the advanced search screen (/find). Year filled in, Enter searches from any field (also Σχετικοί αριθμοί),
 // part of the text without accents/case, the folder picker (code without dots, «Χωρίς φάκελο»), the pending check.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, fillProtocol, saveProtocol, search } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol, search, setSetting } = require('./helpers');
 
 test('subject, incoming number and related numbers: part of the text, Enter searches, kept in the address (R3a)', async ({ page }) => {
   const stamp = Date.now();
@@ -125,4 +125,30 @@ test('«Οπουδήποτε»: words anywhere and the search words (από:, φ
   await search(page, { words: 'έτος:πέρσι' });
   await expect(page.locator('#s-words')).toHaveClass(/is-invalid/);
   await expect(page.locator('.search-page')).toContainText('Δεν χρησιμοποιήθηκαν: «έτος:πέρσι»');
+});
+
+test('search results page with the list pager: any page, the lower pager brings the upper one into view (R2g)', async ({ page }) => {
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'maxRowsInFindPage', 2);   // many pages whatever the demo holds
+  try {
+    await page.goto(`/find?s=1&year=${new Date().getFullYear()}`);
+    const top = page.locator('#pager-top');
+    const bottom = page.locator('#pager-bottom');
+    await expect(top).toBeVisible();
+    await expect(bottom).toBeVisible();
+    const pages = await bottom.locator('[data-pager=select] option').count();
+    expect(pages).toBeGreaterThan(2);
+
+    await bottom.locator('[data-pager=select]').selectOption('3');
+    await expect(top.locator('[data-pager=select]')).toHaveValue('3');
+    await expect(top).toBeInViewport();
+    await top.locator('[data-pager=next]').click();
+    await expect(bottom.locator('[data-pager=select]')).toHaveValue('4');
+    await evidence(page, 'r2g-search-pager', { clip: await top.evaluate((el) => {
+      const r = el.closest('.search-page').getBoundingClientRect();
+      return { x: r.x, y: Math.max(0, el.getBoundingClientRect().y - 60), width: r.width, height: 220 };
+    }) });
+  } finally {
+    await setSetting(page, 'maxRowsInFindPage', previous);
+  }
 });

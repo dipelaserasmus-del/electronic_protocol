@@ -20,6 +20,7 @@ use Livewire\WithPagination;
 class SearchResults extends Component
 {
     use WithPagination;
+    use \App\Livewire\Concerns\PagesWithinRange;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -33,7 +34,7 @@ class SearchResults extends Component
         $protocols = null;
         if (! $criteria->isEmpty()) {
             $perPage = (int) (Config::getConfigValueOf('maxRowsInFindPage') ?: 30);
-            $protocols = app(ProtocolSearch::class)->query($criteria, Auth::user())->paginate($perPage);
+            $protocols = $this->pageOf(app(ProtocolSearch::class)->query($criteria, Auth::user()), $perPage);
         }
 
         return view('livewire.search-results', [

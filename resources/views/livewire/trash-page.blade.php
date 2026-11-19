@@ -18,6 +18,8 @@
         Η διάρκεια αλλάζει στις <a href="{{ url('/settings') }}">Ρυθμίσεις</a>.
     </x-notice>
 
+    {{-- R2g: the pager above the list too --}}
+    <x-list-pager :paginator="$items" position="top" class="mb-2 justify-content-end" />
     <div class="card shadow-sm">
         <table class="table table-sm align-middle mb-0 table-sticky">
             <thead class="table-light">
@@ -69,5 +71,5 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-3">{{ $items->links() }}</div>
+    <x-list-pager :paginator="$items" position="bottom" class="mt-3 justify-content-end" />
 </div>

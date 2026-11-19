@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 11:04 (after Batch 9, R2e, R6d and R2f; times are Greek time)
+## Current state — 2026-11-19 11:16 (after Batch 9, R2e, R6d, R2f and R2g; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
-  `#pager-top` / `#pager-bottom`, `data-pager=previous|next|select`. Other paged screens (search results, trash, users,
-  archive) still use `$x->links()`: switch them to the component if the owner wants the same there.
+  `#pager-top` / `#pager-bottom`, `data-pager=previous|next|select`. R2g: used on every paged screen (search
+  results and /find, trash, users, clean-up; one paged list per page); the lower pager scrolls to `#pager-top`; trait
+  `App\Livewire\Concerns\PagesWithinRange::pageOf($query, $perPage)` turns a page past the last into the last.
 - **R6d (Batch 9.5):** `SettingsCatalog` entries have `help` (line) and `more` (ⓘ popover, Bootstrap Popover via Alpine
   `x-init` in `livewire/partials/setting-field.blade.php`); `box` + group `boxes` frame settings that work together
   (`#box-numbering`). Hidden (values kept): updatesAutoCheck, protocolArrowStep, safeNewProtocolNum. `ProtocolWriter`:

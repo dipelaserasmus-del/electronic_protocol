@@ -19,6 +19,7 @@ use Livewire\WithPagination;
 class UserAdmin extends Component
 {
     use WithPagination;
+    use \App\Livewire\Concerns\PagesWithinRange;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -145,7 +146,7 @@ class UserAdmin extends Component
         } elseif ($this->stateFilter === 'inactive') {
             $query->whereNull('active');
         }
-        $users = $query->paginate(50);
+        $users = $this->pageOf($query, 50);
 
         $lastSeen = DB::table(config('session.table', 'sessions'))
             ->whereIn('user_id', $users->pluck('id'))->groupBy('user_id')

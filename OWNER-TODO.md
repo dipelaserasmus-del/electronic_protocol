@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:04 (after Batch 9; R2e, R6d, R2f). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:16 (after Batch 9; R2e, R6d, R2f, R2g). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -103,6 +103,9 @@ Open *Εισερχόμενα*.
   before today. Under the date: ⚠ *«Η ημερομηνία δεν ταιριάζει με τη σειρά των αριθμών …»*. Save anyway: it is saved.
   In *Λίστα* its row is coloured, with ⚠ next to the date; the mouse over ⚠ explains why. Correct the date: the warning
   goes. A date after today is flagged the same way.
+- [ ] **35.** The same pager as *Λίστα* (above and below, ‹ ›, *Σελίδα [ ▾ ]*) on the search results (the box and
+  *Σύνθετη αναζήτηση*), *Κάδος*, *Χρήστες* and *Εκκαθάριση*, wherever there is more than one page. Choosing a page
+  from the lower pager brings the upper one into view.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

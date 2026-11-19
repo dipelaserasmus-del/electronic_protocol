@@ -69,6 +69,8 @@
         <span class="small text-body-secondary ms-auto">{{ $users->total() }} {{ $users->total() === 1 ? 'χρήστης' : 'χρήστες' }}</span>
     </div>
 
+    {{-- R2g: the pager above the list too --}}
+    <x-list-pager :paginator="$users" position="top" class="mb-2 justify-content-end" />
     <div class="card shadow-sm mb-3">
         <table class="table table-sm align-middle mb-0 table-sticky" id="users-table">
             <thead class="table-light">
@@ -119,7 +121,7 @@
             </tbody>
         </table>
     </div>
-    <div class="mb-3">{{ $users->links() }}</div>
+    <x-list-pager :paginator="$users" position="bottom" class="mb-3 justify-content-end" />
 
     <h2 class="h5">Ρόλοι</h2>
     <div class="row g-2" id="roles">

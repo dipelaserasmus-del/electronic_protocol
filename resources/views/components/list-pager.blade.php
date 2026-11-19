@@ -1,5 +1,6 @@
 {{--
-    R2e (owner, 2026-11-19): the list's pager, above and below the list.
+    R2e (owner, 2026-11-19): the list's pager, above and below the list; R2g: on every paged screen (protocol list,
+    search results, trash, users, clean-up). One paged list per page (ids pager-top / pager-bottom).
     ‹ Προηγούμενη · page numbers (first, last, two either side of the current one, … between) · Επόμενη ›,
     then "Σελίδα [any page] από N" and the rows shown. On a phone only the buttons and the page choice.
     Uses the Livewire pagination methods (WithPagination): previousPage, nextPage, gotoPage.
@@ -10,8 +11,8 @@
         $current = $paginator->currentPage();
         $last = $paginator->lastPage();
         $name = $paginator->getPageName();
-        // the lower pager brings the top of the list into view; the upper one is already there
-        $scroll = $position === 'bottom' ? "\$el.closest('.protocol-list').scrollIntoView()" : '';
+        // the lower pager brings the start of the list (the upper pager) into view; the upper one is already there (R2g)
+        $scroll = $position === 'bottom' ? "document.getElementById('pager-top')?.scrollIntoView({ block: 'start' })" : '';
         // the window never leaves 1…last, whatever page was asked for (review of R2e)
         $middle = min(max($current, 1), $last);
         $numbers = collect([1, $last])->merge(range(max(1, $middle - 2), min($last, $middle + 2)))->unique()->sort()->values();

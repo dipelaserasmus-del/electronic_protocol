@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **60 / 70** `██████████████████████████░░░░` 86% |
-| Effort done (PERT) | **29.2 / 33.8 h** `██████████████████████████░░░░` 86% |
+| Tasks done | **61 / 71** `██████████████████████████░░░░` 86% |
+| Effort done (PERT) | **29.6 / 34.2 h** `██████████████████████████░░░░` 87% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f | 3/3 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g | 4/4 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -112,6 +112,7 @@ flowchart LR
     R2e["R2e<br/>List pager above the list too; previous / next; any page from a list"]
     R6d["R6d<br/>Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save"]
     R2f["R2f<br/>Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form"]
+    R2g["R2g<br/>List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -201,6 +202,7 @@ flowchart LR
   R6c --> R6d
   R2e --> R2f
   R1b --> R2f
+  R2e --> R2g
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -226,7 +228,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -314,17 +316,18 @@ gantt
   R2e List pager above the list too; previous / next; any page from a list :done, r2e, 2026-11-13 12:38, 19m
   R6d Settings  every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save :done, r6d, 2026-11-13 12:57, 33m
   R2f Dates out of order with the numbers, or in the future  flagged in the list (⚠ + explanation) and warned in the form :done, r2f, 2026-11-13 13:30, 33m
+  R2g List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page :done, r2g, 2026-11-13 14:03, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 14:03, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 14:36, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 14:55, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 15:14, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 15:47, 19m
-  X01 Audit log — recording :x01, 2026-11-13 16:06, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 16:39, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 17:12, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 17:45, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 18:04, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 14:22, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 14:55, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 15:14, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 15:33, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 16:06, 19m
+  X01 Audit log — recording :x01, 2026-11-13 16:25, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 16:58, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 17:31, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 18:04, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 18:23, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -393,6 +396,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.8 | 6.1 | 1.6 | #71 |
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 6.1 | 6.7 | 2.0 | #72 |
 | ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 6.1 | 6.7 | 1.6 | #73 |
+| ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.4 | 6.7 | 1.9 | #74 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.6 | 6.1 | 1.4 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |
