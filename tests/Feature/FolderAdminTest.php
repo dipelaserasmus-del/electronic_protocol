@@ -188,4 +188,31 @@ class FolderAdminTest extends FeatureTestCase
         $this->assertSame("Πρώτη γραμμή\nΔεύτερη γραμμή", Keepvalue::where('fakelos', 'Φ.710')->value('describe'));
         $this->assertSame(5, (int) Keepvalue::where('fakelos', 'Φ.710')->value('keep'));
     }
+
+    public function test_import_keeps_greek_letters_at_the_end_of_a_cell(): void
+    {
+        // D07: trim() with "\u{00A0}" removed the last byte of Π (CE A0): "ΑΣΕΠ" became "ΑΣΕ" + half a letter → 500
+        $text = "Φ.712\tΕξετάσεις, ΑΣΕΠ\t\tΠΥΣΠ\nΦ.713\t\u{00A0}Με κενά\u{00A0} \n";
+        $rows = app(FolderCatalog::class)->parseImport($text);
+        $this->assertSame(['Εξετάσεις, ΑΣΕΠ', 'Με κενά'], array_column($rows, 'describe'));
+        $this->assertSame('ΠΥΣΠ', $rows[0]['remarks']);
+
+        app(FolderCatalog::class)->import($text);
+        $this->assertSame('Εξετάσεις, ΑΣΕΠ', Keepvalue::where('fakelos', 'Φ.712')->value('describe'));
+    }
+
+    public function test_import_updates_a_folder_written_without_the_dot_and_keeps_its_code(): void
+    {
+        // D07: the pasted code was normalised ("Φ2.1" → "Φ.2.1") but the list's was not → a duplicate folder
+        Keepvalue::create(['fakelos' => 'Φ714.1', 'describe' => 'Παλιά']);
+        $p = Protocol::factory()->number(714)->create(['fakelos' => 'Φ714.1']);
+
+        $rows = app(FolderCatalog::class)->parseImport("Φ.714.1\tΝέα περιγραφή\n");
+        $this->assertSame('update', $rows[0]['status']);
+        app(FolderCatalog::class)->import("Φ.714.1\tΝέα περιγραφή\n");
+
+        $this->assertSame(['Φ714.1'], Keepvalue::where('describe', 'Νέα περιγραφή')->pluck('fakelos')->all(), 'code kept as written');
+        $this->assertSame(0, Keepvalue::where('fakelos', 'Φ.714.1')->count());
+        $this->assertSame('Φ714.1', $p->fresh()->fakelos);
+    }
 }

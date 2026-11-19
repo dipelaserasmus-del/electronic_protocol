@@ -105,6 +105,7 @@ tasks = [
   { id = "R2g", title = "List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page", phase = "R", batch = 9.5, size = "S", deps = ["R2e"], status = "done", pr = 74 },
   { id = "R2h", title = "List: the row actions (copy, receipt) under a ⋮ menu", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "done", pr = 75 },
   { id = "R5e", title = "Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects", phase = "R", batch = 9.5, size = "S", deps = ["R5d", "N04"], status = "done", pr = 76 },
+  { id = "D07", title = "Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules)", phase = "D", batch = 9.5, size = "S", deps = ["R6b", "D06"], status = "done", pr = 77 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
