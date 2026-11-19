@@ -102,7 +102,7 @@ tasks = [
   { id = "R2e", title = "List pager above the list too; previous / next; any page from a list", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "done", pr = 71 },
   { id = "R6d", title = "Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save", phase = "R", batch = 9.5, size = "M", deps = ["R6c"], status = "done", pr = 72 },
   { id = "R2f", title = "Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form", phase = "R", batch = 9.5, size = "M", deps = ["R2e", "R1b"], status = "done", pr = 73 },
-  { id = "R2g", title = "List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page", phase = "R", batch = 9.5, size = "S", deps = ["R2e"], status = "in-progress" },
+  { id = "R2g", title = "List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page", phase = "R", batch = 9.5, size = "S", deps = ["R2e"], status = "done", pr = 74 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
