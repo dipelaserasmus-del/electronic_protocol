@@ -77,6 +77,9 @@
         <span class="small text-body-secondary" wire:loading.delay>φόρτωση…</span>
     </div>
 
+    {{-- R2e: the pager above the list too --}}
+    <x-list-pager :paginator="$protocols" position="top" class="mb-2" />
+
     <div class="card shadow-sm">
         <table class="table table-hover table-sm align-middle mb-0 table-sticky">
             <thead class="table-light">
@@ -212,6 +215,6 @@
 
     <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
         <small class="text-body-secondary">Σύνολο: {{ $protocols->total() }}</small>
-        {{ $protocols->links() }}
+        <x-list-pager :paginator="$protocols" position="bottom" />
     </div>
 </div>

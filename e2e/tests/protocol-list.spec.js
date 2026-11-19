@@ -149,3 +149,42 @@ test('a missing number is a green ΚΕΝΟ row; its button registers that number
     await setSetting(page, 'protocolValidate', previousValidate);
   }
 });
+
+test('pager above and below the list: previous, next and any page (R2e)', async ({ page }) => {
+  await login(page, 'admin');
+  const previousRows = await setSetting(page, 'showRowsInPage', 5);   // the least allowed: several pages whatever the demo holds
+  try {
+    await page.goto('/home/list');
+    const top = page.locator('#pager-top');
+    const bottom = page.locator('#pager-bottom');
+    await expect(top).toBeVisible();
+    await expect(bottom).toBeVisible();
+    await expect(top.locator('[data-pager=previous]')).toBeDisabled();
+    const pages = await top.locator('[data-pager=select] option').count();
+    expect(pages).toBeGreaterThan(2);
+    await evidence(page, 'r2e-pager-top', { clip: await top.boundingBox() });
+
+    const firstRow = await page.locator('.protocol-row').first().getAttribute('data-id');
+    await top.locator('[data-pager=next]').click();
+    await expect(page).toHaveURL(/[?&]page=2/);
+    await expect(top.locator('[data-pager=select]')).toHaveValue('2');
+    await expect(bottom.locator('[data-pager=select]')).toHaveValue('2');
+    await expect(page.locator('.protocol-row').first()).not.toHaveAttribute('data-id', firstRow);
+
+    // any page from the list, from the lower pager: the list goes there and its top comes into view
+    await bottom.locator('[data-pager=select]').selectOption(String(pages));
+    await expect(page).toHaveURL(new RegExp(`[?&]page=${pages}`));
+    await expect(top.locator('[data-pager=select]')).toHaveValue(String(pages));
+    await expect(top.locator('[data-pager=next]')).toBeDisabled();
+    await expect(top).toBeInViewport();
+
+    await bottom.locator('[data-pager=previous]').click();
+    await expect(top.locator('[data-pager=select]')).toHaveValue(String(pages - 1));
+    await evidence(page, 'r2e-pager-bottom', { clip: await bottom.boundingBox() });
+
+    await page.reload();   // the page is in the address
+    await expect(top.locator('[data-pager=select]')).toHaveValue(String(pages - 1));
+  } finally {
+    await setSetting(page, 'showRowsInPage', previousRows);
+  }
+});

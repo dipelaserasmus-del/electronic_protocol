@@ -97,6 +97,42 @@ class ProtocolListTest extends FeatureTestCase
         $this->actingAs($this->admin())->get('/home/list?page=2')->assertSee('Σελίδα 1');
     }
 
+    /**
+     * R2e (owner, 2026-11-19): the pager above the list too, with previous / next and a choice of any page.
+     */
+    public function test_pager_above_and_below_with_previous_next_and_any_page(): void
+    {
+        $this->setting('showRowsInPage', 2);
+        Protocol::factory()->count(9)->sequence(fn ($s) => ['protocolnum' => $s->index + 1, 'thema' => 'Γραμμή ' . ($s->index + 1)])->create();
+
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $this->assertStringContainsString('id="pager-top"', $html);
+        $this->assertStringContainsString('id="pager-bottom"', $html);
+        $this->assertSame(2, substr_count($html, 'data-pager="select"'), 'a page choice in both');
+        $this->assertSame(2, substr_count($html, '<option value="5"'), 'every page offered: 9 rows by 2 = 5 pages');
+        $this->assertStringContainsString('Σελίδα', $html);
+        $this->assertStringContainsString('από 5', $html);
+        $this->assertStringContainsString('Εμφάνιση 1–2 από 9', $html);
+
+        $list = Livewire::actingAs($this->admin())->test(ProtocolList::class);
+        $list->assertSee('Γραμμή 9')->assertDontSee('Γραμμή 7');
+        $list->assertSeeHtml('data-pager="previous" disabled');   // on the first page
+        $list->call('gotoPage', 4)->assertSee('Γραμμή 3')->assertDontSee('Γραμμή 5')->assertSee('Εμφάνιση 7–8 από 9');
+        $list->call('previousPage')->assertSee('Γραμμή 5')->assertSee('Γραμμή 4');
+        $list->call('nextPage')->call('nextPage')->assertSee('Γραμμή 1')->assertDontSee('Γραμμή 2')
+            ->assertSeeHtml('data-pager="next" disabled');   // on the last page
+        $this->assertSame(2, substr_count($list->html(), '<option value="5" selected'), 'both choices show the page');
+    }
+
+    public function test_no_pager_for_a_single_page(): void
+    {
+        $this->setting('showRowsInPage', 25);
+        Protocol::factory()->count(3)->sequence(fn ($s) => ['protocolnum' => $s->index + 1])->create();
+
+        $this->actingAs($this->admin())->get('/home/list')->assertOk()
+            ->assertDontSee('id="pager-top"', false)->assertDontSee('data-pager', false)->assertSee('Σύνολο: 3');
+    }
+
     /** Review of R2: the menu's per-user link /home/list/a/{id} lists what that user registered. */
     public function test_menu_link_lists_what_a_user_registered(): void
     {

@@ -98,6 +98,9 @@ tasks = [
   { id = "R6c", title = "Settings, backups, archive screens", phase = "R", batch = 9, size = "M", deps = ["N04", "R4b"], status = "done", pr = 68 },
   { id = "R7", title = "Printing & exports", phase = "R", batch = 9, size = "M", deps = ["R2"], status = "done", pr = 69 },
 
+  # ---------------- Batch 9.5 (owner's notes, 2026-11-19) ----------------
+  { id = "R2e", title = "List pager above the list too; previous / next; any page from a list", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "in-progress" },
+
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
   { id = "A03", title = "Rule: dates going backwards", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
