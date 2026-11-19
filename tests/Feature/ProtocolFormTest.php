@@ -417,6 +417,41 @@ class ProtocolFormTest extends FeatureTestCase
         Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->assertSet('form.keep', '20');
     }
 
+    /**
+     * R2f (owner, 2026-11-19): a date out of order with the numbers around it, or after today, is a warning under the
+     * date (as for a number that exists), when creating and when editing; it can still be saved.
+     */
+    public function test_a_date_out_of_order_or_in_the_future_is_a_warning_that_does_not_block(): void
+    {
+        $this->setting('allowWriterChangeDate', 1);
+        $year = (int) now()->year;
+        $base = now()->subDays(10)->startOfDay();
+        foreach ([0, 2, 4] as $i => $plus) {
+            Protocol::factory()->number(($i + 1) * 10)->create(['etos' => $year, 'protocoldate' => $base->copy()->addDays($plus)->toDateString()]);
+        }
+        $last = $base->copy()->addDays(4);
+
+        // new: before the last protocol's date → warning; the last one's date → none; tomorrow → after today
+        $form = Livewire::actingAs($this->writer())->test(ProtocolForm::class)->set('form.thema', 'Νέο');
+        $form->set('form.protocoldate', $last->copy()->subDay()->format('d/m/Y'))
+            ->assertSeeHtml('id="date-warning"')->assertSee('ο προηγούμενος (30) έχει '.$last->format('d/m/Y'));
+        $form->set('form.protocoldate', $last->format('d/m/Y'))->assertDontSeeHtml('id="date-warning"');
+        $form->set('form.protocoldate', now()->addDay()->format('d/m/Y'))->assertSee('Η ημερομηνία είναι μετά τη σημερινή.')
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame(now()->addDay()->toDateString(), Protocol::where('thema', 'Νέο')->firstOrFail()->dateOf('protocoldate')->toDateString(), 'saved anyway');
+
+        // editing number 20: between 10 and 30 is fine; after 30's date → warning
+        $twenty = Protocol::where('protocolnum', 20)->firstOrFail();
+        $edit = Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $twenty]);
+        $edit->assertDontSeeHtml('id="date-warning"');
+        $edit->set('form.protocoldate', $last->copy()->addDay()->format('d/m/Y'))
+            ->assertSee('ο προηγούμενος (10) έχει '.$base->format('d/m/Y').' και ο επόμενος (30) '.$last->format('d/m/Y'));
+
+        // whoever cannot change the date is not told
+        $this->setting('allowWriterChangeDate', 0);
+        Livewire::actingAs($this->writer())->test(ProtocolForm::class)->assertDontSeeHtml('id="date-warning"');
+    }
+
     public function test_the_form_can_not_be_pointed_at_another_protocol(): void
     {
         $this->setting('limitProtocolAccessList', 1);

@@ -142,6 +142,27 @@ class ProtocolListTest extends FeatureTestCase
         }
     }
 
+    /** R2f (owner, 2026-11-19): a date out of order with the numbers, or after today, is flagged in its row. */
+    public function test_dates_out_of_order_or_in_the_future_are_flagged(): void
+    {
+        $year = (int) now()->year;
+        $day = now()->subDays(5)->startOfDay();
+        $dates = [$day, $day, $day->copy()->addDays(3), $day, $day, now()->addDays(10)];   // 3: out of order; 6: future
+        foreach ($dates as $i => $d) {
+            Protocol::factory()->number($i + 1)->create(['etos' => $year, 'protocoldate' => $d->toDateString(), 'thema' => 'Θέμα '.($i + 1)]);
+        }
+
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($html, 'protocol-row  date-flagged'), 'two rows flagged');
+        $row = fn (int $n) => substr($html, strpos($html, 'data-id="'.Protocol::where('protocolnum', $n)->value('id').'"') - 120, 1500);
+        $this->assertStringContainsString('date-flagged', $row(3));
+        $this->assertStringContainsString('ο προηγούμενος (2) έχει '.$day->format('d/m/Y').' και ο επόμενος (4) '.$day->format('d/m/Y'), $row(3));
+        $this->assertStringContainsString('data-kinds="future"', $row(6));
+        $this->assertStringContainsString('Η ημερομηνία είναι μετά τη σημερινή.', $row(6));
+        $this->assertStringNotContainsString('date-flagged', $row(2));
+        $this->assertStringNotContainsString('date-flagged', $row(4));
+    }
+
     public function test_no_pager_for_a_single_page(): void
     {
         $this->setting('showRowsInPage', 25);

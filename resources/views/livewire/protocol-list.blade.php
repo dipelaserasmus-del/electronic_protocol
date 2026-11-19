@@ -100,10 +100,18 @@
                         $handlers = $p->assignments->where('type', 'd');
                         $informed = $p->assignments->where('type', 'e');
                     @endphp
-                    <tr wire:key="p-{{ $p->id }}" class="protocol-row" data-id="{{ $p->id }}">
+                    @php $dateFlag = $dateFlags[$p->id] ?? null; @endphp
+                    <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif" data-id="{{ $p->id }}">
                         <td class="text-nowrap">
                             <a href="{{ url('/home/'.$p->id) }}" class="fw-bold text-decoration-none stretched-link-row">{{ $p->protocolnum }}/{{ $p->etos }}</a>
-                            <div class="small text-body-secondary">{{ $p->dateOf('protocoldate')?->format('d/m/Y') }}</div>
+                            <div class="small @if ($dateFlag) text-warning-emphasis fw-semibold @else text-body-secondary @endif">{{ $p->dateOf('protocoldate')?->format('d/m/Y') }}
+                                @if ($dateFlag)
+                                    {{-- R2f: above the row's link, so the tooltip opens without opening the protocol --}}
+                                    <span class="date-flag position-relative" tabindex="0" role="img" aria-label="{{ \App\Services\DateOrder::message($dateFlag) }}"
+                                          data-bs-title="{{ \App\Services\DateOrder::message($dateFlag) }}" data-kinds="{{ implode(' ', $dateFlag['kinds']) }}"
+                                          x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i></span>
+                                @endif
+                            </div>
                         </td>
                         <td class="d-none d-md-table-cell small">
                             @if ($p->fakelos)<span title="{{ $folders[$p->fakelos] ?? '' }}">{{ $p->fakelos }}</span>@endif
