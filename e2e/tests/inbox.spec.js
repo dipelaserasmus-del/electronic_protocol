@@ -131,7 +131,9 @@ test('winmail.dat (Outlook): its text and files are shown and registered instead
 
 test('incoming date: the app\'s date field; keyword suggestions from the file names too (R5e)', async ({ page }) => {
   await login(page, 'admin');
-  const message = await findEmail(page, 'Αποστολή στοιχείων');   // synthetic e-mail 4: Πίνακας Α.pdf, σάρωση_001.png, κατάσταση.csv
+  // synthetic e-mail 10, which no test registers: subject «Διαβιβαστικό αίτησης άδειας εκπαιδευτικού»,
+  // file «ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf» (αιτηση and δοκιμη are only in the file's name)
+  const message = await findEmail(page, 'Διαβιβαστικό αίτησης άδειας');
   const pad = (n) => String(n).padStart(2, '0');
   const now = new Date();
 
@@ -147,8 +149,11 @@ test('incoming date: the app\'s date field; keyword suggestions from the file na
   // suggestions: words of the file names, not only of the subject
   const suggestions = message.locator('.keyword-suggestions');
   await expect(suggestions).toContainText('Προτάσεις από το θέμα και τα συνημμένα');
-  await expect(suggestions.locator('[data-suggest="κατάσταση"]')).toBeVisible();
-  await expect(suggestions.locator('[data-suggest="σάρωση"]')).toBeVisible();
+  const fold = (w) => w.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase().replace(/ς/g, 'σ');
+  await expect(suggestions.locator('[data-suggest]').first()).toBeVisible();
+  const offered = (await suggestions.locator('[data-suggest]').evaluateAll((els) => els.map((e) => e.dataset.suggest))).map(fold);
+  expect(offered).toContain('αιτηση');   // with its accents when earlier subjects have the word
+  expect(offered).toContain('δοκιμη');
   const box = await date.evaluate((el) => {
     const form = el.closest('.row, form') || el;
     const r = form.getBoundingClientRect();

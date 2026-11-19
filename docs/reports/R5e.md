@@ -49,11 +49,14 @@
     - *Ημ/νία εισερχ.* is the app's date field; `9` is saved as the 9th of this month.
 
   The four new tests failed before the change.
-- Browser (`inbox.spec.js`, synthetic e-mail *«Αποστολή στοιχείων»*):
+- Browser (`inbox.spec.js`): synthetic e-mail *«Διαβιβαστικό αίτησης άδειας εκπαιδευτικού»*, which no test
+  registers, with the file *ΑΙΤΗΣΗ ΑΔΕΙΑΣ ΕΚΠΑΙΔΕΥΤΙΚΟΥ ΔΟΚΙΜΗ (1).pdf*:
   - `9` + TAB → 09/this month; ◀ → 08; the calendar button is there;
-  - the suggestions include *κατάσταση* and *σάρωση*, which come from the file names only.
+  - the suggestions include *αίτηση* and *δοκιμη*, which are only in the file's name. In the screenshot *αίτηση* has
+    its accent (earlier subjects have the word) and *δοκιμη* has none (no earlier subject has it).
 
-  All 7 inbox browser tests pass.
+  All 7 inbox browser tests pass, also after the registration tests (as in CI: the first version used an e-mail that
+  a registration test moves out of the inbox).
 - Full suite: PHPUnit 535.
 
 ## Owner actions
