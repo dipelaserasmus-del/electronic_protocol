@@ -18,7 +18,7 @@
         <input type="text" class="form-control text-center @if ($error) is-invalid @endif" id="{{ $id }}" name="{{ $name }}"
                value="{{ $value }}" placeholder="ηη/μμ/εεεε" inputmode="numeric" autocomplete="off" maxlength="10"
                data-date-value @required($required) @readonly($readonly)
-               aria-describedby="{{ $id }}-hint" {{ $attributes->whereStartsWith('wire:') }}>
+               @if ($help !== false) aria-describedby="{{ $id }}-hint" @endif {{ $attributes->whereStartsWith('wire:') }}>
         <button class="btn btn-outline-secondary" type="button" data-date-action="next" tabindex="-1" title="Επόμενη ημέρα"
                 aria-label="Επόμενη ημέρα" @disabled($readonly)>▶</button>
         <button class="btn btn-outline-secondary" type="button" data-date-action="today" tabindex="-1" @disabled($readonly)>Σήμερα</button>
@@ -27,5 +27,6 @@
         <input type="date" class="visually-hidden" tabindex="-1" aria-hidden="true">
         <div class="invalid-feedback">{{ $error ?: 'Μη έγκυρη ημερομηνία (π.χ. 9, 9/4 ή 09/04/2026).' }}</div>
     </div>
-    <div id="{{ $id }}-hint" class="form-text">{{ $help ?? 'Αρκεί η ημέρα (π.χ. 9) για τον τρέχοντα μήνα.' }}</div>
+    {{-- help: null = the usual hint, false = none (R5e: the inbox's compact form; the placeholder says the format) --}}
+    @if ($help !== false)<div id="{{ $id }}-hint" class="form-text">{{ $help ?? 'Αρκεί η ημέρα (π.χ. 9) για τον τρέχοντα μήνα.' }}</div>@endif
 </div>

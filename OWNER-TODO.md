@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 11:46 (after Batch 9; R2e, R6d, R2f, R2g, R2h). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-19 12:01 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -108,6 +108,9 @@ Open *Εισερχόμενα*.
   from the lower pager brings the upper one into view.
 - [ ] **36.** *Λίστα*: at the end of each row, **⋮** instead of the *Αντιγραφή* / *Απόδειξη* buttons. Click it: the menu
   has *Αντιγραφή ως νέο* and *Απόδειξη* (opens in a new tab). The other columns have more room.
+- [ ] **37.** *Εισερχόμενα*: in *Ημ/νία εισερχ.* type `9` and TAB: 09/this month. ◀ ▶, *Σήμερα* and 📅 work as on
+  *Νέο*. Under *Λέξεις κλειδιά*, the suggestions now include words of the attachments' names (e.g. *κατάσταση* from
+  *κατάσταση.csv*), and a name in capitals gets its accents when earlier subjects have the word.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

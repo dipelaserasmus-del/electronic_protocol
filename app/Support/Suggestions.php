@@ -66,6 +66,38 @@ final class Suggestions
         return array_slice($out, 0, self::KEYWORDS_MAX);
     }
 
+    /**
+     * R5e: how words are usually spelled, accents and all, in the subjects of the protocols the user may see (the most
+     * recent 3000): folded word => its most used lower-case spelling. Gives back the accents of a word written in
+     * capitals ("ΓΝΩΜΑΤΕΥΣΗ" → "γνωμάτευση"). Only words of 5 letters or more, written with an accent.
+     *
+     * @return array<string, string>
+     */
+    public static function spellings(User $user): array
+    {
+        $query = Protocol::query()->whereNotNull('thema')->where('thema', '<>', '');
+        if (ProtocolPolicy::isLimited($user)) {
+            $query->ownOrAssigned((int) $user->id);
+        }
+        $counts = [];
+        foreach ($query->latest('id')->take(3000)->pluck('thema') as $subject) {
+            foreach (preg_split('/[^\p{L}]+/u', (string) $subject, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $word) {
+                if (mb_strlen($word) < 5 || ! preg_match('/\p{Mn}/u', \Normalizer::normalize($word, \Normalizer::FORM_D) ?: $word)) {
+                    continue;
+                }
+                $lower = mb_strtolower($word, 'UTF-8');
+                $counts[TagList::fold($word)][$lower] = ($counts[TagList::fold($word)][$lower] ?? 0) + 1;
+            }
+        }
+        $out = [];
+        foreach ($counts as $folded => $forms) {
+            arsort($forms);
+            $out[$folded] = (string) array_key_first($forms);
+        }
+
+        return $out;
+    }
+
     /** @return list<array{0: string, 1: string}> R1f: folders in their usual order: [code, description] */
     public static function folders(): array
     {

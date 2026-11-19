@@ -357,6 +357,33 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /** R5e (owner, 2026-11-19): keyword suggestions from the attachments' names too, with accents from earlier subjects. */
+    public function test_keyword_suggestions_from_the_file_names(): void
+    {
+        \App\Models\Protocol::factory()->number(1)->create(['thema' => 'Ιατρική γνωμάτευση για αναρρωτική άδεια']);
+        $this->mailbox->messages = [6 => $this->attachmentEml('ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf')];
+
+        $suggested = Livewire::actingAs($this->writer())->test(EmailInbox::class)->viewData('extra')[6]['suggested'];
+
+        $this->assertContains(['ιατρική', false], $suggested);
+        $this->assertContains(['γνωμάτευση', false], $suggested);
+    }
+
+    /** R5e (owner, 2026-11-19): Ημ/νία εισερχ. is the app's date field ("9" → the 9th of this month, ◀ ▶, calendar). */
+    public function test_the_incoming_date_is_the_apps_date_field(): void
+    {
+        $this->mailbox->messages = [6 => $this->attachmentEml('έγγραφο.pdf')];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $html = $page->html();
+        $field = substr($html, strpos($html, 'for="f-6-in_date"'), 2500);
+        $this->assertStringContainsString('data-date-input', $field);
+        $this->assertStringContainsString('data-date-action="today"', $field);
+        $this->assertStringContainsString('Ημ/νία εισερχ.', $field);
+
+        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.in_date', '9')->call('register', 6, false)->assertHasNoErrors();
+        $this->assertSame(now()->setDay(9)->toDateString(), \App\Models\Protocol::where('thema', 'Αίτηση')->firstOrFail()->dateOf('in_date')->toDateString());
+    }
+
     private function attachmentEml(string $name): string
     {
         return implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: Αίτηση',

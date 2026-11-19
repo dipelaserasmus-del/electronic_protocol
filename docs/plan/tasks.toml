@@ -104,6 +104,7 @@ tasks = [
   { id = "R2f", title = "Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form", phase = "R", batch = 9.5, size = "M", deps = ["R2e", "R1b"], status = "done", pr = 73 },
   { id = "R2g", title = "List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page", phase = "R", batch = 9.5, size = "S", deps = ["R2e"], status = "done", pr = 74 },
   { id = "R2h", title = "List: the row actions (copy, receipt) under a ⋮ menu", phase = "R", batch = 9.5, size = "S", deps = ["R2"], status = "done", pr = 75 },
+  { id = "R5e", title = "Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects", phase = "R", batch = 9.5, size = "S", deps = ["R5d", "N04"], status = "in-progress" },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

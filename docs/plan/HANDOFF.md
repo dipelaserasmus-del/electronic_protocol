@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 11:46 (after Batch 9, R2e, R6d, R2f, R2g and R2h; times are Greek time)
+## Current state — 2026-11-19 12:01 (after Batch 9, R2e, R6d, R2f, R2g, R2h and R5e; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
@@ -23,6 +23,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   backwards")** should reuse `DateOrder`.
 - **R2h (Batch 9.5):** the list row's actions are a Bootstrap dropdown (`.row-actions` ⋮, `data-action=copy|receipt`,
   Popper `strategy: fixed` so the card does not clip it, `z-2` above the row link).
+- **R5e (Batch 9.5):** the inbox's in_date uses `<x-date-input :help="false">` (new: `help=false` drops the hint);
+  `KeywordSuggestions::for(…, $fileNames, $spellings)` (MAX 8): file names (no extension) searched like the subject,
+  their words after the subject's; `Suggestions::spellings($user)` (cached 10 min) restores accents of capitals from
+  the last 3000 subjects the user may see. Mapping words to categories (γνωμάτευση → Δικαιολογητικά) is not done.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the
