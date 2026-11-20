@@ -39,5 +39,12 @@ The owner chose, from the suggestions:
   list, and the menu has the same icons. All 9 list browser tests pass.
 - Full PHPUnit: 552 tests pass.
 
+## Review
+- Codex (P2): the row's link covers the whole row, so the mouse never reached a pill and its tooltip (the whole name,
+  when shortened with …) never showed.
+  - Fixed: the pills are above the row's link, as the date warning and the files already are. Clicking a pill no
+    longer opens the protocol.
+  - Browser test: the pill is the element under the mouse. It failed before.
+
 ## Owner actions
 None. To try it: step 44 in [OWNER-TODO.md](../../OWNER-TODO.md).
