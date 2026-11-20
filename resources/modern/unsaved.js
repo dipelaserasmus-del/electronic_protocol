@@ -52,6 +52,12 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
             (this.form ?? this.$el).querySelectorAll('[x-data^="tagBox("]').forEach((box) => {
                 const field = /tagBox\('([^']+)'/.exec(box.getAttribute('x-data'))?.[1];
                 const typed = [...box.querySelectorAll('input.tag-input')].map((i) => i.value.trim()).filter(Boolean);
+                // a tag being edited in place, changed but not yet sent (review of R1k)
+                const tags = [...box.querySelectorAll('[data-tag]')].map((el) => el.dataset.tag);
+                box.querySelectorAll('input.tag-edit').forEach((i) => {
+                    const value = i.value.trim();
+                    if (i.offsetParent !== null && value !== (tags[Number(i.dataset.edit)] ?? '')) typed.push(value || '(διαγραφή)');
+                });
                 if (box.dataset.pending) typed.push(box.dataset.pending);
                 if (typed.length) out.push([labels[field] ?? field, '—', typed.join(', ') + ' (νέο)']);
             });
