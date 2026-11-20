@@ -211,7 +211,7 @@
                                                 <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="tag-open text-reset text-decoration-none"
                                                    aria-label="Άνοιγμα του {{ $r['text'] }} σε νέα καρτέλα">↗</a>
                                             @endif
-                                            <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('sxetiko', {{ $i }})"
+                                            <button type="button" class="btn-close" style="font-size: .55em" x-on:click="pending($wire.removeTag('sxetiko', {{ $i }}), '')"
                                                     aria-label="Αφαίρεση {{ $r['text'] }}"></button>
                                         </span>
                                         <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $r['text'] }}"
@@ -236,7 +236,7 @@
                                               wire:key="kw-{{ $i }}-{{ $k }}" data-tag="{{ $k }}">
                                             <span class="d-inline-flex align-items-center gap-1" x-show="editing !== {{ $i }}">
                                                 <button type="button" class="tag-text" x-on:click="edit({{ $i }})" aria-label="Αλλαγή {{ $k }}">{{ $k }}</button>
-                                                <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('keywords', {{ $i }})"
+                                                <button type="button" class="btn-close" style="font-size: .55em" x-on:click="pending($wire.removeTag('keywords', {{ $i }}), '')"
                                                         aria-label="Αφαίρεση {{ $k }}"></button>
                                             </span>
                                             <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $k }}"
