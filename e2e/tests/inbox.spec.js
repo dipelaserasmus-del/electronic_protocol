@@ -5,7 +5,7 @@ const { login, evidence, setSetting } = require('./helpers');
 
 /** The message (<article>) of the synthetic e-mail whose text contains `text`, on whichever page it is. */
 async function findEmail(page, text) {
-  for (const p of [1, 2, 3, 4]) {
+  for (const p of [1, 2, 3, 4, 5, 6, 7, 8]) {
     await page.goto(`/inbox?page=${p}`);
     const message = page.locator('article.inbox-message', { hasText: text });   // one e-mail each
     if (await message.count()) return message;
@@ -259,4 +259,22 @@ test('the list on the left scrolls to the e-mail and it stays there; the folder 
   await page.mouse.wheel(0, -400);
   await page.waitForTimeout(600);
   expect(await aligned()).toBeGreaterThan(100);
+});
+
+test('a long Προς list shows three addresses and «και άλλοι N», which opens the rest (R5i)', async ({ page }) => {
+  await login(page, 'writer');
+  const message = await findEmail(page, 'Κοινοποιείται σε όλα τα σχολεία');   // synthetic e-mail 12, 41 recipients
+  const to = message.locator('[data-addresses=to]');
+  await expect(to).toContainText('school03@example.test');
+  await expect(to).not.toContainText('school40@example.test', { useInnerText: true });
+  const toggle = to.locator('[data-addresses-toggle]');
+  await expect(toggle).toHaveText('και άλλοι 38 ▾', { useInnerText: true });
+  await message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5i-folded');
+  await toggle.click();
+  await expect(to).toContainText('school40@example.test', { useInnerText: true });
+  await expect(toggle).toHaveText('λιγότεροι ▴', { useInnerText: true });
+  await toggle.click();
+  await expect(to).not.toContainText('school40@example.test', { useInnerText: true });
+  await expect(message.locator('[data-addresses=cc] [data-addresses-toggle]')).toHaveCount(0);   // two: in full
 });

@@ -149,6 +149,8 @@ Open *Εισερχόμενα*.
   first file and *+N*. ▾ (or *+N* on the files) opens the row with everything.
 - [ ] **49.** *Εισερχόμενα*: click e-mails in the list on the left, several times, also ones with HTML text: the page
   scrolls to each and stays there (no jump back), and the folder's list does not open by itself.
+- [ ] **50.** *Εισερχόμενα*: an e-mail sent to many (e.g. all the schools) shows three addresses in *Προς* and *και
+  άλλοι N ▾*; click it for all of them, *λιγότεροι ▴* to fold them again.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
