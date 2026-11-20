@@ -2,8 +2,11 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 19:00 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i and R5j; times are Greek time)
-- **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
+## Current state — 2026-11-20 19:00 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i and R5j; times are Greek time)
+- **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
+  `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
+  in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
+  (`ProtocolSearch::protocolCodes`/`allCodes`; `FolderMerge::codes`/`listed`/`intoCode`). Dots inside the number count.- **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
   importRecords`: descriptions only). `merges`: **Φ.43 → Φ.46** (`App\Services\Folders\FolderMerge`: protocols,

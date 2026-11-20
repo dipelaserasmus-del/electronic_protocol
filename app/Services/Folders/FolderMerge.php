@@ -9,6 +9,7 @@ use App\Models\Protocol;
 use App\Services\Attachments\Trash;
 use App\Services\Protocols\ProtocolWriter;
 use App\Support\FileNames;
+use App\Support\FolderCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,21 +36,21 @@ final class FolderMerge
     public function plan(string $from, string $into): array
     {
         $codes = $this->codes($from);
-        $old = Keepvalue::whereFakelos($from)->first();
+        $old = $this->listed($from);
         $plan = [
             'from' => $from, 'into' => $into,
             'protocols' => count($codes),
-            'files' => $codes === [] ? 0 : $this->attachments($codes, $into)->count(),
-            'rules' => $old ? FolderAssignment::where('keepvalue_id', $old->id)->count() : 0,
-            'fromListed' => $old !== null,
-            'intoListed' => Keepvalue::whereFakelos($into)->exists(),
-            'done' => $old === null && $codes === [],
+            'files' => $codes === [] ? 0 : $this->attachments($codes, $this->intoCode($into))->count(),
+            'rules' => $old->isEmpty() ? 0 : FolderAssignment::whereIn('keepvalue_id', $old->pluck('id'))->count(),
+            'fromListed' => $old->isNotEmpty(),
+            'intoListed' => $this->listed($into)->isNotEmpty(),
+            'done' => $old->isEmpty() && $codes === [],
             // sub-folders (Φ.43.1 …) are separate folders: not merged, only named so the owner can decide
-            'subfolders' => Keepvalue::pluck('fakelos')->filter(fn ($c) => str_starts_with(mb_strtolower((string) $c), mb_strtolower($from).'.'))
+            'subfolders' => Keepvalue::pluck('fakelos')->filter(fn ($c) => str_starts_with(FolderCode::key((string) $c), FolderCode::key($from).'.'))
                 ->values()->all(),
             'error' => null,
         ];
-        if (mb_strtolower($from) === mb_strtolower($into)) {
+        if (FolderCode::key($from) === FolderCode::key($into)) {
             $plan['error'] = 'Ο φάκελος δεν συγχωνεύεται με τον εαυτό του.';
         } elseif (! $plan['done'] && ! $plan['intoListed']) {
             $plan['error'] = "Ο φάκελος $into δεν υπάρχει στη λίστα.";
@@ -73,16 +74,16 @@ final class FolderMerge
             return $result;
         }
 
-        $codes = $this->codes($from);   // read before the update: each protocol's code as written (case may differ)
+        $into = $this->intoCode($into);   // as the list writes it ("Φ46" or "Φ.46")
+        $codes = $this->codes($from);   // read before the update: each protocol's code as written (case, dot may differ)
         $files = $this->attachments($codes, $into);
         $ids = array_keys($codes);
         DB::transaction(function () use ($from, $into, $ids, &$result) {
             foreach (array_chunk($ids, 500) as $chunk) {
                 $result['protocols'] += DB::table('protocols')->whereIn('id', $chunk)->update(['fakelos' => $into]);
             }
-            $old = Keepvalue::whereFakelos($from)->first();
-            if ($old) {
-                $new = Keepvalue::whereFakelos($into)->firstOrFail();
+            $new = $this->listed($into)->first();
+            foreach ($this->listed($from) as $old) {   // "Φ43" and "Φ.43" may both be in the list
                 foreach (FolderAssignment::where('keepvalue_id', $old->id)->get() as $rule) {
                     $there = FolderAssignment::where('keepvalue_id', $new->id)->where('user_id', $rule->user_id)->first();
                     if (! $there) {
@@ -130,10 +131,31 @@ final class FolderMerge
         return $result;
     }
 
-    /** @return array<int, string> protocol id => its folder code as written, for the protocols of this folder */
+    /**
+     * @return array<int, string> protocol id => its folder code as written, for the protocols of this folder. Every
+     *         spelling counts (owner, 2026-11-20: the old app wrote both "Φ.2" and "Φ12"; the dot after Φ is optional)
+     */
     private function codes(string $from): array
     {
-        return Protocol::where('fakelos', $from)->pluck('fakelos', 'id')->map(fn ($c) => (string) $c)->all();
+        $key = FolderCode::key($from);
+        $spellings = Protocol::query()->whereNotNull('fakelos')->where('fakelos', '!=', '')->distinct()->pluck('fakelos')
+            ->filter(fn ($c) => FolderCode::key((string) $c) === $key)->values()->all();
+
+        return $spellings === [] ? [] : Protocol::whereIn('fakelos', $spellings)->pluck('fakelos', 'id')->map(fn ($c) => (string) $c)->all();
+    }
+
+    /** The list's folders with this code, however written ("Φ43" = "Φ.43") */
+    private function listed(string $code)
+    {
+        $key = FolderCode::key($code);
+
+        return Keepvalue::orderBy('id')->get()->filter(fn ($f) => FolderCode::key((string) $f->fakelos) === $key)->values();
+    }
+
+    /** The target's code as the list writes it, else as given */
+    private function intoCode(string $into): string
+    {
+        return (string) ($this->listed($into)->first()?->fakelos ?? $into);
     }
 
     /**
