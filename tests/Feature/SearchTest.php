@@ -158,6 +158,30 @@ class SearchTest extends FeatureTestCase
         $this->assertSame(['Παλιός'], $this->subjects($this->criteria(['folder' => 'παλιο'])));
     }
 
+    /** D08 (owner, 2026-11-20): the old app wrote both "Φ.2" and "Φ12": the dot after Φ never counts in a search */
+    public function test_a_folder_is_found_however_its_protocols_write_it(): void
+    {
+        Keepvalue::updateOrCreate(['fakelos' => 'Φ.812'], ['describe' => 'Δοκιμαστικός φάκελος']);
+        Keepvalue::updateOrCreate(['fakelos' => 'Φ.8.12'], ['describe' => 'Άλλος']);
+        Protocol::factory()->number(1)->create(['thema' => 'Με τελεία', 'fakelos' => 'Φ.812']);
+        Protocol::factory()->number(2)->create(['thema' => 'Χωρίς τελεία', 'fakelos' => 'Φ812']);   // as the old app saved it
+        Protocol::factory()->number(3)->create(['thema' => 'Μικρά', 'fakelos' => 'φ 812']);
+        Protocol::factory()->number(4)->create(['thema' => 'Υποφάκελος', 'fakelos' => 'Φ8.12']);
+        $all = ['Με τελεία', 'Μικρά', 'Χωρίς τελεία'];
+        $sorted = fn (array $a) => collect($a)->sort()->values()->all();   // the set, not the order (newest first)
+
+        foreach (['Φ.812', 'Φ812', 'φ812', 'φ.812', '812'] as $typed) {
+            $this->assertSame($all, $sorted($this->subjects($this->criteria(['folder' => $typed]))), "folder «{$typed}»");
+        }
+        $this->assertSame($all, $sorted($this->subjects($this->criteria(['folder' => 'δοκιμαστικος']))), 'by its description');
+        $this->assertSame(['Υποφάκελος'], $this->subjects($this->criteria(['folder' => 'φ8.12'])), 'the dots inside the number count');
+
+        $find = fn (string $text) => $sorted($this->subjects((new \App\Services\Search\QueryParser())->parse($text)));
+        $this->assertSame($all, $find('φάκελος:Φ812'));
+        $this->assertSame($all, $find('Φ.812'), 'a free word that is a folder code');
+        $this->assertSame($all, $find('φ812'));
+    }
+
     public function test_pending_check_finds_no_folder_or_the_word_in_the_subject_within_the_dates(): void
     {
         Keepvalue::updateOrCreate(['fakelos' => 'Φ.1'], ['describe' => 'Εγκύκλιοι']);

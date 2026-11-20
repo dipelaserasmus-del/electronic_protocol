@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **75 / 85** `██████████████████████████░░░░` 88% |
-| Effort done (PERT) | **34.1 / 38.7 h** `██████████████████████████░░░░` 88% |
+| Tasks done | **76 / 86** `███████████████████████████░░░` 88% |
+| Effort done (PERT) | **34.4 / 39.0 h** `██████████████████████████░░░░` 88% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h | 18/18 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h | 19/19 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -81,6 +81,7 @@ flowchart LR
     D04["D04<br/>Integer dates → DATE columns"]
     D06["D06<br/>Folder description → TEXT"]
     D07["D07<br/>Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules)"]
+    D08["D08<br/>Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use"]
   end
   subgraph R["4 Module rebuilds"]
     R5a["R5a<br/>Email service, EML cache, charsets"]
@@ -222,6 +223,8 @@ flowchart LR
   N04 --> R5e
   R6b --> D07
   D06 --> D07
+  D07 --> D08
+  R3c --> D08
   R1b --> R1j
   R3d --> R1j
   R1j --> R3e
@@ -265,7 +268,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -357,28 +360,29 @@ gantt
   R2h List  the row actions (copy, receipt) under a ⋮ menu :done, r2h, 2026-11-13 14:22, 19m
   R5e Inbox  the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects :done, r5e, 2026-11-13 14:41, 19m
   D07 Folder glossary  the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) :done, d07, 2026-11-13 15:00, 19m
-  R1j Protocol form  one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link :done, r1j, 2026-11-13 15:19, 19m
-  R3e Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px :done, r3e, 2026-11-13 15:38, 19m
-  R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :done, r2i, 2026-11-13 15:57, 19m
-  R3f Search  whole words or numbers («=» before a value, εισ =120, «Ολόκληρες λέξεις» switch), in the help too :done, r3f, 2026-11-13 16:16, 19m
-  R1k Protocol page  a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed :done, r1k, 2026-11-13 16:35, 19m
-  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :done, r2j, 2026-11-13 16:54, 19m
-  R5f Top bar  a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute :done, r5f, 2026-11-13 17:13, 19m
-  R5g Inbox  the list pager above and below the e-mails, and the page in the list on the left :done, r5g, 2026-11-13 17:32, 19m
-  R3g Top bar  Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις) :done, r3g, 2026-11-13 17:51, 19m
-  R2k List  every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) :done, r2k, 2026-11-13 18:10, 19m
-  R5h Inbox  going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) :done, r5h, 2026-11-13 18:29, 19m
+  D08 Folder codes without the dot (Φ12 = Φ.12)  search and merge find every spelling the protocols use :done, d08, 2026-11-13 15:19, 19m
+  R1j Protocol form  one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link :done, r1j, 2026-11-13 15:38, 19m
+  R3e Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px :done, r3e, 2026-11-13 15:57, 19m
+  R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :done, r2i, 2026-11-13 16:16, 19m
+  R3f Search  whole words or numbers («=» before a value, εισ =120, «Ολόκληρες λέξεις» switch), in the help too :done, r3f, 2026-11-13 16:35, 19m
+  R1k Protocol page  a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed :done, r1k, 2026-11-13 16:54, 19m
+  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :done, r2j, 2026-11-13 17:13, 19m
+  R5f Top bar  a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute :done, r5f, 2026-11-13 17:32, 19m
+  R5g Inbox  the list pager above and below the e-mails, and the page in the list on the left :done, r5g, 2026-11-13 17:51, 19m
+  R3g Top bar  Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις) :done, r3g, 2026-11-13 18:10, 19m
+  R2k List  every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) :done, r2k, 2026-11-13 18:29, 19m
+  R5h Inbox  going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) :done, r5h, 2026-11-13 18:48, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 18:48, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 19:21, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 19:40, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 19:59, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 20:32, 19m
-  X01 Audit log — recording :x01, 2026-11-13 20:51, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 21:24, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 21:57, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 22:30, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 22:49, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 19:07, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 19:40, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 19:59, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 20:18, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 20:51, 19m
+  X01 Audit log — recording :x01, 2026-11-13 21:10, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 21:43, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 22:16, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 22:49, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 23:08, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -450,7 +454,8 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.2 | 6.6 | 1.8 | #74 |
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.8 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 6.9 | 7.2 | 2.2 | #76 |
-| ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 6.9 | 7.2 | 2.7 | #77 |
+| ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 6.6 | 6.9 | 2.4 | #77 |
+| ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.9 | 7.2 | 1.6 | #87 |
 | ✅ | **R1j** 🔴 | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 5.6 | 5.9 | 0.0 | #78 |
 | ✅ | **R3e** 🔴 | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 5.9 | 6.2 | 0.0 | #79 |
 | ✅ | **R2i** 🔴 | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 6.2 | 6.6 | 0.0 | #80 |
