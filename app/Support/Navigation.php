@@ -20,10 +20,27 @@ final class Navigation
     public const WRITER = 'Συγγραφέας';
     public const READER = 'Αναγνώστης';
 
-    /** Where the brand link and "Όλα τα πρωτόκολλα" lead for this user (config/landing-page.php). */
+    /**
+     * The user's home page: where the login, the brand link and Λίστα lead. R3e (owner, 2026-11-20): each user may
+     * choose it (user menu → Αρχική σελίδα); without a choice, the role's (config/landing-page.php).
+     */
     public static function landing(User $user): string
     {
-        return url(config('landing-page.page.'.$user->role_id, Home::LIST));
+        $choice = UserPreferences::get($user, 'home');
+
+        return url($choice ? UserPreferences::HOMES[$choice][2] : config('landing-page.page.'.$user->role_id, Home::LIST));
+    }
+
+    /** R3e: which of UserPreferences::HOMES the home page is (the choice, or the role's page when it is one of them). */
+    public static function homeChoice(User $user): ?string
+    {
+        foreach (UserPreferences::HOMES as $key => [, , $path]) {
+            if (self::landing($user) === url($path)) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -38,7 +55,7 @@ final class Navigation
         $role = $user->role?->role;
         $items = [['label' => 'Νέο', 'icon' => 'file-earmark-plus', 'url' => url('/home')]];
         // R1j (owner, 2026-11-20): Λίστα itself leads to the list; its ▾ opens the other lists
-        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'children' => self::lists($user, $role)];
+        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'home' => true, 'children' => self::lists($user, $role)];
 
         if ($role !== self::READER && InboxAccess::allows($user)) {
             $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox')];
@@ -71,7 +88,7 @@ final class Navigation
     private static function lists(User $user, ?string $role): array
     {
         $lists = [
-            ['label' => 'Όλα τα πρωτόκολλα', 'icon' => 'collection', 'url' => self::landing($user)],
+            ['label' => 'Όλα τα πρωτόκολλα', 'icon' => 'collection', 'url' => url(Home::LIST)],   // R3e: all, whatever the home page
             ['divider' => true],
             ['header' => 'Δικά μου'],
             ['label' => 'προς Διεκπεραίωση', 'icon' => 'hourglass-split', 'url' => url('/home/list/d')],

@@ -110,3 +110,32 @@ test('page width: narrow and centred or the whole window, saved for the user (R3
   await page.reload();
   expect(await mainWidth()).toBeGreaterThan(1800);
 });
+
+test('each user chooses their home page from the user menu; the brand and Λίστα lead there at once and after login (R3e)', async ({ page }) => {
+  await login(page, 'reader');
+  await page.goto('/about');
+  const bar = page.locator('nav.app-topbar');
+  const choose = async (name) => {
+    await bar.locator('#nav-user').click();
+    const item = bar.locator('[data-preference=home]', { hasText: name });
+    await Promise.all([page.waitForResponse((r) => r.url().endsWith('/preferences')), item.click()]);
+    await expect(item).toHaveAttribute('aria-pressed', 'true');
+    await expect(bar.locator('[data-preference=home][aria-pressed=true]')).toHaveCount(1);
+  };
+  try {
+    await choose('προς Ενημέρωση');
+    await evidence(page, 'r3e-home-menu', { clip: { x: 900, y: 0, width: 540, height: 520 } });
+    await page.keyboard.press('Escape');
+    // at once, without reloading
+    await expect(bar.locator('.app-brand')).toHaveAttribute('href', /\/home\/list\/e$/);
+    await Promise.all([page.waitForURL(/\/home\/list\/e(\?filter=e)?$/), bar.getByRole('link', { name: 'Λίστα', exact: true }).click()]);
+    // after logging in again
+    await bar.locator('#nav-user').click();
+    await Promise.all([page.waitForURL((u) => !u.pathname.startsWith('/home')), bar.getByRole('button', { name: 'Έξοδος' }).click()]);
+    await login(page, 'reader');
+    await expect(page).toHaveURL(/\/home\/list\/e(\?filter=e)?$/);
+  } finally {
+    await page.goto('/about');
+    await choose('προς Διεκπεραίωση');   // the readers' default in the dev set-up
+  }
+});

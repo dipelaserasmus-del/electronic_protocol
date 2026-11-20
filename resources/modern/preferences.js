@@ -17,7 +17,11 @@ export async function savePreference(url, key, value) {
     }
 }
 
-const apply = { width: value => document.body.classList.toggle('layout-narrow', value === 'narrow') };
+const apply = {
+    width: value => document.body.classList.toggle('layout-narrow', value === 'narrow'),
+    // R3e: the links to the home page (brand, Λίστα) lead to the new one at once
+    home: (value, btn) => document.querySelectorAll('[data-home-link]').forEach(a => { a.href = btn.dataset.home; }),
+};
 
 document.addEventListener('click', async e => {
     const btn = e.target.closest?.('[data-preference]');
@@ -28,5 +32,5 @@ document.addEventListener('click', async e => {
         return;
     }
     document.querySelectorAll(`[data-preference="${key}"]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.value === value)));
-    apply[key]?.(value);
+    apply[key]?.(value, btn);
 });

@@ -79,7 +79,7 @@ class ProtocolController extends Controller implements HasMiddleware
      */
     public function chkForUpdates()
     {
-        return redirect(config('landing-page.page.' . auth()->user()->role_id));
+        return redirect(\App\Support\Navigation::landing(auth()->user()));   // R3e: the user's home page
     }
 
     public function getKeep4Fakelos($fakelos)
