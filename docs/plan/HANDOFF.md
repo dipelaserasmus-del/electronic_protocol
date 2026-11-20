@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 12:01 (after Batch 9, R2e, R6d, R2f, R2g, R2h and R5e; times are Greek time)
+## Current state — 2026-11-20 08:50 (after Batch 9, R2e, R6d, R2f, R2g, R2h, R5e and R1j; times are Greek time)
 - **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
@@ -27,6 +27,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   `KeywordSuggestions::for(…, $fileNames, $spellings)` (MAX 8): file names (no extension) searched like the subject,
   their words after the subject's; `Suggestions::spellings($user)` (cached 10 min) restores accents of capitals from
   the last 3000 subjects the user may see. Mapping words to categories (γνωμάτευση → Δικαιολογητικά) is not done.
+- **R1j (Batch 9.5, owner's note 2026-11-20):** the protocol form has one submit, `#form-save` in `.form-save-float`
+  (position fixed, bottom right; the form gets bottom padding). No Νέο / Λίστα pills in the form. Copy / receipt are
+  the last pills (`.pill-far-right`, `data-action=copy|receipt`, icons). Top bar: an item with both `url` and
+  `children` is split (`.nav-split`: link `#nav-N-link` + ▾ `#nav-N` «Περισσότερες: …»); Λίστα → the role's landing.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

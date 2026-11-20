@@ -91,6 +91,15 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 .protocol-number { font-size: 2.1rem; line-height: 1.2; padding: .3rem .75rem; letter-spacing: .02em; }
 .protocol-number.is-valid, .protocol-number.is-invalid { border-width: 2px; background-image: none; padding-right: .75rem; }
 .pill-actions-center .pill-actions-row { justify-content: center; }
+/* R1j: the protocol form's rarely used actions at the far right; Αποθήκευση floats at the bottom right of the screen */
+.pill-actions-row > .pill-far-right { margin-left: auto; }
+.pill-actions-center .pill-actions-row:has(> .pill-far-right) > .pill:first-child:not(.pill-far-right) { margin-left: auto; }
+.pill-actions:not(:has(.pill)) { display: none !important; }   // a new protocol has none left
+.form-save-float { position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 1030; }
+.protocol-form:has(.form-save-float) { padding-bottom: 5rem; }   // the last fields are never under the button
+/* R1j: Λίστα in the top bar is a link, its ▾ opens the menu */
+.app-topbar .nav-split { display: flex; flex-wrap: wrap; align-items: center; }
+.app-topbar .nav-split > .dropdown-menu { flex-basis: 100%; }
 @media (max-width: 767.98px) {
     .number-head { grid-template-columns: 5rem 1fr; }
     .number-head-year { justify-self: stretch; width: auto; padding-top: 1rem; }

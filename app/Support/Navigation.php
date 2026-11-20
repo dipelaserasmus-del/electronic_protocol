@@ -9,7 +9,8 @@ use App\Models\User;
  * Top bar of the rebuilt pages (N03): the same items and role rules as the old layout's menu
  * (resources/views/layouts/app.blade.php), as data so they can be tested per role.
  *
- * An item is ['label' => …, 'url' => …] or ['label' => …, 'children' => [...]]; a child can also be
+ * An item is ['label' => …, 'url' => …] or ['label' => …, 'children' => [...]] (with a 'url' too, the label is a link
+ * and a ▾ next to it opens the children); a child can also be
  * ['header' => …] or ['divider' => true]; a per-user row carries 'links' (short label => url).
  */
 final class Navigation
@@ -36,7 +37,8 @@ final class Navigation
     {
         $role = $user->role?->role;
         $items = [['label' => 'Νέο', 'icon' => 'file-earmark-plus', 'url' => url('/home')]];
-        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'children' => self::lists($user, $role)];
+        // R1j (owner, 2026-11-20): Λίστα itself leads to the list; its ▾ opens the other lists
+        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'children' => self::lists($user, $role)];
 
         if ($role !== self::READER && InboxAccess::allows($user)) {
             $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox')];

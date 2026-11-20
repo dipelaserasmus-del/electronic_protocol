@@ -47,6 +47,20 @@ class ModernLayoutTest extends FeatureTestCase
         }
     }
 
+    /** R1j (owner, 2026-11-20): Λίστα in the top bar leads to the list; a ▾ next to it opens the other lists. */
+    public function test_the_list_item_is_a_link_and_its_arrow_opens_the_menu(): void
+    {
+        $writer = $this->writer();
+        $item = collect(Navigation::for($writer))->firstWhere('label', 'Λίστα');
+        $this->assertSame(Navigation::landing($writer), $item['url']);
+        $this->assertNotEmpty($item['children']);
+
+        $html = $this->actingAs($writer)->get('/about')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~<a class="nav-link[^"]*" href="'.preg_quote(Navigation::landing($writer), '~').'"\s*id="nav-1-link">.*?Λίστα</a>~s', $html);
+        $this->assertMatchesRegularExpression('~<a class="nav-link dropdown-toggle dropdown-toggle-split[^"]*" href="#" role="button" data-bs-toggle="dropdown"\s*aria-expanded="false" id="nav-1" aria-label="Περισσότερες: Λίστα"~', $html);
+        $this->assertSame(1, substr_count($html, 'dropdown-toggle-split'), 'only Λίστα is split');
+    }
+
     public function test_inbox_link_needs_an_account_and_the_user_in_the_allowed_list(): void
     {
         $writer = $this->writer();
