@@ -59,6 +59,13 @@ asked for an option to find only 120, explained in the help text too.
     - the same word typed with a separate mark finds *Άδεια*.
 
     It failed before.
+- Codex (P2), second round:
+  - A word starting right after a separate accent mark counted as whole: `=δεια` found the end of *ά+δεια*.
+    Fixed: an accent mark is part of the word, never a word boundary.
+  - `σχετ:=120`, or the switch with *Σχετικοί αριθμοί* `120`, kept the old number rule, so *Α120* matched. Fixed:
+    with `=` (or the switch), no letter may touch the number either.
+  - Test `SearchTest::test_whole_words_and_numbers`: `=δεια` finds nothing; `σχετ:=120` finds *120*, not *Α120*;
+    without `=`, both are found as before. It failed before.
 
 ## Owner actions
 None. To try it: step 42 in [OWNER-TODO.md](../../OWNER-TODO.md).
