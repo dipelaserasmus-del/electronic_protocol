@@ -37,6 +37,16 @@ class ProtocolForm extends Component
         'in_arxi_ekdosis', 'in_paraliptis', 'in_perilipsi', 'diekp_eos', 'diekp_date', 'sxetiko', 'out_to', 'out_date',
         'out_perilipsi', 'keywords', 'paratiriseis', 'keep', 'reply_to_email'];
 
+    /** R1k: the fields' names, for the list of unsaved changes */
+    public const LABELS = ['etos' => 'Έτος', 'protocolnum' => 'Αριθμός πρωτοκόλλου', 'protocoldate' => 'Ημερομηνία παραλαβής',
+        'fakelos' => 'Φάκελος', 'thema' => 'Θέμα', 'in_num' => 'Αριθμός εισερχομένου', 'in_date' => 'Ημ/νία εισερχομένου',
+        'in_topos_ekdosis' => 'Τόπος έκδοσης', 'in_arxi_ekdosis' => 'Αρχή έκδοσης', 'in_paraliptis' => 'Παραλήπτης',
+        'in_perilipsi' => 'Περίληψη εισερχομένου', 'diekp_eos' => 'Διεκπεραίωση έως', 'diekp_date' => 'Διεκπεραιώθηκε την',
+        'sxetiko' => 'Σχετικοί αριθμοί', 'out_to' => 'Απευθύνεται σε', 'out_date' => 'Ημ/νία εξερχομένου',
+        'out_perilipsi' => 'Περίληψη εξερχομένου', 'keywords' => 'Λέξεις κλειδιά', 'paratiriseis' => 'Παρατηρήσεις',
+        'keep' => 'Διατήρηση', 'reply_to_email' => 'Αποστολή απόδειξης στο email', 'handle' => 'Διεκπεραίωση',
+        'inform' => 'Ενημέρωση', 'uploads' => 'Νέα συνημμένα', 'ada' => 'ΑΔΑ', 'noStamp' => 'Χωρίς σφραγίδα'];
+
     /** Locked: the browser can't point the form at another protocol (it would show it without the access check) */
     #[Locked]
     public ?int $protocolId = null;
@@ -174,8 +184,10 @@ class ProtocolForm extends Component
         return \App\Support\TagList::for($this->tagField($field), (int) ($this->form['etos'] ?: $this->activeYear()));
     }
 
-    public function save(ProtocolWriter $writer)
+    /** @param ?string $then R1k: after the save, go there (a page of this application) instead of the protocol */
+    public function save(?string $then = null)
     {
+        $writer = app(ProtocolWriter::class);   // not injected: Livewire would fill it with the browser's argument
         $input = $this->form + [
             'diekperaiosi' => array_merge(array_map(fn ($id) => "d$id", $this->handle), array_map(fn ($id) => "e$id", $this->inform)),
             'replace_placeholder' => $this->replacePlaceholder,
@@ -199,7 +211,7 @@ class ProtocolForm extends Component
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
             return null;
         }
-        return $this->done($result, $this->protocolId ? 'Οι αλλαγές αποθηκεύτηκαν.' : "Καταχωρίστηκε με αριθμό {$result->protocol->protocolnum}/{$result->protocol->etos}.");
+        return $this->done($result, $this->protocolId ? 'Οι αλλαγές αποθηκεύτηκαν.' : "Καταχωρίστηκε με αριθμό {$result->protocol->protocolnum}/{$result->protocol->etos}.", $then);
     }
 
     public function sendReceipt(ProtocolWriter $writer): void
@@ -292,7 +304,7 @@ class ProtocolForm extends Component
         return $this->redirect(url('/home/list'));
     }
 
-    private function done(SaveResult $result, string $headline)
+    private function done(SaveResult $result, string $headline, ?string $then = null)
     {
         $lines = '';
         foreach ($result->messages as $line) {
@@ -305,7 +317,17 @@ class ProtocolForm extends Component
             'message' => e($headline) . ($lines ? "<ul>$lines</ul>" : ''),
             'alert-type' => $result->warnings ? 'warning' : 'success',
         ]);
-        return $this->redirect(url("/home/{$result->protocol->id}"));
+        return $this->redirect(self::sameSite($then) ?? url("/home/{$result->protocol->id}"));
+    }
+
+    /**
+     * R1k: a path of this application ("/home/list?x=1"), or null. Only a path is accepted, never a whole address,
+     * so a save can never lead to another site.
+     */
+    public static function sameSite(?string $path): ?string
+    {
+        $path = trim((string) $path);
+        return preg_match('~^/(?![/\\\\])[^\s\\\\]*$~', $path) ? $path : null;
     }
 
     /**

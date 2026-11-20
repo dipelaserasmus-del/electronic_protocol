@@ -442,3 +442,180 @@ test('one Αποθήκευση always at the bottom right; copy and receipt at t
   await Promise.all([page.waitForURL((u) => u.pathname === all), bar.getByRole('link', { name: 'Λίστα', exact: true }).click()]);
   await expect(page.locator('.protocol-row').first()).toBeVisible();
 });
+
+test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists them, saves or drops them (R1k)', async ({ page }) => {
+  const subject = `R1k αλλαγές ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+  const url = page.url();
+  const dot = page.locator('#form-save .unsaved-dot');
+  const dialog = page.locator('#unsaved-dialog');
+  const bar = page.locator('nav.app-topbar');
+  await expect(dot).toBeHidden();
+
+  // no changes: links leave without a question
+  await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
+  await page.goto(url);
+
+  // review of R1k: a field sent only when it is left (Παρατηρήσεις): while still in it, the dot and the browser's question
+  await page.locator('#f-paratiriseis').fill('ακόμη μέσα στο πεδίο');
+  await expect(dot).toBeVisible();
+  await expect(page.locator('#f-paratiriseis')).toBeFocused();
+  let askedInField = false;
+  page.once('dialog', async (d) => { askedInField = d.type() === 'beforeunload'; await d.dismiss(); });
+  await page.reload({ timeout: 3000 }).catch(() => {});   // the question cancels the reload
+  await expect.poll(() => askedInField).toBe(true);
+  await page.goto(url);
+
+  // a change: the dot; undoing it: no dot
+  await page.locator('#f-thema').fill(`${subject} διορθωμένο`);
+  await expect(dot).toBeVisible();
+  await page.locator('#f-thema').fill(subject);
+  await expect(dot).toBeHidden();
+  await page.locator('#f-thema').fill(`${subject} διορθωμένο`);
+  await page.locator('#f-paratiriseis').fill('Σημείωση R1k');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 100000));
+  await evidence(page, 'r1k-dot', { clip: { x: 1100, y: 740, width: 340, height: 160 } });
+
+  // leaving: the question with what changed; Ακύρωση stays
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('tbody tr')).toHaveCount(2);
+  await expect(dialog.locator('tbody tr', { hasText: 'Θέμα' })).toContainText(`${subject} διορθωμένο`);
+  await expect(dialog.locator('tbody tr', { hasText: 'Παρατηρήσεις' })).toContainText('Σημείωση R1k');
+  await evidence(page, 'r1k-dialog');
+  await dialog.locator('#unsaved-stay').click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(url);
+
+  // Χωρίς αποθήκευση: goes, nothing saved
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await Promise.all([page.waitForURL(/\/home$/), dialog.locator('#unsaved-discard').click()]);
+  await page.goto(url);
+  await expect(page.locator('#f-thema')).toHaveValue(subject);
+
+  // Αποθήκευση: saved, then on to where the user was going
+  await page.locator('#f-thema').fill(`${subject} τελικό`);
+  await bar.getByRole('link', { name: 'Λίστα', exact: true }).click();
+  const home = new URL(await bar.locator('.app-brand').getAttribute('href')).pathname;
+  await Promise.all([page.waitForURL((u) => u.pathname === home), dialog.locator('#unsaved-save').click()]);
+  await expect(page.locator('main > .alert')).toContainText('Οι αλλαγές αποθηκεύτηκαν');
+  await page.goto(url);
+  await expect(page.locator('#f-thema')).toHaveValue(`${subject} τελικό`);
+  await expect(dot).toBeHidden();
+
+  // a save with the button: no question afterwards
+  await page.locator('#f-thema').fill(subject);
+  await page.locator('#form-save').click();
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await expect(dot).toBeHidden();
+  await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
+
+  // review of R1k: a keyword typed but not added yet is a change too
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('εκκρεμής λέξη');
+  await expect(dot).toBeVisible();
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('εκκρεμής λέξη');
+  await dialog.locator('#unsaved-stay').click();
+  // leaving the box added it as a tag (as always): still a change, still the dot
+  await expect(page.locator('[data-tag="εκκρεμής λέξη"]')).toHaveCount(1);
+  await expect(dot).toBeVisible();
+
+  // review of R1k: a tag changed in place, its editor still open
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('παλιά λέξη');
+  await page.locator('#f-keywords').press('Enter');
+  await expect(page.locator('[data-tag="παλιά λέξη"]')).toHaveCount(1);
+  await page.locator('#form-save').click();
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await expect(dot).toBeHidden();
+  await page.locator('[data-tag="παλιά λέξη"]').first().click();
+  const editor = page.locator('input.tag-edit:visible');
+  await editor.fill('αλλαγμένη λέξη');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('αλλαγμένη λέξη');
+  await dialog.locator('#unsaved-stay').click();
+
+  // review of R1k: a keyword added and another one typed: one row for the field, both shown
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('πρώτη');
+  await page.locator('#f-keywords').press('Enter');
+  await expect(page.locator('[data-tag="πρώτη"]')).toHaveCount(1);
+  await page.locator('#f-keywords').fill('δεύτερη');
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  const keywordsRow = dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' });
+  await expect(keywordsRow).toHaveCount(1);
+  await expect(keywordsRow).toContainText('πρώτη');
+  await expect(keywordsRow).toContainText('δεύτερη (νέο)');
+  await dialog.locator('#unsaved-stay').click();
+
+  // review of R1k: a file still uploading is a change
+  await page.goto(url);
+  await page.route('**/upload-file**', () => new Promise(() => {}));   // the upload never finishes here
+  await page.setInputFiles('#f-uploads', { name: 'R1k-ανεβαίνει.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') });
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Νέα συνημμένα' })).toContainText('ανεβαίνει');
+  await dialog.locator('#unsaved-stay').click();
+  await page.unroute('**/upload-file**');
+
+  // review of R1k: a tag cleared in its editor, while the deletion is on its way, is a change too
+  await page.goto(url);
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"editTag"')) return;   // never answered here
+    await route.continue();
+  });
+  await page.locator('[data-tag="παλιά λέξη"]').first().click();
+  await page.locator('input.tag-edit:visible').fill('');
+  await page.locator('input.tag-edit:visible').press('Enter');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('(διαγραφή)');
+  await dialog.locator('#unsaved-stay').click();
+  await page.unroute('**/update');
+
+  // review of R1k: the ✕ of a tag, while its removal is on its way
+  await page.goto(url);
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"removeTag"')) return;   // never answered here
+    await route.continue();
+  });
+  await page.locator('[data-tag="παλιά λέξη"]').first().locator('.btn-close').click();
+  await expect(dot).toBeVisible();
+  await page.unroute('**/update');
+
+  // closing or reloading the tab with changes: the browser's own question
+  await page.goto(url);
+  await page.locator('#f-thema').fill(`${subject} ξανά`);
+  let asked = false;
+  page.once('dialog', async (d) => { asked = d.type() === 'beforeunload'; await d.dismiss(); });
+  await page.reload({ timeout: 3000 }).catch(() => {});   // the question cancels the reload
+  await expect.poll(() => asked).toBe(true);
+});
+
+test('review of R1k: who may only assign (no Αποθήκευση) leaves with links as before, never stuck', async ({ page }) => {
+  const subject = `R1k μόνο ανάθεση ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+  const url = page.url();
+  const previous = await setSetting(page, 'allowWriterUpdateProtocol', 0);
+  try {
+    await page.context().clearCookies();   // log out
+    await login(page, 'anathetis');
+    await page.goto(url);
+    await expect(page.locator('#form-save')).toHaveCount(0);   // may assign (Ανάθεση), not save the protocol
+    await page.locator('#f-handle').selectOption({ label: 'Συγγραφέας Δοκιμών' });
+    await Promise.all([page.waitForURL(/\/home$/), page.locator('nav.app-topbar').getByRole('link', { name: 'Νέο', exact: true }).click()]);
+  } finally {
+    await page.context().clearCookies();
+    await login(page, 'admin');
+    await setSetting(page, 'allowWriterUpdateProtocol', previous);
+  }
+});

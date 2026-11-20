@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 11:20 (after Batch 9, Batch 9.5, D07 and D08; times are Greek time)
+## Current state — 2026-11-20 20:40 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f and R1k; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -61,6 +61,11 @@ Read this first when (re)starting work. Update it at the end of every task.
   (`ProtocolSearch::wholeOf` / `contains`: the LIKE as before AND `REGEXP_LIKE(col, wordPattern, 'i')`; the pattern
   folds Greek accents and σ/ς itself, since ICU regexps don't; boundaries = no letter/digit before/after). The /find
   switch `whole` (URL `whole=1`) puts `=` before every value. Highlight ignores the `=`. Help: search/help.blade.php.
+- **R1k (Batch 9.5, owner's note 2026-11-20):** `resources/modern/unsaved.js` (Alpine `unsavedChanges`, the form's
+  x-data): snapshot of `$wire` form/handle/inform/uploads/ΑΔΑ/noStamp at load (a save reloads the page), `changes()`
+  → [label, before, now] (labels `ProtocolForm::LABELS`), red dot `#form-save .unsaved-dot`. Same-site link clicks
+  with changes → `#unsaved-dialog` (Ακύρωση / Χωρίς αποθήκευση / Αποθήκευση = `$wire.save(path)`; `save(?string $then)`
+  redirects there if `ProtocolForm::sameSite` accepts the path). Closing / reloading the tab: the browser's question.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

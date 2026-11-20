@@ -111,6 +111,7 @@ tasks = [
   { id = "R3e", title = "Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px", phase = "R", batch = 9.5, size = "S", deps = ["R1j", "R3d"], status = "done", pr = 79 },
   { id = "R2i", title = "List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all", phase = "R", batch = 9.5, size = "S", deps = ["R2h", "R3e"], status = "done", pr = 80 },
   { id = "R3f", title = "Search: whole words or numbers («=» before a value, εισ:=120, «Ολόκληρες λέξεις» switch), in the help too", phase = "R", batch = 9.5, size = "S", deps = ["R3a", "R3b"], status = "done", pr = 81 },
+  { id = "R1k", title = "Protocol page: a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed", phase = "R", batch = 9.5, size = "S", deps = ["R1j"], status = "done", pr = 82 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

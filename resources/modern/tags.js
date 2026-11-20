@@ -83,11 +83,21 @@ function tagBox(field, withSuggestions = false, extra = []) {   // extra: more a
             input.value = ''; this.close();
             if (this.list.length) value = value.split(/[,;]/).map(p => this.canonical(p)).filter(Boolean).join(', ');
             if (index === null) {
-                if (value) this.$wire.addTag(field, value, ...extra);
+                if (value) this.pending(this.$wire.addTag(field, value, ...extra), value);
             } else {
                 this.editing = null;
-                if (value !== this.current()[index]) this.$wire.editTag(field, index, value, ...extra);
+                if (value !== this.current()[index]) this.pending(this.$wire.editTag(field, index, value, ...extra), value);
             }
+        },
+        // review of R1k: a tag on its way to the server is a change not saved yet (data-pending, event "tag-pending")
+        pending(request, value) {
+            const root = this.$root;
+            root.dataset.pending = value;
+            root.dispatchEvent(new CustomEvent('tag-pending', { bubbles: true }));
+            Promise.resolve(request).finally(() => {
+                delete root.dataset.pending;
+                root.dispatchEvent(new CustomEvent('tag-pending', { bubbles: true }));
+            });
         },
         pick(text) {
             const input = this.target;
@@ -115,7 +125,7 @@ function tagBox(field, withSuggestions = false, extra = []) {   // extra: more a
                 else if (index !== null) { e.preventDefault(); this.editing = null; }
             } else if (e.key === 'Backspace' && index === null && input.value === '') {
                 const n = this.current().length;
-                if (n) { e.preventDefault(); this.$wire.removeTag(field, n - 1, ...extra); }
+                if (n) { e.preventDefault(); this.pending(this.$wire.removeTag(field, n - 1, ...extra), ''); }
             }
         },
         typed(e, index = null) {

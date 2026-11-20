@@ -12,7 +12,9 @@
         || collect($sectionFields[$id] ?? [])->contains(fn ($f) => $errors->has($f) || $errors->has($f.'.*'));
 @endphp
 {{-- progress: upload in progress (0–100) or null; the save buttons wait for it (review of R1c) --}}
-<form wire:submit="save" class="protocol-form" id="protocol-form" novalidate x-data="{ progress: null }"
+{{-- R1k: unsavedChanges (resources/modern/unsaved.js): red dot on Αποθήκευση, question before leaving --}}
+<form wire:submit="save" class="protocol-form" id="protocol-form" novalidate
+      x-data="unsavedChanges({ labels: @js(\App\Livewire\ProtocolForm::LABELS), users: @js($users->pluck('name', 'id')), enabled: @js($access->canSave) })"
       x-on:submit.capture="if (progress !== null) { $event.preventDefault(); $event.stopImmediatePropagation() }">
     <div class="card shadow-sm mb-3 border-{{ $tone }}">
         <div class="card-header bg-{{ $tone }}-subtle d-flex flex-wrap align-items-center gap-3">
@@ -209,7 +211,7 @@
                                                 <a href="{{ url('/home/'.$r['protocol']->id) }}" target="_blank" class="tag-open text-reset text-decoration-none"
                                                    aria-label="Άνοιγμα του {{ $r['text'] }} σε νέα καρτέλα">↗</a>
                                             @endif
-                                            <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('sxetiko', {{ $i }})"
+                                            <button type="button" class="btn-close" style="font-size: .55em" x-on:click="pending($wire.removeTag('sxetiko', {{ $i }}), '')"
                                                     aria-label="Αφαίρεση {{ $r['text'] }}"></button>
                                         </span>
                                         <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $r['text'] }}"
@@ -234,7 +236,7 @@
                                               wire:key="kw-{{ $i }}-{{ $k }}" data-tag="{{ $k }}">
                                             <span class="d-inline-flex align-items-center gap-1" x-show="editing !== {{ $i }}">
                                                 <button type="button" class="tag-text" x-on:click="edit({{ $i }})" aria-label="Αλλαγή {{ $k }}">{{ $k }}</button>
-                                                <button type="button" class="btn-close" style="font-size: .55em" wire:click="removeTag('keywords', {{ $i }})"
+                                                <button type="button" class="btn-close" style="font-size: .55em" x-on:click="pending($wire.removeTag('keywords', {{ $i }}), '')"
                                                         aria-label="Αφαίρεση {{ $k }}"></button>
                                             </span>
                                             <input class="tag-edit" data-edit="{{ $i }}" x-show="editing === {{ $i }}" x-cloak autocomplete="off" aria-label="Αλλαγή {{ $k }}"
@@ -513,10 +515,45 @@
     {{-- R1j (owner, 2026-11-20): one Αποθήκευση, always visible at the bottom right of the screen --}}
     @if ($access->canSave)
         <div class="form-save-float">
-            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow" id="form-save"
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow position-relative" id="form-save"
                     wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">
                 <span wire:loading.remove wire:target="save"><i class="bi bi-floppy me-2" aria-hidden="true"></i></span><span
-                      wire:loading wire:target="save" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Αποθήκευση</button>
+                      wire:loading wire:target="save" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Αποθήκευση
+                {{-- R1k (owner, 2026-11-20): changes not saved yet --}}
+                <span class="unsaved-dot position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-2 border-light rounded-circle"
+                      x-show="dirty" x-cloak title="Υπάρχουν αλλαγές που δεν έχουν αποθηκευτεί">
+                    <span class="visually-hidden">Υπάρχουν αλλαγές που δεν έχουν αποθηκευτεί</span></span></button>
+        </div>
+
+        {{-- R1k: leaving the page with changes not saved --}}
+        <div class="modal fade" id="unsaved-dialog" tabindex="-1" aria-labelledby="unsaved-title" aria-hidden="true" wire:ignore.self>
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="unsaved-title">Οι αλλαγές δεν έχουν αποθηκευτεί</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">Να αποθηκευτούν πριν φύγετε από τη σελίδα; Άλλαξαν από την τελευταία αποθήκευση:</p>
+                        <table class="table table-sm align-top mb-0 unsaved-changes">
+                            <thead><tr><th scope="col">Πεδίο</th><th scope="col">Πριν</th><th scope="col">Τώρα</th></tr></thead>
+                            <tbody>
+                                <template x-for="([label, before, now], n) in changes()" :key="n + label">
+                                    <tr><th scope="row" class="fw-semibold" x-text="label"></th>
+                                        <td class="text-body-secondary text-break" x-text="before"></td>
+                                        <td class="text-break" x-text="now"></td></tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal" id="unsaved-stay">Ακύρωση</button>
+                        <button type="button" class="btn btn-outline-danger rounded-pill" x-on:click="discardAndGo()" id="unsaved-discard">Χωρίς αποθήκευση</button>
+                        <button type="button" class="btn btn-primary rounded-pill" x-on:click="saveAndGo()" id="unsaved-save"
+                                x-bind:disabled="progress !== null"><i class="bi bi-floppy me-2" aria-hidden="true"></i>Αποθήκευση</button>
+                    </div>
+                </div>
+            </div>
         </div>
     @endif
 </form>
