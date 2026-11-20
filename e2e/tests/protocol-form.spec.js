@@ -569,6 +569,16 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await dialog.locator('#unsaved-stay').click();
   await page.unroute('**/update');
 
+  // review of R1k: the ✕ of a tag, while its removal is on its way
+  await page.goto(url);
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"removeTag"')) return;   // never answered here
+    await route.continue();
+  });
+  await page.locator('[data-tag="παλιά λέξη"]').first().locator('.btn-close').click();
+  await expect(dot).toBeVisible();
+  await page.unroute('**/update');
+
   // closing or reloading the tab with changes: the browser's own question
   await page.goto(url);
   await page.locator('#f-thema').fill(`${subject} ξανά`);
