@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Tasks done | **69 / 80** `██████████████████████████░░░░` 86% |
-| Effort done (PERT) | **32.2 / 37.1 h** `██████████████████████████░░░░` 87% |
-| Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **70 / 80** `██████████████████████████░░░░` 88% |
+| Effort done (PERT) | **32.5 / 37.1 h** `██████████████████████████░░░░` 88% |
+| Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
-| In progress | R2j |
+| In progress | — |
 | Next task | **A01** — Integrity-check engine + page |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k 🔄R2j | 12/13 | `█████████░` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j | 13/13 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -252,8 +252,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e,R2i,R3f,R1k done
-  class R2j inprogress
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e,R2i,R3f,R1k,R2j done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -350,7 +349,7 @@ gantt
   R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :done, r2i, 2026-11-13 15:57, 19m
   R3f Search  whole words or numbers («=» before a value, εισ =120, «Ολόκληρες λέξεις» switch), in the help too :done, r3f, 2026-11-13 16:16, 19m
   R1k Protocol page  a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed :done, r1k, 2026-11-13 16:35, 19m
-  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :active, r2j, 2026-11-13 16:54, 19m
+  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :done, r2j, 2026-11-13 16:54, 19m
   section Batch 10
   A01 Integrity-check engine + page :a01, 2026-11-13 17:13, 33m
   A03 Rule  dates going backwards :a03, 2026-11-13 17:46, 19m
@@ -439,7 +438,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2i** 🔴 | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 6.2 | 6.6 | 0.0 | #80 |
 | ✅ | **R3f** | Search: whole words or numbers («=» before a value, εισ:=120, «Ολόκληρες λέξεις» switch), in the help too | R3a, R3b | 0.3 | 0.1 | 4.7 | 5.0 | 6.6 | 6.9 | 1.9 | #81 |
 | ✅ | **R1k** | Protocol page: a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed | R1j | 0.3 | 0.1 | 5.9 | 6.2 | 6.6 | 6.9 | 0.7 | #82 |
-| 🔄 | **R2j** 🔴 | List: assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) | R2i | 0.3 | 0.1 | 6.6 | 6.9 | 6.6 | 6.9 | 0.0 |  |
+| ✅ | **R2j** 🔴 | List: assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) | R2i | 0.3 | 0.1 | 6.6 | 6.9 | 6.6 | 6.9 | 0.0 | #83 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.8 | 6.3 | 1.6 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.6 | 6.9 | 1.9 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.6 | 6.9 | 1.9 |  |
