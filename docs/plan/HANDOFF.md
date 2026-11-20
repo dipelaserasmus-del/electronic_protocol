@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 14:20 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f and R5g; times are Greek time)
+## Current state — 2026-11-20 15:10 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g and R3g; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -74,6 +74,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   LengthAwarePaginator built in render(); EmailInbox has `previousPage` / `nextPage` / `gotoPage(n, name)` (renamed from
   goToPage: Livewire matches method names exactly; past the last page → the last). The sidebar has
   `.inbox-sidebar-pager` (‹ Σελίδα N από M ›).
+- **R3g (Batch 9.5, owner's note 2026-11-20):** the top bar is Νέο · Λίστα · Εισερχόμενα; `Navigation::manage($user)` =
+  group title => links (Εκτύπωση, Φάκελοι, Διαχειριστής), drawn in the user menu (`.user-menu`, two columns from
+  768px: `.user-menu-manage` | `.user-menu-own` Προτιμήσεις; Περί… / Έξοδος below).
+- **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
+  e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the
+  user types that number over it.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

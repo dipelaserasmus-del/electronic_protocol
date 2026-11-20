@@ -141,6 +141,9 @@ Open *Εισερχόμενα*.
 - [ ] **46.** *Εισερχόμενα* with more e-mails than *Email ανά σελίδα*: the same pager as *Λίστα* above the e-mails
   (and below the last one), with *Σελίδα [ ▾ ] από …*; the list on the left says *Σελίδα 1 από 4 · 1–5 από 16* with
   ‹ › to the other pages.
+- [ ] **47.** The top bar has *Νέο*, *Λίστα*, *Εισερχόμενα*; *Διαχείριση* is now in the menu under your name (top
+  right): on the left *Διαχείριση* (*Εκτύπωση*, *Φάκελοι*, and for administrators *Διαχειριστής*: Χρήστες, Ρυθμίσεις,
+  Backup, Εκκαθάριση, Κάδος), on the right your *Προτιμήσεις* (page width, home page); *Περί…* and *Έξοδος* below.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
@@ -200,6 +203,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the
+  attachment has no protocol number of the sender; when it has one, type that number over it (2026-11-20).
 - Your folder list (2026-11-19) is the folders glossary: [docs/FOLDERS.md](docs/FOLDERS.md), from
   `database/data/folders.json`, public in the repository. Heading and text stay together in one description; Φ.13 is
   kept with «(Καταργήθηκε)»; Φ.43 is merged into Φ.46 (protocols and files move), now and in the move to the new
