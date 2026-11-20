@@ -112,7 +112,7 @@ tasks = [
   { id = "R3f", title = "Search: whole words or numbers («=» before a value, εισ:=120, «Ολόκληρες λέξεις» switch), in the help too", phase = "R", batch = 9.5, size = "S", deps = ["R3a", "R3b"], status = "done", pr = 81 },
   { id = "R1k", title = "Protocol page: a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed", phase = "R", batch = 9.5, size = "S", deps = ["R1j"], status = "done", pr = 82 },
   { id = "R2j", title = "List: assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results)", phase = "R", batch = 9.5, size = "S", deps = ["R2i"], status = "done", pr = 83 },
-  { id = "R5f", title = "Top bar: a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute", phase = "R", batch = 9.5, size = "S", deps = ["R5c", "R3e"], status = "in-progress" },
+  { id = "R5f", title = "Top bar: a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute", phase = "R", batch = 9.5, size = "S", deps = ["R5c", "R3e"], status = "done", pr = 84 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
