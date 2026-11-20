@@ -21,6 +21,9 @@ final class InboxCount
 
     public const SECONDS = 60;
 
+    /** Seconds a request waits for another one counting at the same time (review of R5f); a property for the tests */
+    public static int $lockWait = 10;
+
     public function __construct(private MailboxConnector $connector) {}
 
     /** The messages since this time are the inbox (also the inbox page's list) */
@@ -36,6 +39,16 @@ final class InboxCount
         if ($known !== null) {
             return $known;
         }
+        // review of R5f: one request asks the server; the others wait for it and take its count
+        try {
+            return Cache::lock(self::KEY.':lock', self::$lockWait * 2)->block(self::$lockWait, fn () => self::cached() ?? $this->ask());
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+            return self::cached();   // still counting elsewhere: what is known (the badge keeps what it shows)
+        }
+    }
+
+    private function ask(): ?int
+    {
         try {
             $mailbox = $this->connector->open((string) Config::getConfigValueOf('defaultImapEmail'), (string) config('imapFolders.inbox'));
             $count = count($mailbox->uidsSince(self::since()));

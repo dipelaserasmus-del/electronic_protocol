@@ -556,4 +556,27 @@ class InboxTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~data-addresses="cc"\s*>\s*Τμήμα Δοκιμής &lt;dept@example.test&gt;, Γραφείο Δοκιμής &lt;office@example.test&gt;\s*</dd>~', $html, 'two: in full');
         $this->assertMatchesRegularExpression('~data-addresses="to"\s*>\s*Γραμματεία Σχολείου &lt;protocol@school.test&gt;\s*</dd>~', $html, 'one: in full');
     }
+
+    /** Review of R5f: while one request counts (holds the lock), the others do not ask the mail server too. */
+    public function test_the_badge_count_is_asked_once_at_a_time(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        \App\Services\Mail\InboxCount::$lockWait = 1;
+        $lock = \Illuminate\Support\Facades\Cache::lock(\App\Services\Mail\InboxCount::KEY.':lock', 10);
+        $this->assertTrue($lock->get(), 'another request is counting');
+        try {
+            $this->actingAs($this->writer())->getJson('/inbox/count')->assertOk()->assertExactJson(['count' => null]);
+            $this->assertSame(0, $this->mailbox->searches, 'it waited, then did not ask the server itself');
+
+            \App\Services\Mail\InboxCount::put(8);   // the other request finished
+            $this->actingAs($this->writer())->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+            $this->assertSame(0, $this->mailbox->searches);
+        } finally {
+            $lock->release();
+            \App\Services\Mail\InboxCount::$lockWait = 10;
+        }
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        $this->actingAs($this->writer())->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+        $this->assertSame(1, $this->mailbox->searches, 'free: one request asks');
+    }
 }
