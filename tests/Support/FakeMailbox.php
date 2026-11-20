@@ -56,8 +56,12 @@ final class FakeMailbox implements Mailbox
         return $this->validity;
     }
 
+    /** how many times the folder was searched (R5f review: the badge's count) */
+    public int $searches = 0;
+
     public function uidsSince(\DateTimeInterface $since): array
     {
+        $this->searches++;
         $uids = array_keys($this->messages);
         sort($uids);
 
