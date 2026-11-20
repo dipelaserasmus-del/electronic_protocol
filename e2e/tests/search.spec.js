@@ -191,3 +191,20 @@ test('whole words: «Ολόκληρες λέξεις», «=» before a value, ε
   await expect(page.locator('#search-help')).toContainText('ολόκληρη λέξη ή αριθμός');
   await evidence(page, 'r3f-help', { fullPage: true });
 });
+
+test('review of R2k: search results show every file and assignee (only the list folds its rows)', async ({ page }) => {
+  const subject = `R2k αναζήτηση ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: subject, fakelos: 'first' });
+  await page.locator('#f-handle').selectOption([{ label: 'Συγγραφέας Δοκιμών' }, { label: 'Αναθέτων Δοκιμών' }]);
+  await page.setInputFiles('#f-uploads', [1, 2, 3].map((i) => ({ name: `R2k-εύρεση-${i}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') })));
+  await expect(page.locator('#protocol-form')).toContainText('R2k-εύρεση-3.pdf');
+  await saveProtocol(page);
+  await page.locator('#app-search-q').fill(subject);
+  await Promise.all([page.waitForURL(/\/search\?q=/), page.locator('#app-search-q').press('Enter')]);
+  const row = page.locator('.protocol-row', { hasText: subject });
+  await expect(row.locator('.assignee-pill:visible')).toHaveCount(2);
+  await expect(row.locator('.assignee-more')).toBeHidden();
+  await expect(row).toContainText('R2k-εύρεση-3.pdf', { useInnerText: true });
+});
