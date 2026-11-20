@@ -515,6 +515,22 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await expect(page.locator('[data-tag="εκκρεμής λέξη"]')).toHaveCount(1);
   await expect(dot).toBeVisible();
 
+  // review of R1k: a tag changed in place, its editor still open
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('παλιά λέξη');
+  await page.locator('#f-keywords').press('Enter');
+  await expect(page.locator('[data-tag="παλιά λέξη"]')).toHaveCount(1);
+  await page.locator('#form-save').click();
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await expect(dot).toBeHidden();
+  await page.locator('[data-tag="παλιά λέξη"]').first().click();
+  const editor = page.locator('input.tag-edit:visible');
+  await editor.fill('αλλαγμένη λέξη');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('αλλαγμένη λέξη');
+  await dialog.locator('#unsaved-stay').click();
+
   // closing or reloading the tab with changes: the browser's own question
   await page.goto(url);
   await page.locator('#f-thema').fill(`${subject} ξανά`);
