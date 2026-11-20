@@ -244,8 +244,8 @@ class ProtocolListTest extends FeatureTestCase
         $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
         $row = substr($s = substr($html, strpos($html, 'data-id="'.$p->id.'"')), 0, strpos($s, '</tr>'));
 
-        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-handle" title="Διεκπεραίωση: Μαρία Χ7" data-type="d">\s*<i class="bi bi-pencil-square[^>]*></i><span class="visually-hidden">Διεκπεραίωση: </span>Μαρία Χ7</span>~', $row);
-        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-inform" title="Ενημέρωση: Ελένη Χ7" data-type="e">\s*<i class="bi bi-eye[^>]*></i>~', $row);
+        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-handle position-relative z-2" title="Διεκπεραίωση: Μαρία Χ7" data-type="d">\s*<i class="bi bi-pencil-square[^>]*></i><span class="visually-hidden">Διεκπεραίωση: </span>Μαρία Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-inform position-relative z-2" title="Ενημέρωση: Ελένη Χ7" data-type="e">\s*<i class="bi bi-eye[^>]*></i>~', $row);
         $this->assertStringNotContainsString('ενημ.:', $row);
 
         $lists = collect(\App\Support\Navigation::for($this->admin()))->firstWhere('label', 'Λίστα')['children'];
