@@ -9,13 +9,21 @@ use App\Models\User;
  * stored in users.preferences. Only known keys with allowed values are kept; anything else is refused.
  * - width: 'full' (the whole window, default) or 'narrow' (about half of a wide screen, centred, as older apps)
  * - form (R1i): the protocol page's sections: one or two columns, where each section is, which are collapsed
+ * - home (R3e): the user's home page: 'all', 'd' (προς Διεκπεραίωση) or 'e' (προς Ενημέρωση); none = the role's
  */
 final class UserPreferences
 {
     public const DEFAULTS = ['width' => 'full'];
 
     /** allowed values per key */
-    public const VALUES = ['width' => ['full', 'narrow']];
+    public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e']];
+
+    /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */
+    public const HOMES = [
+        'all' => ['Όλα τα πρωτόκολλα', 'collection', Home::LIST],
+        'd' => ['προς Διεκπεραίωση', 'hourglass-split', '/home/list/d'],
+        'e' => ['προς Ενημέρωση', 'bell', '/home/list/e'],
+    ];
 
     public static function get(?User $user, string $key): mixed
     {

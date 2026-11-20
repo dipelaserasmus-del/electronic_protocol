@@ -56,10 +56,17 @@ class RouteAccessTest extends FeatureTestCase
         }
     }
 
-    /** Was RedirectIfAuthenticated + RouteServiceProvider::HOME; now redirectUsersTo() in bootstrap/app.php. */
-    public function test_logged_in_user_opening_login_lands_on_the_protocol_list(): void
+    /**
+     * Was RedirectIfAuthenticated + RouteServiceProvider::HOME; now redirectUsersTo() in bootstrap/app.php.
+     * R3e (owner, 2026-11-20): on their home page: their choice, or their role's (config/landing-page.php).
+     */
+    public function test_logged_in_user_opening_login_lands_on_their_home_page(): void
     {
-        $this->actingAs($this->writer())->get('/login')->assertRedirect('/home/list');
+        $this->actingAs($this->admin())->get('/login')->assertRedirect('/home/list');
+        $writer = $this->writer();
+        $this->actingAs($writer)->get('/login')->assertRedirect(config('landing-page.page.3'));
+        \App\Support\UserPreferences::set($writer, 'home', 'e');
+        $this->actingAs($writer->fresh())->get('/login')->assertRedirect('/home/list/e');
     }
 
     /** "METHOD uri" => sorted, de-duplicated middleware of every route served by app controllers / closures. */

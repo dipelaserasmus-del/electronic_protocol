@@ -20,7 +20,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->redirectUsersTo(Home::LIST);   // logged-in user opens /login → protocol list
+        // logged-in user opens /login → their home page (R3e: their choice, or the role's)
+        $middleware->redirectUsersTo(fn () => auth()->user() ? \App\Support\Navigation::landing(auth()->user()) : Home::LIST);
         $middleware->web(append: [EnsureActiveUser::class, TouchUserActivity::class, PurgeTrashDaily::class]);   // R6a: EnsureActiveUser
         $middleware->alias([
             'admin' => MustBeAdmin::class,

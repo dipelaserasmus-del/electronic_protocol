@@ -56,7 +56,7 @@ class ModernLayoutTest extends FeatureTestCase
         $this->assertNotEmpty($item['children']);
 
         $html = $this->actingAs($writer)->get('/about')->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('~<a class="nav-link[^"]*" href="'.preg_quote(Navigation::landing($writer), '~').'"\s*id="nav-1-link">.*?Λίστα</a>~s', $html);
+        $this->assertMatchesRegularExpression('~<a class="nav-link[^"]*" href="'.preg_quote(Navigation::landing($writer), '~').'"\s*id="nav-1-link"\s*data-home-link\s*>.*?Λίστα</a>~s', $html);
         $this->assertMatchesRegularExpression('~<a class="nav-link dropdown-toggle dropdown-toggle-split[^"]*" href="#" role="button" data-bs-toggle="dropdown"\s*aria-expanded="false" id="nav-1" aria-label="Περισσότερες: Λίστα"~', $html);
         $this->assertSame(1, substr_count($html, 'dropdown-toggle-split'), 'only Λίστα is split');
     }
@@ -157,6 +157,34 @@ class ModernLayoutTest extends FeatureTestCase
             ->assertSee('id="app-search-advanced"', false)->assertSee('href="'.url('/find').'"', false)
             ->assertSee('bi bi-file-earmark-plus', false)->assertSee('bi bi-search', false)
             ->assertDontSee('>Αναζήτηση</a>', false);
+    }
+
+    /** R3e (owner, 2026-11-20): each user chooses their home page; the login, the brand and Λίστα lead there. */
+    public function test_each_user_chooses_their_home_page(): void
+    {
+        $this->assertSame('/home/list/d', config('landing-page.page.3'), 'writers start from προς Διεκπεραίωση by default');
+        [$a, $b] = [$this->writer(), $this->writer()];
+        $this->assertSame(url('/home/list/d'), Navigation::landing($a));
+        $this->actingAs($a)->get('/about')->assertOk()
+            ->assertSee('data-value="d" data-url="'.url('/preferences').'"', false)
+            ->assertSeeInOrder(['data-value="d"', 'aria-pressed="true"'], false)
+            ->assertSee('href="'.url('/home/list').'"><i class="bi bi-collection', false);   // Όλα τα πρωτόκολλα: all, always
+
+        foreach (['all' => '/home/list', 'e' => '/home/list/e', 'd' => '/home/list/d', 'all ' => null] as $value => $path) {
+            $value = trim($value);
+            $this->actingAs($a)->postJson('/preferences', ['key' => 'home', 'value' => $value])->assertOk();
+            $a->refresh();
+            $home = url($path ?? '/home/list');
+            $this->assertSame($home, Navigation::landing($a), $value);
+            $html = $this->actingAs($a)->get('/about')->assertOk()->getContent();
+            $this->assertMatchesRegularExpression('~class="navbar-brand app-brand" data-home-link href="'.preg_quote($home, '~').'"~', $html);
+            $this->assertMatchesRegularExpression('~href="'.preg_quote($home, '~').'"\s*id="nav-1-link"\s*data-home-link\s*>~', $html, 'Λίστα');
+            $this->assertMatchesRegularExpression('~data-value="'.$value.'"[^>]*aria-pressed="true"~', $html);
+            $this->actingAs($a)->withHeader('referer', url('/login'))->get('/chkForUpdates')->assertRedirect($home);   // after login
+            $this->actingAs($a)->get('/login')->assertRedirect($home);
+        }
+        $this->assertSame(url('/home/list/d'), Navigation::landing($b->fresh()), 'another user keeps the role\'s');
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'home', 'value' => '/admin'])->assertStatus(422);
     }
 
     /** R3d: page width, saved per user (owner, 2026-11-18) */

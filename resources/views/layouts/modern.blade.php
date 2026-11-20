@@ -26,12 +26,13 @@
     @livewireStyles
 </head>
 <body class="bg-body-tertiary @if ($narrow) layout-narrow @endif">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary app-topbar sticky-top shadow-sm"
+{{-- R3e (owner, 2026-11-20): the menu stays open from 768px up (it folded under 992px); see app.scss --}}
+<nav class="navbar navbar-expand-md navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
      aria-label="Κύριο μενού">
     <div class="container-fluid">
         {{-- R3d: the institution under the application's name (two short lines instead of one long one) --}}
-        <a class="navbar-brand app-brand" href="{{ $user ? \App\Support\Navigation::landing($user) : url('/') }}">
+        <a class="navbar-brand app-brand" data-home-link href="{{ $user ? \App\Support\Navigation::landing($user) : url('/') }}">
             <span class="d-block">{{ $brandName }}</span>
             @if ($institution)<small class="d-block brand-institution" title="{{ $institution }}">{{ $institution }}</small>@endif
         </a>
@@ -41,14 +42,14 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="app-nav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     @foreach (\App\Support\Navigation::for($user) as $i => $item)
                         @if (isset($item['children']))
                             <li class="nav-item dropdown @isset($item['url']) nav-split @endisset">
                                 @isset($item['url'])
                                     {{-- R1j: the label leads to the page, the ▾ opens the menu --}}
                                     <a class="nav-link pe-1 @if (url()->current() === $item['url']) active @endif" href="{{ $item['url'] }}"
-                                       @if (url()->current() === $item['url']) aria-current="page" @endif id="nav-{{ $i }}-link"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
+                                       @if (url()->current() === $item['url']) aria-current="page" @endif id="nav-{{ $i }}-link" @if ($item['home'] ?? false) data-home-link @endif><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
                                     <a class="nav-link dropdown-toggle dropdown-toggle-split ps-1" href="#" role="button" data-bs-toggle="dropdown"
                                        aria-expanded="false" id="nav-{{ $i }}" aria-label="Περισσότερες: {{ $item['label'] }}" title="Περισσότερες: {{ $item['label'] }}"></a>
                                 @else
@@ -85,13 +86,13 @@
                 </ul>
 
                 {{-- R3c: the search box, on every page --}}
-                <div class="me-lg-3 my-2 my-lg-0">@include('search.box')</div>
+                <div class="me-md-2 me-xl-3 my-2 my-md-0">@include('search.box')</div>
 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false" id="nav-user">
-                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span>
+                           aria-expanded="false" id="nav-user" title="{{ $user->name }} ({{ $user->role?->role }})" aria-label="{{ $user->name }} {{ $user->role?->role }}">
+                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i><span class="nav-user-name">{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-user">
                             {{-- R3d: page width, saved with the account (resources/modern/preferences.js) --}}
@@ -102,6 +103,15 @@
                             <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="narrow" data-url="{{ url('/preferences') }}"
                                         aria-pressed="{{ $narrow ? 'true' : 'false' }}"><i class="bi bi-arrows-angle-contract me-2" aria-hidden="true"></i>Στενό, στο κέντρο
                                     <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
+                            {{-- R3e (owner, 2026-11-20): the user's home page (login, the brand link, Λίστα) --}}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Αρχική σελίδα</h6></li>
+                            @php $home = \App\Support\Navigation::homeChoice($user); @endphp
+                            @foreach (\App\Support\UserPreferences::HOMES as $key => [$label, $icon, $path])
+                                <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="home" data-value="{{ $key }}" data-url="{{ url('/preferences') }}"
+                                            data-home="{{ url($path) }}" aria-pressed="{{ $home === $key ? 'true' : 'false' }}"><i class="bi bi-{{ $icon }} me-2" aria-hidden="true"></i>{{ $label }}
+                                        <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
+                            @endforeach
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url('/about') }}"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Περί…</a></li>
                             <li><hr class="dropdown-divider"></li>

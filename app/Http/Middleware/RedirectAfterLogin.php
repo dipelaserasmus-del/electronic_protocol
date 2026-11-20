@@ -21,9 +21,9 @@ class RedirectAfterLogin
         // μετά από login
         if (basename(request()->headers->get('referer')) == 'login') {
 
-            $landingPage = config('landing-page.page.' . auth()->user()->role_id);
-            
-            if($landingPage !== Home::LIST){
+            $landingPage = \App\Support\Navigation::landing(auth()->user());   // R3e: the user's home page
+
+            if ($landingPage !== url(Home::LIST)) {
                 return redirect($landingPage);
             }
         }
