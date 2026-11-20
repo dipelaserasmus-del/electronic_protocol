@@ -531,6 +531,29 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('αλλαγμένη λέξη');
   await dialog.locator('#unsaved-stay').click();
 
+  // review of R1k: a keyword added and another one typed: one row for the field, both shown
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('πρώτη');
+  await page.locator('#f-keywords').press('Enter');
+  await expect(page.locator('[data-tag="πρώτη"]')).toHaveCount(1);
+  await page.locator('#f-keywords').fill('δεύτερη');
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  const keywordsRow = dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' });
+  await expect(keywordsRow).toHaveCount(1);
+  await expect(keywordsRow).toContainText('πρώτη');
+  await expect(keywordsRow).toContainText('δεύτερη (νέο)');
+  await dialog.locator('#unsaved-stay').click();
+
+  // review of R1k: a file still uploading is a change
+  await page.goto(url);
+  await page.route('**/upload-file**', () => new Promise(() => {}));   // the upload never finishes here
+  await page.setInputFiles('#f-uploads', { name: 'R1k-ανεβαίνει.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') });
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Νέα συνημμένα' })).toContainText('ανεβαίνει');
+  await dialog.locator('#unsaved-stay').click();
+  await page.unroute('**/upload-file**');
+
   // closing or reloading the tab with changes: the browser's own question
   await page.goto(url);
   await page.locator('#f-thema').fill(`${subject} ξανά`);
