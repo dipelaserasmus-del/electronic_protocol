@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-20 08:50 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e, R1j). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-20 09:40 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -111,11 +111,27 @@ Open *Εισερχόμενα*.
 - [ ] **37.** *Εισερχόμενα*: in *Ημ/νία εισερχ.* type `9` and TAB: 09/this month. ◀ ▶, *Σήμερα* and 📅 work as on
   *Νέο*. Under *Λέξεις κλειδιά*, the suggestions now include words of the attachments' names (e.g. *κατάσταση* from
   *κατάσταση.csv*), and a name in capitals gets its accents when earlier subjects have the word.
-- [ ] **38.** Open a protocol: one **Αποθήκευση** stays at the bottom right of the screen while you scroll; it saves
+- [ ] **39.** Open a protocol: one **Αποθήκευση** stays at the bottom right of the screen while you scroll; it saves
   as before. *Νέο* and *Λίστα* are no longer under the number (they are in the top bar). *Αντιγραφή ως νέο* and
   *Απόδειξη* are at the far right of that row, with icons. In the top bar, click the word *Λίστα*: you are back in the
   list; its **▾** opens the other lists, as before. As a *reader*: no *Αντιγραφή ως νέο*, in the protocol or in the
   list's ⋮ menu.
+
+### Your folder list (D07, 2026-11-19)
+- [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
+  terminal:
+  ```
+  ./dev.sh real artisan folders:glossary
+  ```
+  It only **shows** what would change: how many folders get the full description, which are new, which of yours are
+  not in the list (kept as they are, e.g. Φ.37–Φ.42), and how many protocols and files move from Φ.43 to Φ.46.
+  Nothing is changed yet. If it looks right:
+  ```
+  ./dev.sh real artisan folders:glossary --apply
+  ```
+  Then *Φάκελοι και διατήρηση*: search a word (e.g. *αναρρωτικές* → Φ.12.1); Φ.43 is gone and its protocols are under
+  Φ.46 with their files. Send me the two lines starting *Folders:* and *Merge*, plus any line about *Sub-folders of
+  Φ.43* (counts and codes only).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -127,6 +143,8 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
+5. **Sub-folders of Φ.43 (D07):** if your list has Φ.43.1, Φ.43.2 …, where do they go: into Φ.46 itself, to new
+   Φ.46.x folders, or stay as they are? Try-it 38's preview names them, if any.
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
@@ -140,7 +158,8 @@ Open *Εισερχόμενα*.
    - press *Διαχείριση → Backup → Νέο αντίγραφο* once and check the file opens;
    - choose how many days the trash keeps deleted attachments (30 if left empty; the old trash gets these days from
      the deployment day);
-   - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c).
+   - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
+   - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07).
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
    - anyone who can reach it can create an administrator account (S00);
@@ -156,8 +175,10 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
-- Your folder list: no need to send it; paste it yourself in *Φάκελοι και διατήρηση → Εισαγωγή λίστας* (Batch 9).
-  A short title separate from the description was not added: tell me if you want one.
+- Your folder list (2026-11-19) is the folders glossary: [docs/FOLDERS.md](docs/FOLDERS.md), from
+  `database/data/folders.json`, public in the repository. Heading and text stay together in one description; Φ.13 is
+  kept with «(Καταργήθηκε)»; Φ.43 is merged into Φ.46 (protocols and files move), now and in the move to the new
+  version; Φ.37–Φ.42 stay as they are. Four scan typos corrected (see [D07](docs/reports/D07.md)).
 - The "e-mails of the `ΑΔΕΙΑ` sender not registered" question: answered by the new inbox (Batch 8): without a folder it
   now says so under *Φάκελος*; all your e-mails register (2026-11-18).
 - Your real copy after Batch 7 (2026-11-18): 3653 protocols, 24 users, 7630 attachments, 7148 files found (482 missing:
