@@ -336,3 +336,23 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
   await expect(other.locator('[data-action=register]')).toBeEnabled();
   await page.unroute('**/update');
 });
+
+test('a done e-mail folds: «Εμφάνιση email» opens it again, «Επόμενο email» goes on (R5l)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/inbox');
+  const first = page.locator('article.inbox-message').first();
+  await first.locator('[data-action=mark-read]').click();
+  await expect(first.locator('.inbox-done')).toContainText('Μεταφέρθηκε στα αναγνωσμένα');
+  await expect(first.locator('.inbox-mail')).toBeHidden();
+  await first.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5l-folded');
+  await first.locator('[data-action=show-mail]').click();
+  await expect(first.locator('.inbox-mail')).toBeVisible();
+  await first.locator('[data-action=show-mail]').click();
+  await expect(first.locator('.inbox-mail')).toBeHidden();
+  const next = first.locator('[data-action=next-mail]');
+  const target = (await next.getAttribute('x-on:click')).match(/go\((\d+)\)/)[1];
+  await next.click();
+  await expect(page).toHaveURL(new RegExp(`#msg-${target}$`));
+  await expect(page.locator(`#msg-${target}`)).toBeInViewport();
+});

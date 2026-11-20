@@ -69,7 +69,7 @@
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
                     <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
-                             data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}">
+                             data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}" x-data="{ shown: false }" :class="{ 'mail-shown': shown }">
                         <header class="card-header d-flex flex-wrap gap-2 align-items-baseline">
                             <span class="badge text-bg-primary">{{ $n }} από {{ $total }}</span>
                             <h2 class="h6 mb-0 flex-grow-1 text-break inbox-subject">{{ $m['subject'] !== '' ? $m['subject'] : '(χωρίς θέμα)' }}</h2>
@@ -92,6 +92,20 @@
                                 @else
                                     <x-notice type="info" class="mb-0 inbox-done">Μεταφέρθηκε στα αναγνωσμένα, χωρίς πρωτόκολλο.</x-notice>
                                 @endif
+                                {{-- R5l (owner, 2026-11-20): done: the e-mail folds; open it again, or go on to the next one --}}
+                                @php
+                                    $keys = array_keys($messages);
+                                    $next = collect(array_slice($keys, array_search($uid, $keys, true) + 1))->first(fn ($k) => ! isset($done[$k]));
+                                @endphp
+                                <div class="d-flex flex-wrap gap-2 mt-2 inbox-done-actions">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" x-on:click="shown = ! shown" :aria-expanded="shown.toString()"
+                                            aria-expanded="false" aria-controls="mail-{{ $uid }}" data-action="show-mail">
+                                        <span x-show="! shown">Εμφάνιση email ▾</span><span x-show="shown" x-cloak>Απόκρυψη ▴</span></button>
+                                    @if ($next)
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" x-on:click="go({{ $next }})" data-action="next-mail">
+                                            Επόμενο email ↓</button>
+                                    @endif
+                                </div>
                             </div>
                         @else
                             <form class="card-body inbox-form" wire:submit="register({{ $uid }}, {{ $receiptOnly ? 'true' : 'false' }})" novalidate>
@@ -311,7 +325,7 @@
                         @endif
 
                         {{-- the e-mail itself; R5j: coloured apart from the form above (to glance at) --}}
-                        <div class="card-body border-top inbox-mail small">
+                        <div class="card-body border-top inbox-mail small" id="mail-{{ $uid }}">
                             <dl class="row mb-2 inbox-headers">
                                 <dt class="col-sm-2">Από</dt><dd class="col-sm-10 text-break mb-1">{{ \App\Support\Mail\MailContent::sender($m) }}</dd>
                                 @if (! empty($m['to']))<dt class="col-sm-2">Προς</dt>@include('livewire.partials.inbox-addresses', ['addresses' => $m['to'], 'kind' => 'to'])@endif
