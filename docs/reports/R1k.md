@@ -81,6 +81,8 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
     with Backspace is tracked the same way.
   - Browser test: the deletion request is held back; the dot shows and the dialog lists *«(διαγραφή)»*. It failed
     before.
+  - Codex (sixth round): the same for a tag's ✕. Fixed: the ✕ goes through the same tracking. Browser test: the
+    removal is held back, and the dot shows. It failed before.
 
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).
