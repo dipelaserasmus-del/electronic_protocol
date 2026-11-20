@@ -115,7 +115,7 @@ tasks = [
   { id = "R5f", title = "Top bar: a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute", phase = "R", batch = 9.5, size = "S", deps = ["R5c", "R3e"], status = "done", pr = 84 },
   { id = "R5g", title = "Inbox: the list pager above and below the e-mails, and the page in the list on the left", phase = "R", batch = 9.5, size = "S", deps = ["R5f", "R2g"], status = "done", pr = 85 },
   { id = "R3g", title = "Top bar: Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις)", phase = "R", batch = 9.5, size = "S", deps = ["R3e"], status = "done", pr = 86 },
-  { id = "R2k", title = "List: every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N)", phase = "R", batch = 9.5, size = "S", deps = ["R2i", "R2j"], status = "in-progress" },
+  { id = "R2k", title = "List: every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N)", phase = "R", batch = 9.5, size = "S", deps = ["R2i", "R2j"], status = "done", pr = 88 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
