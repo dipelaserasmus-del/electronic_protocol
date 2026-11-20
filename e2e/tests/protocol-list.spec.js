@@ -393,6 +393,7 @@ test('assignments are pills: ✎ for Διεκπεραίωση, 👁 for Ενημ
   const inform = row.locator('.assignee-pill[data-type=e]');
   await expect(handle).toHaveText('Διεκπεραίωση: Συγγραφέας Δοκιμών');
   await expect(handle.locator('i.bi-pencil-square')).toBeVisible();
+  await row.locator('.row-toggle').click();   // R2k: a short row shows the first pill and +N; opened, all of them
   await expect(inform).toContainText('Αναγνώστης Δοκιμών');
   await expect(inform.locator('i.bi-eye')).toBeVisible();
   await expect(row).not.toContainText('ενημ.:');
@@ -402,4 +403,49 @@ test('assignments are pills: ✎ for Διεκπεραίωση, 👁 for Ενημ
   await expect(page.locator('nav.app-topbar .dropdown-menu.show a', { hasText: 'προς Διεκπεραίωση' }).first().locator('i.bi-pencil-square')).toBeVisible();
   await expect(page.locator('nav.app-topbar .dropdown-menu.show a', { hasText: 'προς Ενημέρωση' }).first().locator('i.bi-eye')).toBeVisible();
   await evidence(page, 'r2j-menu', { clip: { x: 200, y: 0, width: 500, height: 420 } });
+});
+
+test('every row two lines tall: one file and one pill with +N; Από / Προς details in a tooltip (R2k)', async ({ page }) => {
+  const stamp = Date.now();
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, {
+    thema: `R2k πολλά ${stamp}`, fakelos: 'first', in_num: `Φ.9/${stamp}`, in_date: '03/11/2026',
+    in_topos_ekdosis: 'Δοκιμή', in_arxi_ekdosis: 'Διεύθυνση Δοκιμής με αρκετά μεγάλο όνομα', in_paraliptis: 'Διευθυντής',
+  });
+  await page.locator('#f-handle').selectOption([{ label: 'Συγγραφέας Δοκιμών' }, { label: 'Αναθέτων Δοκιμών' }]);
+  await page.locator('#f-inform').selectOption({ label: 'Αναγνώστης Δοκιμών' });
+  await page.setInputFiles('#f-uploads', [1, 2, 3].map((i) => ({ name: `R2k-αρχείο-${i}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') })));
+  await expect(page.locator('#protocol-form')).toContainText('R2k-αρχείο-3.pdf');
+  await saveProtocol(page);
+  const id = page.url().match(/\/home\/(\d+)$/)[1];
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R2k απλό ${stamp}`, fakelos: 'first' });
+  await saveProtocol(page);
+  const plainId = page.url().match(/\/home\/(\d+)$/)[1];
+
+  await page.goto('/home/list');
+  const row = page.locator(`.protocol-row[data-id="${id}"]`);
+  const plain = page.locator(`.protocol-row[data-id="${plainId}"]`);
+  await expect(row.locator('.more-files')).toHaveText('+2');
+  await expect(row.locator('.assignee-more')).toHaveText('+2');
+  await expect(row.locator('.attachment-name:visible')).toHaveCount(1);
+  await expect(row.locator('.assignee-pill:visible')).toHaveCount(1);
+  const [h1, h2] = [(await row.boundingBox()).height, (await plain.boundingBox()).height];
+  expect(Math.abs(h1 - h2), `rows ${h1} and ${h2} px`).toBeLessThan(2);
+
+  // the sender only; its number and date in the tooltip, without opening the protocol
+  const sender = row.locator('.from-to-more').first();
+  await expect(row.locator('.from-to')).not.toContainText(`Φ.9/${stamp}`, { useInnerText: true });   // only in the tooltip
+  await sender.hover();
+  await expect(page.locator('.tooltip')).toContainText(`Αρ. εισερχομένου: Φ.9/${stamp} · Ημ/νία: 03/11/2026`);
+  await expect(page).toHaveURL(/\/home\/list/);
+  await evidence(page, 'r2k-rows-tooltip', { clip: { x: 0, y: 230, width: 1440, height: 300 } });
+
+  // opened: everything
+  await row.locator('.row-toggle').click();
+  await expect(row.locator('.attachment-name:visible')).toHaveCount(3);
+  await expect(row.locator('.assignee-pill:visible')).toHaveCount(3);
+  await expect(row.locator('.from-to')).toContainText(`Φ.9/${stamp}`);
+  await expect(row.locator('.more-files')).toBeHidden();
 });

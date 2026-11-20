@@ -215,7 +215,7 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringContainsString('data-action="receipt"', $row);
     }
 
-    /** R2i (owner, 2026-11-20): fixed columns; a short row with ▾ to open it; more than two files: "+N ακόμη". */
+    /** R2i (owner, 2026-11-20): fixed columns; a short row with ▾ to open it; R2k: more than one file: "+N". */
     public function test_rows_are_short_with_a_toggle_to_show_all(): void
     {
         $p = Protocol::factory()->number(12)->create(['etos' => 2026]);
@@ -232,8 +232,8 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringContainsString('aria-label="Όλα τα στοιχεία του 12/2026"', $row($p));
         $this->assertMatchesRegularExpression('~class="text-break row-clamp"~', $row($p));
         $this->assertStringContainsString('x-show="detailed || open"', $row($p));
-        $this->assertStringContainsString('+1 ακόμη', $row($p));
-        $this->assertStringNotContainsString('ακόμη', $row($q), 'no files, nothing more');
+        $this->assertMatchesRegularExpression('~class="btn btn-link btn-sm p-0 small more-files[^"]*"[^>]*title="Όλα τα συνημμένα \(3\)">\+2</button>~', $row($p));
+        $this->assertStringNotContainsString('more-files', $row($q), 'no files, nothing more');
     }
 
     /** R2j (owner, 2026-11-20): assignments as pills: ✎ Διεκπεραίωση, 👁 Ενημέρωση; the menu uses the same icons. */
@@ -252,6 +252,23 @@ class ProtocolListTest extends FeatureTestCase
         $icons = collect($lists)->filter(fn ($c) => isset($c['icon']))->pluck('icon', 'label');
         $this->assertSame('pencil-square', $icons['προς Διεκπεραίωση']);
         $this->assertSame('eye', $icons['προς Ενημέρωση']);
+    }
+
+    /** R2k (owner, 2026-11-20): Από / Προς: the sender only, the number and dates in a tooltip; one pill + "+N". */
+    public function test_from_to_details_are_in_a_tooltip_and_cells_stay_short(): void
+    {
+        $p = Protocol::factory()->number(12)->incoming()->create(['etos' => 2026, 'in_arxi_ekdosis' => 'Δήμος Χ7', 'in_num' => '4521',
+            'in_date' => '2026-11-03', 'out_to' => 'Σχολείο Χ7', 'out_date' => '2026-11-10']);
+        $users = \App\Models\User::factory()->writer()->count(3)->create();
+        $p->update(['diekperaiosi' => 'd'.$users[0]->id.',d'.$users[1]->id.',e'.$users[2]->id]);
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $row = substr($s = substr($html, strpos($html, 'data-id="'.$p->id.'"')), 0, strpos($s, '</tr>'));
+        $row = preg_replace('~<!--\[if (END)?BLOCK\]><!\[endif\]-->~', '', $row);   // Livewire's markers
+
+        $this->assertMatchesRegularExpression('~class="from-to-more position-relative z-2" tabindex="0" data-bs-title="Δήμος Χ7 · Αρ. εισερχομένου: 4521 · Ημ/νία: 03/11/2026"[^>]*>← Δήμος Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~data-bs-title="Σχολείο Χ7 · Ημ/νία εξερχομένου: 10/11/2026"[^>]*>→ Σχολείο Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~x-show="detailed \|\| open" x-cloak>αρ. 4521 / 03/11/2026</span>~', $row, 'in full when the row is opened');
+        $this->assertStringContainsString('class="badge rounded-pill text-bg-light border assignee-more" title="3 χρήστες">+2</span>', $row);
     }
 
     public function test_no_pager_for_a_single_page(): void

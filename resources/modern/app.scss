@@ -211,7 +211,17 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 }
 .protocol-table td { overflow-wrap: anywhere; }
 .protocol-row:not(.row-open) .row-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.protocol-row:not(.row-open) .attachment-name:nth-child(n+3) { display: none !important; }
+// R2k (owner, 2026-11-20): every cell at most two lines until the row is opened, so all rows are the same height
+.protocol-row:not(.row-open) .attachment-list { display: flex; align-items: center; gap: .25rem; min-width: 0; }
+.protocol-row:not(.row-open) .attachment-list .attachment-name { min-width: 0; }
+.protocol-row:not(.row-open) .attachment-name:nth-child(n+2) { display: none !important; }
+.protocol-row:not(.row-open) .assignee-pills { flex-wrap: nowrap !important; min-width: 0; margin-bottom: 0 !important; }   // Bootstrap's flex-wrap / mb-1 are !important
+.protocol-row:not(.row-open) .assignee-pill:nth-of-type(n+2) { display: none; }
+.protocol-row:not(.row-open) .assignee-pill { flex-shrink: 1; min-width: 0; }
+.assignee-more { display: none; }
+.protocol-row:not(.row-open) .assignee-more { display: inline-block; flex-shrink: 0; }
+.protocol-row:not(.row-open) .from-to-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.from-to-more { cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
 .protocol-row.row-open .more-files { display: none; }
 .protocol-row.row-open > td { vertical-align: top; }
 .attachment-name > a { min-width: 0; max-width: 100%; }

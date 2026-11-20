@@ -16,4 +16,8 @@
                 <i class="bi bi-{{ $icon }} me-1" aria-hidden="true"></i><span class="visually-hidden">{{ $label }}: </span>{{ $name }}</span>
         @endforeach
     @endforeach
+    {{-- R2k: in the list's short rows only the first pill shows, then "+N" (all of them when the row is opened) --}}
+    @if (($shown = $assignments->whereIn('type', $inform ? ['d', 'e'] : ['d'])->count()) > 1)
+        <span class="badge rounded-pill text-bg-light border assignee-more" title="{{ $shown }} χρήστες">+{{ $shown - 1 }}</span>
+    @endif
 </div>
