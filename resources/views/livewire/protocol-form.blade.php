@@ -14,7 +14,7 @@
 {{-- progress: upload in progress (0–100) or null; the save buttons wait for it (review of R1c) --}}
 {{-- R1k: unsavedChanges (resources/modern/unsaved.js): red dot on Αποθήκευση, question before leaving --}}
 <form wire:submit="save" class="protocol-form" id="protocol-form" novalidate
-      x-data="unsavedChanges({ labels: @js(\App\Livewire\ProtocolForm::LABELS), users: @js($users->pluck('name', 'id')) })"
+      x-data="unsavedChanges({ labels: @js(\App\Livewire\ProtocolForm::LABELS), users: @js($users->pluck('name', 'id')), enabled: @js($access->canSave) })"
       x-on:submit.capture="if (progress !== null) { $event.preventDefault(); $event.stopImmediatePropagation() }">
     <div class="card shadow-sm mb-3 border-{{ $tone }}">
         <div class="card-header bg-{{ $tone }}-subtle d-flex flex-wrap align-items-center gap-3">

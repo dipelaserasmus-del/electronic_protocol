@@ -504,6 +504,17 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await expect(dot).toBeHidden();
   await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
 
+  // review of R1k: a keyword typed but not added yet is a change too
+  await page.goto(url);
+  await page.locator('#f-keywords').fill('εκκρεμής λέξη');
+  await expect(dot).toBeVisible();
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('εκκρεμής λέξη');
+  await dialog.locator('#unsaved-stay').click();
+  // leaving the box added it as a tag (as always): still a change, still the dot
+  await expect(page.locator('[data-tag="εκκρεμής λέξη"]')).toHaveCount(1);
+  await expect(dot).toBeVisible();
+
   // closing or reloading the tab with changes: the browser's own question
   await page.goto(url);
   await page.locator('#f-thema').fill(`${subject} ξανά`);
@@ -511,4 +522,26 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   page.once('dialog', async (d) => { asked = d.type() === 'beforeunload'; await d.dismiss(); });
   await page.reload({ timeout: 3000 }).catch(() => {});   // the question cancels the reload
   await expect.poll(() => asked).toBe(true);
+});
+
+test('review of R1k: who may only assign (no Αποθήκευση) leaves with links as before, never stuck', async ({ page }) => {
+  const subject = `R1k μόνο ανάθεση ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+  const url = page.url();
+  const previous = await setSetting(page, 'allowWriterUpdateProtocol', 0);
+  try {
+    await page.context().clearCookies();   // log out
+    await login(page, 'anathetis');
+    await page.goto(url);
+    await expect(page.locator('#form-save')).toHaveCount(0);   // may assign (Ανάθεση), not save the protocol
+    await page.locator('#f-handle').selectOption({ label: 'Συγγραφέας Δοκιμών' });
+    await Promise.all([page.waitForURL(/\/home$/), page.locator('nav.app-topbar').getByRole('link', { name: 'Νέο', exact: true }).click()]);
+  } finally {
+    await page.context().clearCookies();
+    await login(page, 'admin');
+    await setSetting(page, 'allowWriterUpdateProtocol', previous);
+  }
 });
