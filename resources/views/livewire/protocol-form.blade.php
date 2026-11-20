@@ -538,7 +538,7 @@
                         <table class="table table-sm align-top mb-0 unsaved-changes">
                             <thead><tr><th scope="col">Πεδίο</th><th scope="col">Πριν</th><th scope="col">Τώρα</th></tr></thead>
                             <tbody>
-                                <template x-for="[label, before, now] in changes()" :key="label">
+                                <template x-for="([label, before, now], n) in changes()" :key="n + label">
                                     <tr><th scope="row" class="fw-semibold" x-text="label"></th>
                                         <td class="text-body-secondary text-break" x-text="before"></td>
                                         <td class="text-break" x-text="now"></td></tr>
