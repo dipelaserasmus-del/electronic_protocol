@@ -396,6 +396,9 @@ test('assignments are pills: ✎ for Διεκπεραίωση, 👁 for Ενημ
   await expect(inform).toContainText('Αναγνώστης Δοκιμών');
   await expect(inform.locator('i.bi-eye')).toBeVisible();
   await expect(row).not.toContainText('ενημ.:');
+  // review of R2j: the pill is above the row's link, so the mouse reaches it (its tooltip has the whole name)
+  const onTop = await handle.evaluate((el) => { const b = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)); });
+  expect(onTop).toBe(true);
   await evidence(page, 'r2j-pills', { clip: { x: 0, y: 250, width: 1440, height: 260 } });
   // the menu uses the same icons
   await page.locator('nav.app-topbar').getByRole('button', { name: 'Περισσότερες: Λίστα' }).click();
