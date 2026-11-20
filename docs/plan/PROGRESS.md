@@ -431,7 +431,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 6.0 | 6.4 | 1.9 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 | #76 |
 | ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 6.0 | 6.4 | 1.9 | #77 |
-| ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #82 |
+| ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #87 |
 | ✅ | **R1j** | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 5.7 | 6.0 | 0.1 | #78 |
 | ✅ | **R3e** | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 6.0 | 6.4 | 0.1 | #79 |
 | ✅ | **R2i** | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 6.4 | 6.7 | 0.1 | #80 |

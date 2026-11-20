@@ -157,7 +157,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-20 11:20 | D08 | #82 | folder codes: Φ12 = Φ.12 in search (field, `φάκελος:`, free words) and in the Φ.43 → Φ.46 merge |
+| 2026-11-20 11:20 | D08 | #87 | folder codes: Φ12 = Φ.12 in search (field, `φάκελος:`, free words) and in the Φ.43 → Φ.46 merge |
 | 2026-11-19 14:10 | D07 | #77 | folder glossary (owner's list) + `folders:glossary`, merge Φ.43 → Φ.46; 2 import bugs fixed |
 | 2026-11-18 23:26 | R7 | #69 | `/print` = Livewire `PrintPage` (book / attachments tabs, live count, limit warning); `PrintController` (`/printed` GET+POST, xlsx via `target=xls`, `/printedAttachments`, `/receipt`) on `layouts/print`; `App\\Services\\Printing\\PrintRange` (old param names, ignored list, `limit()`, `describe()`, `params()`); handlers by name incl. inactive; each attachment its own keep/expiry; POST /receiptToEmail removed (form's sendReceipt); only auth pages left on the old layout |
 | 2026-11-18 23:17 | R6c | #68 | `/settings` = Livewire `SettingsPage` from `App\\Support\\SettingsCatalog` (groups, label, help, kind, rules; only known keys saved; errors at the field); `/backups` = `BackupPage` (create/delete actions); `/arxeio` = `ArchivePage` + `App\\Services\\Attachments\\Expired`; `/expired` print on new `layouts/print` (R7 reuses); removed POST /settings, GET /backup, /deleteBackup, /delExpired, /delDeleted; unused settings removed (migration + seeder); `InboxAccess` whole usernames; e2e `setSetting` uses `#s-<key>` |
