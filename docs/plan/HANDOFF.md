@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 10:45 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i and R3f; times are Greek time)
+## Current state — 2026-11-20 12:05 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f and R1k; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -57,6 +57,11 @@ Read this first when (re)starting work. Update it at the end of every task.
   (`ProtocolSearch::wholeOf` / `contains`: the LIKE as before AND `REGEXP_LIKE(col, wordPattern, 'i')`; the pattern
   folds Greek accents and σ/ς itself, since ICU regexps don't; boundaries = no letter/digit before/after). The /find
   switch `whole` (URL `whole=1`) puts `=` before every value. Highlight ignores the `=`. Help: search/help.blade.php.
+- **R1k (Batch 9.5, owner's note 2026-11-20):** `resources/modern/unsaved.js` (Alpine `unsavedChanges`, the form's
+  x-data): snapshot of `$wire` form/handle/inform/uploads/ΑΔΑ/noStamp at load (a save reloads the page), `changes()`
+  → [label, before, now] (labels `ProtocolForm::LABELS`), red dot `#form-save .unsaved-dot`. Same-site link clicks
+  with changes → `#unsaved-dialog` (Ακύρωση / Χωρίς αποθήκευση / Αποθήκευση = `$wire.save(path)`; `save(?string $then)`
+  redirects there if `ProtocolForm::sameSite` accepts the path). Closing / reloading the tab: the browser's question.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

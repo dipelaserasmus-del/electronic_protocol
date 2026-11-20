@@ -128,6 +128,10 @@ Open *Εισερχόμενα*.
   `120`). Without the switch: also 234120, 1205 … Turn on **Ολόκληρες λέξεις** and search again: only 120 (and e.g.
   120/3, Φ.2/120/Δ1). Same without the switch: `=120` in the field, or `εισ:=120` in the search box at the top. It works
   for words too (`θέμα:=άδεια` finds «Άδεια», not «αδειούχος»). The help under the results says it.
+- [ ] **43.** Open a protocol and change something (e.g. the subject): a **red dot** appears on *Αποθήκευση*; undo the
+  change: it goes. With a change, click *Νέο*, *Λίστα* or *Επόμενο ▶*: a window lists what changed (before / now) and
+  asks: *Ακύρωση* (stay), *Χωρίς αποθήκευση* (go, nothing saved) or *Αποθήκευση* (save, then go). Closing or
+  reloading the tab asks too (the browser's own question, without the list).
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
