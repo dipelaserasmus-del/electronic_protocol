@@ -88,4 +88,29 @@ final class FileNames
 
         return $prefix.($base === '' ? self::FALLBACK : $base).$extension;
     }
+
+    /**
+     * $path in the storage disk, or "name (2).ext", "name (3).ext" … when a file is already there: nothing is
+     * overwritten (R4b's trash; D07's folder merge). The suffix fits too: MAX_BYTES per name, MAX_PATH_CHARS per path.
+     */
+    public static function available(string $path): string
+    {
+        if (! \Illuminate\Support\Facades\Storage::exists($path)) {
+            return $path;
+        }
+        $info = pathinfo($path);
+        $ext = isset($info['extension']) ? '.'.$info['extension'] : '';
+        for ($i = 2; ; $i++) {
+            $suffix = " ($i)".$ext;
+            $base = $info['filename'];
+            while ($base !== '' && (strlen($base.$suffix) > self::MAX_BYTES
+                || mb_strlen($info['dirname'].'/'.$base.$suffix) > self::MAX_PATH_CHARS)) {
+                $base = mb_substr($base, 0, -1);
+            }
+            $candidate = $info['dirname'].'/'.$base.$suffix;
+            if (! \Illuminate\Support\Facades\Storage::exists($candidate)) {
+                return $candidate;
+            }
+        }
+    }
 }

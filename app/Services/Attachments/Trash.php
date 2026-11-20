@@ -36,7 +36,7 @@ final class Trash
         }
         $path = (string) $a->savedPath;
         if ($path !== '' && Storage::exists($path)) {
-            $target = $this->free(preg_replace('~^arxeio/~', 'trash/', $path) === $path ? 'trash/' . $path : preg_replace('~^arxeio/~', 'trash/', $path));
+            $target = \App\Support\FileNames::available(preg_replace('~^arxeio/~', 'trash/', $path) === $path ? 'trash/' . $path : preg_replace('~^arxeio/~', 'trash/', $path));
             if (Storage::move($path, $target)) {   // a failed move leaves the file where it was, and the row says so
                 $a->trashed_from = $path;
                 $a->savedPath = $target;
@@ -57,7 +57,7 @@ final class Trash
         $current = $this->fileInTrash($a);
         $original = $a->trashed_from ?: (string) $a->savedPath;   // before R4b the row kept its old path
         if ($current !== null && $original !== '' && $current !== $original) {
-            $original = $this->free($original);
+            $original = \App\Support\FileNames::available($original);
             if (! Storage::move($current, $original)) {
                 return false;
             }
@@ -143,28 +143,5 @@ final class Trash
             return null;
         }
         return mb_substr("{$p->protocolnum}/{$p->etos}" . ($p->thema ? " · {$p->thema}" : ''), 0, 255);
-    }
-
-    /** $path, or "name (2).ext" … when a file is already there (nothing is overwritten). */
-    private function free(string $path): string
-    {
-        if (! Storage::exists($path)) {
-            return $path;
-        }
-        $info = pathinfo($path);
-        $ext = isset($info['extension']) ? '.' . $info['extension'] : '';
-        for ($i = 2; ; $i++) {
-            // the suffix must fit too: 255 bytes per name and FileNames::MAX_PATH_CHARS per path (review of R4b)
-            $suffix = " ($i)" . $ext;
-            $base = $info['filename'];
-            while ($base !== '' && (strlen($base . $suffix) > \App\Support\FileNames::MAX_BYTES
-                || mb_strlen($info['dirname'] . '/' . $base . $suffix) > \App\Support\FileNames::MAX_PATH_CHARS)) {
-                $base = mb_substr($base, 0, -1);
-            }
-            $candidate = $info['dirname'] . '/' . $base . $suffix;
-            if (! Storage::exists($candidate)) {
-                return $candidate;
-            }
-        }
     }
 }

@@ -57,4 +57,4 @@ On the protocol page:
 - Full PHPUnit: 537 tests pass.
 
 ## Owner actions
-None. To try it: step 38 in [OWNER-TODO.md](../../OWNER-TODO.md).
+None. To try it: step 39 in [OWNER-TODO.md](../../OWNER-TODO.md).

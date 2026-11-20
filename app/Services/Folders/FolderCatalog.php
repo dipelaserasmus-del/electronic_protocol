@@ -105,11 +105,22 @@ final class FolderCatalog
      */
     public function parseImport(string $text): array
     {
+        return $this->parseRecords(self::records($text));
+    }
+
+    /**
+     * parseImport for rows already split into cells (D07: the folder glossary, database/data/folders.json).
+     *
+     * @param  list<array{0: int, 1: list<string>}>  $records  [line, cells]
+     */
+    public function parseRecords(array $records): array
+    {
         $rows = [];
         $seen = [];
-        $existing = Keepvalue::all()->keyBy(fn ($f) => mb_strtolower($f->fakelos));
-        foreach (self::records($text) as [$line, $cells]) {
-            $cells = array_map(fn ($c) => trim($c, " \t\u{00A0}"), $cells);
+        $existing = Keepvalue::all()->keyBy(fn ($f) => $this->matchKey($f->fakelos));
+        foreach ($records as [$line, $cells]) {
+            // D07: not trim($c, " \t\u{00A0}"): trim() takes bytes, so it also cut the last byte of "Π" (CE A0) …
+            $cells = array_map(fn ($c) => preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $c) ?? trim($c), $cells);
             if (implode('', $cells) === '') {
                 continue;
             }
@@ -125,7 +136,7 @@ final class FolderCatalog
                 'remarks' => ($cells[3] ?? '') !== '' ? $cells[3] : null,
                 'status' => 'new', 'error' => null,
             ];
-            $key = mb_strtolower($code);
+            $key = $this->matchKey($code);
             $old = $existing[$key] ?? null;
             try {
                 $clean = $this->clean($row);
@@ -140,7 +151,8 @@ final class FolderCatalog
                     throw ValidationException::withMessages(['fakelos' => 'Ο ίδιος κωδικός υπάρχει και στη γραμμή '.$seen[$key].'.']);
                 }
                 if ($old) {
-                    $changes = array_filter($this->importValues($clean), fn ($v, $k) => (string) $v !== (string) $old->$k, ARRAY_FILTER_USE_BOTH);
+                    // the folder keeps its code as written (protocols use it): only the other cells count
+                    $changes = array_filter(array_diff_key($this->importValues($clean), ['fakelos' => 0]), fn ($v, $k) => (string) $v !== (string) $old->$k, ARRAY_FILTER_USE_BOTH);
                     $row['status'] = $changes ? 'update' : 'same';
                 }
             } catch (ValidationException $e) {
@@ -162,16 +174,29 @@ final class FolderCatalog
      */
     public function import(string $text): array
     {
+        return $this->importRecords(self::records($text));
+    }
+
+    /**
+     * import for rows already split into cells (see parseRecords).
+     *
+     * @param  list<array{0: int, 1: list<string>}>  $records
+     * @return array{created: int, updated: int}
+     */
+    public function importRecords(array $records): array
+    {
         $created = $updated = 0;
-        DB::transaction(function () use ($text, &$created, &$updated) {
-            foreach ($this->parseImport($text) as $row) {
+        DB::transaction(function () use ($records, &$created, &$updated) {
+            $existing = Keepvalue::all()->keyBy(fn ($f) => $this->matchKey($f->fakelos));
+            foreach ($this->parseRecords($records) as $row) {
                 if (! in_array($row['status'], ['new', 'update'], true)) {
                     continue;
                 }
                 $values = $this->importValues($this->clean($row));
-                $folder = Keepvalue::where('fakelos', $row['fakelos'])->first();
+                $folder = $existing[$this->matchKey($row['fakelos'])] ?? null;
                 if ($folder) {
-                    $folder->fill($values)->save();
+                    // D07: an existing folder keeps its code as written ("Φ2.1" stays "Φ2.1"): protocols refer to it
+                    $folder->fill(array_diff_key($values, ['fakelos' => 0]))->save();
                     $updated++;
                 } else {
                     Keepvalue::create($values);
@@ -258,6 +283,15 @@ final class FolderCatalog
         }
 
         return $records;
+    }
+
+    /**
+     * D07: how an imported code is matched with the folders in the list: both normalised, case does not count
+     * ("Φ2.1" in the list = "Φ.2.1" pasted; before, the pasted code was normalised and the list's was not → duplicate).
+     */
+    public function matchKey(string $code): string
+    {
+        return mb_strtolower($this->normaliseCode($code));
     }
 
     /** "φ.1 " → "Φ.1", "Φ 1" → "Φ.1", "Φ1" → "Φ.1", "f.1" → "Φ.1": codes as typed or pasted, as the folders are written */
