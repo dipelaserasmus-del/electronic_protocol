@@ -350,4 +350,30 @@ test('rows in alternating colours, fixed column widths, each row short until ▾
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `no sideways scroll at ${width} px`).toBeLessThanOrEqual(width);
   }
   await evidence(page, 'r2i-list-768', { clip: { x: 0, y: 0, width: 1024, height: 600 } });
+
+  // review of R2i: switching to the narrow page width hides Από / Προς at once; a ΚΕΝΟ row follows without a reload.
+  // The list here may have no ΚΕΝΟ row, so one is added as the list draws it.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => {
+    const tr = document.createElement('tr');
+    tr.className = 'gap-row';
+    tr.innerHTML = '<td colspan="7" data-full-row>ΚΕΝΟ</td>';
+    document.querySelector('.protocol-table tbody').prepend(tr);
+  });
+  const shownSpan = () => page.evaluate(() => {
+    const shown = [...document.querySelectorAll('.protocol-table thead th')].filter((th) => getComputedStyle(th).display !== 'none').length;
+    return [shown, document.querySelector('.protocol-table [data-full-row]').colSpan];
+  });
+  const bar = page.locator('nav.app-topbar');
+  await bar.locator('#nav-user').click();
+  await bar.locator('[data-preference="width"][data-value="narrow"]').click();
+  try {
+    await expect(page.locator('body')).toHaveClass(/layout-narrow/);
+    await expect.poll(async () => { const [shown, span] = await shownSpan(); return shown === span && shown < 7; }).toBe(true);
+  } finally {
+    await bar.locator('#nav-user').click();
+    await bar.locator('[data-preference="width"][data-value="full"]').click();
+    await expect(page.locator('body')).not.toHaveClass(/layout-narrow/);
+  }
+  await expect.poll(async () => { const [shown, span] = await shownSpan(); return shown === span; }).toBe(true);
 });

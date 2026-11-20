@@ -213,7 +213,12 @@ function fitFullRows(root = document) {
         if (shown) cells.forEach(td => { td.colSpan = shown; });
     });
 }
-document.addEventListener('DOMContentLoaded', () => fitFullRows());
+// the content's width, not only the window's: the narrow page width (Πλάτος σελίδας) hides columns too (review of R2i)
+document.addEventListener('DOMContentLoaded', () => {
+    fitFullRows();
+    const main = document.querySelector('main');
+    if (main && window.ResizeObserver) new ResizeObserver(() => fitFullRows()).observe(main);
+});
 window.addEventListener('resize', () => fitFullRows());
 document.addEventListener('livewire:init', () => window.Livewire.hook('morph.updated', () => fitFullRows()));
 
