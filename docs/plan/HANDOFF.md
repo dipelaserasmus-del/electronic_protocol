@@ -75,7 +75,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   goToPage: Livewire matches method names exactly; past the last page → the last). The sidebar has
   `.inbox-sidebar-pager` (‹ Σελίδα N από M ›).
 - **R3g (Batch 9.5, owner's note 2026-11-20):** the top bar is Νέο · Λίστα · Εισερχόμενα; `Navigation::manage($user)` =
-  group title => links (Εκτύπωση, Φάκελοι, Διαχειριστής), drawn in the user menu (`.user-menu`, two columns from
+  group title => links (Εκτύπωση, Φάκελοι, Διαχείριση), drawn in the user menu (`.user-menu`, two columns from
   768px: `.user-menu-manage` | `.user-menu-own` Προτιμήσεις; Περί… / Έξοδος below).
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
   e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the

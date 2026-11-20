@@ -101,8 +101,8 @@
                         {{-- R3g (owner, 2026-11-20): Διαχείριση is here, in groups, beside the user's own choices --}}
                         <div class="dropdown-menu dropdown-menu-end user-menu" aria-labelledby="nav-user">
                             <div class="user-menu-columns">
-                                <div class="user-menu-manage" role="group" aria-labelledby="user-menu-manage-title">
-                                    <h6 class="dropdown-header text-uppercase fw-bold" id="user-menu-manage-title"><i class="bi bi-gear me-1" aria-hidden="true"></i>Διαχείριση</h6>
+                                {{-- owner, 2026-11-20: no heading above the groups (the last one is «Διαχείριση»); Προτιμήσεις set apart --}}
+                                <div class="user-menu-manage" role="group" aria-label="Διαχείριση">
                                     @foreach (\App\Support\Navigation::manage($user) as $group => $links)
                                         <h6 class="dropdown-header">{{ $group }}</h6>
                                         @foreach ($links as $link)

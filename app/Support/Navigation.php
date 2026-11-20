@@ -67,7 +67,7 @@ final class Navigation
 
     /**
      * R3g (owner, 2026-11-20): Διαχείριση, in the user menu at the top right, in groups: Εκτύπωση and Φάκελοι (every
-     * role), Διαχειριστής (administrators). Printing lists every protocol, so it is hidden when the list is limited
+     * role), Διαχείριση (administrators). Printing lists every protocol, so it is hidden when the list is limited
      * for writers/readers (same rule as ProtocolController::limitProtocolAccessList, but for this user).
      *
      * @return array<string, list<array{label: string, icon: string, url: string}>> group title => items
@@ -84,7 +84,7 @@ final class Navigation
         }
         $groups['Φάκελοι'] = [['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')]];
         if ($role === self::ADMIN) {
-            $groups['Διαχειριστής'] = [
+            $groups['Διαχείριση'] = [   // owner, 2026-11-20 (was «Διαχειριστής»)
                 ['label' => 'Χρήστες', 'icon' => 'people', 'url' => url('/users')],
                 ['label' => 'Ρυθμίσεις', 'icon' => 'sliders', 'url' => url('/settings')],
                 ['label' => 'Backup', 'icon' => 'database-down', 'url' => url('/backups')],
