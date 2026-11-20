@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 13:40 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j and R5f; times are Greek time)
+## Current state — 2026-11-20 14:20 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f and R5g; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -70,6 +70,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   its total, register / markRead forget it. `GET /inbox/count` (writer + email + throttle). Top bar: Navigation item
   `count` → `[data-inbox-count]` badge, drawn from the cache only (no IMAP on page render); `resources/modern/inbox-count.js`
   checks every minute while shown and on visibilitychange; the inbox page's Livewire event `inbox-count` sets it at once.
+- **R5g (Batch 9.5, owner's note 2026-11-20):** the inbox uses `x-list-pager` (top / bottom) through a
+  LengthAwarePaginator built in render(); EmailInbox has `previousPage` / `nextPage` / `gotoPage(n, name)` (renamed from
+  goToPage: Livewire matches method names exactly; past the last page → the last). The sidebar has
+  `.inbox-sidebar-pager` (‹ Σελίδα N από M ›).
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the
