@@ -255,6 +255,8 @@ class InboxTest extends FeatureTestCase
 
         $this->assertSame(1, \App\Models\Protocol::count());
         $page->assertSee('μην το καταχωρίσετε ξανά');
+        // review of R5f: the e-mail is still in the inbox: the badge says so (8), it is not lowered to 7
+        $page->assertDispatched('inbox-count', count: 8);
     }
 
     public function test_receipt_needs_an_address_and_is_sent_to_it(): void
@@ -482,5 +484,69 @@ class InboxTest extends FeatureTestCase
         return implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: HTML',
             'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0', 'Content-Type: text/html; charset=utf-8', '',
             '<p>Καλημέρα, <b>σύσκεψη</b></p><script>alert(1)</script>', '']);
+    }
+
+    /**
+     * R5f (owner, 2026-11-20): the red badge next to Εισερχόμενα counts every e-mail in the inbox. One count for all
+     * users, asked from the mail server at most once a minute; an e-mail leaving the inbox (any user) refreshes it.
+     */
+    public function test_the_top_bar_badge_counts_the_inbox_for_everybody(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        [$a, $b] = [$this->writer(), $this->writer()];
+
+        $this->actingAs($a)->getJson('/inbox/count')->assertOk()->assertExactJson(['count' => 8]);
+        $this->mailbox->messages[50] = $this->mailbox->messages[1];
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 8], 'the same minute: the shared count, no new question');
+
+        // the badge, drawn on any page from the shared count
+        $this->assertMatchesRegularExpression('~data-inbox-count="'.preg_quote(url('/inbox/count'), '~').'"\s+title="8 e-mail στα Εισερχόμενα"\s*>8</span>~',
+            $this->actingAs($b)->get('/about')->assertOk()->getContent());
+
+        // user A opens the inbox (counted again: 9) and marks one as read; B's next check says 8
+        $page = Livewire::actingAs($a)->test(EmailInbox::class)->assertDispatched('inbox-count', count: 9);
+        $page->call('markRead', 2)->assertDispatched('inbox-count', count: 8);
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+
+        // empty: no badge
+        $this->mailbox->messages = [];
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 0]);
+        $this->assertMatchesRegularExpression('~data-inbox-count="[^"]+"\s+hidden\s*>\s*</span>~', $this->actingAs($b)->get('/about')->getContent());
+
+        // only for who uses the inbox
+        $this->actingAs($this->reader())->get('/inbox/count')->assertRedirect();
+        $this->actingAs($this->reader())->get('/about')->assertDontSee('data-inbox-count', false);
+    }
+
+    /** Review of R5f: while one request counts (holds the lock), the others do not ask the mail server too. */
+    public function test_the_badge_count_is_asked_once_at_a_time(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        \App\Services\Mail\InboxCount::$lockWait = 1;
+        $lock = \Illuminate\Support\Facades\Cache::lock(\App\Services\Mail\InboxCount::KEY.':lock', 10);
+        $this->assertTrue($lock->get(), 'another request is counting');
+        try {
+            $this->actingAs($this->writer())->getJson('/inbox/count')->assertOk()->assertExactJson(['count' => null]);
+            $this->assertSame(0, $this->mailbox->searches, 'it waited, then did not ask the server itself');
+
+            \App\Services\Mail\InboxCount::put(8);   // the other request finished
+            $this->actingAs($this->writer())->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+            $this->assertSame(0, $this->mailbox->searches);
+        } finally {
+            $lock->release();
+            \App\Services\Mail\InboxCount::$lockWait = 10;
+        }
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        $this->actingAs($this->writer())->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+        $this->assertSame(1, $this->mailbox->searches, 'free: one request asks');
+    }
+
+    /** Review of R5f: after an action the badge is the inbox's real count (others' work, a move that failed). */
+    public function test_the_badge_after_an_action_is_counted_not_worked_out(): void
+    {
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);   // 8 when the page was loaded
+        unset($this->mailbox->messages[4], $this->mailbox->messages[5], $this->mailbox->messages[6], $this->mailbox->messages[7], $this->mailbox->messages[8]);   // another user
+        $page->call('markRead', 1)->assertDispatched('inbox-count', count: 2);
     }
 }

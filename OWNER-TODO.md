@@ -135,6 +135,9 @@ Open *Εισερχόμενα*.
 - [ ] **44.** *Λίστα*, column *Ανάθεση*: each assigned user is a pill: blue with ✎ for *Διεκπεραίωση*, white with 👁
   for *Ενημέρωση* (the mouse over it says which). The *Λίστα* menu's *προς Διεκπεραίωση* / *προς Ενημέρωση* have the
   same icons.
+- [ ] **45.** With e-mails in the inbox, the top bar shows a red number next to *Εισερχόμενα* (all of them, read or
+  not), on every page. Two users at once (two browsers): one registers or marks e-mails as read until the inbox is
+  empty; the other's number goes down and disappears within a minute (at once when they come back to the tab).
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

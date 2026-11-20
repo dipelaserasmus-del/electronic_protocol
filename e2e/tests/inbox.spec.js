@@ -167,3 +167,34 @@ test('incoming date: the app\'s date field; keyword suggestions from the file na
   });
   await evidence(page, 'r5e-suggestions', { clip: field });
 });
+
+test('a red badge next to Εισερχόμενα counts the e-mails waiting; checked again when coming back to the tab (R5f)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/inbox');
+  const said = (await page.locator('#inbox-count').innerText()).replace(/\s+/g, ' ');   // «1–3 από 8 · …» or «2 email · …»
+  const total = Number((said.match(/από (\d+)/) ?? said.match(/^\s*(\d+) email/))[1]);
+  expect(total).toBeGreaterThan(0);
+  const badge = page.locator('nav.app-topbar [data-inbox-count]');
+  await expect(badge).toHaveText(String(total));
+  await expect(badge).toBeVisible();
+
+  // on other pages too, from the shared count
+  await page.goto('/home/list');
+  await expect(badge).toHaveText(String(total));
+  await evidence(page, 'r5f-badge', { clip: { x: 0, y: 0, width: 900, height: 60 } });
+
+  // another user emptied the inbox: the next check (here: coming back to the tab) hides the badge
+  await page.route('**/inbox/count', (route) => route.fulfill({ json: { count: 0 } }));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(badge).toBeHidden();
+  // the mail server did not answer: what is shown stays
+  await page.unroute('**/inbox/count');
+  await page.route('**/inbox/count', (route) => route.fulfill({ json: { count: 3 } }));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(badge).toHaveText('3');
+  await page.unroute('**/inbox/count');
+  await page.route('**/inbox/count', (route) => route.fulfill({ json: { count: null } }));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await page.waitForTimeout(300);
+  await expect(badge).toHaveText('3');
+});

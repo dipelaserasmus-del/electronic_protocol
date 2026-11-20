@@ -34,6 +34,12 @@ class InboxController extends Controller implements HasMiddleware
         return view('inbox');
     }
 
+    /** R5f: the number of e-mails in the inbox, for the top bar's badge (null: the mail server did not answer) */
+    public function count(\App\Services\Mail\InboxCount $count)
+    {
+        return response()->json(['count' => $count->count()]);
+    }
+
     /** The old address, with its page number (bookmarks) */
     public function old()
     {

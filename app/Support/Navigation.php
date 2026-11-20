@@ -58,7 +58,7 @@ final class Navigation
         $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'home' => true, 'children' => self::lists($user, $role)];
 
         if ($role !== self::READER && InboxAccess::allows($user)) {
-            $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox')];
+            $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox'), 'count' => url('/inbox/count')];   // R5f
         }
 
         $manage = [];

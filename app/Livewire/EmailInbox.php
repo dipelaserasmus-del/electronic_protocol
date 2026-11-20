@@ -205,6 +205,7 @@ class EmailInbox extends Component
             $this->addError("forms.$uid.form", $e->getMessage());
             return;
         }
+        $this->leftInbox();
         $p = $result->protocol;
         $this->done[$uid] = ['type' => 'registered', 'protocol_id' => $p->id, 'label' => "{$p->protocolnum}/{$p->etos}",
             'messages' => $result->messages, 'warnings' => $result->warnings, 'files' => $result->attachmentsAdded];
@@ -224,7 +225,22 @@ class EmailInbox extends Component
             $this->addError("forms.$uid.form", 'Το email δεν μεταφέρθηκε στα αναγνωσμένα. Κωδικός σφάλματος: '.\App\Exceptions\Handler::errorId());
             return;
         }
+        $this->leftInbox();
         $this->done[$uid] = ['type' => 'read'];
+    }
+
+    /**
+     * R5f: an e-mail was registered or read: count the inbox again for everybody, and show it here at once. Counted, not
+     * worked out from this page (review of R5f): other users may have emptied it meanwhile, and a registered e-mail
+     * whose move failed is still there.
+     */
+    private function leftInbox(): void
+    {
+        \App\Services\Mail\InboxCount::forget();
+        $count = app(\App\Services\Mail\InboxCount::class)->count();
+        if ($count !== null) {
+            $this->dispatch('inbox-count', count: $count);
+        }
     }
 
     private function load(): void
@@ -235,7 +251,7 @@ class EmailInbox extends Component
         try {
             $mailbox = $this->mailbox();
             $inbox = app(Inbox::class);
-            $since = Carbon::now()->subDays($days)->startOfDay();
+            $since = \App\Services\Mail\InboxCount::since();
             $newest = (bool) Config::getConfigValueOf('emailFetchOrderDesc');
             $page = $inbox->page($mailbox, $since, $this->page, $perPage, $newest);
             // a page left empty (its e-mails registered, by this user or others): back to the first page
@@ -253,6 +269,9 @@ class EmailInbox extends Component
         $this->mailboxId = $page->mailboxId;
         $this->uidValidity = $page->uidValidity;
         $this->total = $page->total;
+        // R5f: the top bar's badge, for everybody, and at once on this page
+        \App\Services\Mail\InboxCount::put($page->total);
+        $this->dispatch('inbox-count', count: $page->total);
         $this->perPage = $page->perPage;
         $this->uids = array_map(fn ($m) => $m->uid, $page->messages);
         // the attachment and HTML addresses read the messages this user's page shows (R5a)

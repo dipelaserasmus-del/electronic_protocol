@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 12:50 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k and R2j; times are Greek time)
+## Current state — 2026-11-20 13:40 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j and R5f; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -68,6 +68,11 @@ Read this first when (re)starting work. Update it at the end of every task.
 - **R2j (Batch 9.5, owner's choice 2026-11-20):** `<x-assignee-pills :assignments :names :inform>`: one pill per user,
   `bi-pencil-square` Διεκπεραίωση (`.assignee-handle`), `bi-eye` Ενημέρωση (`.assignee-inform`); list and search
   results. The Λίστα menu and the home-page choices use the same icons (were hourglass / bell).
+- **R5f (Batch 9.5, owner's choice 2026-11-20):** `App\Services\Mail\InboxCount`: count of the inbox (uidsSince
+  `since()` = daysToCheckEmailBack, every e-mail, read or not), one cache key for all users, 60 s; the inbox page puts
+  its total, register / markRead forget it. `GET /inbox/count` (writer + email + throttle). Top bar: Navigation item
+  `count` → `[data-inbox-count]` badge, drawn from the cache only (no IMAP on page render); `resources/modern/inbox-count.js`
+  checks every minute while shown and on visibilitychange; the inbox page's Livewire event `inbox-count` sets it at once.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

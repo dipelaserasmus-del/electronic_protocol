@@ -79,7 +79,11 @@
                             <li class="nav-item">
                                 <a class="nav-link @if (url()->current() === $item['url']) active @endif"
                                    @if (url()->current() === $item['url']) aria-current="page" @endif
-                                   href="{{ $item['url'] }}"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
+                                   href="{{ $item['url'] }}"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}@isset($item['count'])
+                                    {{-- R5f: e-mails waiting in the inbox (resources/modern/inbox-count.js keeps it up to date) --}}
+                                    @php $waiting = \App\Services\Mail\InboxCount::cached(); @endphp
+                                    <span class="badge rounded-pill text-bg-danger ms-1 inbox-count" data-inbox-count="{{ $item['count'] }}"
+                                          @if ($waiting) title="{{ $waiting }} e-mail στα Εισερχόμενα" @else hidden @endif>{{ $waiting > 99 ? '99+' : ($waiting ?: '') }}</span>@endisset</a>
                             </li>
                         @endif
                     @endforeach

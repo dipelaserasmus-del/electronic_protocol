@@ -9,6 +9,7 @@ import './search';
 import './preferences';
 import './inbox';
 import './unsaved';   // R1k
+import './inbox-count';   // R5f
 
 window.bootstrap = bootstrap;
 

@@ -81,6 +81,7 @@ Route::middleware('auth')->group(function () {
 
     // R5c: the inbox (App\Livewire\EmailInbox); registering and "read" are actions of the page
     Route::get('/inbox', [InboxController::class, 'show']);
+    Route::get('/inbox/count', [InboxController::class, 'count'])->middleware('throttle:30,1');   // R5f: the badge
     Route::get('/viewEmails', [InboxController::class, 'old']);
     Route::get('/viewEmailAttachment/{uid}/{key}', [InboxController::class, 'attachment']);
     Route::get('/viewEmailHtml/{uid}', [InboxController::class, 'html']);
