@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-20 09:40 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-20 11:20 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -208,8 +208,13 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+<<<<<<< HEAD
 - *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the
   attachment has no protocol number of the sender; when it has one, type that number over it (2026-11-20).
+=======
+- Folder codes (2026-11-20): the dot after Φ is only for readability. `Φ12`, `Φ.12` and `φ12` are the same folder in
+  search, in the folder picker and in the Φ.43 → Φ.46 merge; your protocols keep their code as written ([D08](docs/reports/D08.md)).
+>>>>>>> task/R5g-inbox-pager
 - Your folder list (2026-11-19) is the folders glossary: [docs/FOLDERS.md](docs/FOLDERS.md), from
   `database/data/folders.json`, public in the repository. Heading and text stay together in one description; Φ.13 is
   kept with «(Καταργήθηκε)»; Φ.43 is merged into Φ.46 (protocols and files move), now and in the move to the new
