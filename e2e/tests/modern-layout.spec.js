@@ -10,15 +10,15 @@ test('new layout: top bar with the role\'s menu, styles and scripts loaded', asy
 
   const bar = page.locator('nav.app-topbar');
   await expect(bar).toBeVisible();
-  for (const item of ['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση']) {
+  for (const item of ['Νέο', 'Λίστα', 'Εισερχόμενα']) {
     await expect(bar.locator('.nav-link', { hasText: item }).first()).toBeVisible();
   }
   // Bootstrap 5 CSS from Vite: the top bar is a flex container
   expect(await bar.evaluate(el => getComputedStyle(el).display)).toBe('flex');
   expect(failed, 'Vite assets load').toEqual([]);
 
-  // Bootstrap's JavaScript: dropdowns open
-  await bar.getByRole('button', { name: 'Διαχείριση' }).click();
+  // Bootstrap's JavaScript: dropdowns open; R3g: Διαχείριση is in the user menu
+  await bar.locator('#nav-user').click();
   await expect(bar.getByRole('link', { name: 'Ρυθμίσεις' })).toBeVisible();
   await evidence(page, 'n03-about-admin-menu', { clip: { x: 0, y: 0, width: 1440, height: 420 } });
 
@@ -32,12 +32,11 @@ test('new layout: readers get a shorter menu, and logging out works from the use
   await page.goto('/about');
   const bar = page.locator('nav.app-topbar');
   await expect(bar.locator('.nav-link', { hasText: 'Εισερχόμενα' })).toHaveCount(0);
-  // R3d: Διαχείριση holds Εκτύπωση/Διατήρηση for everybody; the administrators' items only for them
-  await bar.getByRole('button', { name: 'Διαχείριση' }).click();
+  // R3d/R3g: Διαχείριση (user menu) holds Εκτύπωση/Διατήρηση for everybody; the administrators' items only for them
+  await bar.locator('#nav-user').click();
   await expect(bar.getByRole('link', { name: 'Φάκελοι και διατήρηση' })).toBeVisible();
   await expect(bar.getByRole('link', { name: 'Ρυθμίσεις' })).toHaveCount(0);
 
-  await bar.locator('#nav-user').click();
   await Promise.all([page.waitForURL(url => !url.pathname.startsWith('/about')), bar.getByRole('button', { name: 'Έξοδος' }).click()]);
   await page.goto('/about');
   await expect(page).toHaveURL(/\/login/);   // logged out
@@ -77,7 +76,8 @@ test('top bar: one row on 1920 and 1440 screens, icons, the institution under th
   await Promise.all([page.waitForURL(/\/find$/), page.locator('#app-search-advanced').click()]);
   await page.locator('#app-search-q').fill('αρ:1');
   await Promise.all([page.waitForURL(/\/search\?q=/), bar.getByRole('button', { name: 'Αναζήτηση', exact: true }).click()]);
-  await bar.getByRole('button', { name: 'Διαχείριση' }).click();
+  await bar.locator('#nav-user').click();
+  await expect(bar.locator('.user-menu')).toBeVisible();
   await evidence(page, 'top-bar-manage-menu', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
 });
 
@@ -147,7 +147,7 @@ test('top bar: the menu stays open on medium screens, nothing wider than the scr
     await page.goto('/home/list');
     const bar = page.locator('nav.app-topbar');
     await expect(bar.getByRole('button', { name: 'Μενού' })).toBeHidden();
-    for (const item of ['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση']) {
+    for (const item of ['Νέο', 'Λίστα', 'Εισερχόμενα']) {
       await expect(bar.locator('.nav-link', { hasText: item }).first(), `${item} at ${width} px`).toBeVisible();
     }
     await expect(page.locator('#app-search-q')).toBeVisible();
@@ -158,4 +158,34 @@ test('top bar: the menu stays open on medium screens, nothing wider than the scr
     if (width >= 950) expect(height, `one row at ${width} px`).toBeLessThan(70);
     await evidence(page, `r3e-top-bar-${width}`, { clip: { x: 0, y: 0, width, height: 160 } });
   }
+});
+
+test('Διαχείριση is in the user menu, in groups, beside the user\'s own choices (R3g)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  const bar = page.locator('nav.app-topbar');
+  await expect(bar.getByRole('button', { name: 'Διαχείριση' })).toHaveCount(0);
+  await bar.locator('#nav-user').click();
+  const menu = bar.locator('.user-menu');
+  const manage = menu.locator('.user-menu-manage');
+  const own = menu.locator('.user-menu-own');
+  for (const text of ['Εκτύπωση πρωτοκόλλου', 'Φάκελοι και διατήρηση', 'Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος']) {
+    await expect(manage.getByRole('link', { name: text })).toBeVisible();
+  }
+  await expect(own).toContainText('Πλάτος σελίδας');
+  await expect(own).toContainText('Αρχική σελίδα');
+  // two columns side by side on a wide screen, inside the window
+  const [m, o] = [await manage.boundingBox(), await own.boundingBox()];
+  expect(o.x).toBeGreaterThan(m.x + m.width - 2);
+  expect((await menu.boundingBox()).x).toBeGreaterThanOrEqual(0);
+  await evidence(page, 'r3g-user-menu', { clip: { x: 640, y: 0, width: 800, height: 560 } });
+  await Promise.all([page.waitForURL(/\/settings$/), manage.getByRole('link', { name: 'Ρυθμίσεις' }).click()]);
+
+  // a phone: one column, in the folded menu
+  await page.setViewportSize({ width: 390, height: 800 });
+  await bar.getByRole('button', { name: 'Μενού' }).click();
+  await bar.locator('#nav-user').click();
+  const [m2, o2] = [await manage.boundingBox(), await own.boundingBox()];
+  expect(o2.y).toBeGreaterThan(m2.y + m2.height - 2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });

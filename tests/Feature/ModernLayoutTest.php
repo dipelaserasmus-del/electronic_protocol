@@ -27,16 +27,30 @@ class ModernLayoutTest extends FeatureTestCase
         $this->setting('defaultImapEmail', 'default');
         $this->setting('allowedEmailUsers', '');
 
-        // R3d (owner, 2026-11-18): Εκτύπωση and Διατήρηση are under Διαχείριση; Αναζήτηση is in the search box
+        // R3d: Αναζήτηση is in the search box; R3g (owner, 2026-11-20): Διαχείριση is in the user menu, in groups
         $admin = $this->admin();
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($admin));
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($this->assigner()));
-        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση'], $this->labels($this->writer()));
-        $this->assertSame(['Νέο', 'Λίστα', 'Διαχείριση'], $this->labels($this->reader()), 'readers never register e-mails');
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($admin));
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($this->assigner()));
+        $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($this->writer()));
+        $this->assertSame(['Νέο', 'Λίστα'], $this->labels($this->reader()), 'readers never register e-mails');
 
-        $manage = fn ($user) => array_values(array_filter(array_column($this->children($user, 'Διαχείριση'), 'label')));
-        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Φάκελοι και διατήρηση', 'Χρήστες', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Ρυθμίσεις'], $manage($admin));
-        $this->assertSame(['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων', 'Φάκελοι και διατήρηση'], $manage($this->writer()), 'only administrators manage the rest');
+        $groups = fn ($user) => array_map(fn ($links) => array_column($links, 'label'), Navigation::manage($user));
+        $this->assertSame([
+            'Εκτύπωση' => ['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων'],
+            'Φάκελοι' => ['Φάκελοι και διατήρηση'],
+            'Διαχειριστής' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος'],
+        ], $groups($admin));
+        $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
+        foreach (Navigation::manage($admin) as $links) {
+            foreach ($links as $link) {
+                $this->assertNotEmpty($link['icon'], "icon for {$link['label']}");
+            }
+        }
+        // drawn in the user menu: Διαχείριση on the left, the user's own choices on the right
+        $html = $this->actingAs($admin)->get('/about')->assertOk()->getContent();
+        $menu = substr($html, strpos($html, 'class="dropdown-menu dropdown-menu-end user-menu"'));
+        $this->assertMatchesRegularExpression('~user-menu-manage.*?Διαχείριση.*?Εκτύπωση.*?Φάκελοι.*?Διαχειριστής.*?href="'.preg_quote(url('/settings'), '~').'".*?user-menu-own.*?Πλάτος σελίδας.*?Αρχική σελίδα.*?Περί.*?Έξοδος~s', $menu);
+        $this->assertStringNotContainsString('id="nav-3"', $html, 'no Διαχείριση in the bar');
         foreach (Navigation::for($admin) as $item) {
             $this->assertNotEmpty($item['icon'] ?? null, "icon for {$item['label']}");
             foreach ($item['children'] ?? [] as $child) {
@@ -82,7 +96,7 @@ class ModernLayoutTest extends FeatureTestCase
     {
         $this->setting('limitProtocolAccessList', 1);
 
-        $manage = fn ($user) => array_column($this->children($user, 'Διαχείριση'), 'label');
+        $manage = fn ($user) => array_column(array_merge(...array_values(Navigation::manage($user))), 'label');
         $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->writer()));
         $this->assertNotContains('Εκτύπωση πρωτοκόλλου', $manage($this->reader()));
         $this->assertContains('Φάκελοι και διατήρηση', $manage($this->reader()));

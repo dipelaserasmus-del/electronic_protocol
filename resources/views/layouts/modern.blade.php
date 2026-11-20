@@ -98,34 +98,47 @@
                            aria-expanded="false" id="nav-user" title="{{ $user->name }} ({{ $user->role?->role }})" aria-label="{{ $user->name }} {{ $user->role?->role }}">
                             <i class="bi bi-person-circle me-1" aria-hidden="true"></i><span class="nav-user-name">{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span></span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-user">
-                            {{-- R3d: page width, saved with the account (resources/modern/preferences.js) --}}
-                            <li><h6 class="dropdown-header">Πλάτος σελίδας</h6></li>
-                            <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="full" data-url="{{ url('/preferences') }}"
-                                        aria-pressed="{{ $narrow ? 'false' : 'true' }}"><i class="bi bi-arrows-angle-expand me-2" aria-hidden="true"></i>Όλη η οθόνη
-                                    <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
-                            <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="narrow" data-url="{{ url('/preferences') }}"
-                                        aria-pressed="{{ $narrow ? 'true' : 'false' }}"><i class="bi bi-arrows-angle-contract me-2" aria-hidden="true"></i>Στενό, στο κέντρο
-                                    <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
-                            {{-- R3e (owner, 2026-11-20): the user's home page (login, the brand link, Λίστα) --}}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Αρχική σελίδα</h6></li>
-                            @php $home = \App\Support\Navigation::homeChoice($user); @endphp
-                            @foreach (\App\Support\UserPreferences::HOMES as $key => [$label, $icon, $path])
-                                <li><button type="button" class="dropdown-item d-flex align-items-center" data-preference="home" data-value="{{ $key }}" data-url="{{ url('/preferences') }}"
-                                            data-home="{{ url($path) }}" aria-pressed="{{ $home === $key ? 'true' : 'false' }}"><i class="bi bi-{{ $icon }} me-2" aria-hidden="true"></i>{{ $label }}
-                                        <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button></li>
-                            @endforeach
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url('/about') }}"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Περί…</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ url('/logout') }}">
+                        {{-- R3g (owner, 2026-11-20): Διαχείριση is here, in groups, beside the user's own choices --}}
+                        <div class="dropdown-menu dropdown-menu-end user-menu" aria-labelledby="nav-user">
+                            <div class="user-menu-columns">
+                                <div class="user-menu-manage" role="group" aria-labelledby="user-menu-manage-title">
+                                    <h6 class="dropdown-header text-uppercase fw-bold" id="user-menu-manage-title"><i class="bi bi-gear me-1" aria-hidden="true"></i>Διαχείριση</h6>
+                                    @foreach (\App\Support\Navigation::manage($user) as $group => $links)
+                                        <h6 class="dropdown-header">{{ $group }}</h6>
+                                        @foreach ($links as $link)
+                                            <a class="dropdown-item" href="{{ $link['url'] }}"><i class="bi bi-{{ $link['icon'] }} me-2" aria-hidden="true"></i>{{ $link['label'] }}</a>
+                                        @endforeach
+                                    @endforeach
+                                </div>
+                                <div class="user-menu-own" role="group" aria-labelledby="user-menu-own-title">
+                                    <h6 class="dropdown-header text-uppercase fw-bold" id="user-menu-own-title"><i class="bi bi-person me-1" aria-hidden="true"></i>Προτιμήσεις</h6>
+                                    {{-- R3d: page width, saved with the account (resources/modern/preferences.js) --}}
+                                    <h6 class="dropdown-header">Πλάτος σελίδας</h6>
+                                    <button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="full" data-url="{{ url('/preferences') }}"
+                                            aria-pressed="{{ $narrow ? 'false' : 'true' }}"><i class="bi bi-arrows-angle-expand me-2" aria-hidden="true"></i>Όλη η οθόνη
+                                        <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
+                                    <button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="narrow" data-url="{{ url('/preferences') }}"
+                                            aria-pressed="{{ $narrow ? 'true' : 'false' }}"><i class="bi bi-arrows-angle-contract me-2" aria-hidden="true"></i>Στενό, στο κέντρο
+                                        <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
+                                    {{-- R3e (owner, 2026-11-20): the user's home page (login, the brand link, Λίστα) --}}
+                                    <h6 class="dropdown-header">Αρχική σελίδα</h6>
+                                    @php $home = \App\Support\Navigation::homeChoice($user); @endphp
+                                    @foreach (\App\Support\UserPreferences::HOMES as $key => [$label, $icon, $path])
+                                        <button type="button" class="dropdown-item d-flex align-items-center" data-preference="home" data-value="{{ $key }}" data-url="{{ url('/preferences') }}"
+                                                data-home="{{ url($path) }}" aria-pressed="{{ $home === $key ? 'true' : 'false' }}"><i class="bi bi-{{ $icon }} me-2" aria-hidden="true"></i>{{ $label }}
+                                            <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <div class="d-flex flex-wrap user-menu-end">
+                                <a class="dropdown-item w-auto flex-grow-1" href="{{ url('/about') }}"><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Περί…</a>
+                                <form method="POST" action="{{ url('/logout') }}" class="flex-grow-1">
                                     @csrf
                                     <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Έξοδος</button>
                                 </form>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>

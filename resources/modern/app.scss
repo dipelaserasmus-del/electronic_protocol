@@ -16,6 +16,15 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 // N04 date input: a date doesn't need the full column width
 .date-input .input-group { max-width: 24rem; }
 
+/* R3g: the user menu holds Διαχείριση (left) and the user's own choices (right); one column on small screens */
+.user-menu { padding-block: .25rem; }
+.user-menu .dropdown-header { padding-top: .5rem; padding-bottom: .15rem; }
+@media (min-width: 768px) {
+    .user-menu { min-width: 32rem; }
+    .user-menu-columns { display: grid; grid-template-columns: 1fr 1fr; }
+    .user-menu-manage { border-right: 1px solid var(--bs-border-color-translucent); }
+}
+
 /* R3c: the search box in the top bar and its suggestions; R3d: with its search / advanced-search buttons */
 .app-search { min-width: 14rem; }
 @media (min-width: 992px) { .app-search { width: 17rem; } }

@@ -44,9 +44,9 @@ final class Navigation
     }
 
     /**
-     * R3d (owner, 2026-11-18): four items so the bar fits a 1920 × 1080 screen with the search box: Νέο, Λίστα,
-     * Εισερχόμενα and Διαχείριση, which now also holds Εκτύπωση and Διατήρηση (every role) above the administrators'
-     * items. Αναζήτηση moved into the search box. Every item has an icon (Bootstrap Icons name in 'icon').
+     * R3d (owner, 2026-11-18): few items so the bar fits with the search box: Νέο, Λίστα, Εισερχόμενα. Αναζήτηση
+     * moved into the search box. Every item has an icon (Bootstrap Icons name in 'icon'). R3g (owner, 2026-11-20):
+     * Διαχείριση moved into the user menu (manage()).
      *
      * @return list<array<string, mixed>>
      */
@@ -61,28 +61,39 @@ final class Navigation
             $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox'), 'count' => url('/inbox/count')];   // R5f
         }
 
-        $manage = [];
-        // printing lists every protocol, so it is hidden when the list is limited for writers/readers
-        // (same rule as ProtocolController::limitProtocolAccessList, but for this user, not the logged-in one)
+
+        return $items;
+    }
+
+    /**
+     * R3g (owner, 2026-11-20): Διαχείριση, in the user menu at the top right, in groups: Εκτύπωση and Φάκελοι (every
+     * role), Διαχειριστής (administrators). Printing lists every protocol, so it is hidden when the list is limited
+     * for writers/readers (same rule as ProtocolController::limitProtocolAccessList, but for this user).
+     *
+     * @return array<string, list<array{label: string, icon: string, url: string}>> group title => items
+     */
+    public static function manage(User $user): array
+    {
+        $role = $user->role?->role;
+        $groups = [];
         if (! (in_array($role, [self::WRITER, self::READER], true) && Config::getConfigValueOf('limitProtocolAccessList'))) {
-            $manage[] = ['label' => 'Εκτύπωση πρωτοκόλλου', 'icon' => 'printer', 'url' => url('/print')];
-            $manage[] = ['label' => 'Εκτύπωση συνημμένων', 'icon' => 'paperclip', 'url' => url('/printAttachments')];
+            $groups['Εκτύπωση'] = [
+                ['label' => 'Εκτύπωση πρωτοκόλλου', 'icon' => 'printer', 'url' => url('/print')],
+                ['label' => 'Εκτύπωση συνημμένων', 'icon' => 'paperclip', 'url' => url('/printAttachments')],
+            ];
         }
-        $manage[] = ['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')];
+        $groups['Φάκελοι'] = [['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')]];
         if ($role === self::ADMIN) {
-            array_push($manage,
-                ['divider' => true],
-                ['header' => 'Διαχειριστής'],
+            $groups['Διαχειριστής'] = [
                 ['label' => 'Χρήστες', 'icon' => 'people', 'url' => url('/users')],
+                ['label' => 'Ρυθμίσεις', 'icon' => 'sliders', 'url' => url('/settings')],
                 ['label' => 'Backup', 'icon' => 'database-down', 'url' => url('/backups')],
                 ['label' => 'Εκκαθάριση', 'icon' => 'eraser', 'url' => url('/arxeio')],
                 ['label' => 'Κάδος', 'icon' => 'trash3', 'url' => url('/trash')],
-                ['label' => 'Ρυθμίσεις', 'icon' => 'sliders', 'url' => url('/settings')],
-            );
+            ];
         }
-        $items[] = ['label' => 'Διαχείριση', 'icon' => 'gear', 'children' => $manage];
 
-        return $items;
+        return $groups;
     }
 
     private static function lists(User $user, ?string $role): array
