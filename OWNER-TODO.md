@@ -144,6 +144,9 @@ Open *Εισερχόμενα*.
 - [ ] **47.** The top bar has *Νέο*, *Λίστα*, *Εισερχόμενα*; *Διαχείριση* is now in the menu under your name (top
   right): on the left *Διαχείριση* (*Εκτύπωση*, *Φάκελοι*, and for administrators *Διαχείριση*: Χρήστες, Ρυθμίσεις,
   Backup, Εκκαθάριση, Κάδος), on the right your *Προτιμήσεις* (page width, home page); *Περί…* and *Έξοδος* below.
+- [ ] **48.** *Λίστα*: every row has the same height (two lines). *Από / Προς* shows the sender only: the mouse over
+  it shows the whole name, *Αρ. εισερχομένου* and the date. *Ανάθεση* shows the first person and *+N*, *Συνημμένα* the
+  first file and *+N*. ▾ (or *+N* on the files) opens the row with everything.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
