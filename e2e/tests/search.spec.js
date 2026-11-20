@@ -152,3 +152,42 @@ test('search results page with the list pager: any page, the lower pager brings 
     await setSetting(page, 'maxRowsInFindPage', previous);
   }
 });
+
+test('whole words: «Ολόκληρες λέξεις», «=» before a value, εισ:=… in the box, and the help (R3f)', async ({ page }) => {
+  const n = String(Date.now()).slice(-7);   // e.g. 4120123: «4120123» and «84120123/2»
+  await login(page, 'admin');
+  for (const [num, subject] of [[n, `R3f ακριβής ${n}`], [`8${n}/2`, `R3f μεγαλύτερος ${n}`], [`Φ.3/${n}/Δ1`, `R3f μέσα ${n}`]]) {
+    await page.goto('/home');
+    await fillProtocol(page, {
+      thema: subject, fakelos: 'first', in_num: num, in_date: '03/01/2025',
+      in_topos_ekdosis: 'Δοκιμή', in_arxi_ekdosis: 'Διεύθυνση Δοκιμής', in_paraliptis: 'Διευθυντής',
+    });
+    await saveProtocol(page);
+  }
+
+  // part of the text: all three; with the switch: not the longer number
+  await search(page, { in_num: n, year: '' });
+  await expect(page.locator('#search-count')).toContainText('Βρέθηκαν 3 πρωτόκολλα');
+  await page.locator('#s-whole').check();
+  const done = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+  await page.locator('#s-in_num').press('Enter');
+  await done;
+  await expect(page.locator('#search-count')).toContainText('Βρέθηκαν 2 πρωτόκολλα');
+  await expect(page.locator('#search-results')).not.toContainText(`R3f μεγαλύτερος ${n}`);
+  expect(page.url()).toMatch(/[?&]whole=(1|true)/);
+  await evidence(page, 'r3f-whole-switch', { fullPage: true });
+
+  // "=" before one value, without the switch
+  await page.locator('#s-whole').uncheck();
+  await search(page, { in_num: `=${n}` }, { open: false });
+  await expect(page.locator('#search-count')).toContainText('Βρέθηκαν 2 πρωτόκολλα');
+
+  // the box in the top bar: εισ:=…; the help says it
+  await page.locator('#app-search-q').fill(`εισ:=${n}`);
+  await Promise.all([page.waitForURL(/\/search\?q=/), page.locator('#app-search-q').press('Enter')]);
+  await expect(page.locator('main')).toContainText(`R3f ακριβής ${n}`);
+  await expect(page.locator('main')).not.toContainText(`R3f μεγαλύτερος ${n}`);
+  await page.locator('#search-help summary').click();
+  await expect(page.locator('#search-help')).toContainText('ολόκληρη λέξη ή αριθμός');
+  await evidence(page, 'r3f-help', { fullPage: true });
+});

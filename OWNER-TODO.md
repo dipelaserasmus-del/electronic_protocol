@@ -124,6 +124,10 @@ Open *Εισερχόμενα*.
   A long subject shows two lines ending in …; a protocol with more than two files shows two and *+N ακόμη*. Click
   **▾** at the end of a row: that row opens in full (all the files, the details of *Αναλυτικά*); again: it closes.
   *Αναλυτικά* opens every row.
+- [ ] **42.** *Σύνθετη αναζήτηση*: in *Αρ. εισερχομένου* type a number that appears inside longer ones too (e.g.
+  `120`). Without the switch: also 234120, 1205 … Turn on **Ολόκληρες λέξεις** and search again: only 120 (and e.g.
+  120/3, Φ.2/120/Δ1). Same without the switch: `=120` in the field, or `εισ:=120` in the search box at the top. It works
+  for words too (`θέμα:=άδεια` finds «Άδεια», not «αδειούχος»). The help under the results says it.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

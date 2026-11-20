@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 10:05 (after Batch 9, Batch 9.5, D07, R1j, R3e and R2i; times are Greek time)
+## Current state — 2026-11-20 10:45 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i and R3f; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -53,6 +53,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   cells (`col-*`), stripes on `.protocol-row` only (`:nth-child(even of .protocol-row)`, so ΚΕΝΟ rows don't shift
   them). Each row `x-data="{ open }"`, `.row-open` when open or *Αναλυτικά*: `.row-clamp` (2 lines) and files after
   the 2nd hidden otherwise (`+N ακόμη`); ▾ `.row-toggle` next to ⋮.
+- **R3f (Batch 9.5, owner's note 2026-11-20):** a text value or free word starting with `=` is matched whole
+  (`ProtocolSearch::wholeOf` / `contains`: the LIKE as before AND `REGEXP_LIKE(col, wordPattern, 'i')`; the pattern
+  folds Greek accents and σ/ς itself, since ICU regexps don't; boundaries = no letter/digit before/after). The /find
+  switch `whole` (URL `whole=1`) puts `=` before every value. Highlight ignores the `=`. Help: search/help.blade.php.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

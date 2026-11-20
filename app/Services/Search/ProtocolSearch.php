@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * Text is matched by MySQL's utf8mb4_general_ci (D05): "εκκρεμοτητα" finds "ΕΚΚΡΕΜΟΤΗΤΑ" and "Εκκρεμότητα", "οδοσ"
  * finds "οδός". % and _ typed by the user are plain characters, not wildcards.
+ *
+ * R3f (owner, 2026-11-20): a value starting with "=" is matched as a whole word (or number): "=120" finds "120",
+ * "120/3" and "αρ. 120", not "234120" or "1205". Case, accents and final ς are still ignored.
  */
 final class ProtocolSearch
 {
@@ -62,13 +65,17 @@ final class ProtocolSearch
             if ($value === '' || ! array_key_exists($field, SearchCriteria::TEXT_FIELDS)) {
                 continue;
             }
+            [$value, $whole] = self::wholeOf($value);
+            if ($value === '') {
+                continue;
+            }
             if (in_array($field, SearchCriteria::ATTACHMENT_FIELDS, true)) {
-                $onAttachment[] = fn ($a) => $a->where($field, 'LIKE', self::like($value));
+                $onAttachment[] = fn ($a) => self::contains($a, $field, $value, $whole);
             } elseif ($field === 'sxetiko' && preg_match('~^\d+(/\d{4})?$~', $value)) {
                 // a related number is matched whole: "12" finds "12/2026" and "12", not "112" or "5/2012"
                 $q->where('sxetiko', 'REGEXP', '(^|[^0-9/])' . $value . '([^0-9]|$)');
             } else {
-                $q->where($field, 'LIKE', self::like($value));
+                self::contains($q, $field, $value, $whole);
             }
         }
 
@@ -98,8 +105,9 @@ final class ProtocolSearch
         }
 
         foreach ($c->words as $word) {
-            if (($word = trim($word)) !== '') {
-                $q->where(fn ($w) => $this->anyField($w, $word));
+            [$word, $whole] = self::wholeOf(trim($word));
+            if ($word !== '') {
+                $q->where(fn ($w) => $this->anyField($w, $word, $whole));
             }
         }
 
@@ -111,14 +119,14 @@ final class ProtocolSearch
     }
 
     /** R3b: one free word, anywhere: a text field, the folder, an attachment, or the number (125 or 125/2026) */
-    private function anyField(Builder $w, string $word): void
+    private function anyField(Builder $w, string $word, bool $whole = false): void
     {
-        $like = self::like($word);
         foreach (array_diff(array_keys(SearchCriteria::TEXT_FIELDS), SearchCriteria::ATTACHMENT_FIELDS) as $field) {
-            $w->orWhere($field, 'LIKE', $like);
+            $w->orWhere(fn ($f) => self::contains($f, $field, $word, $whole));
         }
-        $w->orWhere('fakelos', 'LIKE', $like)
-            ->orWhereHas('attachments', fn ($a) => $a->where('name', 'LIKE', $like)->orWhere('ada', 'LIKE', $like));
+        $w->orWhere(fn ($f) => self::contains($f, 'fakelos', $word, $whole))
+            ->orWhereHas('attachments', fn ($a) => $a->where(fn ($x) => self::contains($x, 'name', $word, $whole))
+                ->orWhere(fn ($x) => self::contains($x, 'ada', $word, $whole)));
         if (preg_match('~^(\d{1,9})(?:/(\d{4}))?$~', $word, $m)) {
             $w->orWhere(fn ($n) => isset($m[2]) ? $n->where('protocolnum', (int) $m[1])->where('etos', (int) $m[2]) : $n->where('protocolnum', (int) $m[1]));
         }
@@ -170,6 +178,39 @@ final class ProtocolSearch
     private static function exactFolders(string $typed, array $codes): array
     {
         return array_values(array_map('strval', array_filter($codes, fn ($code) => FolderCode::same($typed, (string) $code))));
+    }
+
+    /** R3f: "=120" → ['120', true] (whole word); "120" → ['120', false] */
+    public static function wholeOf(string $value): array
+    {
+        return str_starts_with($value, '=') ? [trim(substr($value, 1)), true] : [$value, false];
+    }
+
+    /** The column contains the text; whole (R3f): as a word of its own, not inside a longer word or number. */
+    private static function contains($query, string $column, string $value, bool $whole)
+    {
+        $query->where($column, 'LIKE', self::like($value));   // the collation's matching (case, accents); uses no regexp
+        if ($whole) {
+            $query->whereRaw("REGEXP_LIKE(`{$column}`, ?, 'i')", [self::wordPattern($value)]);
+        }
+
+        return $query;
+    }
+
+    /** Accented / final forms of the Greek vowels and σ, for the whole-word pattern (the regexp does not fold accents) */
+    private const GREEK_VARIANTS = ['αά', 'εέ', 'ηή', 'ιίϊΐ', 'οό', 'υύϋΰ', 'ωώ', 'σς'];
+
+    /** R3f: ICU pattern of the text as a whole word: no letter or digit just before or after it */
+    public static function wordPattern(string $value): string
+    {
+        $body = '';
+        foreach (mb_str_split($value) as $ch) {
+            $lower = mb_strtolower($ch);
+            $group = current(array_filter(self::GREEK_VARIANTS, fn ($g) => str_contains($g, $lower)));
+            $body .= $group ? '[' . $group . ']' : (preg_match('/[\p{L}\p{N}\s]/u', $ch) ? $ch : '\\' . $ch);
+        }
+
+        return '(^|[^\\p{L}\\p{N}])' . $body . '([^\\p{L}\\p{N}]|$)';
     }
 
     /** "contains" pattern for LIKE; the user's % _ \ are plain characters */

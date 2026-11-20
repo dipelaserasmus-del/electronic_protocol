@@ -59,7 +59,7 @@
 
             <div class="col-lg-7">
                 <div class="card shadow-sm h-100">
-                    <div class="card-header fw-semibold">Περιεχόμενο <small class="fw-normal text-body-secondary">· μέρος του κειμένου, χωρίς τόνους / κεφαλαία</small></div>
+                    <div class="card-header fw-semibold">Περιεχόμενο <small class="fw-normal text-body-secondary">· μέρος του κειμένου (ή ολόκληρη λέξη), χωρίς τόνους / κεφαλαία</small></div>
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-12">
@@ -68,6 +68,15 @@
                                        placeholder="λέξεις σε οποιοδήποτε πεδίο ή αριθμός (π.χ. μετάθεση 125/2026 ή &quot;άδεια μητρότητας&quot;)">
                                 @if ($e('words'))<div class="invalid-feedback">{{ $e('words') }}</div>
                                 @else<div class="form-text">Δέχεται και τις λέξεις της γρήγορης αναζήτησης, π.χ. <code>από:δήμος</code> <code>φάκελος:Φ.1</code> <code>είναι:εκκρεμές</code>.</div>@endif
+                            </div>
+                            {{-- R3f (owner, 2026-11-20): whole words, for every field; or "=" before one value --}}
+                            <div class="col-12">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="s-whole" wire:model="whole">
+                                    <label class="form-check-label small fw-semibold" for="s-whole">Ολόκληρες λέξεις</label>
+                                </div>
+                                <div class="form-text mt-0">Π.χ. ο αρ. εισερχομένου <code>120</code> βρίσκει μόνο το 120 (και 120/3), όχι 234120 ή 1205.
+                                    Για ένα μόνο πεδίο: <code>=</code> μπροστά, π.χ. <code>=120</code>.</div>
                             </div>
                             <div class="col-md-6">
                                 {{-- R1f's folder picker, with «Όλοι» and «Χωρίς φάκελο» first; code typed with or without dots --}}
@@ -95,7 +104,7 @@
                             <div class="col-md-6">{{ $field('thema', 'Θέμα') }}</div>
                             <div class="col-md-6">{{ $field('in_arxi_ekdosis', 'Από (αρχή έκδοσης)', 'suggest-in_arxi_ekdosis') }}</div>
                             <div class="col-md-6">{{ $field('out_to', 'Προς (απευθύνεται)', 'suggest-out_to') }}</div>
-                            <div class="col-md-4">{{ $field('in_num', 'Αρ. εισερχομένου') }}</div>
+                            <div class="col-md-4">{{ $field('in_num', 'Αρ. εισερχομένου', null, '=120: μόνο το 120, όχι 234120') }}</div>
                             <div class="col-md-4">{{ $field('sxetiko', 'Σχετικοί αριθμοί', null, 'π.χ. 12 ή 12/2026') }}</div>
                             <div class="col-md-4">{{ $field('keywords', 'Λέξεις κλειδιά') }}</div>
                             <div class="col-md-6">

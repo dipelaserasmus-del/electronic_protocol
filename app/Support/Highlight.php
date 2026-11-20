@@ -15,7 +15,7 @@ final class Highlight
     {
         $text = is_scalar($text) ? (string) $text : '';
         $terms = array_values(array_filter(array_map(
-            fn ($t) => TagList::fold(trim((string) $t)),
+            fn ($t) => TagList::fold(trim(ltrim(trim((string) $t), '='))),   // R3f: "=120" (whole word) marks 120
             is_array($terms) ? $terms : (is_scalar($terms) ? [$terms] : []),
         ), fn ($t) => $t !== ''));
         if ($text === '' || ! $terms) {
