@@ -579,4 +579,23 @@ class InboxTest extends FeatureTestCase
         $article = substr($html = $page->html(), strpos($html, 'id="msg-1"'));
         $this->assertGreaterThan(strpos($article, 'inbox-mail small'), strpos($article, 'class="inbox-attachments'));
     }
+
+    /** R5l (owner, 2026-11-20): a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on. */
+    public function test_a_done_email_folds_with_a_way_to_open_it_or_go_on(): void
+    {
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);   // UIDs 1, 2, 3 on the page
+        $page->call('markRead', 1);
+        $html = $page->html();
+        $first = substr($html, strpos($html, 'id="msg-1"'));
+        $first = substr($first, 0, strpos($first, '</article>'));
+
+        $this->assertMatchesRegularExpression('~class="card shadow-sm mb-3 inbox-message\s+is-done\s*"\s+id="msg-1"~', $html);
+        $this->assertStringContainsString('data-action="show-mail"', $first);
+        $this->assertStringContainsString('x-on:click="go(2)" data-action="next-mail"', $first, 'the next one still waiting');
+        $this->assertStringContainsString('id="mail-1"', $first, 'the e-mail is still there, folded by CSS');
+
+        $page->call('markRead', 3);
+        $last = substr($html = $page->html(), strpos($html, 'id="msg-3"'));
+        $this->assertStringNotContainsString('data-action="next-mail"', substr($last, 0, strpos($last, '</article>')), 'none left after it');
+    }
 }
