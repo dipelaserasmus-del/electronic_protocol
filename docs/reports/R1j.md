@@ -20,6 +20,9 @@ On the protocol page:
 - **The row under the number**: *Νέο* and *Λίστα* are gone. *Ανάθεση*, *Διεκπεραιώθηκε*, *◀ Προηγούμενο*, *Επόμενο ▶*
   and *Διαγραφή* stay where they were. *Αντιγραφή ως νέο* (icon ⧉) and *Απόδειξη* (icon 🧾) are at the right end of
   the row. A new protocol has none of these buttons, so the row is not shown.
+- **Readers** (owner, 2026-11-20: they only view protocols) no longer get *Αντιγραφή ως νέο*: not in the form, not
+  in the list's ⋮ menu. *Απόδειξη* stays. A new rule, `ProtocolPolicy::create`, says who may make a new protocol:
+  everyone but readers.
 - **Λίστα in the top bar**: the word is a link to the list. A small **▾** next to it opens the other lists as before
   (*Όλα τα πρωτόκολλα*, *προς Διεκπεραίωση* …).
   - It leads to each role's start page, the same as *Όλα τα πρωτόκολλα* and the application's name.
@@ -38,7 +41,9 @@ On the protocol page:
     - one submit button, the floating one;
     - no *Νέο* / *Λίστα* links in the form;
     - copy and receipt after *Προηγούμενο* / *Επόμενο*, with their icons;
-    - a new protocol has the same button and no copy.
+    - a new protocol has the same button and no copy;
+    - a reader gets no copy and no save, and *Απόδειξη* moves to the far right.
+  - `ProtocolListTest::test_row_actions_are_under_a_menu`: a reader's ⋮ menu has only *Απόδειξη*.
   - `ModernLayoutTest::test_the_list_item_is_a_link_and_its_arrow_opens_the_menu` checks:
     - *Λίστα* leads to the role's list;
     - its ▾ opens the menu;

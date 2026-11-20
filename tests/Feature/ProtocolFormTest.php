@@ -273,6 +273,14 @@ class ProtocolFormTest extends FeatureTestCase
         $new = $this->actingAs($this->writer())->get('/home')->assertOk()->getContent();
         $this->assertStringContainsString('id="form-save"', $new, 'a new protocol is saved by the same button');
         $this->assertStringNotContainsString('data-action="copy"', $new);
+
+        // readers only view: no copy as new; the receipt takes the far right
+        $read = $this->actingAs($this->reader())->get('/home/'.$p->id)->assertOk()->getContent();
+        $this->assertStringNotContainsString('data-action="copy"', $read);
+        $this->assertMatchesRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="receipt"~', $read);
+        $this->assertStringNotContainsString('id="form-save"', $read);
+        $this->assertFalse($this->reader()->can('create', Protocol::class));
+        $this->assertTrue($this->writer()->can('create', Protocol::class));
     }
 
     public function test_reader_assigned_for_handling_marks_it_done(): void

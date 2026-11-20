@@ -94,6 +94,12 @@ class ProtocolPolicy
         return true;
     }
 
+    /** R1j (owner, 2026-11-20): a new protocol (or a copy as new): everyone but readers, who only view. */
+    public function create(User $user): bool
+    {
+        return self::role($user) !== self::READER;
+    }
+
     /** Deleting a whole protocol: administrators only (the form shows the button only to them). */
     public function delete(User $user, Protocol $protocol): bool
     {
