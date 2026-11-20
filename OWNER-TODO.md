@@ -156,6 +156,8 @@ Open *Εισερχόμενα*.
 - [ ] **52.** *Εισερχόμενα*: press *Καταχώριση* (or the yellow *Ναι, καταχώριση*): at once a blue *«Καταχωρίζεται…»*
   appears above the buttons and the button turns; meanwhile the buttons of every e-mail are greyed out; when it is
   done the e-mail says *«Καταχωρίστηκε με αριθμό …»*.
+- [ ] **53.** After *Καταχώριση* or *Αναγνωσμένο*, the e-mail folds to its result line. *Εμφάνιση email ▾* opens it
+  again (*Απόκρυψη ▴* folds it); *Επόμενο email ↓* goes to the next e-mail still waiting on the page.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

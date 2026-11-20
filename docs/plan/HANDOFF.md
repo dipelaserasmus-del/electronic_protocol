@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 20:10 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j and R5k; times are Greek time)
+## Current state — 2026-11-20 21:30 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k and R5l; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -97,6 +97,9 @@ Read this first when (re)starting work. Update it at the end of every task.
   register(uid, …) calls (Livewire matches the exact arguments); spinners on the pressed button; every register /
   register-anyway / markRead button `wire:loading.attr=disabled wire:target="register,markRead"`. Livewire runs one
   request at a time per page; numbers are given under the DB lock (ProtocolNumbering), also across users.
+- **R5l (Batch 9.5, owner's note 2026-11-20):** every inbox article has `x-data="{ shown }"`; a done one
+  (`.is-done`, server) hides `.inbox-mail` by CSS until «Εμφάνιση email» (`.mail-shown`); «Επόμενο email ↓» =
+  `go(next pending uid on the page)`.
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
