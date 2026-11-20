@@ -21,6 +21,21 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 @media (min-width: 992px) { .app-search { width: 17rem; } }
 @media (min-width: 1600px) { .app-search { width: 22rem; } }
 .app-topbar .navbar-brand { flex-shrink: 0; }
+/* R3e (owner, 2026-11-20): the menu stays open from 768px up, so on medium screens the bar makes room: the name and
+   the role go into the user button's tooltip, the brand shortens with …, the search box narrows; on the narrowest of
+   them the search box and the user button may go to a second row instead of hiding the menu */
+@media (min-width: 768px) and (max-width: 1399.98px) {
+    .app-topbar .nav-user-name { display: none; }
+    .app-topbar .navbar-brand { flex-shrink: 1; max-width: 16rem; }
+    .app-topbar .navbar-brand > span { overflow: hidden; text-overflow: ellipsis; }
+    .app-topbar .navbar-nav .nav-link { padding-inline: .45rem; }
+    .app-topbar .navbar-collapse { flex-wrap: wrap; row-gap: .35rem; }
+    .app-search { min-width: 0; width: 13rem; }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .app-topbar .navbar-brand { max-width: 11rem; }
+    .app-topbar .navbar-brand .brand-institution { display: none !important; }
+}
 /* R3d: the institution on a second, smaller line under the application's name */
 .app-brand { line-height: 1.15; padding-block: .1rem; }
 .app-brand .brand-institution { font-size: .72rem; opacity: .85; max-width: 18rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

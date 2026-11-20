@@ -26,7 +26,8 @@
     @livewireStyles
 </head>
 <body class="bg-body-tertiary @if ($narrow) layout-narrow @endif">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary app-topbar sticky-top shadow-sm"
+{{-- R3e (owner, 2026-11-20): the menu stays open from 768px up (it folded under 992px); see app.scss --}}
+<nav class="navbar navbar-expand-md navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
      aria-label="Κύριο μενού">
     <div class="container-fluid">
@@ -41,7 +42,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="app-nav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     @foreach (\App\Support\Navigation::for($user) as $i => $item)
                         @if (isset($item['children']))
                             <li class="nav-item dropdown @isset($item['url']) nav-split @endisset">
@@ -85,13 +86,13 @@
                 </ul>
 
                 {{-- R3c: the search box, on every page --}}
-                <div class="me-lg-3 my-2 my-lg-0">@include('search.box')</div>
+                <div class="me-md-2 me-xl-3 my-2 my-md-0">@include('search.box')</div>
 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false" id="nav-user">
-                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span>
+                           aria-expanded="false" id="nav-user" title="{{ $user->name }} ({{ $user->role?->role }})" aria-label="{{ $user->name }} {{ $user->role?->role }}">
+                            <i class="bi bi-person-circle me-1" aria-hidden="true"></i><span class="nav-user-name">{{ $user->name }} <span class="badge text-bg-light ms-1">{{ $user->role?->role }}</span></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-user">
                             {{-- R3d: page width, saved with the account (resources/modern/preferences.js) --}}

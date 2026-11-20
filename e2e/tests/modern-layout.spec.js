@@ -139,3 +139,23 @@ test('each user chooses their home page from the user menu; the brand and Λίσ
     await choose('προς Διεκπεραίωση');   // the readers' default in the dev set-up
   }
 });
+
+test('top bar: the menu stays open on medium screens, nothing wider than the screen (R3e)', async ({ page }) => {
+  await login(page, 'admin');
+  for (const width of [768, 950, 1024, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/home/list');
+    const bar = page.locator('nav.app-topbar');
+    await expect(bar.getByRole('button', { name: 'Μενού' })).toBeHidden();
+    for (const item of ['Νέο', 'Λίστα', 'Εισερχόμενα', 'Διαχείριση']) {
+      await expect(bar.locator('.nav-link', { hasText: item }).first(), `${item} at ${width} px`).toBeVisible();
+    }
+    await expect(page.locator('#app-search-q')).toBeVisible();
+    await expect(bar.locator('#nav-user')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), `no sideways scroll at ${width} px`).toBeLessThanOrEqual(width);
+    const height = (await bar.boundingBox()).height;
+    expect(height, `at most two rows at ${width} px`).toBeLessThan(120);
+    if (width >= 950) expect(height, `one row at ${width} px`).toBeLessThan(70);
+    await evidence(page, `r3e-top-bar-${width}`, { clip: { x: 0, y: 0, width, height: 160 } });
+  }
+});
