@@ -74,6 +74,9 @@ final class ProtocolSearch
             } elseif ($field === 'sxetiko' && preg_match('~^\d+(/\d{4})?$~', $value)) {
                 // a related number is matched whole: "12" finds "12/2026" and "12", not "112" or "5/2012"
                 $q->where('sxetiko', 'REGEXP', '(^|[^0-9/])' . $value . '([^0-9]|$)');
+                if ($whole) {
+                    self::contains($q, 'sxetiko', $value, true);   // and no letter next to it: not "Α120" (review of R3f)
+                }
             } else {
                 self::contains($q, $field, $value, $whole);
             }
@@ -221,7 +224,8 @@ final class ProtocolSearch
             }
         }
 
-        return '(^|[^\\p{L}\\p{N}])' . $body . '([^\\p{L}\\p{N}]|$)';
+        // an accent stored as a separate mark is part of the word, never a boundary (review of R3f)
+        return '(^|[^\\p{L}\\p{N}\\p{M}])' . $body . '([^\\p{L}\\p{N}\\p{M}]|$)';
     }
 
     /** Lower case, without accents or final forms: "Άδεια", "άδεια" (decomposed), "ΆΔΕΙΑ" → "αδεια"; "Café" → "cafe" */

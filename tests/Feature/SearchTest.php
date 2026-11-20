@@ -99,6 +99,13 @@ class SearchTest extends FeatureTestCase
         $this->assertContains("Κανονική \u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1} (με χωριστό τόνο)", $this->subjects($this->criteria(['text' => ['thema' => '=αδεια']])));
         $this->assertContains('Άδεια μητρότητας', $this->subjects($this->criteria(['text' => ['thema' => "=\u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1}"]])), 'typed decomposed');
 
+        // review of R3f: a separate accent mark is inside the word, not a boundary; related numbers with letters next to them
+        $this->assertSame([], $this->subjects($this->criteria(['text' => ['thema' => '=δεια']])), 'not the end of ά+δεια');
+        Protocol::factory()->number(40)->create(['thema' => 'Σχετικό σκέτο', 'sxetiko' => '120']);
+        Protocol::factory()->number(41)->create(['thema' => 'Σχετικό με γράμμα', 'sxetiko' => 'Α120']);
+        $this->assertSame(['Σχετικό σκέτο'], $this->subjects($this->criteria(['text' => ['sxetiko' => '=120']])));
+        $this->assertSame(['Σχετικό με γράμμα', 'Σχετικό σκέτο'], $this->subjects($this->criteria(['text' => ['sxetiko' => '120']])), 'without =: as before');
+
         // typed: εισ:=120; the advanced screen's switch; the hint and the help
         $this->assertSame('=120', (new \App\Services\Search\QueryParser())->parse('εισ:=120')->text['in_num']);
         $this->actingAs($this->admin())->get('/search?q='.urlencode('εισ:=120'))->assertOk()
