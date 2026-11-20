@@ -67,5 +67,9 @@ None. To try it: step 41 in [OWNER-TODO.md](../../OWNER-TODO.md).
     on resize and after each change of the list.
   - Browser test (R2i): every such row spans exactly the columns shown, at each width. With the full run's data it
     failed before the fix (116px) and passes after.
+- Codex (P2): switching to the narrow page width (*Πλάτος σελίδας*) hides *Από / Προς* without a resize, so a ΚΕΝΟ row
+  kept its old span until a reload.
+  - Fixed: the span follows any change of the content's width, not only the window's.
+  - Browser test (R2i): with a ΚΕΝΟ row, switching to the narrow width and back refits it at once. It failed before.
 
 ![The list at 1024px](img/R2i/r2i-list-768.png)
