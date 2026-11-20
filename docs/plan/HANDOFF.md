@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 17:05 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k and R5h; times are Greek time)
+## Current state — 2026-11-20 18:20 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h and R5i; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -83,6 +83,10 @@ Read this first when (re)starting work. Update it at the end of every task.
 - **R5h (Batch 9.5, owner's report 2026-11-20):** folderPicker.scroll() scrolls only its list (scrollIntoView moved
   the page); inbox `go(uid)` focuses the article (tabindex -1), not its first field, and `hold()` keeps it aligned for
   2.5 s (ResizeObserver on body, after scrollend) unless the user scrolls / clicks / types.
+- **R5i (Batch 9.5, owner's note 2026-11-20):** `livewire/partials/inbox-addresses` folds Προς / Κοιν. after 3
+  (`[data-addresses]`, «και άλλοι N ▾»). Synthetic e-mail 12 has 41 recipients + Cc. **`./dev.sh e2e` loads the mock
+  inbox with `--no-private`** (make-emails.php): the dev inbox otherwise holds the owner's `local-data/emails`, and an
+  R5g screenshot had shown one (replaced; old image still in the branch history of #85+, owner decides).
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
   e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the
   user types that number over it.
