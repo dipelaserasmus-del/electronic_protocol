@@ -229,11 +229,18 @@ class EmailInbox extends Component
         $this->done[$uid] = ['type' => 'read'];
     }
 
-    /** R5f: an e-mail left the inbox: one less on the badge here at once; every user's badge counts again */
+    /**
+     * R5f: an e-mail was registered or read: count the inbox again for everybody, and show it here at once. Counted, not
+     * worked out from this page (review of R5f): other users may have emptied it meanwhile, and a registered e-mail
+     * whose move failed is still there.
+     */
     private function leftInbox(): void
     {
         \App\Services\Mail\InboxCount::forget();
-        $this->dispatch('inbox-count', count: max(0, $this->total - count($this->done) - 1));
+        $count = app(\App\Services\Mail\InboxCount::class)->count();
+        if ($count !== null) {
+            $this->dispatch('inbox-count', count: $count);
+        }
     }
 
     private function load(): void
