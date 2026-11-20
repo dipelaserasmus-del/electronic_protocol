@@ -89,12 +89,24 @@ class EmailInbox extends Component
         $this->load();
     }
 
-    public function goToPage(int $page): void
+    /** A page of the inbox; also the list pager's gotoPage(n, 'page'); past the last page: the last (R5g) */
+    public function gotoPage(int $page, string $name = 'page'): void
     {
         $this->allowed();
-        $this->page = max(1, $page);
+        $this->page = max(1, min($page, (int) ceil($this->total / max(1, $this->perPage)) ?: 1));
         $this->done = [];
         $this->load();
+    }
+
+    /** R5g: the list pager's previous / next (x-list-pager, as on the other paged screens) */
+    public function previousPage(string $name = 'page'): void
+    {
+        $this->gotoPage($this->page - 1);
+    }
+
+    public function nextPage(string $name = 'page'): void
+    {
+        $this->gotoPage($this->page + 1);
     }
 
     /** The retention follows the folder, as in the protocol form (setting allowUserChangeKeepSelect decides the rest). */
@@ -373,6 +385,8 @@ class EmailInbox extends Component
             'account' => (string) Config::getConfigValueOf('defaultImapEmail'),
             'newestFirst' => (bool) Config::getConfigValueOf('emailFetchOrderDesc'),
             'lastPage' => max(1, (int) ceil($this->total / max(1, $this->perPage))),
+            // R5g: for the list pager above and below the e-mails
+            'paginator' => new \Illuminate\Pagination\LengthAwarePaginator(array_fill(0, count($this->uids), null), $this->total, max(1, $this->perPage), $this->page),
             'canAssign' => ProtocolAccess::for($user, new \App\Models\Protocol())->canAssign,
             'mayChangeKeep' => (bool) Config::getConfigValueOf('allowUserChangeKeepSelect'),
             'receiptOnly' => (bool) Config::getConfigValueOf('alwaysSendReceitForEmails'),

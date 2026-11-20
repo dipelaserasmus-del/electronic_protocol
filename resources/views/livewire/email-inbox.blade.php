@@ -19,6 +19,11 @@
         </button>
     </div>
 
+    {{-- R5g (owner, 2026-11-20): the list's pager above the e-mails too (the only one was below the last e-mail) --}}
+    @if (! $failure && $total > $perPage)
+        <x-list-pager :paginator="$paginator" position="top" class="mb-3 justify-content-end" />
+    @endif
+
     @if ($failure)
         <x-notice type="error" id="inbox-failure">Η σύνδεση με τον λογαριασμό email απέτυχε. Ελέγξτε τις ρυθμίσεις. Κωδικός σφάλματος: {{ $failure }}</x-notice>
     @elseif ($total === 0)
@@ -28,6 +33,17 @@
             {{-- the page's messages: a click scrolls to the message --}}
             <aside class="col-lg-3 d-none d-lg-block">
                 <nav class="inbox-sidebar list-group shadow-sm" aria-label="Email της σελίδας" id="inbox-sidebar">
+                    {{-- R5g: the list on the left is one page of the inbox: which, and the way to the others --}}
+                    @if ($lastPage > 1)
+                        <div class="list-group-item d-flex align-items-center gap-1 py-1 bg-body-tertiary inbox-sidebar-pager">
+                            <button type="button" class="btn btn-sm btn-link px-1" wire:click="gotoPage({{ $page - 1 }})" @disabled($page <= 1)
+                                    x-on:click="window.scrollTo({ top: 0 })" aria-label="Προηγούμενη σελίδα" data-pager="side-previous">‹</button>
+                            <span class="small flex-grow-1 text-center">Σελίδα {{ $page }} από {{ $lastPage }}
+                                <span class="text-body-secondary">· {{ $first }}–{{ $last }} από {{ $total }}</span></span>
+                            <button type="button" class="btn btn-sm btn-link px-1" wire:click="gotoPage({{ $page + 1 }})" @disabled($page >= $lastPage)
+                                    x-on:click="window.scrollTo({ top: 0 })" aria-label="Επόμενη σελίδα" data-pager="side-next">›</button>
+                        </div>
+                    @endif
                     @foreach ($messages as $uid => $m)
                         <a href="#msg-{{ $uid }}" class="list-group-item list-group-item-action py-2 inbox-sidebar-item @if (isset($done[$uid])) is-done @endif"
                            wire:key="side-{{ $uid }}" x-on:click.prevent="go({{ $uid }})" :class="{ active: current === {{ $uid }} }">
@@ -342,11 +358,7 @@
                 @endforeach
 
                 @if ($lastPage > 1)
-                    <nav class="d-flex justify-content-center align-items-center gap-2 inbox-pager" aria-label="Σελίδες">
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" wire:click="goToPage({{ $page - 1 }})" @disabled($page <= 1)>‹ Προηγούμενα</button>
-                        <span class="small">Σελίδα {{ $page }} από {{ $lastPage }}</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" wire:click="goToPage({{ $page + 1 }})" @disabled($page >= $lastPage)>Επόμενα ›</button>
-                    </nav>
+                    <x-list-pager :paginator="$paginator" position="bottom" class="justify-content-end inbox-pager" />
                 @endif
             </div>
         </div>

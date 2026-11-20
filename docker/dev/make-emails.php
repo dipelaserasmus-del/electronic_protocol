@@ -16,7 +16,9 @@
  */
 
 $fixturesDir = rtrim($argv[1] ?? 'tests/fixtures/emails/synthetic', '/');
-$preloadDir = isset($argv[2]) ? rtrim($argv[2], '/') : null;
+$preloadDir = isset($argv[2]) && $argv[2] !== '--no-private' ? rtrim($argv[2], '/') : null;
+// R5i: the browser tests (and their screenshots, which are committed) never see the owner's private e-mails
+$withPrivate = ! in_array('--no-private', $argv, true);
 $mailbox = 'protocol@school.test';
 @mkdir($fixturesDir, 0777, true);
 
@@ -329,7 +331,7 @@ if ($preloadDir) {
     $sources = array_merge(
         glob("$fixturesDir/*.eml") ?: [],
         glob('tests/fixtures/emails/real/*.eml') ?: [],
-        glob('local-data/emails/*.eml') ?: []      // owner's private emails, never committed
+        $withPrivate ? (glob('local-data/emails/*.eml') ?: []) : []      // owner's private emails, never committed
     );
     foreach ($sources as $src) copy($src, "$inbox/" . basename($src));
     // Large attachment (12 MB), generated only for the mock server

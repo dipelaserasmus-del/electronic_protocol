@@ -200,7 +200,7 @@ class InboxTest extends FeatureTestCase
     {
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
         $this->assertSame([1, 2, 3], $page->get('uids'));
-        $page->call('goToPage', 3);
+        $page->call('gotoPage', 3);
         $this->assertSame([7, 8], $page->get('uids'));
         $page->assertSee('Σελίδα 3 από 3');
 
@@ -517,6 +517,31 @@ class InboxTest extends FeatureTestCase
         // only for who uses the inbox
         $this->actingAs($this->reader())->get('/inbox/count')->assertRedirect();
         $this->actingAs($this->reader())->get('/about')->assertDontSee('data-inbox-count', false);
+    }
+
+    /** R5g (owner, 2026-11-20): every e-mail can be reached: the list pager above and below, and in the list on the left. */
+    public function test_every_page_of_the_inbox_can_be_reached(): void
+    {
+        $user = $this->writer();
+        $html = $this->actingAs($user)->get('/inbox')->assertOk()->getContent();
+        $this->assertStringContainsString('id="pager-top"', $html);
+        $this->assertStringContainsString('id="pager-bottom"', $html);
+        $this->assertMatchesRegularExpression('~inbox-sidebar-pager.*?Σελίδα 1 από 3.*?1–3 από 8~s', $html);
+        $this->assertSame(2, substr_count($html, 'data-pager="select"'), 'a page choice in both pagers');
+        $this->assertMatchesRegularExpression('~data-pager="select".*?<option value="3"\s*>3</option>~s', $html, 'every page offered');
+
+        $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        $page->call('nextPage')->assertSet('page', 2)->assertSet('uids', [4, 5, 6]);
+        $page->call('gotoPage', 3, 'page')->assertSet('uids', [7, 8])->assertSee('Σελίδα 3 από 3');
+        $page->call('previousPage')->assertSet('page', 2);
+        $page->call('gotoPage', 99)->assertSet('page', 3)->assertSet('uids', [7, 8]);
+        $page->call('gotoPage', 1)->assertSet('uids', [1, 2, 3]);
+
+        // one page only: no pagers
+        $this->setting('emailNumFetch', 20);
+        $html = $this->actingAs($user)->get('/inbox')->assertOk()->getContent();
+        $this->assertStringNotContainsString('id="pager-top"', $html);
+        $this->assertStringNotContainsString('inbox-sidebar-pager', $html);
     }
 
     /** Review of R5f: while one request counts (holds the lock), the others do not ask the mail server too. */

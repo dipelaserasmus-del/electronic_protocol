@@ -138,6 +138,9 @@ Open *Εισερχόμενα*.
 - [ ] **45.** With e-mails in the inbox, the top bar shows a red number next to *Εισερχόμενα* (all of them, read or
   not), on every page. Two users at once (two browsers): one registers or marks e-mails as read until the inbox is
   empty; the other's number goes down and disappears within a minute (at once when they come back to the tab).
+- [ ] **46.** *Εισερχόμενα* with more e-mails than *Email ανά σελίδα*: the same pager as *Λίστα* above the e-mails
+  (and below the last one), with *Σελίδα [ ▾ ] από …*; the list on the left says *Σελίδα 1 από 4 · 1–5 από 16* with
+  ‹ › to the other pages.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

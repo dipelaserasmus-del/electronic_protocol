@@ -35,7 +35,8 @@ build_assets() {   # $1 = compose function of the stack
 }
 
 load_mail() {
-  in_app php docker/dev/make-emails.php tests/fixtures/emails/synthetic docker/dev/mail-preload
+  # "$@": --no-private for the browser tests (their screenshots are committed: never the owner's e-mails, R5i)
+  in_app php docker/dev/make-emails.php tests/fixtures/emails/synthetic docker/dev/mail-preload "$@"
   compose up -d --force-recreate imap >/dev/null
   # wait until the mock mailbox answers (GreenMail is a JVM and loads the files on start)
   local n=""
@@ -168,7 +169,7 @@ case "${1:-help}" in
     # container (no Node needed), run as your user so e2e/node_modules is not owned by root.
     shift
     # fresh mock mailbox every run: the e-mail registration test moves a message out of the inbox
-    [ -n "${APP_URL:-}" ] || load_mail
+    [ -n "${APP_URL:-}" ] || load_mail --no-private
     if [ -n "${CI:-}" ] || [ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" ] || [ -n "${E2E_HOST_NODE:-}" ]; then
       (cd e2e && { [ -d node_modules ] || npm install --no-audit --no-fund; } && npx playwright test "$@")
     else

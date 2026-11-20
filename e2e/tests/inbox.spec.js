@@ -1,7 +1,7 @@
 // R5a: inbox from the mail cache; sender names split inside a Greek letter; HTML preview behind login.
 // R5c: the rebuilt inbox: list on the left, text/HTML sections that open and close (remembered), sizes.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, setSetting } = require('./helpers');
 
 /** The message (<article>) of the synthetic e-mail whose text contains `text`, on whichever page it is. */
 async function findEmail(page, text) {
@@ -197,4 +197,36 @@ test('a red badge next to Εισερχόμενα counts the e-mails waiting; che
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await page.waitForTimeout(300);
   await expect(badge).toHaveText('3');
+});
+
+test('every e-mail can be reached: the pager above and below, and in the list on the left (R5g)', async ({ page }) => {
+  // two per page, so there are pages whatever the registration tests left in the mock inbox
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'emailNumFetch', 2);
+  try {
+  await page.goto('/inbox');
+  const top = page.locator('#pager-top');
+  await expect(top).toBeVisible();   // above the first e-mail, no scrolling needed
+  const side = page.locator('.inbox-sidebar-pager');
+  await expect(side).toContainText('Σελίδα 1 από');
+  const pages = Number((await side.innerText()).match(/από (\d+)/)[1]);
+  expect(pages).toBeGreaterThan(1);
+  const firstSubject = await page.locator('.inbox-subject').first().innerText();
+  await evidence(page, 'r5g-inbox-pagers', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
+
+  // any page from the list of pages
+  await top.locator('[data-pager=select]').selectOption(String(pages));
+  await expect(side).toContainText(`Σελίδα ${pages} από ${pages}`);
+  await expect(page.locator('.inbox-subject').first()).not.toHaveText(firstSubject);
+  await expect(page).toHaveURL(new RegExp(`[?&]page=${pages}`));
+  // back with the list on the left
+  await side.locator('[data-pager=side-previous]').click();
+  await expect(side).toContainText(`Σελίδα ${pages - 1} από ${pages}`);
+  // and below the last e-mail
+  await page.locator('#pager-bottom [data-pager=next]').click();
+  await expect(side).toContainText(`Σελίδα ${pages} από ${pages}`);
+  await expect(page.locator('#pager-top')).toBeInViewport();
+  } finally {
+    await setSetting(page, 'emailNumFetch', previous);
+  }
 });
