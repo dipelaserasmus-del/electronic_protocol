@@ -67,6 +67,9 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
   question. The same held for a tag still on its way to the server.
   - Fixed: both count as changes. They are listed as *«… (νέο)»*, and the dot follows typing.
   - Browser test: typing a keyword shows the dot and lists it in the dialog. It failed before.
+- Codex (P2), third round: a tag changed in place, with its editor still open, did not count.
+  - Fixed: an open editor whose text differs from its tag counts as a change.
+  - Browser test: edit a saved keyword in place; the dot shows and the dialog lists the new text. It failed before.
 
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).
