@@ -40,5 +40,14 @@ the left did not say that it was one page of several.
   Inbox and registration browser tests pass: 15 of 15.
 - Full PHPUnit: 554 tests pass.
 
+## Correction (2026-11-20)
+The first screenshot of this report was taken while the development inbox also held the owner's private e-mails
+(`local-data/emails`, loaded there for the owner's own use). It showed one of them: a ministry circular, sender and
+subject.
+- It was replaced by one taken with only the invented test e-mails.
+- The browser tests now always load only the invented and the approved public e-mails (`./dev.sh e2e` →
+  `make-emails.php --no-private`), so no screenshot can show a private e-mail again.
+- The old image is still in this branch's history. See OWNER-TODO for the owner's decision on that.
+
 ## Owner actions
 None. To try it: step 46 in [OWNER-TODO.md](../../OWNER-TODO.md).
