@@ -125,7 +125,7 @@ function tagBox(field, withSuggestions = false, extra = []) {   // extra: more a
                 else if (index !== null) { e.preventDefault(); this.editing = null; }
             } else if (e.key === 'Backspace' && index === null && input.value === '') {
                 const n = this.current().length;
-                if (n) { e.preventDefault(); this.$wire.removeTag(field, n - 1, ...extra); }
+                if (n) { e.preventDefault(); this.pending(this.$wire.removeTag(field, n - 1, ...extra), ''); }
             }
         },
         typed(e, index = null) {

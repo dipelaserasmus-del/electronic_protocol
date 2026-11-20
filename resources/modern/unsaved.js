@@ -59,7 +59,8 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
                     const value = i.value.trim();
                     if (i.offsetParent !== null && value !== (tags[Number(i.dataset.edit)] ?? '')) typed.push(value || '(διαγραφή)');
                 });
-                if (box.dataset.pending) typed.push(box.dataset.pending);
+                // a request still running, also a deletion (empty text: review of R1k)
+                if (box.dataset.pending !== undefined) typed.push(box.dataset.pending || '(διαγραφή)');
                 if (typed.length) pendingTags[field] = typed.join(', ') + ' (νέο)';
             });
             const text = (v) => (v === null || v === undefined || v === '' ? '—' : String(v));
