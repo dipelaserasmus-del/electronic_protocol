@@ -50,5 +50,13 @@ The owner chose a red badge with the number, counting **all** the e-mails in the
 - Full suites: PHPUnit 553, browser 92 (one local failure came from a stale layout preference in the development
   database; with it reset, all pass).
 
+## Review
+- Codex (P2): when the kept count expired, several users' badges could each ask the mail server at the same moment.
+  - Fixed: one request asks the server under a shared lock; the others wait up to 10 seconds and take its count. If
+    it takes longer, they keep what they show.
+  - Test `InboxTest::test_the_badge_count_is_asked_once_at_a_time`: with the lock held elsewhere, a check does not
+    ask the server and returns the count once it is there; with the lock free, exactly one search. The test uses the
+    new wait setting, so it cannot run on the old code, which had no lock at all.
+
 ## Owner actions
 None. To try it: step 45 in [OWNER-TODO.md](../../OWNER-TODO.md).
