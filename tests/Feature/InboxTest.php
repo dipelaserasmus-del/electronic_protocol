@@ -255,6 +255,8 @@ class InboxTest extends FeatureTestCase
 
         $this->assertSame(1, \App\Models\Protocol::count());
         $page->assertSee('μην το καταχωρίσετε ξανά');
+        // review of R5f: the e-mail is still in the inbox: the badge says so (8), it is not lowered to 7
+        $page->assertDispatched('inbox-count', count: 8);
     }
 
     public function test_receipt_needs_an_address_and_is_sent_to_it(): void
@@ -578,5 +580,13 @@ class InboxTest extends FeatureTestCase
         \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
         $this->actingAs($this->writer())->getJson('/inbox/count')->assertExactJson(['count' => 8]);
         $this->assertSame(1, $this->mailbox->searches, 'free: one request asks');
+    }
+
+    /** Review of R5f: after an action the badge is the inbox's real count (others' work, a move that failed). */
+    public function test_the_badge_after_an_action_is_counted_not_worked_out(): void
+    {
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);   // 8 when the page was loaded
+        unset($this->mailbox->messages[4], $this->mailbox->messages[5], $this->mailbox->messages[6], $this->mailbox->messages[7], $this->mailbox->messages[8]);   // another user
+        $page->call('markRead', 1)->assertDispatched('inbox-count', count: 2);
     }
 }
