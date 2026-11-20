@@ -57,6 +57,14 @@ The owner chose a red badge with the number, counting **all** the e-mails in the
   - Test `InboxTest::test_the_badge_count_is_asked_once_at_a_time`: with the lock held elsewhere, a check does not
     ask the server and returns the count once it is there; with the lock free, exactly one search. The test uses the
     new wait setting, so it cannot run on the old code, which had no lock at all.
+- Codex (P2), two more:
+  - After a registration or *Αναγνωσμένο*, the badge here was worked out from the count when the page was loaded. If
+    other users had emptied the inbox meanwhile, it was wrong.
+  - A registered e-mail whose move out of the inbox failed still lowered the badge.
+  - Fixed: after each action the inbox is counted again (one quick search on the server), for everybody and for this
+    page.
+  - Tests: `test_the_badge_after_an_action_is_counted_not_worked_out` and the failed-move registration test. Both
+    failed before.
 
 ## Owner actions
 None. To try it: step 45 in [OWNER-TODO.md](../../OWNER-TODO.md).
