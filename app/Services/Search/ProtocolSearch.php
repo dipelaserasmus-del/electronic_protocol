@@ -127,7 +127,12 @@ final class ProtocolSearch
         foreach (array_diff(array_keys(SearchCriteria::TEXT_FIELDS), SearchCriteria::ATTACHMENT_FIELDS) as $field) {
             $w->orWhere(fn ($f) => self::contains($f, $field, $word, $whole));
         }
-        $w->orWhere(fn ($f) => self::contains($f, 'fakelos', $word, $whole))
+        $w->orWhere(fn ($f) => self::contains($f, 'fakelos', $word, $whole));
+        // D08: a word that is a folder's code ("φ12", "Φ.12") finds every spelling of it; a number alone stays a number
+        if (preg_match('/^\p{L}/u', $word) && ($codes = self::exactFolders($word, self::allCodes()))) {
+            $w->orWhereIn('fakelos', $codes);
+        }
+        $w
             ->orWhereHas('attachments', fn ($a) => $a->where(fn ($x) => self::contains($x, 'name', $word, $whole))
                 ->orWhere(fn ($x) => self::contains($x, 'ada', $word, $whole)));
         if (preg_match('~^(\d{1,9})(?:/(\d{4}))?$~', $word, $m)) {
@@ -153,7 +158,9 @@ final class ProtocolSearch
     private function whereFolder(Builder $q, string $typed): void
     {
         $folders = Keepvalue::pluck('describe', 'fakelos');
-        $exact = self::exactFolders($typed, $folders->keys()->all());
+        $written = self::protocolCodes();
+        // D08 (owner, 2026-11-20): the old app wrote both "Φ.2" and "Φ12": every spelling of a code is the same folder
+        $exact = self::exactFolders($typed, array_merge($folders->keys()->all(), $written));
         if ($exact) {
             $q->whereIn('fakelos', $exact);
             return;
@@ -164,7 +171,27 @@ final class ProtocolSearch
             return FolderCode::startsWith($typed, (string) $code)
                 || array_reduce($words, fn ($all, $w) => $all && str_contains($text, $w), true);
         })->keys()->all();
-        $q->where(fn ($w) => $w->whereIn('fakelos', $codes)->orWhere('fakelos', 'LIKE', self::like($typed)));
+        // …and the protocols' own spellings of those folders, or of codes starting with the text
+        $keys = array_flip(array_map(fn ($c) => FolderCode::key((string) $c), $codes));
+        foreach ($written as $code) {
+            if (isset($keys[FolderCode::key($code)]) || FolderCode::startsWith($typed, $code)) {
+                $codes[] = $code;
+            }
+        }
+        $q->where(fn ($w) => $w->whereIn('fakelos', array_values(array_unique($codes)))->orWhere('fakelos', 'LIKE', self::like($typed)));
+    }
+
+    /** D08: the folder codes as the protocols have them (old protocols may write a folder differently from the list) */
+    private static function protocolCodes(): array
+    {
+        return Protocol::query()->whereNotNull('fakelos')->where('fakelos', '!=', '')->distinct()->pluck('fakelos')
+            ->map(fn ($c) => (string) $c)->all();
+    }
+
+    /** D08: the list's codes and the protocols' spellings */
+    private static function allCodes(): array
+    {
+        return array_values(array_unique(array_merge(Keepvalue::pluck('fakelos')->map(fn ($c) => (string) $c)->all(), self::protocolCodes())));
     }
 
     /** R3c: the folder's code when the text names exactly one folder ("φ.1.1" → "Φ.1.1"); otherwise the text */
