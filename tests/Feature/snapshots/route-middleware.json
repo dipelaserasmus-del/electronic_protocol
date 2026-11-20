@@ -81,6 +81,13 @@
         "web",
         "writer:home/list"
     ],
+    "GET inbox/count": [
+        "auth",
+        "email",
+        "throttle:30,1",
+        "web",
+        "writer:home/list"
+    ],
     "GET keep": [
         "auth",
         "web"

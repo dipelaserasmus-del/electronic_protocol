@@ -483,4 +483,37 @@ class InboxTest extends FeatureTestCase
             'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0', 'Content-Type: text/html; charset=utf-8', '',
             '<p>Καλημέρα, <b>σύσκεψη</b></p><script>alert(1)</script>', '']);
     }
+
+    /**
+     * R5f (owner, 2026-11-20): the red badge next to Εισερχόμενα counts every e-mail in the inbox. One count for all
+     * users, asked from the mail server at most once a minute; an e-mail leaving the inbox (any user) refreshes it.
+     */
+    public function test_the_top_bar_badge_counts_the_inbox_for_everybody(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        [$a, $b] = [$this->writer(), $this->writer()];
+
+        $this->actingAs($a)->getJson('/inbox/count')->assertOk()->assertExactJson(['count' => 8]);
+        $this->mailbox->messages[50] = $this->mailbox->messages[1];
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 8], 'the same minute: the shared count, no new question');
+
+        // the badge, drawn on any page from the shared count
+        $this->assertMatchesRegularExpression('~data-inbox-count="'.preg_quote(url('/inbox/count'), '~').'"\s+title="8 e-mail στα Εισερχόμενα"\s*>8</span>~',
+            $this->actingAs($b)->get('/about')->assertOk()->getContent());
+
+        // user A opens the inbox (counted again: 9) and marks one as read; B's next check says 8
+        $page = Livewire::actingAs($a)->test(EmailInbox::class)->assertDispatched('inbox-count', count: 9);
+        $page->call('markRead', 2)->assertDispatched('inbox-count', count: 8);
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 8]);
+
+        // empty: no badge
+        $this->mailbox->messages = [];
+        \Illuminate\Support\Facades\Cache::forget(\App\Services\Mail\InboxCount::KEY);
+        $this->actingAs($b)->getJson('/inbox/count')->assertExactJson(['count' => 0]);
+        $this->assertMatchesRegularExpression('~data-inbox-count="[^"]+"\s+hidden\s*>\s*</span>~', $this->actingAs($b)->get('/about')->getContent());
+
+        // only for who uses the inbox
+        $this->actingAs($this->reader())->get('/inbox/count')->assertRedirect();
+        $this->actingAs($this->reader())->get('/about')->assertDontSee('data-inbox-count', false);
+    }
 }
