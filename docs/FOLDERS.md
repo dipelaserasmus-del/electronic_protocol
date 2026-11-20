@@ -4,6 +4,10 @@ Generated from [`database/data/folders.json`](../database/data/folders.json) by 
 edit the JSON, not this file. The owner's official list (2026-11-19). Apply it to a database with
 `php artisan folders:glossary` (preview) and `--apply`. Φ.37–Φ.42 (school units) are kept as they are in the database.
 
+**Codes (owner, 2026-11-20):** the dot after Φ is only for readability and never counts: the old app wrote both
+`Φ.2` and `Φ12`, and `Φ12` = `Φ.12` = `φ12` in search, in the folder picker and in a merge. The dots *inside* the
+number do count: `Φ.1.1` is not `Φ.11`.
+
 | Κωδικός | Περιγραφή |
 |---|---|
 | Φ.1 | ΕΚΠΑΙΔΕΥΤΙΚΗ ΝΟΜΟΘΕΣΙΑ - ΝΟΜΟΛΟΓΙΑ |
