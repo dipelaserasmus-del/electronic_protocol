@@ -174,6 +174,7 @@ test('Διαχείριση is in the user menu, in groups, beside the user\'s ow
   }
   await expect(own).toContainText('Πλάτος σελίδας');
   await expect(own).toContainText('Αρχική σελίδα');
+  await expect(manage.locator('.dropdown-header', { hasText: 'Διαχειριστής' })).toHaveCount(0);
   // two columns side by side on a wide screen, inside the window
   const [m, o] = [await manage.boundingBox(), await own.boundingBox()];
   expect(o.x).toBeGreaterThan(m.x + m.width - 2);
@@ -187,5 +188,10 @@ test('Διαχείριση is in the user menu, in groups, beside the user\'s ow
   await bar.locator('#nav-user').click();
   const [m2, o2] = [await manage.boundingBox(), await own.boundingBox()];
   expect(o2.y).toBeGreaterThan(m2.y + m2.height - 2);
+  // Προτιμήσεις is its own section: a line above it (owner, 2026-11-20)
+  expect(await own.evaluate((el) => parseFloat(getComputedStyle(el).borderTopWidth))).toBeGreaterThan(0);
+  await expect(manage.locator('.dropdown-header', { hasText: 'Διαχείριση' })).toHaveCount(1);
+  await own.scrollIntoViewIfNeeded();
+  await evidence(page, 'r3g-user-menu-phone');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });

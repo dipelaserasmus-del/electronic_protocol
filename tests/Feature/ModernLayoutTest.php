@@ -38,7 +38,7 @@ class ModernLayoutTest extends FeatureTestCase
         $this->assertSame([
             'Εκτύπωση' => ['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων'],
             'Φάκελοι' => ['Φάκελοι και διατήρηση'],
-            'Διαχειριστής' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος'],
+            'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος'],
         ], $groups($admin));
         $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
         foreach (Navigation::manage($admin) as $links) {
@@ -49,7 +49,7 @@ class ModernLayoutTest extends FeatureTestCase
         // drawn in the user menu: Διαχείριση on the left, the user's own choices on the right
         $html = $this->actingAs($admin)->get('/about')->assertOk()->getContent();
         $menu = substr($html, strpos($html, 'class="dropdown-menu dropdown-menu-end user-menu"'));
-        $this->assertMatchesRegularExpression('~user-menu-manage.*?Διαχείριση.*?Εκτύπωση.*?Φάκελοι.*?Διαχειριστής.*?href="'.preg_quote(url('/settings'), '~').'".*?user-menu-own.*?Πλάτος σελίδας.*?Αρχική σελίδα.*?Περί.*?Έξοδος~s', $menu);
+        $this->assertMatchesRegularExpression('~user-menu-manage.*?Εκτύπωση.*?Φάκελοι.*?Διαχείριση.*?href="'.preg_quote(url('/settings'), '~').'".*?user-menu-own.*?Πλάτος σελίδας.*?Αρχική σελίδα.*?Περί.*?Έξοδος~s', $menu);
         $this->assertStringNotContainsString('id="nav-3"', $html, 'no Διαχείριση in the bar');
         foreach (Navigation::for($admin) as $item) {
             $this->assertNotEmpty($item['icon'] ?? null, "icon for {$item['label']}");

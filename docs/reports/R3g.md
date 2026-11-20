@@ -18,14 +18,17 @@
   |---|---|
   | *Εκτύπωση*: Εκτύπωση πρωτοκόλλου, Εκτύπωση συνημμένων | *Πλάτος σελίδας*: Όλη η οθόνη, Στενό |
   | *Φάκελοι*: Φάκελοι και διατήρηση | *Αρχική σελίδα*: Όλα τα πρωτόκολλα, προς Διεκπεραίωση, προς Ενημέρωση |
-  | *Διαχειριστής* (administrators): Χρήστες, Ρυθμίσεις, Backup, Εκκαθάριση, Κάδος | |
+  | *Διαχείριση* (administrators): Χρήστες, Ρυθμίσεις, Backup, Εκκαθάριση, Κάδος | |
 
   *Περί…* and *Έξοδος* are below both columns.
   - The administrators' entries are in a new order: the people and settings first, then the data (Backup,
     Εκκαθάριση, Κάδος).
   - The rules stay the same: *Εκτύπωση* is hidden from writers and readers when *Περιορισμός λίστας* is on, and
-    *Διαχειριστής* is for administrators only.
-  - On a phone the menu is one column.
+    *Διαχείριση* is for administrators only.
+  - On a phone the menu is one column. There, *Προτιμήσεις* starts after a line and some space, as its own
+    section.
+  - The owner asked (same day) for the administrators' group to be called *Διαχείριση* (it was *Διαχειριστής*).
+    The heading above the groups was dropped, so «Διαχείριση» does not appear twice.
 - **Incoming number:** a comment in `EmailRegistration::defaults` says the e-mail's time stands in for the sender's
   protocol number when the attachment has none. The user types the real number over it when there is one. The same
   note is in *Already decided* in OWNER-TODO and in HANDOFF.

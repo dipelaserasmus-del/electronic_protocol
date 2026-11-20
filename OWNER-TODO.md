@@ -142,7 +142,7 @@ Open *Εισερχόμενα*.
   (and below the last one), with *Σελίδα [ ▾ ] από …*; the list on the left says *Σελίδα 1 από 4 · 1–5 από 16* with
   ‹ › to the other pages.
 - [ ] **47.** The top bar has *Νέο*, *Λίστα*, *Εισερχόμενα*; *Διαχείριση* is now in the menu under your name (top
-  right): on the left *Διαχείριση* (*Εκτύπωση*, *Φάκελοι*, and for administrators *Διαχειριστής*: Χρήστες, Ρυθμίσεις,
+  right): on the left *Διαχείριση* (*Εκτύπωση*, *Φάκελοι*, and for administrators *Διαχείριση*: Χρήστες, Ρυθμίσεις,
   Backup, Εκκαθάριση, Κάδος), on the right your *Προτιμήσεις* (page width, home page); *Περί…* and *Έξοδος* below.
 
 ### Your folder list (D07, 2026-11-19)
