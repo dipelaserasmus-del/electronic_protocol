@@ -203,6 +203,20 @@ document.addEventListener('livewire:init', () => {
 // exposed for the browser tests of the shared date rules
 window.appDate = { expandDate, shiftDate };
 
+/* review of R2i: a row over the whole list (ΚΕΝΟ, "no protocols") spans only the columns shown on this screen. Spanning
+   the hidden ones too made the fixed-width table count them, and they took the subject's room. */
+function fitFullRows(root = document) {
+    root.querySelectorAll?.('table').forEach(table => {
+        const cells = table.querySelectorAll('[data-full-row]');
+        if (!cells.length) return;
+        const shown = [...(table.tHead?.rows[0]?.cells ?? [])].filter(th => getComputedStyle(th).display !== 'none').length;
+        if (shown) cells.forEach(td => { td.colSpan = shown; });
+    });
+}
+document.addEventListener('DOMContentLoaded', () => fitFullRows());
+window.addEventListener('resize', () => fitFullRows());
+document.addEventListener('livewire:init', () => window.Livewire.hook('morph.updated', () => fitFullRows()));
+
 /* R2: height of the sticky top bar, for headers that stick right under it (.table-sticky) */
 function measureTopbar() {
     const bar = document.querySelector('.app-topbar');

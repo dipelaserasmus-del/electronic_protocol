@@ -339,6 +339,12 @@ test('rows in alternating colours, fixed column widths, each row short until ▾
     await page.setViewportSize({ width, height: 800 });
     const subjectWidth = (await page.locator('.protocol-table thead th').nth(2).boundingBox()).width;
     expect(subjectWidth, `subject column at ${width} px`).toBeGreaterThan(200);
+    // a ΚΕΝΟ row spans only the columns shown (it made the hidden ones take the subject's room; CI's data has them)
+    const spans = await page.evaluate(() => {
+      const shown = [...document.querySelectorAll('.protocol-table thead th')].filter((th) => getComputedStyle(th).display !== 'none').length;
+      return [...document.querySelectorAll('.protocol-table [data-full-row]')].map((td) => td.colSpan === shown);
+    });
+    expect(spans.every(Boolean), `full rows span the shown columns at ${width} px`).toBe(true);
     const fits = await page.locator('.protocol-table').evaluate((t) => t.getBoundingClientRect().right <= t.parentElement.getBoundingClientRect().right + 1);
     expect(fits, `the table inside its frame at ${width} px`).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `no sideways scroll at ${width} px`).toBeLessThanOrEqual(width);

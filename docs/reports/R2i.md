@@ -60,4 +60,12 @@ None. To try it: step 41 in [OWNER-TODO.md](../../OWNER-TODO.md).
   - Browser test (R2i) at 768, 992 and 1024px checks that the subject column is over 200px wide, the table fits its
     frame, and nothing is wider than the screen. It failed before, with 26px.
 
+- CI (browser tests): with the CI run's data, the subject was still 116px at 768px. A green *ΚΕΝΟ* row is one cell over
+  all 7 columns, so the browser counted the columns hidden on that screen, which took the subject's room. The spare
+  room went to the hidden columns, after the shown ones.
+  - Fixed: a row over the whole list (*ΚΕΝΟ*, *Δεν υπάρχουν πρωτόκολλα*) spans only the columns shown, and is updated
+    on resize and after each change of the list.
+  - Browser test (R2i): every such row spans exactly the columns shown, at each width. With the full run's data it
+    failed before the fix (116px) and passes after.
+
 ![The list at 1024px](img/R2i/r2i-list-768.png)
