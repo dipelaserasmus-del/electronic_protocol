@@ -38,7 +38,39 @@ function inboxPage() {
             this.current = uid;
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             history.replaceState(null, '', '#msg-' + uid);
-            el.querySelector('input, textarea, select')?.focus({ preventScroll: true });
+            // R5h: the e-mail itself takes the focus (keyboard users start there). Its first field was the folder
+            // picker, whose list opened and pulled the page away from the e-mail.
+            el.focus({ preventScroll: true });
+            this.hold(el);
+        },
+        /**
+         * R5h: e-mails shown as HTML load their frames late and are resized to their content; one above the e-mail
+         * changes the page's height and moves it. For a moment the page stays on the e-mail, unless the user scrolls.
+         */
+        hold(el) {
+            this.release?.();
+            const top = () => parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+            const keep = () => {
+                const off = el.getBoundingClientRect().top - top();
+                if (Math.abs(off) > 1 && !smoothScrolling) window.scrollBy(0, off);
+            };
+            let smoothScrolling = true;
+            const settled = () => { smoothScrolling = false; keep(); };
+            const observer = new ResizeObserver(keep);
+            observer.observe(document.body);
+            const stop = () => this.release?.();
+            const timer = setTimeout(stop, 2500);
+            window.addEventListener('scrollend', settled, { once: true });
+            const fallback = setTimeout(settled, 900);   // browsers without scrollend
+            ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((t) => window.addEventListener(t, stop, { passive: true, once: true }));
+            this.release = () => {
+                observer.disconnect();
+                clearTimeout(timer);
+                clearTimeout(fallback);
+                window.removeEventListener('scrollend', settled);
+                ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((t) => window.removeEventListener(t, stop));
+                this.release = null;
+            };
         },
         fit,
     };

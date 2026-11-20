@@ -236,7 +236,17 @@ function folderPicker({ model = 'form.fakelos', live = true, choices = [NONE], s
             if (folder && folder[0] !== this.value) this.$wire.$set(model, folder[0], live);
             this.close();
         },
-        scroll() { this.$root.querySelector('[data-folder-active]')?.scrollIntoView({ block: 'nearest' }); },
+        // R5h: only the list scrolls, never the page (scrollIntoView moved the page too: on the inbox it pulled the page
+        // away from the e-mail just scrolled to)
+        scroll() {
+            const list = this.$root.querySelector('[role=listbox]');
+            const item = this.$root.querySelector('[data-folder-active]');
+            if (!list || !item) return;
+            const top = item.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+            const bottom = top + item.offsetHeight;
+            if (top < list.scrollTop) list.scrollTop = top;
+            else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+        },
         key(e) {
             const n = this.items.length;
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

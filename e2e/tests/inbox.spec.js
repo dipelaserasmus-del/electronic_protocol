@@ -224,3 +224,33 @@ test('every e-mail can be reached: the pager above and below, and in the list on
   await expect(side).toContainText(`Σελίδα ${pages} από ${pages}`);
   await expect(page.locator('#pager-top')).toBeInViewport();
 });
+
+test('the list on the left scrolls to the e-mail and it stays there; the folder list does not open (R5h)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/inbox');
+  const items = page.locator('.inbox-sidebar-item');
+  const n = await items.count();
+  expect(n).toBeGreaterThan(2);
+  const last = items.nth(n - 1);
+  const uid = (await last.getAttribute('href')).replace('#msg-', '');
+  const target = page.locator(`#msg-${uid}`);
+  const aligned = () => target.evaluate((el) => Math.abs(el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop)));
+
+  await last.click();
+  // an e-mail above it grows while the page is scrolling (as a late HTML frame does)
+  await page.evaluate(() => {
+    const first = document.querySelector('.inbox-message');
+    setTimeout(() => { const d = document.createElement('div'); d.style.height = '300px'; d.className = 'r5h-late'; first.append(d); }, 300);
+    setTimeout(() => { first.querySelector('.r5h-late').style.height = '120px'; }, 1200);
+  });
+  await page.waitForTimeout(1800);
+  expect(await aligned(), 'the e-mail at the top, after the page above it changed').toBeLessThan(3);
+  await expect(page.locator('.folder-list:visible')).toHaveCount(0);   // the folder picker's list did not open
+  expect(await page.evaluate((id) => document.activeElement?.id === `msg-${id}`, uid)).toBe(true);
+  await expect(page).toHaveURL(new RegExp(`#msg-${uid}$`));
+
+  // the user's own scrolling is never undone
+  await page.mouse.wheel(0, -400);
+  await page.waitForTimeout(600);
+  expect(await aligned()).toBeGreaterThan(100);
+});
