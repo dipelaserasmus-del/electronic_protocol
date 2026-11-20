@@ -554,6 +554,21 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await dialog.locator('#unsaved-stay').click();
   await page.unroute('**/upload-file**');
 
+  // review of R1k: a tag cleared in its editor, while the deletion is on its way, is a change too
+  await page.goto(url);
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"editTag"')) return;   // never answered here
+    await route.continue();
+  });
+  await page.locator('[data-tag="παλιά λέξη"]').first().click();
+  await page.locator('input.tag-edit:visible').fill('');
+  await page.locator('input.tag-edit:visible').press('Enter');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => document.querySelector('a.app-brand').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })));
+  await expect(dialog.locator('tbody tr', { hasText: 'Λέξεις κλειδιά' })).toContainText('(διαγραφή)');
+  await dialog.locator('#unsaved-stay').click();
+  await page.unroute('**/update');
+
   // closing or reloading the tab with changes: the browser's own question
   await page.goto(url);
   await page.locator('#f-thema').fill(`${subject} ξανά`);
