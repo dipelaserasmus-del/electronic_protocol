@@ -76,6 +76,11 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
     it failed before.
   - A file still uploading did not count, so leaving lost it. Fixed: it is listed as *«Νέα συνημμένα: ανεβαίνει…
     N%»* and shows the dot. The browser test holds an upload back and checks the dot and the dialog.
+- Codex (P2), fifth round: a tag cleared in its editor did not count while the deletion was being sent.
+  - Fixed: any tag request on its way counts, a deletion too. It is listed as *«(διαγραφή)»*. Removing the last tag
+    with Backspace is tracked the same way.
+  - Browser test: the deletion request is held back; the dot shows and the dialog lists *«(διαγραφή)»*. It failed
+    before.
 
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).
