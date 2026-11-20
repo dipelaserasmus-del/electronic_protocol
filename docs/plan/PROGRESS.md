@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Tasks done | **77 / 88** `██████████████████████████░░░░` 88% |
-| Effort done (PERT) | **34.8 / 39.7 h** `██████████████████████████░░░░` 88% |
-| Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **78 / 88** `███████████████████████████░░░` 89% |
+| Effort done (PERT) | **35.1 / 39.7 h** `███████████████████████████░░░` 88% |
+| Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
-| In progress | R5k |
+| In progress | — |
 | Next task | **A01** — Integrity-check engine + page |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j 🔄R5k | 20/21 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k | 21/21 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -271,8 +271,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j done
-  class R5k inprogress
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -377,7 +376,7 @@ gantt
   R5h Inbox  going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) :done, r5h, 2026-11-13 18:29, 19m
   R5i Inbox  a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails :done, r5i, 2026-11-13 18:48, 19m
   R5j Inbox  files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart :done, r5j, 2026-11-13 19:07, 19m
-  R5k Inbox  registering says so until done (notice, spinners, the yellow button too); one registration at a time :active, r5k, 2026-11-13 19:26, 19m
+  R5k Inbox  registering says so until done (notice, spinners, the yellow button too); one registration at a time :done, r5k, 2026-11-13 19:26, 19m
   section Batch 10
   A01 Integrity-check engine + page :a01, 2026-11-13 19:45, 33m
   A03 Rule  dates going backwards :a03, 2026-11-13 20:18, 19m
@@ -474,7 +473,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5h** 🔴 | Inbox: going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) | R5g | 0.3 | 0.1 | 6.9 | 7.2 | 6.9 | 7.2 | -0.0 | #89 |
 | ✅ | **R5i** 🔴 | Inbox: a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails | R5h | 0.3 | 0.1 | 7.2 | 7.5 | 7.2 | 7.5 | -0.0 | #90 |
 | ✅ | **R5j** 🔴 | Inbox: files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart | R5i | 0.3 | 0.1 | 7.5 | 7.9 | 7.5 | 7.9 | -0.0 | #91 |
-| 🔄 | **R5k** 🔴 | Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time | R5j | 0.3 | 0.1 | 7.9 | 8.2 | 7.9 | 8.2 | -0.0 |  |
+| ✅ | **R5k** 🔴 | Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time | R5j | 0.3 | 0.1 | 7.9 | 8.2 | 7.9 | 8.2 | -0.0 | #92 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 7.1 | 7.6 | 2.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 7.9 | 8.2 | 3.2 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 7.9 | 8.2 | 3.2 |  |
