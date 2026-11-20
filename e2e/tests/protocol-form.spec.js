@@ -387,3 +387,58 @@ test('sections: drag to the other column, collapse, one column, kept for the use
   await expect.poll(() => ids('left')).toEqual(['general', 'incoming']);
   await expect(page.locator('#f-in_num')).toBeVisible();
 });
+
+test('one Αποθήκευση always at the bottom right; copy and receipt at the far right; Λίστα of the top bar is a link (R1j)', async ({ page }) => {
+  const subject = `R1j ενέργειες ${Date.now()}`;
+  await login(page, 'writer');
+  await page.goto('/home');
+  const save = page.locator('#form-save');
+  await expect(page.locator('#protocol-form button[type=submit]')).toHaveCount(1);
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+
+  // on the screen at the bottom right, wherever the page is scrolled
+  const view = page.viewportSize();
+  for (const y of [0, 100000]) {
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await expect(save).toBeInViewport();
+    const box = await save.boundingBox();
+    expect(view.width - (box.x + box.width)).toBeLessThan(40);
+    expect(view.height - (box.y + box.height)).toBeLessThan(40);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  // no Νέο / Λίστα in the form; copy and receipt last, at the right end of the row, with icons
+  const row = page.locator('#protocol-form [data-pill-actions]').first();
+  await expect(row.getByRole('link', { name: /^(Νέο|Λίστα)$/ })).toHaveCount(0);
+  const copy = row.locator('[data-action=copy]');
+  const receipt = row.locator('[data-action=receipt]');
+  await expect(copy.locator('i.bi-copy')).toBeVisible();
+  await expect(receipt.locator('i.bi-receipt')).toBeVisible();
+  const next = await row.getByRole('link', { name: 'Επόμενο ▶' }).boundingBox();
+  const c = await copy.boundingBox();
+  const r = await receipt.boundingBox();
+  const rowBox = await row.boundingBox();
+  expect(c.x).toBeGreaterThan(next.x + next.width + 40);      // set apart from the others
+  expect(r.x).toBeGreaterThan(c.x);
+  expect(rowBox.x + rowBox.width - (r.x + r.width)).toBeLessThan(20);   // at the far right
+  await evidence(page, 'r1j-form-actions', { clip: { x: 0, y: 0, width: view.width, height: 420 } });
+
+  // saving by the floating button stays on the protocol
+  await page.locator('#f-thema').fill(`${subject} αλλαγή`);
+  await save.click();
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await expect(page.locator('#f-thema')).toHaveValue(`${subject} αλλαγή`);
+  await page.evaluate(() => window.scrollTo(0, 100000));
+  await evidence(page, 'r1j-floating-save');
+
+  // the top bar's Λίστα goes to the list; its ▾ opens the other lists
+  const bar = page.locator('nav.app-topbar');
+  await bar.getByRole('button', { name: 'Περισσότερες: Λίστα' }).click();
+  await expect(bar.getByRole('link', { name: 'Όλα τα πρωτόκολλα' })).toBeVisible();
+  await evidence(page, 'r1j-list-menu', { clip: { x: 0, y: 0, width: view.width, height: 500 } });
+  const all = new URL(await bar.getByRole('link', { name: 'Όλα τα πρωτόκολλα' }).getAttribute('href')).pathname;   // the role's list
+  await page.keyboard.press('Escape');
+  await Promise.all([page.waitForURL((u) => u.pathname === all), bar.getByRole('link', { name: 'Λίστα', exact: true }).click()]);
+  await expect(page.locator('.protocol-row').first()).toBeVisible();
+});

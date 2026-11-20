@@ -1,5 +1,6 @@
 {{-- R1b: the protocol form. Rules and saving: App\Livewire\ProtocolForm → App\Services\Protocols\ProtocolWriter. --}}
 @php
+    $mayCreate = auth()->user()?->can('create', \App\Models\Protocol::class);   // R1j: readers get no copy as new
     $tone = ['new' => 'primary', 'edit' => 'success', 'readonly' => 'secondary', 'admin' => 'danger'][$access->tone] ?? 'primary';
     $e = fn (string $f) => $errors->first($f) ?: null;
     // R1i: a collapsed section opens by itself when one of its fields has an error
@@ -90,27 +91,31 @@
                 <x-notice type="info" class="mt-2 text-center">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ (int) ceil($access->secondsLeft / 60) }} λεπτά.</x-notice>
             @endif
 
+            {{-- R1j (owner, 2026-11-20): Αποθήκευση floats at the bottom right (below); Νέο and Λίστα are in the top bar;
+                 the rarely used Αντιγραφή ως νέο and Απόδειξη go to the far right, with icons --}}
             <x-pill-actions class="mt-3 pill-actions-center">
-                @if ($access->canSave)
-                    <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">Αποθήκευση</x-pill>
-                @endif
                 @if ($protocol->exists && $access->canAssign && ! $access->canSave)
                     <x-pill variant="primary" wire:click="assignOnly">Ανάθεση</x-pill>
                 @endif
                 @if ($canComplete && ! $protocol->diekp_date)
                     <x-pill variant="success" wire:click="markDone">Διεκπεραιώθηκε</x-pill>
                 @endif
-                <x-pill :href="url('/home')">Νέο</x-pill>
                 @if ($protocol->exists)
-                    <x-pill :href="url('/home/'.$protocol->id.'/1')">Αντιγραφή ως νέο</x-pill>
-                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank">Απόδειξη</x-pill>
                     <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/b')" title="Προηγούμενο">◀ Προηγούμενο</x-pill>
                     <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/f')" title="Επόμενο">Επόμενο ▶</x-pill>
                 @endif
-                <x-pill :href="url('/home/list')">Λίστα</x-pill>
                 @if ($access->canDelete)
                     <x-pill variant="danger" wire:click="deleteProtocol"
                             data-confirm="Να διαγραφεί οριστικά το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} και τα συνημμένα του;">Διαγραφή</x-pill>
+                @endif
+                @if ($protocol->exists)
+                    {{-- a copy is a new protocol: not for readers, who only view --}}
+                    @if ($mayCreate)
+                    <x-pill :href="url('/home/'.$protocol->id.'/1')" class="pill-far-right" data-action="copy" title="Νέο πρωτόκολλο με το περιεχόμενο αυτού">
+                        <i class="bi bi-copy me-1" aria-hidden="true"></i>Αντιγραφή ως νέο</x-pill>
+                    @endif
+                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" :class="$mayCreate ? '' : 'pill-far-right'" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
+                        <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
                 @endif
             </x-pill-actions>
         </div>
@@ -505,9 +510,13 @@
         @endforeach
     </div>
 
+    {{-- R1j (owner, 2026-11-20): one Αποθήκευση, always visible at the bottom right of the screen --}}
     @if ($access->canSave)
-        <div class="d-flex justify-content-end mb-4">
-            <button type="submit" class="btn btn-primary rounded-pill px-4" wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">Αποθήκευση</button>
+        <div class="form-save-float">
+            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow" id="form-save"
+                    wire:loading.attr="disabled" wire:target="save,picked" x-bind:disabled="progress !== null">
+                <span wire:loading.remove wire:target="save"><i class="bi bi-floppy me-2" aria-hidden="true"></i></span><span
+                      wire:loading wire:target="save" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Αποθήκευση</button>
         </div>
     @endif
 </form>

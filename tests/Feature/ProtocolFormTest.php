@@ -247,6 +247,42 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame('Για ανάγνωση', $p->fresh()->thema);
     }
 
+    /** R1j (owner, 2026-11-20): one floating Αποθήκευση; no Νέο / Λίστα (the top bar has them); copy and receipt last, with icons. */
+    public function test_the_actions_one_floating_save_and_copy_receipt_at_the_end(): void
+    {
+        $p = Protocol::factory()->number(7)->create();
+        $html = $this->actingAs($this->admin())->get('/home/'.$p->id)->assertOk()->getContent();
+        $form = substr($html, (int) strpos($html, 'id="protocol-form"'));
+        $form = substr($form, 0, strpos($form, '</form>'));
+
+        $this->assertSame(1, substr_count($form, 'type="submit"'), 'one save button');
+        $this->assertMatchesRegularExpression('~<div class="form-save-float">\s*<button type="submit"[^>]*id="form-save"~', $form);
+        $this->assertStringNotContainsString('href="'.url('/home/list').'"', $form, 'no Λίστα in the form');
+        $this->assertStringNotContainsString('href="'.url('/home').'"', $form, 'no Νέο in the form');
+
+        $actions = substr($form, strpos($form, 'data-pill-actions'));
+        $actions = substr($actions, 0, strpos($actions, 'pill-more'));
+        $order = array_map(fn ($needle) => strpos($actions, $needle), ['Προηγούμενο', 'Επόμενο', 'data-action="copy"', 'data-action="receipt"']);
+        $this->assertNotContains(false, $order);
+        $sorted = $order;
+        sort($sorted);
+        $this->assertSame($sorted, $order, 'copy and receipt come last');
+        $this->assertMatchesRegularExpression('~pill-far-right[^>]*data-action="copy"[^>]*>\s*<i class="bi bi-copy~', $actions);
+        $this->assertMatchesRegularExpression('~data-action="receipt"[^>]*>\s*<i class="bi bi-receipt~', $actions);
+
+        $new = $this->actingAs($this->writer())->get('/home')->assertOk()->getContent();
+        $this->assertStringContainsString('id="form-save"', $new, 'a new protocol is saved by the same button');
+        $this->assertStringNotContainsString('data-action="copy"', $new);
+
+        // readers only view: no copy as new; the receipt takes the far right
+        $read = $this->actingAs($this->reader())->get('/home/'.$p->id)->assertOk()->getContent();
+        $this->assertStringNotContainsString('data-action="copy"', $read);
+        $this->assertMatchesRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="receipt"~', $read);
+        $this->assertStringNotContainsString('id="form-save"', $read);
+        $this->assertFalse($this->reader()->can('create', Protocol::class));
+        $this->assertTrue($this->writer()->can('create', Protocol::class));
+    }
+
     public function test_reader_assigned_for_handling_marks_it_done(): void
     {
         $reader = $this->reader();

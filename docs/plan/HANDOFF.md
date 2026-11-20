@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-19 14:10 (after Batch 9, Batch 9.5 and D07; times are Greek time)
+## Current state — 2026-11-20 09:40 (after Batch 9, Batch 9.5, D07 and R1j; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -39,6 +39,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   `KeywordSuggestions::for(…, $fileNames, $spellings)` (MAX 8): file names (no extension) searched like the subject,
   their words after the subject's; `Suggestions::spellings($user)` (cached 10 min) restores accents of capitals from
   the last 3000 subjects the user may see. Mapping words to categories (γνωμάτευση → Δικαιολογητικά) is not done.
+- **R1j (Batch 9.5, owner's note 2026-11-20):** the protocol form has one submit, `#form-save` in `.form-save-float`
+  (position fixed, bottom right; the form gets bottom padding). No Νέο / Λίστα pills in the form. Copy / receipt are
+  the last pills (`.pill-far-right`, `data-action=copy|receipt`, icons). Top bar: an item with both `url` and
+  `children` is split (`.nav-split`: link `#nav-N-link` + ▾ `#nav-N` «Περισσότερες: …»); Λίστα → the role's landing.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

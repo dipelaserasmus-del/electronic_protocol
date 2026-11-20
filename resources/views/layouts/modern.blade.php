@@ -44,9 +44,17 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     @foreach (\App\Support\Navigation::for($user) as $i => $item)
                         @if (isset($item['children']))
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown @isset($item['url']) nav-split @endisset">
+                                @isset($item['url'])
+                                    {{-- R1j: the label leads to the page, the ▾ opens the menu --}}
+                                    <a class="nav-link pe-1 @if (url()->current() === $item['url']) active @endif" href="{{ $item['url'] }}"
+                                       @if (url()->current() === $item['url']) aria-current="page" @endif id="nav-{{ $i }}-link"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
+                                    <a class="nav-link dropdown-toggle dropdown-toggle-split ps-1" href="#" role="button" data-bs-toggle="dropdown"
+                                       aria-expanded="false" id="nav-{{ $i }}" aria-label="Περισσότερες: {{ $item['label'] }}" title="Περισσότερες: {{ $item['label'] }}"></a>
+                                @else
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                    aria-expanded="false" id="nav-{{ $i }}"><i class="bi bi-{{ $item['icon'] }} me-1" aria-hidden="true"></i>{{ $item['label'] }}</a>
+                                @endisset
                                 <ul class="dropdown-menu" aria-labelledby="nav-{{ $i }}">
                                     @foreach ($item['children'] as $child)
                                         @if (isset($child['divider']))
