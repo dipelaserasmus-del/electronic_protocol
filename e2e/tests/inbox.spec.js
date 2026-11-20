@@ -1,7 +1,7 @@
 // R5a: inbox from the mail cache; sender names split inside a Greek letter; HTML preview behind login.
 // R5c: the rebuilt inbox: list on the left, text/HTML sections that open and close (remembered), sizes.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, setSetting } = require('./helpers');
 
 /** The message (<article>) of the synthetic e-mail whose text contains `text`, on whichever page it is. */
 async function findEmail(page, text) {
@@ -200,7 +200,10 @@ test('a red badge next to Εισερχόμενα counts the e-mails waiting; che
 });
 
 test('every e-mail can be reached: the pager above and below, and in the list on the left (R5g)', async ({ page }) => {
-  await login(page, 'writer');
+  // two per page, so there are pages whatever the registration tests left in the mock inbox
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'emailNumFetch', 2);
+  try {
   await page.goto('/inbox');
   const top = page.locator('#pager-top');
   await expect(top).toBeVisible();   // above the first e-mail, no scrolling needed
@@ -223,4 +226,7 @@ test('every e-mail can be reached: the pager above and below, and in the list on
   await page.locator('#pager-bottom [data-pager=next]').click();
   await expect(side).toContainText(`Σελίδα ${pages} από ${pages}`);
   await expect(page.locator('#pager-top')).toBeInViewport();
+  } finally {
+    await setSetting(page, 'emailNumFetch', previous);
+  }
 });
