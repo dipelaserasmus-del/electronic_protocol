@@ -83,6 +83,9 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
     before.
   - Codex (sixth round): the same for a tag's ✕. Fixed: the ✕ goes through the same tracking. Browser test: the
     removal is held back, and the dot shows. It failed before.
+  - Codex (seventh round): fields sent only when they are left (*Παρατηρήσεις* and other text fields, some dates) did
+    not count while the cursor was still in them; a reload there gave no warning. Fixed: the check reads what those
+    fields show. Browser test: typing in *Παρατηρήσεις* shows the dot at once, and reloading asks. It failed before.
 
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).
