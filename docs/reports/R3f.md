@@ -47,5 +47,18 @@ asked for an option to find only 120, explained in the help text too.
   All 7 search browser tests pass.
 - Full PHPUnit: 550 tests pass.
 
+## Review
+- Codex (P2): whole-word search ignored Greek accents only in their usual (precomposed) form. `=cafe` missed *café*,
+  and `=αδεια` missed *άδεια* stored with its accent as a separate mark.
+  - Fixed: the typed text is reduced to plain lower-case letters. Each letter then accepts its accented forms, Greek
+    and Latin, and any separate accent marks after it. A whole-word search now uses this check alone, without the
+    usual partial match before it, which can miss separate marks.
+  - Test `SearchTest::test_whole_words_and_numbers` checks:
+    - `=cafe` and `=CAFÉ` find *café*, not *Cafeteria*;
+    - `=αδεια` finds *άδεια* with a separate accent mark;
+    - the same word typed with a separate mark finds *Άδεια*.
+
+    It failed before.
+
 ## Owner actions
 None. To try it: step 42 in [OWNER-TODO.md](../../OWNER-TODO.md).

@@ -90,6 +90,15 @@ class SearchTest extends FeatureTestCase
         Attachment::factory()->create(['protocol_id' => Protocol::where('protocolnum', 21)->value('id'), 'name' => 'αίτηση1205.pdf']);
         $this->assertSame(['Άδεια μητρότητας'], $this->subjects($this->criteria(['text' => ['name' => '=120']])));
 
+        // review of R3f: Latin accents, and accents stored as separate marks, are ignored too
+        Protocol::factory()->number(30)->create(['thema' => 'Συνάντηση στο café της πλατείας']);
+        Protocol::factory()->number(31)->create(['thema' => 'Cafeteria σχολείου']);
+        Protocol::factory()->number(32)->create(['thema' => "Κανονική \u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1} (με χωριστό τόνο)"]);
+        $this->assertSame(['Συνάντηση στο café της πλατείας'], $this->subjects($this->criteria(['text' => ['thema' => '=cafe']])));
+        $this->assertSame(['Συνάντηση στο café της πλατείας'], $this->subjects($this->criteria(['text' => ['thema' => '=CAFÉ']])));
+        $this->assertContains("Κανονική \u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1} (με χωριστό τόνο)", $this->subjects($this->criteria(['text' => ['thema' => '=αδεια']])));
+        $this->assertContains('Άδεια μητρότητας', $this->subjects($this->criteria(['text' => ['thema' => "=\u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1}"]])), 'typed decomposed');
+
         // typed: εισ:=120; the advanced screen's switch; the hint and the help
         $this->assertSame('=120', (new \App\Services\Search\QueryParser())->parse('εισ:=120')->text['in_num']);
         $this->actingAs($this->admin())->get('/search?q='.urlencode('εισ:=120'))->assertOk()

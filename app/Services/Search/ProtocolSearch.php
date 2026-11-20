@@ -189,28 +189,52 @@ final class ProtocolSearch
     /** The column contains the text; whole (R3f): as a word of its own, not inside a longer word or number. */
     private static function contains($query, string $column, string $value, bool $whole)
     {
-        $query->where($column, 'LIKE', self::like($value));   // the collation's matching (case, accents); uses no regexp
-        if ($whole) {
-            $query->whereRaw("REGEXP_LIKE(`{$column}`, ?, 'i')", [self::wordPattern($value)]);
-        }
-
-        return $query;
+        // whole: the regexp alone, which ignores case and accents itself (review of R3f: also Latin accents and accents
+        // stored as separate marks, which the collation's LIKE does not always match)
+        return $whole
+            ? $query->whereRaw("REGEXP_LIKE(`{$column}`, ?, 'i')", [self::wordPattern($value)])
+            : $query->where($column, 'LIKE', self::like($value));   // the collation's matching (case, accents)
     }
 
-    /** Accented / final forms of the Greek vowels and σ, for the whole-word pattern (the regexp does not fold accents) */
-    private const GREEK_VARIANTS = ['αά', 'εέ', 'ηή', 'ιίϊΐ', 'οό', 'υύϋΰ', 'ωώ', 'σς'];
+    /**
+     * Accented / final forms of a base letter, for the whole-word pattern (the regexp does not fold accents): Greek,
+     * and the Latin letters of the collation's folding (review of R3f: "=cafe" finds "café")
+     */
+    private const VARIANTS = [
+        'α' => 'αά', 'ε' => 'εέ', 'η' => 'ηή', 'ι' => 'ιίϊΐ', 'ο' => 'οό', 'υ' => 'υύϋΰ', 'ω' => 'ωώ', 'σ' => 'σς',
+        'a' => 'aàáâãäåā', 'c' => 'cçćč', 'e' => 'eèéêëēěę', 'i' => 'iìíîïī', 'n' => 'nñńň', 'o' => 'oòóôõöøō',
+        'u' => 'uùúûüūů', 'y' => 'yýÿ', 's' => 'sśš', 'z' => 'zźżž', 'r' => 'rř', 'd' => 'dď', 't' => 'tť', 'l' => 'lł',
+    ];
 
     /** R3f: ICU pattern of the text as a whole word: no letter or digit just before or after it */
     public static function wordPattern(string $value): string
     {
         $body = '';
-        foreach (mb_str_split($value) as $ch) {
-            $lower = mb_strtolower($ch);
-            $group = current(array_filter(self::GREEK_VARIANTS, fn ($g) => str_contains($g, $lower)));
-            $body .= $group ? '[' . $group . ']' : (preg_match('/[\p{L}\p{N}\s]/u', $ch) ? $ch : '\\' . $ch);
+        foreach (mb_str_split(self::baseLetters($value)) as $ch) {
+            if (preg_match('/\s/u', $ch)) {
+                $body .= '\\s+';
+            } elseif (preg_match('/\p{L}/u', $ch)) {
+                // any accented form of the letter, also with its accents as separate marks (decomposed)
+                $body .= '[' . (self::VARIANTS[$ch] ?? $ch) . ']\\p{M}*';
+            } else {
+                $body .= preg_match('/\p{N}/u', $ch) ? $ch : '\\' . $ch;
+            }
         }
 
         return '(^|[^\\p{L}\\p{N}])' . $body . '([^\\p{L}\\p{N}]|$)';
+    }
+
+    /** Lower case, without accents or final forms: "Άδεια", "άδεια" (decomposed), "ΆΔΕΙΑ" → "αδεια"; "Café" → "cafe" */
+    private static function baseLetters(string $value): string
+    {
+        $value = mb_strtolower(trim($value));
+        if (class_exists(\Normalizer::class)) {
+            $value = preg_replace('/\p{M}+/u', '', (string) \Normalizer::normalize($value, \Normalizer::FORM_D));
+        } else {
+            $value = strtr($value, ['ά' => 'α', 'έ' => 'ε', 'ή' => 'η', 'ί' => 'ι', 'ϊ' => 'ι', 'ΐ' => 'ι', 'ό' => 'ο', 'ύ' => 'υ', 'ϋ' => 'υ', 'ΰ' => 'υ', 'ώ' => 'ω']);
+        }
+
+        return str_replace('ς', 'σ', $value);
     }
 
     /** "contains" pattern for LIKE; the user's % _ \ are plain characters */
