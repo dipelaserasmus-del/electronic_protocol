@@ -300,8 +300,8 @@
                         <div class="card-body border-top inbox-mail small">
                             <dl class="row mb-2 inbox-headers">
                                 <dt class="col-sm-2">Από</dt><dd class="col-sm-10 text-break mb-1">{{ \App\Support\Mail\MailContent::sender($m) }}</dd>
-                                @if (! empty($m['to']))<dt class="col-sm-2">Προς</dt><dd class="col-sm-10 text-break mb-1">{{ implode(', ', $m['to']) }}</dd>@endif
-                                @if (! empty($m['cc']))<dt class="col-sm-2">Κοιν.</dt><dd class="col-sm-10 text-break mb-1">{{ implode(', ', $m['cc']) }}</dd>@endif
+                                @if (! empty($m['to']))<dt class="col-sm-2">Προς</dt>@include('livewire.partials.inbox-addresses', ['addresses' => $m['to'], 'kind' => 'to'])@endif
+                                @if (! empty($m['cc']))<dt class="col-sm-2">Κοιν.</dt>@include('livewire.partials.inbox-addresses', ['addresses' => $m['cc'], 'kind' => 'cc'])@endif
                                 @if (! empty($m['reply_to']))<dt class="col-sm-2">Απάντηση σε</dt><dd class="col-sm-10 text-break mb-1">{{ $m['reply_to'] }}</dd>@endif
                             </dl>
 

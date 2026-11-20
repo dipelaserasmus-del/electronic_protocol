@@ -541,4 +541,19 @@ class InboxTest extends FeatureTestCase
         $this->assertStringNotContainsString('id="pager-top"', $html);
         $this->assertStringNotContainsString('inbox-sidebar-pager', $html);
     }
+
+    /** R5i (owner, 2026-11-20): a long Προς list (dozens of schools) shows three and "και άλλοι N"; short ones in full. */
+    public function test_a_long_list_of_recipients_is_folded(): void
+    {
+        $this->mailbox->messages = [
+            12 => file_get_contents(base_path('tests/fixtures/emails/synthetic/12-many-recipients.eml')),
+            7 => file_get_contents(base_path('tests/fixtures/emails/synthetic/07-long-subject-plain-only.eml')),
+        ];
+        $html = preg_replace('~<!--\[if (END)?BLOCK\]><!\[endif\]-->~', '', $this->actingAs($this->writer())->get('/inbox')->assertOk()->getContent());
+
+        $this->assertMatchesRegularExpression('~data-addresses="to"\s+x-data="\{ all: false \}"\s*>\s*<span>school01@example.test, school02@example.test, school03@example.test</span><span x-show="all" x-cloak>, school04@example.test~', $html);
+        $this->assertStringContainsString('και άλλοι 38 ▾', $html);
+        $this->assertMatchesRegularExpression('~data-addresses="cc"\s*>\s*Τμήμα Δοκιμής &lt;dept@example.test&gt;, Γραφείο Δοκιμής &lt;office@example.test&gt;\s*</dd>~', $html, 'two: in full');
+        $this->assertMatchesRegularExpression('~data-addresses="to"\s*>\s*Γραμματεία Σχολείου &lt;protocol@school.test&gt;\s*</dd>~', $html, 'one: in full');
+    }
 }
