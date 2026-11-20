@@ -39,7 +39,15 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
         /** what the user can change: the fields, the assignments, the new files */
         state() {
             const w = this.$wire;
-            return clone({ form: w.form, handle: w.handle, inform: w.inform, uploads: (w.uploads ?? []).length, adas: w.uploadAdas, newAda: w.newAda, noStamp: w.noStamp });
+            const form = clone(w.form) ?? {};
+            // review of R1k: fields sent on blur / change (wire:model.blur, .change) are not in $wire.form while the user is
+            // still in them: take what they show
+            (this.form ?? this.$el).querySelectorAll('input, textarea, select').forEach((el) => {
+                if (el.type === 'checkbox' || el.type === 'radio' || el.type === 'file' || el.multiple) return;
+                const attr = [...el.attributes].find((a) => a.name.startsWith('wire:model') && a.value.startsWith('form.'));
+                if (attr) form[attr.value.slice(5)] = el.value;
+            });
+            return clone({ form, handle: w.handle, inform: w.inform, uploads: (w.uploads ?? []).length, adas: w.uploadAdas, newAda: w.newAda, noStamp: w.noStamp });
         },
 
         /** list of [label, before, now] */
