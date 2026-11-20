@@ -132,6 +132,9 @@ Open *Εισερχόμενα*.
   change: it goes. With a change, click *Νέο*, *Λίστα* or *Επόμενο ▶*: a window lists what changed (before / now) and
   asks: *Ακύρωση* (stay), *Χωρίς αποθήκευση* (go, nothing saved) or *Αποθήκευση* (save, then go). Closing or
   reloading the tab asks too (the browser's own question, without the list).
+- [ ] **44.** *Λίστα*, column *Ανάθεση*: each assigned user is a pill: blue with ✎ for *Διεκπεραίωση*, white with 👁
+  for *Ενημέρωση* (the mouse over it says which). The *Λίστα* menu's *προς Διεκπεραίωση* / *προς Ενημέρωση* have the
+  same icons.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
