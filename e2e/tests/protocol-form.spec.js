@@ -437,7 +437,7 @@ test('one Αποθήκευση always at the bottom right; copy and receipt at t
   await bar.getByRole('button', { name: 'Περισσότερες: Λίστα' }).click();
   await expect(bar.getByRole('link', { name: 'Όλα τα πρωτόκολλα' })).toBeVisible();
   await evidence(page, 'r1j-list-menu', { clip: { x: 0, y: 0, width: view.width, height: 500 } });
-  const all = new URL(await bar.getByRole('link', { name: 'Όλα τα πρωτόκολλα' }).getAttribute('href')).pathname;   // the role's list
+  const all = new URL(await bar.locator('.app-brand').getAttribute('href')).pathname;   // the user's home page (R3e)
   await page.keyboard.press('Escape');
   await Promise.all([page.waitForURL((u) => u.pathname === all), bar.getByRole('link', { name: 'Λίστα', exact: true }).click()]);
   await expect(page.locator('.protocol-row').first()).toBeVisible();
