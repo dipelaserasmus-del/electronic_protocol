@@ -311,6 +311,9 @@ class InboxTest extends FeatureTestCase
         $page->call('refresh')->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα')->assertSeeHtml('/home/'.$old->id);
 
         $page->call('register', 2, false)->assertHasErrors('forms.2.similar')->assertSeeHtml('data-action="register-anyway"');
+        // R5k: the yellow button too is disabled during a save and turns while its own save runs
+        $this->assertMatchesRegularExpression('~data-action="register-anyway"\s+wire:click="register\(2, false, true\)" wire:loading.attr="disabled" wire:target="register,markRead">\s*<span class="spinner-border[^"]*" wire:loading wire:target="register\(2, false, true\)"~', $page->html());
+        $this->assertStringContainsString('wire:target="register(2, false), register(2, true), register(2, false, true), register(2, true, true)"', $page->html(), 'the notice of this e-mail');
         $this->assertSame(1, \App\Models\Protocol::count(), 'not registered yet');
 
         $page->call('register', 2, false, true)->assertHasNoErrors();

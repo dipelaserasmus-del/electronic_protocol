@@ -292,3 +292,47 @@ test('the files are above the buttons; the e-mail (Από, Προς, Θέμα, t
   await message.scrollIntoViewIfNeeded();
   await evidence(page, 'r5j-mail-view');
 });
+
+test('registering says so until it is done; meanwhile no other e-mail can be registered or marked (R5k)', async ({ page }) => {
+  await login(page, 'writer');
+  const message = await findEmail(page, 'Κοινοποιείται σε όλα τα σχολεία');   // synthetic e-mail 12, no attachments
+  const other = page.locator('article.inbox-message').filter({ hasNot: page.locator(`#${await message.getAttribute('id')}`) }).first();
+  // hold the registration request until the checks below are done
+  let release;
+  const held = new Promise((r) => { release = r; });
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"register"')) await held;
+    await route.continue();
+  });
+  await message.locator('[data-action=register]').click();
+  await expect(message.locator('.inbox-saving')).toBeVisible();
+  await expect(message.locator('.inbox-saving')).toContainText('Καταχωρίζεται');
+  await expect(message.locator('[data-action=register] .spinner-border')).toBeVisible();
+  await expect(other.locator('[data-action=register]')).toBeDisabled();   // one registration at a time
+  await expect(other.locator('[data-action=mark-read]')).toBeDisabled();
+  await expect(other.locator('.inbox-saving')).toBeHidden();
+  await message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5k-saving');
+  release();
+  // registered before (an earlier run on this database): the question; its yellow button also shows the progress
+  const anyway = message.locator('[data-action=register-anyway]');
+  await expect(message.locator('.inbox-done').or(anyway)).toBeVisible();
+  if (await anyway.isVisible()) {
+    await page.unroute('**/update');
+    let again;
+    const heldAgain = new Promise((r) => { again = r; });
+    await page.route('**/update', async (route) => {
+      if ((route.request().postData() ?? '').includes('"method":"register"')) await heldAgain;
+      await route.continue();
+    });
+    await anyway.click();
+    await expect(message.locator('.inbox-saving')).toBeVisible();
+    await expect(anyway.locator('.spinner-border')).toBeVisible();
+    await expect(anyway).toBeDisabled();
+    again();
+  }
+  await expect(message.locator('.inbox-done')).toContainText('Καταχωρίστηκε με αριθμό');
+  await expect(message.locator('.inbox-saving')).toHaveCount(0);
+  await expect(other.locator('[data-action=register]')).toBeEnabled();
+  await page.unroute('**/update');
+});

@@ -272,24 +272,35 @@
                                 {{-- R5j (owner, 2026-11-20): the files right above the buttons: opened and printed almost every time --}}
                                 <div class="mt-3">@include('livewire.partials.inbox-attachments')</div>
 
+                                {{-- R5k (owner, 2026-11-20): this e-mail is being registered (any of its buttons): say so until it is done --}}
+                                @php $mine = "register({$uid}, false), register({$uid}, true), register({$uid}, false, true), register({$uid}, true, true)"; @endphp
+                                <div class="alert alert-info py-2 mt-2 mb-0 align-items-center gap-2 inbox-saving" role="status" wire:loading.flex wire:target="{{ $mine }}">
+                                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                    Καταχωρίζεται… αποθηκεύονται και τα συνημμένα. Μην κλείσετε τη σελίδα.
+                                </div>
+
                                 {{-- R5d: similar protocols found on «Καταχώριση»: a second, explicit click registers it --}}
                                 @if ($err($uid, 'similar'))
                                     <x-notice type="warning" class="mt-2 mb-0 inbox-confirm">
                                         Υπάρχει ήδη πρωτόκολλο που μοιάζει με αυτό το email (δείτε παραπάνω). Να καταχωριστεί ούτως ή άλλως;
+                                        @php $anyway = 'register('.$uid.', '.(($confirming[$uid] ?? false) ? 'true' : 'false').', true)'; @endphp
                                         <button type="button" class="btn btn-sm btn-warning rounded-pill ms-2" data-action="register-anyway"
-                                                wire:click="register({{ $uid }}, {{ ($confirming[$uid] ?? false) ? 'true' : 'false' }}, true)">Ναι, καταχώριση</button>
+                                                wire:click="{{ $anyway }}" wire:loading.attr="disabled" wire:target="register,markRead">
+                                            <span class="spinner-border spinner-border-sm me-1" wire:loading wire:target="{{ $anyway }}" aria-hidden="true"></span>Ναι, καταχώριση</button>
                                     </x-notice>
                                 @endif
                                 <x-pill-actions class="mt-2 inbox-actions">
                                     @unless ($receiptOnly)
-                                        <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="register" data-action="register">
-                                            <i class="bi bi-journal-plus" aria-hidden="true"></i> Καταχώριση
+                                        <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register">
+                                            <span class="spinner-border spinner-border-sm" wire:loading wire:target="register({{ $uid }}, false)" aria-hidden="true"></span>
+                                            <i class="bi bi-journal-plus" aria-hidden="true" wire:loading.remove wire:target="register({{ $uid }}, false)"></i> Καταχώριση
                                         </x-pill>
                                     @endunless
-                                    <x-pill :variant="$receiptOnly ? 'primary' : 'secondary'" wire:click="register({{ $uid }}, true)" wire:loading.attr="disabled" wire:target="register" data-action="register-receipt">
-                                        <i class="bi bi-envelope-check" aria-hidden="true"></i> Καταχώριση και απόδειξη
+                                    <x-pill :variant="$receiptOnly ? 'primary' : 'secondary'" wire:click="register({{ $uid }}, true)" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register-receipt">
+                                        <span class="spinner-border spinner-border-sm" wire:loading wire:target="register({{ $uid }}, true)" aria-hidden="true"></span>
+                                        <i class="bi bi-envelope-check" aria-hidden="true" wire:loading.remove wire:target="register({{ $uid }}, true)"></i> Καταχώριση και απόδειξη
                                     </x-pill>
-                                    <x-pill wire:click="markRead({{ $uid }})" data-action="mark-read" title="Το email φεύγει από τα εισερχόμενα χωρίς πρωτόκολλο">
+                                    <x-pill wire:click="markRead({{ $uid }})" wire:loading.attr="disabled" wire:target="register,markRead" data-action="mark-read" title="Το email φεύγει από τα εισερχόμενα χωρίς πρωτόκολλο">
                                         <i class="bi bi-envelope-open" aria-hidden="true"></i> Αναγνωσμένο
                                     </x-pill>
                                     @if ($m['has_html'])

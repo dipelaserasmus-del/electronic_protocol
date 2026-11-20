@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 19:00 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i and R5j; times are Greek time)
+## Current state — 2026-11-20 20:10 (after Batch 9, Batch 9.5, D07, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j and R5k; times are Greek time)
 - **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
@@ -90,6 +90,12 @@ Read this first when (re)starting work. Update it at the end of every task.
 - **R5j (Batch 9.5, owner's note 2026-11-20):** `livewire/partials/inbox-attachments` (with the winmail notice) is
   drawn in the form above the buttons while the e-mail waits, in `.inbox-mail` once done; `.inbox-mail` tinted (info
   7 % + left bar), Θέμα after Προς / Κοιν. The R5g browser test sets emailNumFetch 2 (the mock inbox is small now).
+- **R5k (Batch 9.5, owner's report 2026-11-20):** per e-mail `.inbox-saving` notice with `wire:target` = its four
+  register(uid, …) calls (Livewire matches the exact arguments); spinners on the pressed button; every register /
+  register-anyway / markRead button `wire:loading.attr=disabled wire:target="register,markRead"`. Livewire runs one
+  request at a time per page; numbers are given under the DB lock (ProtocolNumbering), also across users.
+- **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
+  held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
   e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the
   user types that number over it.

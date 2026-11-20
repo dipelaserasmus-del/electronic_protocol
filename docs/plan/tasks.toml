@@ -119,6 +119,7 @@ tasks = [
   { id = "R5h", title = "Inbox: going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it)", phase = "R", batch = 9.5, size = "S", deps = ["R5g"], status = "done", pr = 89 },
   { id = "R5i", title = "Inbox: a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails", phase = "R", batch = 9.5, size = "S", deps = ["R5h"], status = "done", pr = 90 },
   { id = "R5j", title = "Inbox: files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart", phase = "R", batch = 9.5, size = "S", deps = ["R5i"], status = "done", pr = 91 },
+  { id = "R5k", title = "Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time", phase = "R", batch = 9.5, size = "S", deps = ["R5j"], status = "in-progress" },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
