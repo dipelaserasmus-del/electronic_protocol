@@ -225,7 +225,7 @@
                         @php $single = $gap['from'] === $gap['to']; $first = $sort === 'desc' ? $gap['to'] : $gap['from']; @endphp
                         {{-- R2d (owner, 2026-11-18): green, dimmed text, the number first, the button in the middle --}}
                         <tr wire:key="gap-{{ $gap['year'] }}-{{ $gap['from'] }}" class="gap-row">
-                            <td colspan="7">
+                            <td colspan="7" data-full-row>
                                 <div class="gap-row-grid">
                                     <span class="gap-label">
                                         @if ($single) <span class="fw-semibold">{{ $gap['from'] }}/{{ $gap['year'] }}</span> ΚΕΝΟ
@@ -242,7 +242,7 @@
                         </tr>
                     @endif
                 @empty
-                    <tr><td colspan="7" class="text-center text-body-secondary py-4">Δεν υπάρχουν πρωτόκολλα σε αυτή τη λίστα.</td></tr>
+                    <tr><td colspan="7" data-full-row class="text-center text-body-secondary py-4">Δεν υπάρχουν πρωτόκολλα σε αυτή τη λίστα.</td></tr>
                 @endforelse
             </tbody>
         </table>
