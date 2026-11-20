@@ -12,7 +12,7 @@
         @continue($type === 'e' && ! $inform)
         @foreach ($assignments->where('type', $type) as $a)
             @php $name = $names[$a->user_id] ?? '—'; @endphp
-            <span class="badge rounded-pill assignee-pill {{ $class }}" title="{{ $label }}: {{ $name }}" data-type="{{ $type }}">
+            <span class="badge rounded-pill assignee-pill {{ $class }} position-relative z-2" title="{{ $label }}: {{ $name }}" data-type="{{ $type }}">
                 <i class="bi bi-{{ $icon }} me-1" aria-hidden="true"></i><span class="visually-hidden">{{ $label }}: </span>{{ $name }}</span>
         @endforeach
     @endforeach
