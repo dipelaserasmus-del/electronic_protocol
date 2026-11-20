@@ -203,4 +203,29 @@ class FolderGlossaryTest extends FeatureTestCase
         $this->assertSame('Προσωπικό Μητρώο (ΠΜ)', Keepvalue::where('fakelos', 'Φ.46')->value('describe'));
         $this->assertSame(0, DB::table('keepvalues')->where('fakelos', 'Φ.43')->count());
     }
+
+    public function test_merge_takes_every_spelling_of_the_code(): void
+    {
+        // D08 (owner, 2026-11-20): the old app wrote both "Φ.2" and "Φ12": "Φ43" is the same folder as "Φ.43"
+        Keepvalue::where('fakelos', 'Φ.43')->delete();
+        Keepvalue::where('fakelos', 'Φ.46')->delete();
+        Keepvalue::create(['fakelos' => 'Φ43', 'describe' => 'Παλιά γραφή']);
+        $into = Keepvalue::create(['fakelos' => 'Φ46', 'describe' => 'Προσωπικό Μητρώο']);
+        $a = $this->protocolIn('Φ43', 906);
+        $b = $this->protocolIn('Φ.43', 907);
+        $c = $this->protocolIn('Φ.43.1', 908);
+        $file = $this->attach($a, 'arxeio/Φ43/α.pdf');
+
+        $plan = app(FolderMerge::class)->plan('Φ.43', 'Φ.46');
+        $this->assertSame([2, 1, true, true], [$plan['protocols'], $plan['files'], $plan['fromListed'], $plan['intoListed']]);
+        $this->assertContains('Φ.43.1', $plan['subfolders']);
+
+        app(FolderMerge::class)->apply('Φ.43', 'Φ.46');
+
+        $this->assertSame(['Φ46', 'Φ46', 'Φ.43.1'], [$a->fresh()->fakelos, $b->fresh()->fakelos, $c->fresh()->fakelos], 'written as the list writes it');
+        $this->assertSame('arxeio/Φ46/α.pdf', $file->fresh()->savedPath);
+        $this->assertNull(Keepvalue::where('fakelos', 'Φ43')->first());
+        $this->assertNotNull($into->fresh());
+        $this->assertSame('Ο φάκελος δεν συγχωνεύεται με τον εαυτό του.', app(FolderMerge::class)->plan('Φ46', 'φ.46')['error']);
+    }
 }
