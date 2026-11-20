@@ -153,6 +153,9 @@ Open *Εισερχόμενα*.
   άλλοι N ▾*; click it for all of them, *λιγότεροι ▴* to fold them again.
 - [ ] **51.** *Εισερχόμενα*: *Συνημμένα* is right above *Καταχώριση*; the e-mail below (Από, Προς, Θέμα, text, HTML)
   has a light blue background and a blue edge, set apart from the form.
+- [ ] **52.** *Εισερχόμενα*: press *Καταχώριση* (or the yellow *Ναι, καταχώριση*): at once a blue *«Καταχωρίζεται…»*
+  appears above the buttons and the button turns; meanwhile the buttons of every e-mail are greyed out; when it is
+  done the e-mail says *«Καταχωρίστηκε με αριθμό …»*.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
