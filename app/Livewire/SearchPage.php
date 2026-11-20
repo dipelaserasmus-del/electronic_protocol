@@ -81,6 +81,10 @@ class SearchPage extends Component
     #[Url(as: 'w')]
     public string $words = '';
 
+    /** R3f (owner, 2026-11-20): every text and word matched whole ("120" finds 120, not 234120 or 1205) */
+    #[Url(as: 'whole')]
+    public bool $whole = false;
+
     /** a search was asked for (the results are shown) */
     #[Url(as: 's')]
     public bool $searched = false;
@@ -216,6 +220,11 @@ class SearchPage extends Component
         $c->empty = array_values(array_unique([...$c->empty, ...$typedEmpty]));
         $c->assigneeName = $this->assignee === '' ? $typed->assigneeName : null;
         $c->pending = $c->pending || $typed->pending;
+        if ($this->whole) {   // R3f: as if each value were typed with "=" (ProtocolSearch::wholeOf)
+            $eq = fn (string $v) => str_starts_with($v, '=') ? $v : '=' . $v;
+            $c->text = array_map($eq, $c->text);
+            $c->words = array_map($eq, $c->words);
+        }
 
         return $this->getErrorBag()->isEmpty() ? $c : null;
     }

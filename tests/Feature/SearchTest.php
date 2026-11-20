@@ -61,6 +61,61 @@ class SearchTest extends FeatureTestCase
             ->assertSee('ΕΚΔΡΟΜΉ ΣΤΟ <mark><strong>ΜΟΥΣΕΊΟ</strong></mark>', false)->assertDontSee('Άλλο θέμα');
     }
 
+    /** R3f (owner, 2026-11-20): "=" before a value, or «Ολόκληρες λέξεις», matches it as a whole word or number. */
+    public function test_whole_words_and_numbers(): void
+    {
+        foreach (['120', '234120', '451205', '120112', '120/3', 'Φ.20/120/Δ1', 'αρ. 120'] as $i => $in) {
+            Protocol::factory()->number($i + 1)->create(['thema' => "Εισερχόμενο $in", 'in_num' => $in]);
+        }
+        Protocol::factory()->number(20)->create(['thema' => 'Άδεια μητρότητας', 'in_num' => '']);
+        Protocol::factory()->number(21)->create(['thema' => 'ΑΔΕΙΟΥΧΟΣ εκπαιδευτικός', 'in_num' => '']);
+        Protocol::factory()->number(22)->create(['thema' => 'Ειδική άδεια', 'in_num' => '']);
+        $sorted = fn (array $a) => collect($a)->sort()->values()->all();
+        $whole = $sorted(['Εισερχόμενο 120', 'Εισερχόμενο 120/3', 'Εισερχόμενο Φ.20/120/Δ1', 'Εισερχόμενο αρ. 120']);
+
+        $this->assertCount(7, $this->subjects($this->criteria(['text' => ['in_num' => '120']])), 'part of the text, as before');
+        $this->assertSame($whole, $sorted($this->subjects($this->criteria(['text' => ['in_num' => '=120']]))));
+        $this->assertSame($whole, $sorted($this->subjects($this->criteria(['text' => ['in_num' => '= 120']]))));
+        // a free word: also the protocol number 120 would count; here the subjects hold it
+        $this->assertSame($whole, $sorted($this->subjects($this->criteria(['words' => ['=120']]))));
+        // case, accents and final ς still ignored; a longer word is not the word
+        $this->assertSame($sorted(['Άδεια μητρότητας', 'Ειδική άδεια']), $sorted($this->subjects($this->criteria(['text' => ['thema' => '=αδεια']]))));
+        $this->assertSame(['ΑΔΕΙΟΥΧΟΣ εκπαιδευτικός'], $this->subjects($this->criteria(['text' => ['thema' => '=αδειουχοσ']])));
+        $this->assertCount(3, $this->subjects($this->criteria(['text' => ['thema' => 'αδει']])));
+        $this->assertSame([], $this->subjects($this->criteria(['text' => ['thema' => '=αδει']])));
+        // a phrase, and an attachment's name
+        $this->assertSame(['Άδεια μητρότητας'], $this->subjects($this->criteria(['text' => ['thema' => '=ΑΔΕΙΑ ΜΗΤΡΟΤΗΤΑΣ']])));
+        $p = Protocol::where('protocolnum', 20)->firstOrFail();
+        Attachment::factory()->create(['protocol_id' => $p->id, 'name' => 'αίτηση-120.pdf']);
+        Attachment::factory()->create(['protocol_id' => Protocol::where('protocolnum', 21)->value('id'), 'name' => 'αίτηση1205.pdf']);
+        $this->assertSame(['Άδεια μητρότητας'], $this->subjects($this->criteria(['text' => ['name' => '=120']])));
+
+        // review of R3f: Latin accents, and accents stored as separate marks, are ignored too
+        Protocol::factory()->number(30)->create(['thema' => 'Συνάντηση στο café της πλατείας']);
+        Protocol::factory()->number(31)->create(['thema' => 'Cafeteria σχολείου']);
+        Protocol::factory()->number(32)->create(['thema' => "Κανονική \u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1} (με χωριστό τόνο)"]);
+        $this->assertSame(['Συνάντηση στο café της πλατείας'], $this->subjects($this->criteria(['text' => ['thema' => '=cafe']])));
+        $this->assertSame(['Συνάντηση στο café της πλατείας'], $this->subjects($this->criteria(['text' => ['thema' => '=CAFÉ']])));
+        $this->assertContains("Κανονική \u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1} (με χωριστό τόνο)", $this->subjects($this->criteria(['text' => ['thema' => '=αδεια']])));
+        $this->assertContains('Άδεια μητρότητας', $this->subjects($this->criteria(['text' => ['thema' => "=\u{03B1}\u{0301}\u{03B4}\u{03B5}\u{03B9}\u{03B1}"]])), 'typed decomposed');
+
+        // review of R3f: a separate accent mark is inside the word, not a boundary; related numbers with letters next to them
+        $this->assertSame([], $this->subjects($this->criteria(['text' => ['thema' => '=δεια']])), 'not the end of ά+δεια');
+        Protocol::factory()->number(40)->create(['thema' => 'Σχετικό σκέτο', 'sxetiko' => '120']);
+        Protocol::factory()->number(41)->create(['thema' => 'Σχετικό με γράμμα', 'sxetiko' => 'Α120']);
+        $this->assertSame(['Σχετικό σκέτο'], $this->subjects($this->criteria(['text' => ['sxetiko' => '=120']])));
+        $this->assertSame(['Σχετικό με γράμμα', 'Σχετικό σκέτο'], $this->subjects($this->criteria(['text' => ['sxetiko' => '120']])), 'without =: as before');
+
+        // typed: εισ:=120; the advanced screen's switch; the hint and the help
+        $this->assertSame('=120', (new \App\Services\Search\QueryParser())->parse('εισ:=120')->text['in_num']);
+        $this->actingAs($this->admin())->get('/search?q='.urlencode('εισ:=120'))->assertOk()
+            ->assertSee('Εισερχόμενο 120/3')->assertDontSee('Εισερχόμενο 234120')->assertSee('<code>εισ:=120</code>', false);
+        $this->actingAs($this->admin())->get($this->find(['t' => ['in_num' => '120'], 'whole' => 1]))->assertOk()
+            ->assertSee('Εισερχόμενο 120/3')->assertDontSee('Εισερχόμενο 451205')->assertSee('id="s-whole"', false);
+        $this->actingAs($this->admin())->get($this->find(['t' => ['in_num' => '120']]))->assertSee('Εισερχόμενο 451205');
+        $this->assertSame('Εισ <mark><strong>120</strong></mark>', \App\Support\Highlight::html('Εισ 120', ['=120']));
+    }
+
     public function test_percent_and_underscore_are_plain_characters(): void
     {
         Protocol::factory()->number(1)->create(['thema' => 'Έκπτωση 50% στα εισιτήρια']);

@@ -1,6 +1,8 @@
 {{-- R3b/R3c: the search words (App\Services\Search\QueryParser), as a short list --}}
 <dl class="row small mb-0 search-help">
     <dt class="col-sm-4"><code>λέξη "φράση"</code></dt><dd class="col-sm-8">σε οποιοδήποτε πεδίο (χωρίς τόνους/κεφαλαία)</dd>
+    {{-- R3f (owner, 2026-11-20) --}}
+    <dt class="col-sm-4"><code>=120</code> <code>εισ:=120</code></dt><dd class="col-sm-8">ολόκληρη λέξη ή αριθμός: μόνο 120 (και 120/3), όχι 234120 ή 1205</dd>
     <dt class="col-sm-4"><code>125</code> <code>125/2026</code></dt><dd class="col-sm-8">αριθμός πρωτοκόλλου</dd>
     <dt class="col-sm-4"><code>αρ:120-130</code></dt><dd class="col-sm-8">αριθμός ή από–έως</dd>
     <dt class="col-sm-4"><code>έτος:2026</code></dt><dd class="col-sm-8">έτος (χωρίς αυτό: όλα τα έτη)</dd>
