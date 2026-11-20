@@ -116,6 +116,10 @@ Open *Εισερχόμενα*.
   *Απόδειξη* are at the far right of that row, with icons. In the top bar, click the word *Λίστα*: you are back in the
   list; its **▾** opens the other lists, as before. As a *reader*: no *Αντιγραφή ως νέο*, in the protocol or in the
   list's ⋮ menu.
+- [ ] **40.** Click your name at the top right: under *Αρχική σελίδα* choose *Όλα τα πρωτόκολλα*, *προς Διεκπεραίωση*
+  or *προς Ενημέρωση*. The application's name and *Λίστα* now lead there; log out and in: you start there too.
+  Another user keeps their own. Make the window narrower (down to a tablet's width): *Νέο*, *Λίστα*, *Εισερχόμενα*,
+  *Διαχείριση* and the search box stay visible; your name moves into the tooltip of the person icon.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

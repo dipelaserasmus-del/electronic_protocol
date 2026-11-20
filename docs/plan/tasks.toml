@@ -107,6 +107,7 @@ tasks = [
   { id = "R5e", title = "Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects", phase = "R", batch = 9.5, size = "S", deps = ["R5d", "N04"], status = "done", pr = 76 },
   { id = "D07", title = "Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules)", phase = "D", batch = 9.5, size = "S", deps = ["R6b", "D06"], status = "done", pr = 77 },
   { id = "R1j", title = "Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link", phase = "R", batch = 9.5, size = "S", deps = ["R1b", "R3d"], status = "done", pr = 78 },
+  { id = "R3e", title = "Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px", phase = "R", batch = 9.5, size = "S", deps = ["R1j", "R3d"], status = "in-progress" },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
