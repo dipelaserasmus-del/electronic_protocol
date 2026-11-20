@@ -37,5 +37,11 @@
   The R2j test now opens the row to see every pill. All 10 list browser tests pass, and the search ones too.
 - Full PHPUnit: 555 tests pass.
 
+## Review
+- Codex (P2): the search results reuse the list's rows but have no ▾. They too showed only the first assignee and
+  the first file, possibly hiding the very file that matched the search.
+  - Fixed: the two-line rules apply only to the protocol list; the search results show everything, as before.
+  - Browser test (`search.spec.js`): a result with 3 files and 2 assignees shows all of them. It failed before.
+
 ## Owner actions
 None. To try it: step 48 in [OWNER-TODO.md](../../OWNER-TODO.md).
