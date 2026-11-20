@@ -269,6 +269,9 @@
                                     </div>
                                 </details>
 
+                                {{-- R5j (owner, 2026-11-20): the files right above the buttons: opened and printed almost every time --}}
+                                <div class="mt-3">@include('livewire.partials.inbox-attachments')</div>
+
                                 {{-- R5d: similar protocols found on «Καταχώριση»: a second, explicit click registers it --}}
                                 @if ($err($uid, 'similar'))
                                     <x-notice type="warning" class="mt-2 mb-0 inbox-confirm">
@@ -296,41 +299,20 @@
                             </form>
                         @endif
 
-                        {{-- the e-mail itself --}}
+                        {{-- the e-mail itself; R5j: coloured apart from the form above (to glance at) --}}
                         <div class="card-body border-top inbox-mail small">
                             <dl class="row mb-2 inbox-headers">
                                 <dt class="col-sm-2">Από</dt><dd class="col-sm-10 text-break mb-1">{{ \App\Support\Mail\MailContent::sender($m) }}</dd>
                                 @if (! empty($m['to']))<dt class="col-sm-2">Προς</dt>@include('livewire.partials.inbox-addresses', ['addresses' => $m['to'], 'kind' => 'to'])@endif
                                 @if (! empty($m['cc']))<dt class="col-sm-2">Κοιν.</dt>@include('livewire.partials.inbox-addresses', ['addresses' => $m['cc'], 'kind' => 'cc'])@endif
+                                {{-- R5j: as an e-mail program shows it --}}
+                                <dt class="col-sm-2">Θέμα</dt><dd class="col-sm-10 text-break mb-1 fw-semibold inbox-mail-subject">{{ $m['subject'] !== '' ? $m['subject'] : '(χωρίς θέμα)' }}</dd>
                                 @if (! empty($m['reply_to']))<dt class="col-sm-2">Απάντηση σε</dt><dd class="col-sm-10 text-break mb-1">{{ $m['reply_to'] }}</dd>@endif
                             </dl>
 
-                            @if (! empty($m['winmail']))
-                                {{-- R5b: Outlook's winmail.dat, opened --}}
-                                <x-notice type="info" class="inbox-winmail">
-                                    @if ($m['winmail']['report'])
-                                        <strong>Αναφορά ανάγνωσης / παράδοσης</strong> (Outlook): τα στοιχεία της φαίνονται στο κείμενο.
-                                    @else
-                                        Το email ήρθε ως <code>winmail.dat</code> (Outlook): εμφανίζονται το κείμενο και τα αρχεία που περιέχει.
-                                    @endif
-                                </x-notice>
-                            @endif
-                            @if ($m['attachments'])
-                                <div class="inbox-attachments mb-2" role="group" aria-label="Συνημμένα">
-                                    <div class="fw-semibold mb-1">Συνημμένα @unless ($state)<span class="fw-normal text-body-secondary">(✓ = αποθηκεύεται με το πρωτόκολλο)</span>@endunless</div>
-                                    <ul class="list-unstyled mb-0 d-flex flex-wrap gap-2">
-                                        @foreach ($m['attachments'] as $a)
-                                            <li class="inbox-attachment border rounded px-2 py-1 d-flex align-items-center gap-2" wire:key="a-{{ $uid }}-{{ $a['key'] }}">
-                                                @unless ($state)
-                                                    <input type="checkbox" class="form-check-input mt-0" id="f-{{ $uid }}-file-{{ $a['key'] }}" wire:model="forms.{{ $uid }}.files.{{ $a['key'] }}"
-                                                           @checked($f['files'][$a['key']] ?? false) aria-label="Αποθήκευση του {{ $a['name'] }}">
-                                                @endunless
-                                                <x-file-badge :name="$a['name']" :size="$a['size']" :mime="$a['mime']" />
-                                                <a href="{{ url('/viewEmailAttachment/'.$uid.'/'.$a['key']) }}" target="_blank" class="text-break">{{ $a['name'] }}</a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
+                            {{-- the files: above the buttons while the e-mail waits (R5j); here once it is registered or read --}}
+                            @if ($state)
+                                @include('livewire.partials.inbox-attachments')
                             @endif
 
                             @if (trim((string) ($m['text'] ?? '')) !== '')
