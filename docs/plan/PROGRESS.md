@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Tasks done | **66 / 76** `██████████████████████████░░░░` 87% |
-| Effort done (PERT) | **31.2 / 35.8 h** `██████████████████████████░░░░` 87% |
-| Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **66 / 77** `██████████████████████████░░░░` 86% |
+| Effort done (PERT) | **31.2 / 36.1 h** `██████████████████████████░░░░` 86% |
+| Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
-| In progress | — |
+| In progress | R2i |
 | Next task | **A01** — Integrity-check engine + page |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e | 9/9 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅R1j ✅R3e 🔄R2i | 9/10 | `█████████░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -118,6 +118,7 @@ flowchart LR
     R5e["R5e<br/>Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects"]
     R1j["R1j<br/>Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link"]
     R3e["R3e<br/>Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px"]
+    R2i["R2i<br/>List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -217,6 +218,8 @@ flowchart LR
   R3d --> R1j
   R1j --> R3e
   R3d --> R3e
+  R2h --> R2i
+  R3e --> R2i
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -243,6 +246,7 @@ flowchart LR
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
   class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,R1j,R3e done
+  class R2i inprogress
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -336,17 +340,18 @@ gantt
   D07 Folder glossary  the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) :done, d07, 2026-11-13 15:00, 19m
   R1j Protocol form  one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link :done, r1j, 2026-11-13 15:19, 19m
   R3e Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px :done, r3e, 2026-11-13 15:38, 19m
+  R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :active, r2i, 2026-11-13 15:57, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 15:57, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 16:30, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 16:49, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 17:08, 33m
-  A06 Rule  missing attachment :a06, 2026-11-13 17:41, 19m
-  X01 Audit log — recording :x01, 2026-11-13 18:00, 33m
-  X02 Audit log — viewing :x02, 2026-11-13 18:33, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-13 19:06, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 19:39, 19m
-  Z03 Final security review :crit, z03, 2026-11-13 19:58, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 16:16, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 16:49, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 17:08, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 17:27, 33m
+  A06 Rule  missing attachment :a06, 2026-11-13 18:00, 19m
+  X01 Audit log — recording :x01, 2026-11-13 18:19, 33m
+  X02 Audit log — viewing :x02, 2026-11-13 18:52, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-13 19:25, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-13 19:58, 19m
+  Z03 Final security review :crit, z03, 2026-11-13 20:17, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -402,7 +407,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R3b** 🔴 | Gmail-style query parser | R3a | 0.5 | 0.1 | 4.2 | 4.7 | 4.2 | 4.7 | 0.0 | #56 |
 | ✅ | **R3c** 🔴 | Global search box + results page | R3b | 0.5 | 0.1 | 4.7 | 5.3 | 4.7 | 5.3 | 0.0 | #57 |
 | ✅ | **R1h** | Folder codes: φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 6.4 | 6.7 | 1.1 | #59 |
-| ✅ | **R3d** | Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 5.7 | 6.0 | 0.4 | #60 |
+| ✅ | **R3d** | Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 5.4 | 5.7 | 0.1 | #60 |
 | ✅ | **R1i** | Protocol page sections: collapsible, movable, one/two columns, saved per user | R1g, R3d | 0.5 | 0.1 | 5.9 | 6.5 | 6.1 | 6.7 | 0.2 | #61 |
 | ✅ | **R5c** | Inbox screen (sidebar, collapsible) | R5a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 4.2 | 4.7 | 0.5 | #62 |
 | ✅ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 4.7 | 5.3 | 0.5 | #63 |
@@ -416,11 +421,12 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 6.1 | 6.7 | 2.0 | #72 |
 | ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 6.1 | 6.7 | 1.6 | #73 |
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.4 | 6.7 | 1.9 | #74 |
-| ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 6.4 | 6.7 | 2.2 | #75 |
+| ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 6.0 | 6.4 | 1.9 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 | #76 |
 | ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 6.4 | 6.7 | 2.2 | #77 |
-| ✅ | **R1j** | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 6.0 | 6.4 | 0.4 | #78 |
-| ✅ | **R3e** | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 6.4 | 6.7 | 0.4 | #79 |
+| ✅ | **R1j** | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 5.7 | 6.0 | 0.1 | #78 |
+| ✅ | **R3e** | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 6.0 | 6.4 | 0.1 | #79 |
+| 🔄 | **R2i** | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 6.4 | 6.7 | 0.1 |  |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 5.6 | 6.1 | 1.4 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 6.4 | 6.7 | 1.6 |  |

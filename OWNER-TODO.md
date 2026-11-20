@@ -120,6 +120,10 @@ Open *Εισερχόμενα*.
   or *προς Ενημέρωση*. The application's name and *Λίστα* now lead there; log out and in: you start there too.
   Another user keeps their own. Make the window narrower (down to a tablet's width): *Νέο*, *Λίστα*, *Εισερχόμενα*,
   *Διαχείριση* and the search box stay visible; your name moves into the tooltip of the person icon.
+- [ ] **41.** *Λίστα*: the rows alternate white and light blue; the columns keep the same widths from page to page.
+  A long subject shows two lines ending in …; a protocol with more than two files shows two and *+N ακόμη*. Click
+  **▾** at the end of a row: that row opens in full (all the files, the details of *Αναλυτικά*); again: it closes.
+  *Αναλυτικά* opens every row.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

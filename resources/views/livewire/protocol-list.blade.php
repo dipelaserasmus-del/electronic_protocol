@@ -81,16 +81,18 @@
     <x-list-pager :paginator="$protocols" position="top" class="mb-2 justify-content-end" />
 
     <div class="card shadow-sm">
-        <table class="table table-hover table-sm align-middle mb-0 table-sticky">
+        {{-- R2i (owner, 2026-11-20): rows in alternating colours; fixed column widths; each row short (subject and sender in two
+             lines, two files), ▾ shows all of it; Αναλυτικά opens every row --}}
+        <table class="table table-hover table-sm align-middle mb-0 table-sticky protocol-table">
             <thead class="table-light">
                 <tr>
-                    <th scope="col" class="text-nowrap">{!! $sortHeader('protocolnum', 'Αριθμός') !!}<br>{!! $sortHeader('protocoldate', 'Ημ/νία') !!}</th>
-                    <th scope="col" class="d-none d-md-table-cell">{!! $sortHeader('fakelos', 'Φάκελος') !!}</th>
+                    <th scope="col" class="text-nowrap col-number">{!! $sortHeader('protocolnum', 'Αριθμός') !!}<br>{!! $sortHeader('protocoldate', 'Ημ/νία') !!}</th>
+                    <th scope="col" class="d-none d-md-table-cell col-folder">{!! $sortHeader('fakelos', 'Φάκελος') !!}</th>
                     <th scope="col">{!! $sortHeader('thema', 'Θέμα') !!}</th>
-                    <th scope="col" class="d-none d-lg-table-cell">{!! $sortHeader('in_arxi_ekdosis', 'Από') !!} / {!! $sortHeader('out_to', 'Προς') !!}</th>
-                    <th scope="col" class="d-none d-md-table-cell">{!! $sortHeader('diekperaiosi', 'Ανάθεση') !!}<br>{!! $sortHeader('diekp_eos', 'Έως') !!}</th>
-                    <th scope="col" class="d-none d-sm-table-cell">Συνημμένα</th>
-                    <th scope="col" class="text-end"><span class="visually-hidden">Ενέργειες</span></th>
+                    <th scope="col" class="d-none d-lg-table-cell col-from">{!! $sortHeader('in_arxi_ekdosis', 'Από') !!} / {!! $sortHeader('out_to', 'Προς') !!}</th>
+                    <th scope="col" class="d-none d-md-table-cell col-assign">{!! $sortHeader('diekperaiosi', 'Ανάθεση') !!}<br>{!! $sortHeader('diekp_eos', 'Έως') !!}</th>
+                    <th scope="col" class="d-none d-sm-table-cell col-files">Συνημμένα</th>
+                    <th scope="col" class="text-end col-actions"><span class="visually-hidden">Ενέργειες</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -101,7 +103,8 @@
                         $informed = $p->assignments->where('type', 'e');
                     @endphp
                     @php $dateFlag = $dateFlags[$p->id] ?? null; @endphp
-                    <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif" data-id="{{ $p->id }}">
+                    <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif" data-id="{{ $p->id }}"
+                        x-data="{ open: false }" :class="{ 'row-open': open || detailed }">
                         <td class="text-nowrap">
                             <a href="{{ url('/home/'.$p->id) }}" class="fw-bold text-decoration-none stretched-link-row">{{ $p->protocolnum }}/{{ $p->etos }}</a>
                             <div class="small @if ($dateFlag) text-warning-emphasis fw-semibold @else text-body-secondary @endif">{{ $p->dateOf('protocoldate')?->format('d/m/Y') }}
@@ -118,9 +121,9 @@
                             @if ($p->fakelos)<span title="{{ $folders[$p->fakelos] ?? '' }}">{{ $p->fakelos }}</span>@endif
                         </td>
                         <td>
-                            <div class="text-break">{{ $p->thema }}</div>
+                            <div class="text-break row-clamp">{{ $p->thema }}</div>
                             {{-- R2b: the detailed view shows everything a row has, not only the (often empty) notes --}}
-                            <div x-show="detailed" x-cloak class="small text-body-secondary detailed">
+                            <div x-show="detailed || open" x-cloak class="small text-body-secondary detailed">
                                 @if ($p->fakelos && ($folders[$p->fakelos] ?? null))<div><span class="fw-semibold">Φάκελος:</span> {{ $p->fakelos }} · {{ $folders[$p->fakelos] }}</div>@endif
                                 @if ($p->in_num || $p->in_arxi_ekdosis || $p->in_topos_ekdosis || $p->in_paraliptis)
                                     <div><span class="fw-semibold">Εισερχόμενο:</span>
@@ -149,7 +152,7 @@
                                 <div><span class="fw-semibold">Καταχώριση:</span> {{ $names[$p->user_id] ?? '—' }}@if ($p->created_at) · {{ $p->created_at->format('d/m/Y H:i') }}@endif</div>
                             </div>
                         </td>
-                        <td class="d-none d-lg-table-cell small">
+                        <td class="d-none d-lg-table-cell small"><div class="row-clamp">
                             @if ($p->in_arxi_ekdosis || $p->in_num)
                                 <div>← {{ $p->in_arxi_ekdosis }}
                                     @if ($p->in_num)<span class="text-body-secondary">αρ. {{ $p->in_num }}@if ($p->in_date) / {{ $p->dateOf('in_date')?->format('d/m/Y') }}@endif</span>@endif
@@ -158,7 +161,7 @@
                             @if ($p->out_to)
                                 <div>→ {{ $p->out_to }} @if ($p->out_date)<span class="text-body-secondary">{{ $p->dateOf('out_date')?->format('d/m/Y') }}</span>@endif</div>
                             @endif
-                        </td>
+                        </div></td>
                         <td class="d-none d-md-table-cell small">
                             @if ($handlers->isNotEmpty())
                                 <span class="fw-semibold">{{ $handlers->map(fn ($a) => $names[$a->user_id] ?? '—')->implode(', ') }}</span>
@@ -179,19 +182,29 @@
                                     @if ($a->savedPath)
                                         <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-decoration-none position-relative z-2 d-inline-flex align-items-center gap-1"
                                            title="{{ $a->name }}"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
-                                            <span x-show="! detailed" class="text-nowrap">{{ \App\Support\FileBadge::shortName($a->name) }}</span>
-                                            <span x-show="detailed" x-cloak class="text-break">{{ $a->name }}</span></a>
+                                            <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($a->name) }}</span>
+                                            <span x-show="detailed || open" x-cloak class="text-break">{{ $a->name }}</span></a>
                                     @endif
                                     @if ($a->ada)
-                                        @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light position-relative z-2" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed" x-cloak> {{ $a->ada }}</span></a>
-                                        @else<span class="badge text-bg-light" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed" x-cloak> {{ $a->ada }}</span></span>@endif
+                                        @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light position-relative z-2" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed || open" x-cloak> {{ $a->ada }}</span></a>
+                                        @else<span class="badge text-bg-light" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed || open" x-cloak> {{ $a->ada }}</span></span>@endif
                                     @endif
                                 </div>
                             @endforeach
+                            @if ($p->attachments->count() > 2)
+                                <button type="button" class="btn btn-link btn-sm p-0 small more-files position-relative z-2" x-on:click="open = true"
+                                        title="Όλα τα συνημμένα">+{{ $p->attachments->count() - 2 }} ακόμη</button>
+                            @endif
                         </td>
                         {{-- R2h (owner, 2026-11-19): the row's actions under ⋮, to save space; above the row's link (z-2) --}}
-                        <td class="text-end row-actions-cell">
-                            <div class="dropdown position-relative z-2">
+                        <td class="text-end row-actions-cell text-nowrap">
+                            {{-- R2i: this row in full, or short again --}}
+                            <button type="button" class="btn btn-sm btn-link text-body-secondary row-toggle position-relative z-2" x-show="! detailed"
+                                    x-on:click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false"
+                                    :title="open ? 'Σύντμηση' : 'Όλα τα στοιχεία'" title="Όλα τα στοιχεία"
+                                    aria-label="Όλα τα στοιχεία του {{ $p->protocolnum }}/{{ $p->etos }}">
+                                <i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+                            <div class="dropdown d-inline-block position-relative z-2">
                                 <button type="button" class="btn btn-sm btn-link text-body-secondary row-actions" data-bs-toggle="dropdown"
                                         data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false"
                                         aria-label="Ενέργειες για το {{ $p->protocolnum }}/{{ $p->etos }}" title="Ενέργειες">

@@ -215,6 +215,27 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringContainsString('data-action="receipt"', $row);
     }
 
+    /** R2i (owner, 2026-11-20): fixed columns; a short row with ▾ to open it; more than two files: "+N ακόμη". */
+    public function test_rows_are_short_with_a_toggle_to_show_all(): void
+    {
+        $p = Protocol::factory()->number(12)->create(['etos' => 2026]);
+        \App\Models\Attachment::factory()->count(3)->create(['protocol_id' => $p->id]);
+        $q = Protocol::factory()->number(13)->create(['etos' => 2026]);
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $this->assertStringContainsString('protocol-table', $html);
+        foreach (['col-number', 'col-folder', 'col-from', 'col-assign', 'col-files', 'col-actions'] as $col) {
+            $this->assertStringContainsString($col, $html, $col);
+        }
+        $row = fn (Protocol $x) => substr($s = substr($html, strpos($html, 'data-id="'.$x->id.'"')), 0, strpos($s, '</tr>'));
+
+        $this->assertStringContainsString('x-data="{ open: false }" :class="{ \'row-open\': open || detailed }"', $row($p));
+        $this->assertStringContainsString('aria-label="Όλα τα στοιχεία του 12/2026"', $row($p));
+        $this->assertMatchesRegularExpression('~class="text-break row-clamp"~', $row($p));
+        $this->assertStringContainsString('x-show="detailed || open"', $row($p));
+        $this->assertStringContainsString('+1 ακόμη', $row($p));
+        $this->assertStringNotContainsString('ακόμη', $row($q), 'no files, nothing more');
+    }
+
     public function test_no_pager_for_a_single_page(): void
     {
         $this->setting('showRowsInPage', 25);

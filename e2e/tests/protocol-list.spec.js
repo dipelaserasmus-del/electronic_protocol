@@ -288,3 +288,49 @@ test('a row\'s actions are under ⋮: copy and receipt (R2h)', async ({ page, co
   await menu.locator('[data-action=copy]').click();
   await expect(page).toHaveURL(new RegExp(`/home/${id}/1$`));
 });
+
+test('rows in alternating colours, fixed column widths, each row short until ▾ or Αναλυτικά (R2i)', async ({ page }) => {
+  const subject = `R2i μακρύ θέμα ${Date.now()} ` + 'με πολλές λέξεις για να πιάσει αρκετές γραμμές στη στήλη του θέματος '.repeat(6);
+  await login(page, 'admin');
+  await page.evaluate(() => { try { localStorage.removeItem('protocolList.detailed'); } catch (e) {} });
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+  const id = page.url().match(/\/home\/(\d+)$/)[1];
+  await page.goto('/home/list');
+
+  // alternating colours: two rows in a row differ
+  const colours = await page.evaluate(() => [...document.querySelectorAll('.protocol-row')].slice(0, 4)
+    .map((tr) => getComputedStyle(tr.querySelector('td'), null).boxShadow + getComputedStyle(tr.querySelector('td')).backgroundColor));
+  expect(colours[0]).not.toEqual(colours[1]);
+  expect(colours[0]).toEqual(colours[2]);
+  expect(await page.locator('.protocol-table').evaluate((t) => getComputedStyle(t).tableLayout)).toBe('fixed');
+
+  const row = page.locator(`.protocol-row[data-id="${id}"]`);
+  const subjectCell = row.locator('.row-clamp').first();
+  const lineHeight = await subjectCell.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+  const short = (await subjectCell.boundingBox()).height;
+  expect(short, 'two lines at most').toBeLessThan(lineHeight * 2.5);
+  await expect(row.locator('.detailed')).toBeHidden();
+  await evidence(page, 'r2i-list', { clip: { x: 0, y: 0, width: 1440, height: 720 } });
+
+  // ▾ opens this row only, without opening the protocol; again closes it
+  const toggle = row.locator('.row-toggle');
+  await toggle.click();
+  await expect(page).toHaveURL(/\/home\/list/);
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  expect((await subjectCell.boundingBox()).height).toBeGreaterThan(short * 1.5);
+  await expect(row.locator('.detailed')).toBeVisible();
+  await expect(page.locator('.protocol-row.row-open')).toHaveCount(1);
+  await row.scrollIntoViewIfNeeded();
+  await evidence(page, 'r2i-row-open');
+  await toggle.click();
+  await expect(row.locator('.detailed')).toBeHidden();
+  expect((await subjectCell.boundingBox()).height).toBeLessThan(lineHeight * 2.5);
+
+  // Αναλυτικά opens every row (and hides the ▾)
+  await page.locator('#list-detailed').check();
+  await expect(page.locator('.protocol-row:not(.row-open)')).toHaveCount(0);
+  await expect(toggle).toBeHidden();
+  await page.locator('#list-detailed').uncheck();
+});
