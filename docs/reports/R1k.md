@@ -70,6 +70,12 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
 - Codex (P2), third round: a tag changed in place, with its editor still open, did not count.
   - Fixed: an open editor whose text differs from its tag counts as a change.
   - Browser test: edit a saved keyword in place; the dot shows and the dialog lists the new text. It failed before.
+- Codex (P2), fourth round:
+  - With a keyword added and another one typed, the list had two rows for *Λέξεις κλειδιά*, under the same name.
+    Fixed: one row per field shows both, e.g. *«πρώτη + δεύτερη (νέο)»*. The browser test checks one row with both;
+    it failed before.
+  - A file still uploading did not count, so leaving lost it. Fixed: it is listed as *«Νέα συνημμένα: ανεβαίνει…
+    N%»* and shows the dot. The browser test holds an upload back and checks the dot and the dialog.
 
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).

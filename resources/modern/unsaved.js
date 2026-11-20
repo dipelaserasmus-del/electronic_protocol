@@ -48,6 +48,7 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
             void this.tick;
             const now = this.state();
             const out = [];
+            const pendingTags = {};   // field => text typed / on its way, merged into that field's row (review of R1k)
             // review of R1k: a tag typed but not added yet, or on its way to the server
             (this.form ?? this.$el).querySelectorAll('[x-data^="tagBox("]').forEach((box) => {
                 const field = /tagBox\('([^']+)'/.exec(box.getAttribute('x-data'))?.[1];
@@ -59,13 +60,20 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
                     if (i.offsetParent !== null && value !== (tags[Number(i.dataset.edit)] ?? '')) typed.push(value || '(διαγραφή)');
                 });
                 if (box.dataset.pending) typed.push(box.dataset.pending);
-                if (typed.length) out.push([labels[field] ?? field, '—', typed.join(', ') + ' (νέο)']);
+                if (typed.length) pendingTags[field] = typed.join(', ') + ' (νέο)';
             });
             const text = (v) => (v === null || v === undefined || v === '' ? '—' : String(v));
             for (const [key, value] of Object.entries(now.form ?? {})) {
                 const before = this.start.form?.[key] ?? '';
-                if (String(before ?? '').trim() !== String(value ?? '').trim()) out.push([labels[key] ?? key, text(before), text(value)]);
+                const changed = String(before ?? '').trim() !== String(value ?? '').trim();
+                if (changed || pendingTags[key]) {
+                    // one row per field: what is saved-to-be and what is still typed (review of R1k)
+                    const shown = [changed || String(value ?? '').trim() ? text(value) : '', pendingTags[key] ?? ''].filter(Boolean).join(' + ');
+                    out.push([labels[key] ?? key, text(before), shown]);
+                }
             }
+            // a file still uploading (review of R1k)
+            if (this.progress !== null) out.push([labels.uploads ?? 'Νέα συνημμένα', '—', `ανεβαίνει… ${this.progress}%`]);
             const names = (ids) => (ids ?? []).map((id) => users[id] ?? id).join(', ');
             const sameIds = (a, b) => [...(a ?? [])].map(String).sort().join() === [...(b ?? [])].map(String).sort().join();
             if (!sameIds(this.start.handle, now.handle)) out.push([labels.handle ?? 'Διεκπεραίωση', text(names(this.start.handle)), text(names(now.handle))]);
