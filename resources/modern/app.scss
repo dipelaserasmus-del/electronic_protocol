@@ -193,6 +193,13 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .protocol-table .col-assign { width: 11rem; }
 .protocol-table .col-files { width: 15rem; }
 .protocol-table .col-actions { width: 4.75rem; }
+// review of R2i: on medium screens the fixed columns are narrower, so the subject keeps room (≥ 14rem at 768px)
+@media (max-width: 1199.98px) {
+    .protocol-table .col-number { width: 6.5rem; }
+    .protocol-table .col-folder { width: 4.5rem; }
+    .protocol-table .col-assign { width: 8rem; }
+    .protocol-table .col-files { width: 8rem; }
+}
 .protocol-table td { overflow-wrap: anywhere; }
 .protocol-row:not(.row-open) .row-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .protocol-row:not(.row-open) .attachment-name:nth-child(n+3) { display: none !important; }

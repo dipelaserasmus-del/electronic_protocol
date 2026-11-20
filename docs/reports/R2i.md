@@ -52,3 +52,12 @@
 
 ## Owner actions
 None. To try it: step 41 in [OWNER-TODO.md](../../OWNER-TODO.md).
+
+## Review
+- Codex (P2): at 768px the fixed columns left about 26px for the subject.
+  - Fixed: under 1200px the number, folder, assignment and attachments columns are narrower (6.5, 4.5, 8 and 8rem).
+    The subject keeps about 230px at 768px and about 280px at 992px.
+  - Browser test (R2i) at 768, 992 and 1024px checks that the subject column is over 200px wide, the table fits its
+    frame, and nothing is wider than the screen. It failed before, with 26px.
+
+![The list at 1024px](img/R2i/r2i-list-768.png)

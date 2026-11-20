@@ -333,4 +333,15 @@ test('rows in alternating colours, fixed column widths, each row short until ▾
   await expect(page.locator('.protocol-row:not(.row-open)')).toHaveCount(0);
   await expect(toggle).toBeHidden();
   await page.locator('#list-detailed').uncheck();
+
+  // review of R2i: on medium screens the subject keeps a readable width
+  for (const width of [768, 992, 1024]) {
+    await page.setViewportSize({ width, height: 800 });
+    const subjectWidth = (await page.locator('.protocol-table thead th').nth(2).boundingBox()).width;
+    expect(subjectWidth, `subject column at ${width} px`).toBeGreaterThan(200);
+    const fits = await page.locator('.protocol-table').evaluate((t) => t.getBoundingClientRect().right <= t.parentElement.getBoundingClientRect().right + 1);
+    expect(fits, `the table inside its frame at ${width} px`).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), `no sideways scroll at ${width} px`).toBeLessThanOrEqual(width);
+  }
+  await evidence(page, 'r2i-list-768', { clip: { x: 0, y: 0, width: 1024, height: 600 } });
 });
