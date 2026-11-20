@@ -66,7 +66,7 @@
                         </td>
                         <td class="d-none d-md-table-cell small">
                             @if ($handlers->isNotEmpty())
-                                <span class="fw-semibold">{{ $handlers->map(fn ($a) => $names[$a->user_id] ?? '—')->implode(', ') }}</span>
+                                <x-assignee-pills :assignments="$p->assignments" :names="$names" :inform="false" class="mb-1" />
                             @endif
                             @if ($p->diekp_date)
                                 <span class="badge text-bg-success">✔ {{ $p->dateOf('diekp_date')?->format('d/m/Y') }}</span>

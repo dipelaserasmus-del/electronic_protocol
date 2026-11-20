@@ -377,3 +377,32 @@ test('rows in alternating colours, fixed column widths, each row short until ▾
   }
   await expect.poll(async () => { const [shown, span] = await shownSpan(); return shown === span; }).toBe(true);
 });
+
+test('assignments are pills: ✎ for Διεκπεραίωση, 👁 for Ενημέρωση (R2j)', async ({ page }) => {
+  const subject = `R2j ανάθεση ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await page.locator('#f-handle').selectOption({ label: 'Συγγραφέας Δοκιμών' });
+  await page.locator('#f-inform').selectOption({ label: 'Αναγνώστης Δοκιμών' });
+  await saveProtocol(page);
+  const id = page.url().match(/\/home\/(\d+)$/)[1];
+  await page.goto('/home/list');
+  const row = page.locator(`.protocol-row[data-id="${id}"]`);
+  const handle = row.locator('.assignee-pill[data-type=d]');
+  const inform = row.locator('.assignee-pill[data-type=e]');
+  await expect(handle).toHaveText('Διεκπεραίωση: Συγγραφέας Δοκιμών');
+  await expect(handle.locator('i.bi-pencil-square')).toBeVisible();
+  await expect(inform).toContainText('Αναγνώστης Δοκιμών');
+  await expect(inform.locator('i.bi-eye')).toBeVisible();
+  await expect(row).not.toContainText('ενημ.:');
+  // review of R2j: the pill is above the row's link, so the mouse reaches it (its tooltip has the whole name)
+  const onTop = await handle.evaluate((el) => { const b = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2)); });
+  expect(onTop).toBe(true);
+  await evidence(page, 'r2j-pills', { clip: { x: 0, y: 250, width: 1440, height: 260 } });
+  // the menu uses the same icons
+  await page.locator('nav.app-topbar').getByRole('button', { name: 'Περισσότερες: Λίστα' }).click();
+  await expect(page.locator('nav.app-topbar .dropdown-menu.show a', { hasText: 'προς Διεκπεραίωση' }).first().locator('i.bi-pencil-square')).toBeVisible();
+  await expect(page.locator('nav.app-topbar .dropdown-menu.show a', { hasText: 'προς Ενημέρωση' }).first().locator('i.bi-eye')).toBeVisible();
+  await evidence(page, 'r2j-menu', { clip: { x: 200, y: 0, width: 500, height: 420 } });
+});

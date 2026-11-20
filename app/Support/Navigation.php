@@ -91,8 +91,8 @@ final class Navigation
             ['label' => 'Όλα τα πρωτόκολλα', 'icon' => 'collection', 'url' => url(Home::LIST)],   // R3e: all, whatever the home page
             ['divider' => true],
             ['header' => 'Δικά μου'],
-            ['label' => 'προς Διεκπεραίωση', 'icon' => 'hourglass-split', 'url' => url('/home/list/d')],
-            ['label' => 'προς Ενημέρωση', 'icon' => 'bell', 'url' => url('/home/list/e')],
+            ['label' => 'προς Διεκπεραίωση', 'icon' => 'pencil-square', 'url' => url('/home/list/d')],
+            ['label' => 'προς Ενημέρωση', 'icon' => 'eye', 'url' => url('/home/list/e')],
             ['label' => 'Διεκπεραιώθηκε', 'icon' => 'check2-circle', 'url' => url('/home/list/f')],
         ];
         if (! in_array($role, [self::ADMIN, self::ASSIGNER], true)) {
@@ -102,8 +102,8 @@ final class Navigation
         array_push($lists,
             ['divider' => true],
             ['header' => 'Όλοι οι χρήστες'],
-            ['label' => 'προς Διεκπεραίωση', 'icon' => 'hourglass-split', 'url' => url('/home/list/d/a')],
-            ['label' => 'προς Ενημέρωση', 'icon' => 'bell', 'url' => url('/home/list/e/a')],   // the old menu's link here went to /d by mistake
+            ['label' => 'προς Διεκπεραίωση', 'icon' => 'pencil-square', 'url' => url('/home/list/d/a')],
+            ['label' => 'προς Ενημέρωση', 'icon' => 'eye', 'url' => url('/home/list/e/a')],   // the old menu's link here went to /d by mistake
             ['label' => 'Διεκπεραιώθηκε', 'icon' => 'check2-circle', 'url' => url('/home/list/f/a')],
             ['divider' => true],
             ['header' => 'Ανά χρήστη'],

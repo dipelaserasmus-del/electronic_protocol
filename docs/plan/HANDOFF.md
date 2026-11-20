@@ -2,12 +2,11 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 20:40 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f and R1k; times are Greek time)
+## Current state — 2026-11-20 12:50 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k and R2j; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
-  (`ProtocolSearch::protocolCodes`/`allCodes`; `FolderMerge::codes`/`listed`/`intoCode`). Dots inside the number count.
-- **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
+  (`ProtocolSearch::protocolCodes`/`allCodes`; `FolderMerge::codes`/`listed`/`intoCode`). Dots inside the number count.- **D07 (owner, 2026-11-19): folder glossary.** The owner's official folder list = `database/data/folders.json`
   (+ generated `docs/FOLDERS.md`, test-checked) — **treat it as the folders glossary/dictionary**. `php artisan
   folders:glossary` (preview) / `--apply` (`App\Services\Folders\FolderGlossary`, via `FolderCatalog::parseRecords /
   importRecords`: descriptions only). `merges`: **Φ.43 → Φ.46** (`App\Services\Folders\FolderMerge`: protocols,
@@ -66,6 +65,9 @@ Read this first when (re)starting work. Update it at the end of every task.
   → [label, before, now] (labels `ProtocolForm::LABELS`), red dot `#form-save .unsaved-dot`. Same-site link clicks
   with changes → `#unsaved-dialog` (Ακύρωση / Χωρίς αποθήκευση / Αποθήκευση = `$wire.save(path)`; `save(?string $then)`
   redirects there if `ProtocolForm::sameSite` accepts the path). Closing / reloading the tab: the browser's question.
+- **R2j (Batch 9.5, owner's choice 2026-11-20):** `<x-assignee-pills :assignments :names :inform>`: one pill per user,
+  `bi-pencil-square` Διεκπεραίωση (`.assignee-handle`), `bi-eye` Ενημέρωση (`.assignee-inform`); list and search
+  results. The Λίστα menu and the home-page choices use the same icons (were hourglass / bell).
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the
@@ -162,7 +164,6 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-20 11:20 | D08 | #87 | folder codes: Φ12 = Φ.12 in search (field, `φάκελος:`, free words) and in the Φ.43 → Φ.46 merge |
 | 2026-11-19 14:10 | D07 | #77 | folder glossary (owner's list) + `folders:glossary`, merge Φ.43 → Φ.46; 2 import bugs fixed |
 | 2026-11-18 23:26 | R7 | #69 | `/print` = Livewire `PrintPage` (book / attachments tabs, live count, limit warning); `PrintController` (`/printed` GET+POST, xlsx via `target=xls`, `/printedAttachments`, `/receipt`) on `layouts/print`; `App\\Services\\Printing\\PrintRange` (old param names, ignored list, `limit()`, `describe()`, `params()`); handlers by name incl. inactive; each attachment its own keep/expiry; POST /receiptToEmail removed (form's sendReceipt); only auth pages left on the old layout |
 | 2026-11-18 23:17 | R6c | #68 | `/settings` = Livewire `SettingsPage` from `App\\Support\\SettingsCatalog` (groups, label, help, kind, rules; only known keys saved; errors at the field); `/backups` = `BackupPage` (create/delete actions); `/arxeio` = `ArchivePage` + `App\\Services\\Attachments\\Expired`; `/expired` print on new `layouts/print` (R7 reuses); removed POST /settings, GET /backup, /deleteBackup, /delExpired, /delDeleted; unused settings removed (migration + seeder); `InboxAccess` whole usernames; e2e `setSetting` uses `#s-<key>` |

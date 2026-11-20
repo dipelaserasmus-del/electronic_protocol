@@ -21,8 +21,8 @@ final class UserPreferences
     /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */
     public const HOMES = [
         'all' => ['Όλα τα πρωτόκολλα', 'collection', Home::LIST],
-        'd' => ['προς Διεκπεραίωση', 'hourglass-split', '/home/list/d'],
-        'e' => ['προς Ενημέρωση', 'bell', '/home/list/e'],
+        'd' => ['προς Διεκπεραίωση', 'pencil-square', '/home/list/d'],   // R2j: the icons of the list's pills
+        'e' => ['προς Ενημέρωση', 'eye', '/home/list/e'],
     ];
 
     public static function get(?User $user, string $key): mixed

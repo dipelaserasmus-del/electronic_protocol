@@ -99,8 +99,6 @@
                 @forelse ($protocols as $p)
                     @php
                         $tone = \App\Livewire\ProtocolList::deadlineTone($p);
-                        $handlers = $p->assignments->where('type', 'd');
-                        $informed = $p->assignments->where('type', 'e');
                     @endphp
                     @php $dateFlag = $dateFlags[$p->id] ?? null; @endphp
                     <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif" data-id="{{ $p->id }}"
@@ -163,11 +161,8 @@
                             @endif
                         </div></td>
                         <td class="d-none d-md-table-cell small">
-                            @if ($handlers->isNotEmpty())
-                                <span class="fw-semibold">{{ $handlers->map(fn ($a) => $names[$a->user_id] ?? '—')->implode(', ') }}</span>
-                            @endif
-                            @if ($informed->isNotEmpty())
-                                <div class="text-body-secondary">ενημ.: {{ $informed->map(fn ($a) => $names[$a->user_id] ?? '—')->implode(', ') }}</div>
+                            @if ($p->assignments->isNotEmpty())
+                                <x-assignee-pills :assignments="$p->assignments" :names="$names" class="mb-1" />
                             @endif
                             @if ($p->diekp_date)
                                 <span class="badge text-bg-success">✔ {{ $p->dateOf('diekp_date')?->format('d/m/Y') }}</span>

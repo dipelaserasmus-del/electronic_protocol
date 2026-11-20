@@ -207,6 +207,10 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .protocol-row.row-open > td { vertical-align: top; }
 .attachment-name > a { min-width: 0; max-width: 100%; }
 .row-toggle { line-height: 1; padding: 0.25rem 0.35rem; }
+// R2j: who a protocol is assigned to, one pill per user (Διεκπεραίωση filled blue, Ενημέρωση grey outline)
+.assignee-pill { font-size: .8rem; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assignee-handle { background: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); border: 1px solid var(--bs-primary-border-subtle); }
+.assignee-inform { background: var(--bs-body-bg); color: var(--bs-secondary-color); border: 1px solid var(--bs-border-color); }
 .row-toggle .bi { display: inline-block; transition: transform .15s; }
 .row-toggle[aria-expanded="true"] .bi { transform: rotate(180deg); }
 .row-actions { line-height: 1; padding: 0.25rem 0.4rem; }

@@ -81,7 +81,7 @@ class ProtocolListTest extends FeatureTestCase
         \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'Έγγραφο.pdf']);
 
         $this->actingAs($this->admin())->get('/home/list')->assertOk()
-            ->assertSee($handler->name)->assertSee('ενημ.: ' . $reader->name, false)
+            ->assertSee('title="Διεκπεραίωση: ' . $handler->name . '"', false)->assertSee('title="Ενημέρωση: ' . $reader->name . '"', false)   // R2j: pills
             ->assertSee('badge text-bg-warning', false)->assertSee('έως ' . now()->addDay()->format('d/m/Y'))
             ->assertSee('/download/', false)->assertSee('/goto/2025/3?find=1', false)
             ->assertSee('/home/' . $p->id . '/1', false);
@@ -234,6 +234,24 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringContainsString('x-show="detailed || open"', $row($p));
         $this->assertStringContainsString('+1 ακόμη', $row($p));
         $this->assertStringNotContainsString('ακόμη', $row($q), 'no files, nothing more');
+    }
+
+    /** R2j (owner, 2026-11-20): assignments as pills: ✎ Διεκπεραίωση, 👁 Ενημέρωση; the menu uses the same icons. */
+    public function test_assignments_are_pills_with_icons(): void
+    {
+        [$maria, $eleni] = [\App\Models\User::factory()->writer()->create(['name' => 'Μαρία Χ7']), \App\Models\User::factory()->writer()->create(['name' => 'Ελένη Χ7'])];
+        $p = Protocol::factory()->number(12)->assignedTo($maria, $eleni)->create(['etos' => 2026]);
+        $html = $this->actingAs($this->admin())->get('/home/list')->assertOk()->getContent();
+        $row = substr($s = substr($html, strpos($html, 'data-id="'.$p->id.'"')), 0, strpos($s, '</tr>'));
+
+        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-handle position-relative z-2" title="Διεκπεραίωση: Μαρία Χ7" data-type="d">\s*<i class="bi bi-pencil-square[^>]*></i><span class="visually-hidden">Διεκπεραίωση: </span>Μαρία Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~class="badge rounded-pill assignee-pill assignee-inform position-relative z-2" title="Ενημέρωση: Ελένη Χ7" data-type="e">\s*<i class="bi bi-eye[^>]*></i>~', $row);
+        $this->assertStringNotContainsString('ενημ.:', $row);
+
+        $lists = collect(\App\Support\Navigation::for($this->admin()))->firstWhere('label', 'Λίστα')['children'];
+        $icons = collect($lists)->filter(fn ($c) => isset($c['icon']))->pluck('icon', 'label');
+        $this->assertSame('pencil-square', $icons['προς Διεκπεραίωση']);
+        $this->assertSame('eye', $icons['προς Ενημέρωση']);
     }
 
     public function test_no_pager_for_a_single_page(): void
