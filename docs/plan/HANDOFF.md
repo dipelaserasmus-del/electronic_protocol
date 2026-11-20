@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 18:20 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h and R5i; times are Greek time)
+## Current state — 2026-11-20 19:00 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i and R5j; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -90,6 +90,9 @@ Read this first when (re)starting work. Update it at the end of every task.
   (`[data-addresses]`, «και άλλοι N ▾»). Synthetic e-mail 12 has 41 recipients + Cc. **`./dev.sh e2e` loads the mock
   inbox with `--no-private`** (make-emails.php): the dev inbox otherwise holds the owner's `local-data/emails`, and an
   R5g screenshot had shown one (replaced; old image still in the branch history of #85+, owner decides).
+- **R5j (Batch 9.5, owner's note 2026-11-20):** `livewire/partials/inbox-attachments` (with the winmail notice) is
+  drawn in the form above the buttons while the e-mail waits, in `.inbox-mail` once done; `.inbox-mail` tinted (info
+  7 % + left bar), Θέμα after Προς / Κοιν. The R5g browser test sets emailNumFetch 2 (the mock inbox is small now).
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
   e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the
   user types that number over it.

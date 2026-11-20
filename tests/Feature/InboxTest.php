@@ -559,6 +559,26 @@ class InboxTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~data-addresses="to"\s*>\s*Γραμματεία Σχολείου &lt;protocol@school.test&gt;\s*</dd>~', $html, 'one: in full');
     }
 
+    /** R5j (owner, 2026-11-20): files above the buttons; the e-mail shows Από, Προς, Θέμα as an e-mail program does. */
+    public function test_files_above_the_buttons_and_the_subject_in_the_mail(): void
+    {
+        $this->mailbox->messages = [1 => file_get_contents(base_path('tests/fixtures/emails/synthetic/04-multiple-attachments.eml'))];
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $html = preg_replace('~<!--\[if (END)?BLOCK\]><!\[endif\]-->~', '', $page->html());
+        $article = substr($html, strpos($html, 'id="msg-1"'));
+
+        $files = strpos($article, 'class="inbox-attachments');
+        $this->assertNotFalse($files);
+        $this->assertLessThan(strpos($article, 'data-action="register"'), $files, 'the files above Καταχώριση');
+        $this->assertSame(1, substr_count($article, 'class="inbox-attachments'), 'once');
+        $this->assertMatchesRegularExpression('~<dt class="col-sm-2">Προς</dt>.*?<dt class="col-sm-2">Θέμα</dt><dd[^>]*inbox-mail-subject">[^<]+</dd>~s', $article);
+
+        // read: no buttons, the files stay in the e-mail
+        $page->call('markRead', 1);
+        $article = substr($html = $page->html(), strpos($html, 'id="msg-1"'));
+        $this->assertGreaterThan(strpos($article, 'inbox-mail small'), strpos($article, 'class="inbox-attachments'));
+    }
+
     /** Review of R5f: while one request counts (holds the lock), the others do not ask the mail server too. */
     public function test_the_badge_count_is_asked_once_at_a_time(): void
     {

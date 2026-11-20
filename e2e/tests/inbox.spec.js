@@ -278,3 +278,17 @@ test('a long Προς list shows three addresses and «και άλλοι N», wh
   await expect(to).not.toContainText('school40@example.test', { useInnerText: true });
   await expect(message.locator('[data-addresses=cc] [data-addresses-toggle]')).toHaveCount(0);   // two: in full
 });
+
+test('the files are above the buttons; the e-mail (Από, Προς, Θέμα, text) is tinted apart (R5j)', async ({ page }) => {
+  await login(page, 'writer');
+  const message = await findEmail(page, 'Πρόσκληση ημερίδας 2026.pdf');   // synthetic e-mail with a PDF
+  const files = message.locator('.inbox-attachments');
+  const register = message.locator('[data-action=register]');
+  expect((await files.boundingBox()).y).toBeLessThan((await register.boundingBox()).y);
+  const mail = message.locator('.inbox-mail');
+  await expect(mail.locator('.inbox-mail-subject')).toHaveText(/Πρόσκληση/);
+  const [tint, form] = await Promise.all([mail.evaluate((el) => getComputedStyle(el).backgroundColor), message.locator('.inbox-form').evaluate((el) => getComputedStyle(el).backgroundColor)]);
+  expect(tint).not.toBe(form);
+  await message.scrollIntoViewIfNeeded();
+  await evidence(page, 'r5j-mail-view');
+});

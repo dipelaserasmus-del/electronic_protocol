@@ -151,6 +151,8 @@ Open *Εισερχόμενα*.
   scrolls to each and stays there (no jump back), and the folder's list does not open by itself.
 - [ ] **50.** *Εισερχόμενα*: an e-mail sent to many (e.g. all the schools) shows three addresses in *Προς* and *και
   άλλοι N ▾*; click it for all of them, *λιγότεροι ▴* to fold them again.
+- [ ] **51.** *Εισερχόμενα*: *Συνημμένα* is right above *Καταχώριση*; the e-mail below (Από, Προς, Θέμα, text, HTML)
+  has a light blue background and a blue edge, set apart from the form.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
