@@ -16,6 +16,18 @@ $font-family-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto San
 // N04 date input: a date doesn't need the full column width
 .date-input .input-group { max-width: 24rem; }
 
+/* R3g: the user menu holds Διαχείριση (left) and the user's own choices (right); one column on small screens */
+.user-menu { padding-block: .25rem; }
+.user-menu .dropdown-header { padding-top: .5rem; padding-bottom: .15rem; }
+// Προτιμήσεις is its own section: a line and some room above it (one column), a line beside it (two columns)
+.user-menu-own { border-top: 1px solid var(--bs-border-color-translucent); margin-top: .5rem; padding-top: .35rem; }
+@media (min-width: 768px) {
+    .user-menu { min-width: 32rem; }
+    .user-menu-columns { display: grid; grid-template-columns: 1fr 1fr; }
+    .user-menu-manage { border-right: 1px solid var(--bs-border-color-translucent); }
+    .user-menu-own { border-top: 0; margin-top: 0; padding-top: 0; }
+}
+
 /* R3c: the search box in the top bar and its suggestions; R3d: with its search / advanced-search buttons */
 .app-search { min-width: 14rem; }
 @media (min-width: 992px) { .app-search { width: 17rem; } }
@@ -144,6 +156,8 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-sidebar { position: sticky; top: calc(var(--app-topbar-height, 3.2rem) + .75rem); max-height: calc(100vh - var(--app-topbar-height, 3.2rem) - 1.5rem); overflow-y: auto; }
 .inbox-sidebar-item.is-done { opacity: .65; }
 .inbox-message { scroll-margin-top: calc(var(--app-topbar-height, 3.2rem) + .75rem); }
+.inbox-message:focus { outline: none; }   // R5h: focused when reached from the list (for the keyboard)
+.inbox-message:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
 .inbox-message.is-done > .card-header { background: rgba(var(--bs-success-rgb), .08); }
 .inbox-headers dt { font-weight: 600; color: var(--bs-secondary-color); }
 .inbox-text { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 32rem; overflow-y: auto; padding: .5rem; background: var(--bs-tertiary-bg); border-radius: .375rem; }
@@ -201,10 +215,21 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
     .protocol-table .col-files { width: 8rem; }
 }
 .protocol-table td { overflow-wrap: anywhere; }
-.protocol-row:not(.row-open) .row-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.protocol-row:not(.row-open) .attachment-name:nth-child(n+3) { display: none !important; }
-.protocol-row.row-open .more-files { display: none; }
-.protocol-row.row-open > td { vertical-align: top; }
+// review of R2k: only the protocol list (.protocol-table) has ▾ to open a row; the search results show everything
+.protocol-table .protocol-row:not(.row-open) .row-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+// R2k (owner, 2026-11-20): every cell at most two lines until the row is opened, so all rows are the same height
+.protocol-table .protocol-row:not(.row-open) .attachment-list { display: flex; align-items: center; gap: .25rem; min-width: 0; }
+.protocol-table .protocol-row:not(.row-open) .attachment-list .attachment-name { min-width: 0; }
+.protocol-table .protocol-row:not(.row-open) .attachment-name:nth-child(n+2) { display: none !important; }
+.protocol-table .protocol-row:not(.row-open) .assignee-pills { flex-wrap: nowrap !important; min-width: 0; margin-bottom: 0 !important; }   // Bootstrap's flex-wrap / mb-1 are !important
+.protocol-table .protocol-row:not(.row-open) .assignee-pill:nth-of-type(n+2) { display: none; }
+.protocol-table .protocol-row:not(.row-open) .assignee-pill { flex-shrink: 1; min-width: 0; }
+.assignee-more { display: none; }
+.protocol-table .protocol-row:not(.row-open) .assignee-more { display: inline-block; flex-shrink: 0; }
+.protocol-table .protocol-row:not(.row-open) .from-to-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.from-to-more { cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
+.protocol-table .protocol-row.row-open .more-files { display: none; }
+.protocol-table .protocol-row.row-open > td { vertical-align: top; }
 .attachment-name > a { min-width: 0; max-width: 100%; }
 .row-toggle { line-height: 1; padding: 0.25rem 0.35rem; }
 // R2j: who a protocol is assigned to, one pill per user (Διεκπεραίωση filled blue, Ενημέρωση grey outline)

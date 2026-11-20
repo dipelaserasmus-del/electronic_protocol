@@ -137,6 +137,8 @@ final class EmailRegistration
         return [
             'fakelos' => '',
             'thema' => $summary['subject'],
+            // the e-mail's time, on purpose (owner, 2026-11-20): when its attachment has no protocol number of the sender
+            // the time stands in for it; when it has one, the user types that number over it. Keep it.
             'in_num' => $date?->format('H:i:s') ?? '',
             'in_date' => $date?->format('d/m/Y') ?? Carbon::today()->format('d/m/Y'),
             'in_topos_ekdosis' => '',

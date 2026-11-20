@@ -68,7 +68,7 @@
             <div class="col-lg-9">
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
-                    <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}"
+                    <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
                              data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}">
                         <header class="card-header d-flex flex-wrap gap-2 align-items-baseline">
                             <span class="badge text-bg-primary">{{ $n }} από {{ $total }}</span>

@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-20 14:20 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f and R5g; times are Greek time)
+## Current state — 2026-11-20 17:05 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k and R5h; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -77,6 +77,18 @@ Read this first when (re)starting work. Update it at the end of every task.
   LengthAwarePaginator built in render(); EmailInbox has `previousPage` / `nextPage` / `gotoPage(n, name)` (renamed from
   goToPage: Livewire matches method names exactly; past the last page → the last). The sidebar has
   `.inbox-sidebar-pager` (‹ Σελίδα N από M ›).
+- **R3g (Batch 9.5, owner's note 2026-11-20):** the top bar is Νέο · Λίστα · Εισερχόμενα; `Navigation::manage($user)` =
+  group title => links (Εκτύπωση, Φάκελοι, Διαχείριση), drawn in the user menu (`.user-menu`, two columns from
+  768px: `.user-menu-manage` | `.user-menu-own` Προτιμήσεις; Περί… / Έξοδος below).
+- **R2k (Batch 9.5, owner's choice 2026-11-20):** list rows at most two lines until opened: Από / Προς one line each
+  (`.from-to-line`, `.from-to-more` Bootstrap tooltip = full name · number · date; the details inline when open),
+  `.attachment-list` first file + `+N` (`.more-files`), `<x-assignee-pills>` first pill + `.assignee-more`.
+- **R5h (Batch 9.5, owner's report 2026-11-20):** folderPicker.scroll() scrolls only its list (scrollIntoView moved
+  the page); inbox `go(uid)` focuses the article (tabindex -1), not its first field, and `hold()` keeps it aligned for
+  2.5 s (ResizeObserver on body, after scrollend) unless the user scrolls / clicks / types.
+- **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
+  e-mail's time (H:i:s) on purpose: it stands in when the attachment has no sender's protocol number; otherwise the
+  user types that number over it.
 - **Owner's try-it list (2026-11-19):** `OWNER-TODO.md` → *Try it, batch by batch* holds numbered checks 1–30 (Batches
   3–9). The owner reports them by number, at their own pace: tick `[x]` the ones reported fine and fix the ones reported
   wrong (with tests) before or within Batch 10. At the end of each batch, **add** a new subsection for that batch with the

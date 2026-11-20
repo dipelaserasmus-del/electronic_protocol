@@ -141,6 +141,14 @@ Open *Εισερχόμενα*.
 - [ ] **46.** *Εισερχόμενα* with more e-mails than *Email ανά σελίδα*: the same pager as *Λίστα* above the e-mails
   (and below the last one), with *Σελίδα [ ▾ ] από …*; the list on the left says *Σελίδα 1 από 4 · 1–5 από 16* with
   ‹ › to the other pages.
+- [ ] **47.** The top bar has *Νέο*, *Λίστα*, *Εισερχόμενα*; *Διαχείριση* is now in the menu under your name (top
+  right): on the left *Διαχείριση* (*Εκτύπωση*, *Φάκελοι*, and for administrators *Διαχείριση*: Χρήστες, Ρυθμίσεις,
+  Backup, Εκκαθάριση, Κάδος), on the right your *Προτιμήσεις* (page width, home page); *Περί…* and *Έξοδος* below.
+- [ ] **48.** *Λίστα*: every row has the same height (two lines). *Από / Προς* shows the sender only: the mouse over
+  it shows the whole name, *Αρ. εισερχομένου* and the date. *Ανάθεση* shows the first person and *+N*, *Συνημμένα* the
+  first file and *+N*. ▾ (or *+N* on the files) opens the row with everything.
+- [ ] **49.** *Εισερχόμενα*: click e-mails in the list on the left, several times, also ones with HTML text: the page
+  scrolls to each and stays there (no jump back), and the folder's list does not open by itself.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
@@ -200,6 +208,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the
+  attachment has no protocol number of the sender; when it has one, type that number over it (2026-11-20).
 - Folder codes (2026-11-20): the dot after Φ is only for readability. `Φ12`, `Φ.12` and `φ12` are the same folder in
   search, in the folder picker and in the Φ.43 → Φ.46 merge; your protocols keep their code as written ([D08](docs/reports/D08.md)).
 - Your folder list (2026-11-19) is the folders glossary: [docs/FOLDERS.md](docs/FOLDERS.md), from
