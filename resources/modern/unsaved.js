@@ -3,15 +3,23 @@
 // whether to save, listing what changed. <form x-data="unsavedChanges({ labels, users })">; the dialog is #unsaved-dialog.
 const clone = (v) => JSON.parse(JSON.stringify(v ?? null));
 
-function unsavedChanges({ labels = {}, users = {} } = {}) {
+function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
     return {
+        tick: 0,   // typing in a tag box (not in $wire until Enter / leaving it): count again
         progress: null,   // upload in progress (0–100) or null; the save buttons wait for it (review of R1c)
         start: null,
         leaving: false,   // a save or a confirmed leave is under way: no question
         target: null,
 
         init() {
+            // review of R1k: only where the page saves (the dialog's Αποθήκευση); e.g. an assigner who may only assign
+            // uses Ανάθεση, as before
+            if (!enabled || !document.getElementById('unsaved-dialog')) return;
+            this.form = this.$el;   // $el is the element asking (e.g. the dot), not the form
             this.start = this.state();
+            const again = () => { this.tick++; };
+            this.$el.addEventListener('input', again, true);
+            this.$el.addEventListener('tag-pending', again);
             // the browser's own question when the tab is closed or reloaded
             window.addEventListener('beforeunload', (e) => {
                 if (this.leaving || !this.changes().length) return;
@@ -37,8 +45,16 @@ function unsavedChanges({ labels = {}, users = {} } = {}) {
         /** list of [label, before, now] */
         changes() {
             if (!this.start) return [];
+            void this.tick;
             const now = this.state();
             const out = [];
+            // review of R1k: a tag typed but not added yet, or on its way to the server
+            (this.form ?? this.$el).querySelectorAll('[x-data^="tagBox("]').forEach((box) => {
+                const field = /tagBox\('([^']+)'/.exec(box.getAttribute('x-data'))?.[1];
+                const typed = [...box.querySelectorAll('input.tag-input')].map((i) => i.value.trim()).filter(Boolean);
+                if (box.dataset.pending) typed.push(box.dataset.pending);
+                if (typed.length) out.push([labels[field] ?? field, '—', typed.join(', ') + ' (νέο)']);
+            });
             const text = (v) => (v === null || v === undefined || v === '' ? '—' : String(v));
             for (const [key, value] of Object.entries(now.form ?? {})) {
                 const before = this.start.form?.[key] ?? '';
@@ -66,11 +82,12 @@ function unsavedChanges({ labels = {}, users = {} } = {}) {
             if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
             const url = new URL(a.href, location.href);
             if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
-            if (!this.dirty) return;
+            const dialog = document.getElementById('unsaved-dialog');
+            if (!dialog || !this.dirty) return;
             e.preventDefault();
             e.stopPropagation();
             this.target = url.pathname + url.search + url.hash;   // a path: the server accepts only these
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('unsaved-dialog')).show();
+            bootstrap.Modal.getOrCreateInstance(dialog).show();
         },
 
         /** the dialog's buttons */

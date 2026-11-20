@@ -56,5 +56,17 @@ After *Αποθήκευση* in the window, the server goes on only to a page of
   All 14 form browser tests pass.
 - Full PHPUnit: 551 tests pass.
 
+## Review
+- Codex (P2): an assigner who may assign but not edit the protocol has no *Αποθήκευση*, so the page had no dialog.
+  After changing an assignment, any link was blocked and nothing opened. The same happened to a reader setting the
+  completion date.
+  - Fixed: the question applies only where the page saves. Assigning keeps its own button (*Ανάθεση*), as before.
+  - Browser test: such an assigner changes the assignment and leaves with *Νέο*. It failed before: stuck on the
+    page.
+- Codex (P2): a keyword or related number typed but not yet a tag did not count, so the user could leave without a
+  question. The same held for a tag still on its way to the server.
+  - Fixed: both count as changes. They are listed as *«… (νέο)»*, and the dot follows typing.
+  - Browser test: typing a keyword shows the dot and lists it in the dialog. It failed before.
+
 ## Owner actions
 None. To try it: step 43 in [OWNER-TODO.md](../../OWNER-TODO.md).
