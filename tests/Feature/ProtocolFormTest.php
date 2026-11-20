@@ -283,6 +283,28 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertTrue($this->writer()->can('create', Protocol::class));
     }
 
+    /** R1k (owner, 2026-11-20): "Αποθήκευση" in the leave dialog saves, then goes where the user was going (only here). */
+    public function test_save_then_go_on_only_within_the_application(): void
+    {
+        $p = Protocol::factory()->number(7)->create(['thema' => 'Πριν']);
+        Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])
+            ->set('form.thema', 'Μετά')->call('save', '/home/list?page=2')->assertRedirect('/home/list?page=2');
+        $this->assertSame('Μετά', $p->fresh()->thema);
+
+        foreach (['https://elsewhere.example/x', '//elsewhere.example/x', '/\\elsewhere.example', 'javascript:alert(1)', '/a b', ''] as $bad) {
+            $this->assertNull(ProtocolForm::sameSite($bad), $bad);
+            Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])
+                ->set('form.thema', 'Ξανά')->call('save', $bad)->assertRedirect(url('/home/'.$p->id));
+        }
+        $this->assertSame('/home/3', ProtocolForm::sameSite('/home/3'));
+
+        // the page knows the labels and the users for the list of changes, and has the dialog
+        $html = $this->actingAs($this->admin())->get('/home/'.$p->id)->assertOk()->getContent();
+        $this->assertStringContainsString('x-data="unsavedChanges({ labels:', $html);
+        $this->assertStringContainsString('id="unsaved-dialog"', $html);
+        $this->assertStringContainsString('class="unsaved-dot', $html);
+    }
+
     public function test_reader_assigned_for_handling_marks_it_done(): void
     {
         $reader = $this->reader();

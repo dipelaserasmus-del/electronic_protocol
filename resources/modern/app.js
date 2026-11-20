@@ -8,6 +8,7 @@ import './tags';
 import './search';
 import './preferences';
 import './inbox';
+import './unsaved';   // R1k
 
 window.bootstrap = bootstrap;
 

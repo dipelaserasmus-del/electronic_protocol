@@ -442,3 +442,73 @@ test('one Αποθήκευση always at the bottom right; copy and receipt at t
   await Promise.all([page.waitForURL((u) => u.pathname === all), bar.getByRole('link', { name: 'Λίστα', exact: true }).click()]);
   await expect(page.locator('.protocol-row').first()).toBeVisible();
 });
+
+test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists them, saves or drops them (R1k)', async ({ page }) => {
+  const subject = `R1k αλλαγές ${Date.now()}`;
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { fakelos: 'first', thema: subject });
+  await saveProtocol(page);
+  const url = page.url();
+  const dot = page.locator('#form-save .unsaved-dot');
+  const dialog = page.locator('#unsaved-dialog');
+  const bar = page.locator('nav.app-topbar');
+  await expect(dot).toBeHidden();
+
+  // no changes: links leave without a question
+  await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
+  await page.goto(url);
+
+  // a change: the dot; undoing it: no dot
+  await page.locator('#f-thema').fill(`${subject} διορθωμένο`);
+  await expect(dot).toBeVisible();
+  await page.locator('#f-thema').fill(subject);
+  await expect(dot).toBeHidden();
+  await page.locator('#f-thema').fill(`${subject} διορθωμένο`);
+  await page.locator('#f-paratiriseis').fill('Σημείωση R1k');
+  await expect(dot).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 100000));
+  await evidence(page, 'r1k-dot', { clip: { x: 1100, y: 740, width: 340, height: 160 } });
+
+  // leaving: the question with what changed; Ακύρωση stays
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('tbody tr')).toHaveCount(2);
+  await expect(dialog.locator('tbody tr', { hasText: 'Θέμα' })).toContainText(`${subject} διορθωμένο`);
+  await expect(dialog.locator('tbody tr', { hasText: 'Παρατηρήσεις' })).toContainText('Σημείωση R1k');
+  await evidence(page, 'r1k-dialog');
+  await dialog.locator('#unsaved-stay').click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(url);
+
+  // Χωρίς αποθήκευση: goes, nothing saved
+  await bar.getByRole('link', { name: 'Νέο', exact: true }).click();
+  await Promise.all([page.waitForURL(/\/home$/), dialog.locator('#unsaved-discard').click()]);
+  await page.goto(url);
+  await expect(page.locator('#f-thema')).toHaveValue(subject);
+
+  // Αποθήκευση: saved, then on to where the user was going
+  await page.locator('#f-thema').fill(`${subject} τελικό`);
+  await bar.getByRole('link', { name: 'Λίστα', exact: true }).click();
+  const home = new URL(await bar.locator('.app-brand').getAttribute('href')).pathname;
+  await Promise.all([page.waitForURL((u) => u.pathname === home), dialog.locator('#unsaved-save').click()]);
+  await expect(page.locator('main > .alert')).toContainText('Οι αλλαγές αποθηκεύτηκαν');
+  await page.goto(url);
+  await expect(page.locator('#f-thema')).toHaveValue(`${subject} τελικό`);
+  await expect(dot).toBeHidden();
+
+  // a save with the button: no question afterwards
+  await page.locator('#f-thema').fill(subject);
+  await page.locator('#form-save').click();
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await expect(dot).toBeHidden();
+  await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
+
+  // closing or reloading the tab with changes: the browser's own question
+  await page.goto(url);
+  await page.locator('#f-thema').fill(`${subject} ξανά`);
+  let asked = false;
+  page.once('dialog', async (d) => { asked = d.type() === 'beforeunload'; await d.dismiss(); });
+  await page.reload({ timeout: 3000 }).catch(() => {});   // the question cancels the reload
+  await expect.poll(() => asked).toBe(true);
+});
