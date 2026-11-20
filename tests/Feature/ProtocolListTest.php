@@ -206,6 +206,13 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~class="dropdown-item" href="[^"]*/home/'.$p->id.'/1" data-action="copy"~', $row);
         $this->assertMatchesRegularExpression('~class="dropdown-item" href="[^"]*/receipt/'.$p->id.'" target="_blank" data-action="receipt"~', $row);
         $this->assertStringNotContainsString('rounded-pill', $row, 'no buttons in the row any more');
+
+        // R1j (owner, 2026-11-20): readers only view: no copy as new, the receipt stays
+        $html = $this->actingAs($this->reader())->get('/home/list')->assertOk()->getContent();
+        $row = substr($html, strpos($html, 'data-id="'.$p->id.'"'));
+        $row = substr($row, 0, strpos($row, '</tr>'));
+        $this->assertStringNotContainsString('data-action="copy"', $row);
+        $this->assertStringContainsString('data-action="receipt"', $row);
     }
 
     public function test_no_pager_for_a_single_page(): void

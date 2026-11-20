@@ -1,5 +1,6 @@
 {{-- R1b: the protocol form. Rules and saving: App\Livewire\ProtocolForm → App\Services\Protocols\ProtocolWriter. --}}
 @php
+    $mayCreate = auth()->user()?->can('create', \App\Models\Protocol::class);   // R1j: readers get no copy as new
     $tone = ['new' => 'primary', 'edit' => 'success', 'readonly' => 'secondary', 'admin' => 'danger'][$access->tone] ?? 'primary';
     $e = fn (string $f) => $errors->first($f) ?: null;
     // R1i: a collapsed section opens by itself when one of its fields has an error
@@ -108,9 +109,12 @@
                             data-confirm="Να διαγραφεί οριστικά το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} και τα συνημμένα του;">Διαγραφή</x-pill>
                 @endif
                 @if ($protocol->exists)
+                    {{-- a copy is a new protocol: not for readers, who only view --}}
+                    @if ($mayCreate)
                     <x-pill :href="url('/home/'.$protocol->id.'/1')" class="pill-far-right" data-action="copy" title="Νέο πρωτόκολλο με το περιεχόμενο αυτού">
                         <i class="bi bi-copy me-1" aria-hidden="true"></i>Αντιγραφή ως νέο</x-pill>
-                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
+                    @endif
+                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" :class="$mayCreate ? '' : 'pill-far-right'" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
                         <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
                 @endif
             </x-pill-actions>

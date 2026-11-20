@@ -197,8 +197,10 @@
                                         aria-label="Ενέργειες για το {{ $p->protocolnum }}/{{ $p->etos }}" title="Ενέργειες">
                                     <i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                    @if ($mayCreate ??= (bool) auth()->user()?->can('create', \App\Models\Protocol::class))   {{-- R1j: not for readers --}}
                                     <li><a class="dropdown-item" href="{{ url('/home/'.$p->id.'/1') }}" data-action="copy">
                                         <i class="bi bi-copy me-2" aria-hidden="true"></i>Αντιγραφή ως νέο</a></li>
+                                    @endif
                                     <li><a class="dropdown-item" href="{{ url('/receipt/'.$p->id) }}" target="_blank" data-action="receipt">
                                         <i class="bi bi-receipt me-2" aria-hidden="true"></i>Απόδειξη</a></li>
                                 </ul>

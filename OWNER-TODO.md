@@ -114,7 +114,8 @@ Open *Εισερχόμενα*.
 - [ ] **38.** Open a protocol: one **Αποθήκευση** stays at the bottom right of the screen while you scroll; it saves
   as before. *Νέο* and *Λίστα* are no longer under the number (they are in the top bar). *Αντιγραφή ως νέο* and
   *Απόδειξη* are at the far right of that row, with icons. In the top bar, click the word *Λίστα*: you are back in the
-  list; its **▾** opens the other lists, as before.
+  list; its **▾** opens the other lists, as before. As a *reader*: no *Αντιγραφή ως νέο*, in the protocol or in the
+  list's ⋮ menu.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
