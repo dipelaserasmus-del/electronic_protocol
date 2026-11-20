@@ -459,6 +459,16 @@ test('changes not saved: a red dot on Αποθήκευση; leaving asks, lists 
   await Promise.all([page.waitForURL(/\/home$/), bar.getByRole('link', { name: 'Νέο', exact: true }).click()]);
   await page.goto(url);
 
+  // review of R1k: a field sent only when it is left (Παρατηρήσεις): while still in it, the dot and the browser's question
+  await page.locator('#f-paratiriseis').fill('ακόμη μέσα στο πεδίο');
+  await expect(dot).toBeVisible();
+  await expect(page.locator('#f-paratiriseis')).toBeFocused();
+  let askedInField = false;
+  page.once('dialog', async (d) => { askedInField = d.type() === 'beforeunload'; await d.dismiss(); });
+  await page.reload({ timeout: 3000 }).catch(() => {});   // the question cancels the reload
+  await expect.poll(() => askedInField).toBe(true);
+  await page.goto(url);
+
   // a change: the dot; undoing it: no dot
   await page.locator('#f-thema').fill(`${subject} διορθωμένο`);
   await expect(dot).toBeVisible();
