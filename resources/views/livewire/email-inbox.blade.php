@@ -5,7 +5,7 @@
     $date = fn (?string $iso, string $format = 'd/m/Y H:i') => $iso ? (new \DateTimeImmutable($iso))->setTimezone($zone)->format($format) : '';
     $err = fn (int $uid, string $f) => $errors->first("forms.$uid.$f") ?: null;
 @endphp
-<div class="inbox-page" x-data="inboxPage">
+<div class="inbox-page" x-data="inboxPage" data-inbox-state="{{ $failure ? 'failed' : 'ready' }}">
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <h1 class="h4 mb-0 me-auto"><i class="bi bi-inbox me-1" aria-hidden="true"></i>Εισερχόμενα email</h1>
         @if ($total > 0)
@@ -19,13 +19,35 @@
         </button>
     </div>
 
+    {{-- R5m: while «Ανανέωση» / a page change waits for the mail server --}}
+    <div wire:loading.block wire:target="refresh,gotoPage,previousPage,nextPage">
+        @include('livewire.partials.inbox-connecting', ['initial' => false])
+    </div>
+
     {{-- R5g (owner, 2026-11-20): the list's pager above the e-mails too (the only one was below the last e-mail) --}}
     @if (! $failure && $total > $perPage)
         <x-list-pager :paginator="$paginator" position="top" class="mb-3 justify-content-end" />
     @endif
 
     @if ($failure)
-        <x-notice type="error" id="inbox-failure">Η σύνδεση με τον λογαριασμό email απέτυχε. Ελέγξτε τις ρυθμίσεις. Κωδικός σφάλματος: {{ $failure }}</x-notice>
+        {{-- R5m: what happened, in words a user can act on; the server's delay is not the application's fault --}}
+        <div class="alert {{ $failureKind === 'slow' ? 'alert-warning' : 'alert-danger' }} mb-3" role="alert" id="inbox-failure" data-kind="{{ $failureKind }}">
+            @if ($failureKind === 'slow')
+                <strong>Ο διακομιστής email{{ $host !== '' ? " ($host)" : '' }} δεν απάντησε μέσα σε {{ max($failureSeconds, 1) }} δευτερόλεπτα.</strong>
+                Είναι φορτωμένος, κάτι που συμβαίνει συχνά τις πρωινές ώρες: δεν είναι πρόβλημα της εφαρμογής. Δοκιμάστε ξανά σε λίγο.
+            @elseif ($failureKind === 'login')
+                <strong>Ο διακομιστής email δεν δέχτηκε τη σύνδεση του λογαριασμού.</strong>
+                Το όνομα χρήστη ή ο κωδικός δεν έγινε δεκτός: ενημερώστε τον διαχειριστή (Ρυθμίσεις → E-mail).
+            @else
+                <strong>Η σύνδεση με τον λογαριασμό email απέτυχε.</strong> Ελέγξτε τις ρυθμίσεις ή δοκιμάστε ξανά σε λίγο.
+            @endif
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="inbox-retry" wire:click="refresh" wire:loading.attr="disabled">
+                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Δοκιμή ξανά
+                </button>
+                <span class="small text-body-secondary">Κωδικός σφάλματος: {{ $failure }}</span>
+            </div>
+        </div>
     @elseif ($total === 0)
         <x-notice type="info" id="inbox-empty">Δεν υπάρχουν εισερχόμενα email ({{ $account }}).</x-notice>
     @else
@@ -90,7 +112,9 @@
                                         @endif
                                     </x-notice>
                                 @else
-                                    <x-notice type="info" class="mb-0 inbox-done">Μεταφέρθηκε στα αναγνωσμένα, χωρίς πρωτόκολλο.</x-notice>
+                                    <x-notice type="info" class="mb-0 inbox-done">Μεταφέρθηκε στα αναγνωσμένα, χωρίς πρωτόκολλο.
+                                        @foreach ($state['messages'] ?? [] as $line)<div>{{ $line }}</div>@endforeach
+                                    </x-notice>
                                 @endif
                                 {{-- R5l (owner, 2026-11-20): done: the e-mail folds; open it again, or go on to the next one --}}
                                 @php

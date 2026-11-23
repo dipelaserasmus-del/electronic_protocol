@@ -155,6 +155,10 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 /* R5c: the inbox. The list on the left stays in view; a message scrolled to stops below the top bar. */
 .inbox-sidebar { position: sticky; top: calc(var(--app-topbar-height, 3.2rem) + .75rem); max-height: calc(100vh - var(--app-topbar-height, 3.2rem) - 1.5rem); overflow-y: auto; }
 .inbox-sidebar-item.is-done { opacity: .65; }
+/* R5m: waiting for the mail server; after a few seconds the notice explains that the server is slow, not the app */
+.inbox-connecting-slow { visibility: hidden; opacity: 0; animation: inbox-slow-hint .4s ease 6s forwards; }
+@keyframes inbox-slow-hint { to { visibility: visible; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .inbox-connecting-slow { animation-duration: 0s; } }
 .inbox-message { scroll-margin-top: calc(var(--app-topbar-height, 3.2rem) + .75rem); }
 .inbox-message:focus { outline: none; }   // R5h: focused when reached from the list (for the keyboard)
 .inbox-message:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }

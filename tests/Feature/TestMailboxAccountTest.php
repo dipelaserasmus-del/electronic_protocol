@@ -63,7 +63,7 @@ class TestMailboxAccountTest extends FeatureTestCase
         $this->assertSame([
             'label' => 'Δοκιμαστικός λογαριασμός (demo@example.org)',
             'host' => 'imap.example.org', 'port' => 993, 'protocol' => 'imap', 'encryption' => 'ssl',
-            'validate_cert' => true, 'username' => 'demo@example.org', 'password' => 'invented-secret',
+            'validate_cert' => true, 'username' => 'demo@example.org', 'password' => 'invented-secret', 'timeout' => 30,
         ], $accounts['test']);
         // the default (mock) account is unchanged: the test account never replaces it
         $this->assertSame(array_intersect_key(config('imap.accounts.default'), $accounts['default']), $accounts['default']);

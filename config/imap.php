@@ -37,6 +37,9 @@ return [
     */
     'default' => env('IMAP_DEFAULT_ACCOUNT', 'default'),
 
+    // R5m: the inbox page arrives at once and then waits for the mail server (tests of the loaded page switch it off)
+    'deferred_inbox' => true,
+
     /*
     |--------------------------------------------------------------------------
     | Available IMAP accounts
@@ -56,6 +59,8 @@ return [
             'validate_cert' => env('IMAP_VALIDATE_CERT', true),
             'username' => env('IMAP_USERNAME', ''),
             'password' => env('IMAP_PASSWORD', ''),
+            // R5m: seconds the server is given to connect and for each reply (busy mornings: raise it, e.g. 60)
+            'timeout' => (int) env('IMAP_TIMEOUT', 30),
         ],
 
         /*
@@ -72,6 +77,7 @@ return [
             'validate_cert' => env('TEST_IMAP_VALIDATE_CERT', true),
             'username' => env('TEST_IMAP_USERNAME', ''),
             'password' => env('TEST_IMAP_PASSWORD', ''),
+            'timeout' => (int) env('TEST_IMAP_TIMEOUT', env('IMAP_TIMEOUT', 30)),
         ] : null,
 
         'gmail' => [ // account identifier

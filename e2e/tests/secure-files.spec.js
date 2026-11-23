@@ -1,7 +1,7 @@
 // R4a: only safe files are taken in; attachments come back with safe headers (an uploaded web page is downloaded,
 // never opened as a page of the application).
 const { test, expect } = require('@playwright/test');
-const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol, openInbox } = require('./helpers');
 
 test('a program is refused at once, the PDF is kept (R4a)', async ({ page }) => {
   await login(page, 'writer');
@@ -27,7 +27,7 @@ test('a program is refused at once, the PDF is kept (R4a)', async ({ page }) => 
 test('inbox attachments come with safe headers (R4a)', async ({ page }) => {
   // the first attachment shown in the inbox: never served as a page, opened only when PDF/image/text
   await login(page, 'admin');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const link = page.locator('a[href*="/viewEmailAttachment/"]').first();
   await expect(link).toBeVisible();
   const response = await page.request.get(await link.getAttribute('href'));

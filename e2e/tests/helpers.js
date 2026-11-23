@@ -109,5 +109,16 @@ async function notice(page) {
   return (await page.locator('main > .alert').allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
 }
 
+/** R5m: the inbox page arrives at once and then waits for the mail server: wait until it has answered (or failed). */
+async function inboxReady(page) {
+  await page.locator('[data-inbox-state="ready"], [data-inbox-state="failed"]').first().waitFor({ timeout: 60000 });
+}
+
+/** R5m: open the inbox (or one of its pages) and wait for the mail server's answer. */
+async function openInbox(page, url = '/inbox') {
+  await page.goto(url);
+  await inboxReady(page);
+}
+
 module.exports = {
-  search, login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice };
+  search, login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice, openInbox, inboxReady };

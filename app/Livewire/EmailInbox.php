@@ -34,6 +34,10 @@ use Livewire\Component;
  * Registering happens on the page (no reload): an error appears at the field it is about and the e-mail stays as it
  * was; a registered (or read) e-mail shows what happened in its place until the page is opened again.
  * The mail server is asked only when the page is opened, changed or refreshed; clicks read the cached messages.
+ *
+ * R5m: deferred by the page (inbox.blade.php, config imap.deferred_inbox). The page arrives at once with «Σύνδεση με τον διακομιστή email…» and a seconds counter (placeholder);
+ * the component then connects in a second request. The organisation's server is often slow in the mornings: the
+ * page says so, and a failure says whether the server did not answer in time, refused the login, or something else.
  */
 class EmailInbox extends Component
 {
@@ -63,6 +67,13 @@ class EmailInbox extends Component
     /** Reference code when the mail server could not be reached (shown instead of the messages) */
     #[Locked]
     public ?string $failure = null;
+
+    /** R5m: App\Support\Mail\MailboxFailure::SLOW / LOGIN / OTHER, and how long the attempt took */
+    #[Locked]
+    public string $failureKind = '';
+
+    #[Locked]
+    public int $failureSeconds = 0;
 
     /** @var array<int, array<string, mixed>> the form of each message, by UID */
     public array $forms = [];
@@ -149,7 +160,7 @@ class EmailInbox extends Component
     public function register(int $uid, bool $receipt = false, bool $confirmed = false): void
     {
         $this->allowed();
-        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid])) {
+        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid]) || $this->doneByOther($uid)) {
             return;
         }
         $raw = app(Inbox::class)->raw($this->mailboxId, $this->uidValidity, $uid);
@@ -194,6 +205,12 @@ class EmailInbox extends Component
             return;
         }
         unset($this->confirming[$uid]);
+        $this->claimed($uid, fn () => $this->registerNow($uid, $user, $raw, $input, $keys, $to));
+    }
+
+    /** register(), once this user holds the e-mail (R5m: claimed) */
+    private function registerNow(int $uid, User $user, string $raw, array $input, array $keys, ?string $to): void
+    {
         try {
             $mailbox = $this->mailbox();
         } catch (\Throwable $e) {
@@ -227,9 +244,14 @@ class EmailInbox extends Component
     public function markRead(int $uid): void
     {
         $this->allowed();
-        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid])) {
+        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid]) || $this->doneByOther($uid)) {
             return;
         }
+        $this->claimed($uid, fn () => $this->markReadNow($uid));
+    }
+
+    private function markReadNow(int $uid): void
+    {
         try {
             $this->mailbox()->move($uid, (string) config('imapFolders.beenRead'));
         } catch (\Throwable $e) {
@@ -239,6 +261,50 @@ class EmailInbox extends Component
         }
         $this->leftInbox();
         $this->done[$uid] = ['type' => 'read'];
+    }
+
+    /**
+     * R5m: $work runs while this user holds the e-mail (InboxClaims): another user's click on the same e-mail is told
+     * to wait, and an e-mail done meanwhile by someone else shows that instead. What $work did is remembered for all.
+     */
+    private function claimed(int $uid, \Closure $work): void
+    {
+        $claims = app(\App\Services\Mail\InboxClaims::class);
+        $lock = $claims->lock($this->mailboxId, $this->uidValidity, $uid);
+        if (! $lock->get()) {
+            $this->addError("forms.$uid.form", 'Άλλος χρήστης καταχωρίζει αυτή τη στιγμή αυτό το email. Περιμένετε λίγο και πατήστε «Ανανέωση».');
+
+            return;
+        }
+        try {
+            if ($this->doneByOther($uid)) {
+                return;
+            }
+            $work();
+            if (isset($this->done[$uid])) {
+                $claims->remember($this->mailboxId, $this->uidValidity, $uid, $this->done[$uid] + ['user' => (string) Auth::user()->name]);
+            }
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /** R5m: done by another user (or in another tab) meanwhile: the page shows that, and nothing is done again */
+    private function doneByOther(int $uid): bool
+    {
+        $state = app(\App\Services\Mail\InboxClaims::class)->done($this->mailboxId, $this->uidValidity, $uid);
+        if ($state === null) {
+            return false;
+        }
+        $who = trim((string) ($state['user'] ?? '')) ?: 'άλλος χρήστης';
+        $state['messages'] = [($state['type'] ?? '') === 'registered'
+            ? "Το email είχε ήδη καταχωριστεί ($who): δεν καταχωρίστηκε ξανά."
+            : "Το email είχε ήδη μεταφερθεί στα αναγνωσμένα ($who)."];
+        $state['warnings'] = [];
+        $this->done[$uid] = $state;
+        $this->resetErrorBag("forms.$uid");
+
+        return true;
     }
 
     /**
@@ -255,9 +321,26 @@ class EmailInbox extends Component
         }
     }
 
+    /** R5m: shown until the deferred component has connected to the mail server */
+    public function placeholder(): \Illuminate\Contracts\View\View
+    {
+        return view('livewire.partials.inbox-connecting', self::serverFacts() + ['initial' => true]);
+    }
+
+    /** @return array{host: string, timeout: int} the mail server of the inbox and the seconds it is given */
+    public static function serverFacts(): array
+    {
+        $account = (string) Config::getConfigValueOf('defaultImapEmail');
+
+        return ['host' => (string) config("imap.accounts.$account.host", ''), 'timeout' => \App\Support\Mail\MailboxFailure::timeout($account)];
+    }
+
     private function load(): void
     {
         $this->failure = null;
+        $this->failureKind = '';
+        $this->failureSeconds = 0;
+        $started = microtime(true);
         $perPage = max(1, (int) (Config::getConfigValueOf('emailNumFetch') ?: 1));
         $days = (int) Config::getConfigValueOf('daysToCheckEmailBack');
         try {
@@ -274,6 +357,9 @@ class EmailInbox extends Component
         } catch (\Throwable $e) {
             report($e);
             $this->failure = \App\Exceptions\Handler::errorId();
+            $seconds = microtime(true) - $started;
+            $this->failureSeconds = (int) round($seconds);
+            $this->failureKind = \App\Support\Mail\MailboxFailure::kind($e, $seconds, self::serverFacts()['timeout']);
             $this->uids = [];
             $this->total = 0;
             return;
@@ -394,6 +480,6 @@ class EmailInbox extends Component
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),
             'zone' => EmailRegistration::zone(),
-        ]);
+        ] + self::serverFacts());
     }
 }

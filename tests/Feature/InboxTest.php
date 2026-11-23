@@ -22,6 +22,8 @@ class InboxTest extends FeatureTestCase
         $this->setting('emailNumFetch', 3);
         $this->setting('emailFetchOrderDesc', 0);
         $this->mailbox = FakeMailbox::install($this->app);
+        // R5m: the inbox page is deferred (placeholder first); these tests are about the loaded page (InboxLoadingTest: the wait)
+        config(['imap.deferred_inbox' => false]);
         foreach (array_slice(glob(base_path('tests/fixtures/emails/synthetic/*.eml')), 0, 8) as $i => $file) {
             $this->mailbox->messages[$i + 1] = file_get_contents($file);   // UIDs 1..8
         }
@@ -303,6 +305,56 @@ class InboxTest extends FeatureTestCase
             $this->assertSame((int) now()->year, (int) $p->etos);
             $this->assertSame(now()->format('Y-m-d'), $p->dateOf('protocoldate')->format('Y-m-d'));
         }
+    }
+
+    /**
+     * R5m (owner, 2026-11-23: the cache must be safe for several users): two users with the same page open click the
+     * same e-mail. The second sees who registered it and its number, and no second protocol is made.
+     */
+    public function test_an_email_is_registered_once_whoever_has_it_on_screen(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $anna = \App\Models\User::factory()->writer()->create(['name' => 'Άννα Δοκιμαστική']);
+        $first = Livewire::actingAs($anna)->test(EmailInbox::class)->set('forms.2.files', []);
+        $second = Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', []);   // opened before
+
+        $writer = $this->writer();
+        $this->actingAs($anna);   // each click as its own user (one request each in the browser)
+        $first->call('register', 2, false)->assertHasNoErrors();
+        $this->assertSame(1, \App\Models\Protocol::count());
+        $this->actingAs($writer);
+        $label = $first->get('done')[2]['label'];
+
+        $second->call('register', 2, true)->assertHasNoErrors()
+            ->assertSee('Το email είχε ήδη καταχωριστεί (Άννα Δοκιμαστική): δεν καταχωρίστηκε ξανά.')->assertSee($label);
+        $second->call('register', 2, false, true);   // not even "register anyway"
+        $this->assertSame(1, \App\Models\Protocol::count());
+
+        // marked read by one user: another's register does nothing either
+        $third = Livewire::actingAs($writer)->test(EmailInbox::class)->set('forms.3.files', []);
+        $this->actingAs($anna);
+        $first->call('markRead', 3)->assertHasNoErrors();
+        $this->actingAs($writer);
+        $third->call('register', 3, false)->assertSee('Το email είχε ήδη μεταφερθεί στα αναγνωσμένα (Άννα Δοκιμαστική).');
+        $this->assertSame(1, \App\Models\Protocol::count());
+    }
+
+    /** R5m: while one user's registration runs, another's click on the same e-mail is told to wait */
+    public function test_an_email_being_registered_by_another_user_waits(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', []);
+        $lock = app(\App\Services\Mail\InboxClaims::class)->lock($page->get('mailboxId'), $page->get('uidValidity'), 2);
+        $this->assertTrue($lock->get());   // someone else holds it
+
+        $page->call('register', 2, false)->assertHasErrors('forms.2.form')
+            ->assertSee('Άλλος χρήστης καταχωρίζει αυτή τη στιγμή αυτό το email.');
+        $page->call('markRead', 2)->assertHasErrors('forms.2.form');
+        $this->assertSame(0, \App\Models\Protocol::count());
+
+        $lock->release();
+        $page->call('register', 2, false)->assertHasNoErrors();
+        $this->assertSame(1, \App\Models\Protocol::count());
     }
 
     /** R5d: the same document registered before: a notice with links, and a second explicit click registers it. */

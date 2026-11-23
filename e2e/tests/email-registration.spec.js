@@ -3,7 +3,7 @@
 // D05: an e-mail with emoji is registered with them (before: utf8 tables refused them).
 // R5c: registering happens on the page: the result appears in the e-mail's place, an error at its field.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, openInbox, inboxReady } = require('./helpers');
 
 const inboxCount = async (page) => {
   const text = await page.locator('#inbox-count').innerText();
@@ -14,7 +14,7 @@ const inboxCount = async (page) => {
 async function open(page, text) {
   // the order of the mock e-mails differs between machines: find the page that holds this e-mail
   for (const p of [1, 2, 3, 4]) {
-    await page.goto(`/inbox?page=${p}`);
+    await openInbox(page, `/inbox?page=${p}`);
     const message = page.locator('article.inbox-message', { hasText: text }).first();
     if (await message.count()) return { message, before: await inboxCount(page) };
   }
@@ -52,6 +52,7 @@ test('register an e-mail from the inbox: protocol created and e-mail leaves the 
   await evidence(page, 'email-registered', { clip: await message.boundingBox() });
 
   await page.reload();
+  await inboxReady(page);
   expect(await inboxCount(page)).toBe(before - 1);
 });
 
@@ -60,7 +61,7 @@ test('register an e-mail with emoji: the protocol keeps them (D05)', async ({ pa
   const { notice, before } = await register(page, 'Ομάδα "Δοκιμών"');   // synthetic e-mail 05-special-characters
 
   const [num, year] = numberOf(notice);
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   expect(await inboxCount(page)).toBe(before - 1);
   await page.goto(`/goto/${year}/${num}?find=1`);
   await expect(page.locator('#f-thema')).toHaveValue(/σύμβολα: 50% ; <tag> \\ _ 📎$/);

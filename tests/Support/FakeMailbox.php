@@ -27,6 +27,9 @@ final class FakeMailbox implements Mailbox
     /** R5c: the next move fails (server refuses) */
     public bool $refuseMoves = false;
 
+    /** R5m: opening fails with this (a timeout, a refused login) instead of "connection refused" */
+    public ?\Throwable $failWith = null;
+
     public static function install(\Illuminate\Foundation\Application $app): self
     {
         $mailbox = new self;
@@ -35,6 +38,9 @@ final class FakeMailbox implements Mailbox
 
             public function open(string $account, string $folder): Mailbox
             {
+                if ($this->mailbox->failWith !== null) {
+                    throw $this->mailbox->failWith;
+                }
                 if ($this->mailbox->unreachable) {
                     throw new \RuntimeException('connection refused');
                 }
