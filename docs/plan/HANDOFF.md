@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-23 12:13 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n and R5o; next: R2l; times are Greek time)
+## Current state — 2026-11-23 14:28 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -131,8 +131,8 @@ Read this first when (re)starting work. Update it at the end of every task.
   in `EmailRegistration::defaults` (empty) and `EmailInbox::FIELDS` / input; preview `.inbox-mail` light purple
   (owner's choice), headers `.inbox-message-head` lavender (done: green); HTML tab icon `.inbox-html-tab`; list
   `.inbox-sidebar-n` («N από M») and `.inbox-sidebar-when` (time + ✓ number / αναγνωσμένο); between e-mails
-  `.inbox-sep` «↓ N από M ↓» (owner chose option B; articles no longer `mb-3`). **Next R2l:** remove the
-  list page's «Αναζήτηση» button (owner, 2026-11-23).
+  `.inbox-sep` «↓ N από M ↓» (owner chose option B; articles no longer `mb-3`).
+- **R2l (owner, 2026-11-23):** the list page's «Αναζήτηση» pill removed (top-bar search box + its advanced button cover it).
 - **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
   before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
   the image builds hang for an hour (cancel + re-run the stuck run if it happens again).
@@ -237,6 +237,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 follow-up: macOS dev.sh job 90 min (queue time counted) |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 12:13 | R5o | #97 | inbox: no jump on Κείμενο / HTML; Εισερχόμενο / Εξερχόμενο (folded) sections; purple preview, lavender headers; HTML tab icon; list «N από M» and ✓ number |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |

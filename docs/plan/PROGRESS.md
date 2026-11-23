@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **85 / 96** `███████████████████████████░░░` 89% |
-| Effort done (PERT) | **38.0 / 43.0 h** `███████████████████████████░░░` 89% |
-| Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **86 / 96** `███████████████████████████░░░` 90% |
+| Effort done (PERT) | **38.4 / 43.0 h** `███████████████████████████░░░` 89% |
+| Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
-| Next task | **R2l** — List: remove the «Αναζήτηση» button (the search field has its own) |
+| Next task | **A01** — Integrity-check engine + page |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** Z01 → Z02 → Z03
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ⬜R2l ✅R5l | 28/29 | `██████████` |
+| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅R5l | 29/29 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -288,8 +288,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R5l done
-  class R2l,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,R5l done
+  class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
 ```
@@ -400,7 +400,7 @@ gantt
   R5m Inbox  page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users :done, r5m, 2026-11-13 20:42, 33m
   R5n Inbox  while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) :done, r5n, 2026-11-13 21:15, 33m
   R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers :done, r5o, 2026-11-13 21:48, 33m
-  R2l List  remove the «Αναζήτηση» button (the search field has its own) :r2l, 2026-11-13 22:21, 19m
+  R2l List  remove the «Αναζήτηση» button (the search field has its own) :done, r2l, 2026-11-13 22:21, 19m
   R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 22:40, 19m
   section Batch 10
   A01 Integrity-check engine + page :a01, 2026-11-13 22:59, 33m
@@ -505,7 +505,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5m** 🔴 | Inbox: page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users | R5l | 0.5 | 0.1 | 8.5 | 9.1 | 8.5 | 9.1 | 0.0 | #95 |
 | ✅ | **R5n** 🔴 | Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) | R5m | 0.5 | 0.1 | 9.1 | 9.6 | 9.1 | 9.6 | 0.0 | #96 |
 | ✅ | **R5o** 🔴 | Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers | R5n | 0.5 | 0.1 | 9.6 | 10.2 | 9.6 | 10.2 | 0.0 | #97 |
-| ⬜ | **R2l** | List: remove the «Αναζήτηση» button (the search field has its own) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 9.9 | 10.2 | 2.6 |  |
+| ✅ | **R2l** | List: remove the «Αναζήτηση» button (the search field has its own) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 9.9 | 10.2 | 2.6 | #100 |
 | ✅ | **R5l** 🔴 | Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 8.2 | 8.5 | 0.0 | #93 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 9.9 | 10.2 | 5.1 |  |
