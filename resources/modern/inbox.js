@@ -130,6 +130,14 @@ function inboxWait(counting = true) {
             this.failed = true;
             clearInterval(this.timer);
         },
+        /** «Δοκιμή ξανά»: waiting again (counter from 0), then $call (R5n: $wire.connect()) */
+        retry(call) {
+            this.failed = false;
+            this.seconds = 0;
+            clearInterval(this.timer);
+            this.timer = setInterval(() => this.seconds++, 1000);
+            call();
+        },
     };
 }
 

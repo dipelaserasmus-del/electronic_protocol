@@ -5,7 +5,8 @@
     $date = fn (?string $iso, string $format = 'd/m/Y H:i') => $iso ? (new \DateTimeImmutable($iso))->setTimezone($zone)->format($format) : '';
     $err = fn (int $uid, string $f) => $errors->first("forms.$uid.$f") ?: null;
 @endphp
-<div class="inbox-page" x-data="inboxPage" data-inbox-state="{{ $failure ? 'failed' : 'ready' }}">
+<div class="inbox-page" x-data="inboxPage" data-inbox-state="{{ $connecting ? 'connecting' : ($failure ? 'failed' : 'ready') }}"
+     @if ($connecting) wire:init="connect" @endif>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <h1 class="h4 mb-0 me-auto"><i class="bi bi-inbox me-1" aria-hidden="true"></i>Εισερχόμενα email</h1>
         @if ($total > 0)
@@ -23,7 +24,13 @@
         </button>
     </div>
 
+    {{-- R5n: the first connection to the mail server, after the page is shown (EmailInbox::connect) --}}
+    @if ($connecting)
+        @include('livewire.partials.inbox-connecting', ['initial' => true, 'staleAt' => $stale ? $checkedAt : null])
+    @endif
+
     {{-- R5m: «Ανανέωση» / a page change that the web server gave up on (504) or that got no answer --}}
+    @unless ($connecting)
     <div x-data="{ failed: false }" @inbox-unreachable.window="failed = true" x-show="failed" style="display: none"
          class="alert alert-warning mb-3" role="alert" id="inbox-unreachable">
         <strong>Ο διακομιστής email δεν απάντησε εγκαίρως.</strong> Δοκιμάστε ξανά σε λίγο.
@@ -33,6 +40,8 @@
             </button>
         </div>
     </div>
+
+    @endunless
 
     {{-- R5m: while «Ανανέωση» / a page change waits for the mail server --}}
     <div wire:loading.block wire:target="refresh,gotoPage,previousPage,nextPage">
@@ -56,6 +65,9 @@
             @else
                 <strong>Η σύνδεση με τον λογαριασμό email απέτυχε.</strong> Ελέγξτε τις ρυθμίσεις ή δοκιμάστε ξανά σε λίγο.
             @endif
+            @if ($stale && $uids !== [])
+                <div class="small mt-1" id="inbox-stale-failed">Τα email που βλέπετε είναι της τελευταίας ανανέωσης{{ $checkedAt ? " ($checkedAt)" : '' }}: μπορεί να μην είναι τα τρέχοντα.</div>
+            @endif
             <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="inbox-retry" wire:click="refresh" wire:loading.attr="disabled">
                     <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Δοκιμή ξανά
@@ -63,9 +75,12 @@
                 <span class="small text-body-secondary">Κωδικός σφάλματος: {{ $failure }}</span>
             </div>
         </div>
-    @elseif ($total === 0)
+    @endif
+
+    {{-- R5n: after a failure, the e-mails already shown (last check) stay below the message --}}
+    @if (! $failure && $total === 0 && ! $connecting)
         <x-notice type="info" id="inbox-empty">Δεν υπάρχουν εισερχόμενα email ({{ $account }}).</x-notice>
-    @else
+    @elseif ($uids !== [])
         <div class="row g-3">
             {{-- the page's messages: a click scrolls to the message --}}
             <aside class="col-lg-3 d-none d-lg-block">

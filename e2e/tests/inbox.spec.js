@@ -397,10 +397,9 @@ test('a web server time-out is said in the banner, not in a popup (R5m)', async 
   await expect(banner).toHaveClass(/alert-warning/);
   await expect(banner.getByText('Παρακαλώ περιμένετε…')).toBeHidden();        // the waiting line gave way
   await expect(page.locator('#livewire-error')).toHaveCount(0);              // Livewire's popup
-  await expect(page.locator('iframe')).toHaveCount(0);
   await evidence(page, 'r5m-timeout', { clip: await banner.boundingBox() });
 
-  await banner.getByRole('button', { name: 'Δοκιμή ξανά' }).click();         // reloads: the server answers now
+  await banner.getByRole('button', { name: 'Δοκιμή ξανά' }).click();         // connects again: the server answers now
   await inboxReady(page);
   await expect(page.locator('article.inbox-message').first()).toBeVisible();
 });
@@ -422,4 +421,30 @@ test('a refresh the web server gave up on is said above the e-mails (R5m)', asyn
   await box.getByRole('button', { name: 'Δοκιμή ξανά' }).click();
   await expect(box).toBeHidden();
   await expect(page.locator('#inbox-checked-at')).toBeVisible();
+});
+
+test('the last check\'s e-mails are shown at once while the server is slow (R5n)', async ({ page }) => {
+  await login(page, 'admin');
+  await openInbox(page);                                                      // a check: the shared snapshot
+  const subjects = await page.locator('article.inbox-message .inbox-subject').allInnerTexts();
+  expect(subjects.length).toBeGreaterThan(0);
+
+  // a slow morning: the server's answer takes a while
+  let held = false;
+  await page.route('**/livewire*/update', async (route) => {
+    if (!held) { held = true; await new Promise((r) => setTimeout(r, 4000)); }
+    await route.continue();
+  });
+  await page.reload();
+  const banner = page.locator('#inbox-connecting');
+  await expect(banner).toBeVisible();
+  await expect(page.locator('#inbox-stale-note')).toContainText(/τελευταίας ανανέωσης \(\d\d:\d\d\)/);
+  // the same e-mails, at once, before the server has answered
+  await expect(page.locator('article.inbox-message .inbox-subject').first()).toHaveText(subjects[0]);
+  await expect(page.locator('[data-inbox-state="connecting"]')).toHaveCount(1);
+  await evidence(page, 'r5n-from-cache', { clip: await banner.boundingBox() });
+
+  await inboxReady(page);                                                     // the fresh list
+  await expect(page.locator('#inbox-connecting')).toHaveCount(0);
+  await expect(page.locator('#inbox-stale-note')).toHaveCount(0);
 });

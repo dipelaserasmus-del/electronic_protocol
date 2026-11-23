@@ -31,10 +31,9 @@ final class Inbox
     {
         $validity = $mailbox->uidValidity();
         $all = $mailbox->uidsSince($since);
-        $ordered = $newestFirst ? array_reverse($all) : $all;
         $perPage = max(1, $perPage);
         $page = max(1, $page);
-        $uids = array_slice($ordered, ($page - 1) * $perPage, $perPage);
+        $uids = $this->slice($all, $page, $perPage, $newestFirst);
 
         $raw = $this->load($mailbox, $validity, $uids, $all);
 
@@ -44,11 +43,73 @@ final class Inbox
                 $messages[] = new InboxMessage($uid, $summary);
             }
         }
+
+        return new InboxPage($mailbox->id(), $validity, count($all), $page, $perPage, $this->sorted($messages, $newestFirst), $all);
+    }
+
+    /**
+     * R5n: the inbox as the last successful check left it, shared by all users (only the list of UIDs; the messages
+     * themselves are in MailCache). Shown at once while the mail server is asked again, so a slow morning server does
+     * not leave the page empty. Keyed by account and folder: known before connecting.
+     *
+     * @return array{mailboxId: string, uidValidity: string, all: list<int>, at: string}|null
+     */
+    public function snapshot(string $account, string $folder): ?array
+    {
+        $snapshot = Cache::get($this->snapshotKey($account, $folder));
+
+        return is_array($snapshot) && isset($snapshot['mailboxId'], $snapshot['uidValidity'], $snapshot['all'], $snapshot['at']) ? $snapshot : null;
+    }
+
+    /** R5n: after a successful check (any user): what the next visitor sees first */
+    public function rememberSnapshot(string $account, string $folder, InboxPage $page): void
+    {
+        Cache::put($this->snapshotKey($account, $folder), ['mailboxId' => $page->mailboxId, 'uidValidity' => $page->uidValidity,
+            'all' => array_values(array_map('intval', $page->all)), 'at' => now()->toIso8601String()], now()->addDays(7));
+    }
+
+    /**
+     * R5n: a page of the snapshot, read from the cache only (no mail server). Messages no longer cached (expired) are
+     * left out; the page's total is the snapshot's.
+     *
+     * @param array{mailboxId: string, uidValidity: string, all: list<int>, at: string} $snapshot
+     */
+    public function cachedPage(array $snapshot, int $page, int $perPage, bool $newestFirst): InboxPage
+    {
+        $perPage = max(1, $perPage);
+        $page = max(1, $page);
+        $messages = [];
+        foreach ($this->slice($snapshot['all'], $page, $perPage, $newestFirst) as $uid) {
+            if (($summary = $this->summary($snapshot['mailboxId'], $snapshot['uidValidity'], $uid)) !== null) {
+                $messages[] = new InboxMessage($uid, $summary);
+            }
+        }
+
+        return new InboxPage($snapshot['mailboxId'], $snapshot['uidValidity'], count($snapshot['all']), $page, $perPage,
+            $this->sorted($messages, $newestFirst), $snapshot['all']);
+    }
+
+    /** @param list<int> $all @return list<int> the UIDs of one page, by arrival (newest first if $newestFirst) */
+    private function slice(array $all, int $page, int $perPage, bool $newestFirst): array
+    {
+        $ordered = $newestFirst ? array_reverse($all) : $all;
+
+        return array_slice($ordered, ($page - 1) * $perPage, $perPage);
+    }
+
+    /** @param list<InboxMessage> $messages @return list<InboxMessage> within the page, by the e-mails' Date header */
+    private function sorted(array $messages, bool $newestFirst): array
+    {
         usort($messages, fn (InboxMessage $a, InboxMessage $b) => $newestFirst
             ? $b->timestamp() <=> $a->timestamp()
             : $a->timestamp() <=> $b->timestamp());
 
-        return new InboxPage($mailbox->id(), $validity, count($all), $page, $perPage, $messages);
+        return $messages;
+    }
+
+    private function snapshotKey(string $account, string $folder): string
+    {
+        return 'inbox-snapshot:'.sha1($account.'|'.$folder);
     }
 
     /**

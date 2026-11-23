@@ -37,7 +37,8 @@ return [
     */
     'default' => env('IMAP_DEFAULT_ACCOUNT', 'default'),
 
-    // R5m: the inbox page arrives at once and then waits for the mail server (tests of the loaded page switch it off)
+    // R5m/R5n: the inbox page is drawn at once (last check's e-mails from the cache) and then asks the mail server
+    // (EmailInbox::connect); tests of the loaded page switch it off
     'deferred_inbox' => true,
 
     /*

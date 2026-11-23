@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 10:15 (R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 11:01 (R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -173,6 +173,10 @@ Open *Εισερχόμενα*.
   in the morning (after `git pull`, the copy's nginx needs `./dev.sh real down && ./dev.sh real up`).
 - [ ] **56.** Two users, the same e-mail: open *Εισερχόμενα* as two users (two browsers), press *Καταχώριση* on the
   same e-mail in both: the second says it was already registered, by whom and with which number; no second protocol.
+
+- [ ] **57.** Open *Εισερχόμενα* once, then again: the second time the e-mails are there at once, with *«Μέχρι τότε
+  βλέπετε τα email της τελευταίας ανανέωσης (ΩΡΑ)»* under *Παρακαλώ περιμένετε…*; then the fresh list replaces them. If
+  the server fails, the e-mails stay, marked as possibly not current.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
