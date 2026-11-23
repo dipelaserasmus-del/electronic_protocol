@@ -381,6 +381,78 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /**
+     * R5o (owner, 2026-11-23): the form has the protocol form's sections and colours: Εισερχόμενο (green), Εξερχόμενο
+     * (blue, folded); the HTML opens in a new tab from an icon next to «Εμφάνιση HTML»; no "✓ = …" note.
+     */
+    public function test_the_form_has_incoming_and_folded_outgoing_sections(): void
+    {
+        $this->setting('emailNumFetch', 8);
+        $html = Livewire::actingAs($this->writer())->test(EmailInbox::class)->html();
+
+        $this->assertStringContainsString('data-section="incoming"', $html);
+        $this->assertMatchesRegularExpression('~<legend class="card-header[^"]*bg-success-subtle[^"]*">Εισερχόμενο</legend>~', $html);
+        $this->assertMatchesRegularExpression('~data-section="outgoing">\s*<legend class="card-header[^"]*bg-info-subtle~', $html);
+        $this->assertStringContainsString('id="f-2-out_to"', $html);
+        $this->assertStringContainsString('id="f-2-out_date"', $html);
+        $this->assertStringContainsString('id="f-2-out_perilipsi"', $html);
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s+style="display: none"~', $html);   // folded
+        $this->assertStringContainsString('class="btn btn-sm btn-link px-1 text-reset inbox-html-tab"', $html);
+        $this->assertStringNotContainsString('HTML σε νέα καρτέλα</', $html);
+        $this->assertStringNotContainsString('αποθηκεύεται με το πρωτόκολλο', $html);
+        // the list on the left shows each e-mail's place, as its header; headers are lavender (inbox-message-head)
+        $this->assertSame(8, substr_count($html, 'inbox-sidebar-n'));
+        $this->assertMatchesRegularExpression('~inbox-sidebar-n">1 από 8</span>~', $html);
+        $this->assertMatchesRegularExpression('~inbox-sidebar-n">8 από 8</span>~', $html);
+        $this->assertSame(8, substr_count($html, 'card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head'));
+        // option B: between two e-mails a thin line with «↓ N από M ↓» (none before the first)
+        $this->assertSame(7, substr_count($html, 'class="inbox-sep" role="separator"'));
+        $this->assertStringNotContainsString('</i> 1 από 8 <i', $html);
+        $this->assertMatchesRegularExpression('~<span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> 2 από 8 <i class="bi bi-arrow-down" aria-hidden="true"></i></span>~', $html);
+    }
+
+    /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */
+    public function test_outgoing_fields_are_registered_and_an_error_opens_their_section(): void
+    {
+        $this->setting('protocolValidate', 1);   // the protocol's checks: an outgoing document needs its date
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])
+            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->call('register', 2, false)
+            ->assertHasErrors('forms.2.out_date');
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $page->html());   // open, with its error
+        $this->assertSame(0, \App\Models\Protocol::count());
+
+        $page->set('forms.2.out_date', '20/11/2026')->set('forms.2.out_perilipsi', 'Διαβιβαστικό')->call('register', 2, false)
+            ->assertHasNoErrors();
+        $p = \App\Models\Protocol::sole();
+        // R5o (owner): in the list on the left the number, with ✓, under the e-mail's time
+        $this->assertMatchesRegularExpression('~inbox-sidebar-when">\s*<small[^>]*>[^<]+</small>(?:(?!</div>).)*?<span class="badge text-bg-success inbox-sidebar-done"><i class="bi bi-check-lg" aria-hidden="true"></i> '
+            .preg_quote($p->protocolnum.'/'.$p->etos, '~').'</span>~s', $page->html());
+        $this->assertSame('Διεύθυνση Δοκιμών', $p->out_to);
+        $this->assertSame('2026-11-20', $p->dateOf('out_date')->format('Y-m-d'));
+        $this->assertSame('Διαβιβαστικό', $p->out_perilipsi);
+    }
+
+    /**
+     * Review of R5o: an outgoing document with «Διεκπεραίωση» needs «Διεκπεραιώθηκε την» (protocol checks); the inbox
+     * has the field in Εξερχόμενο, so it can be registered (the error was shown with nowhere to fix it).
+     */
+    public function test_outgoing_with_a_handler_asks_for_the_completion_date_in_its_section(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $handler = $this->writer();
+        $page = Livewire::actingAs($this->admin())->test(EmailInbox::class)->set('forms.2.files', [])
+            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->set('forms.2.out_date', '20/11/2026')
+            ->set('forms.2.handle', [$handler->id])
+            ->call('register', 2, false)->assertHasErrors('forms.2.diekp_date');
+        $html = $page->html();
+        $this->assertStringContainsString('id="f-2-diekp_date"', $html);
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $html);   // open, with its error
+        $this->assertSame(0, \App\Models\Protocol::count());
+
+        $page->set('forms.2.diekp_date', '21/11/2026')->call('register', 2, false)->assertHasNoErrors();
+        $this->assertSame('2026-11-21', \App\Models\Protocol::sole()->dateOf('diekp_date')->format('Y-m-d'));
+    }
+
     /** R5d: the same document registered before: a notice with links, and a second explicit click registers it. */
     public function test_similar_protocol_is_shown_and_needs_a_second_click(): void
     {
@@ -667,7 +739,7 @@ class InboxTest extends FeatureTestCase
         $first = substr($html, strpos($html, 'id="msg-1"'));
         $first = substr($first, 0, strpos($first, '</article>'));
 
-        $this->assertMatchesRegularExpression('~class="card shadow-sm mb-3 inbox-message\s+is-done\s*"\s+id="msg-1"~', $html);
+        $this->assertMatchesRegularExpression('~class="card shadow-sm inbox-message\s+is-done\s*"\s+id="msg-1"~', $html);
         $this->assertStringContainsString('data-action="show-mail"', $first);
         $this->assertStringContainsString('x-on:click="go(2)" data-action="next-mail"', $first, 'the next one still waiting');
         $this->assertStringContainsString('id="mail-1"', $first, 'the e-mail is still there, folded by CSS');

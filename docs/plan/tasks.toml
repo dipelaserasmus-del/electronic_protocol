@@ -129,7 +129,9 @@ tasks = [
   { id = "R5m", title = "Inbox: page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users", phase = "R", batch = 9.5, size = "M", deps = ["R5l"], status = "done", pr = 95 },
   { id = "R5n", title = "Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server)", phase = "R", batch = 9.5, size = "M", deps = ["R5m"], status = "done", pr = 96 },
   # Owner's notes (2026-11-23): page jumps when Κείμενο / HTML opens; Εξερχόμενο fields in the e-mail form (collapsed); colours
-  { id = "R5o", title = "Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form", phase = "R", batch = 9.5, size = "M", deps = ["R5n"], status = "todo" },
+  { id = "R5o", title = "Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers", phase = "R", batch = 9.5, size = "M", deps = ["R5n"], status = "done", pr = 97 },
+  # Owner (2026-11-23): the list page's «Αναζήτηση» button repeats the search field's own button
+  { id = "R2l", title = "List: remove the «Αναζήτηση» button (the search field has its own)", phase = "R", batch = 9.5, size = "S", deps = ["R2k"], status = "todo" },
   # Owner (2026-11-23, try-it 38): Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1 (same folders, other codes)
   { id = "D09", title = "Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β)", phase = "D", batch = 9.5, size = "S", deps = ["D07", "D08"], status = "done", pr = 98 },
   { id = "R5l", title = "Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on", phase = "R", batch = 9.5, size = "S", deps = ["R5k"], status = "done", pr = 93 },
