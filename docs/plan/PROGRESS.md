@@ -53,7 +53,7 @@ flowchart LR
     F06["F06<br/>nginx finds a recreated app container (no 502)"]
     F07["F07<br/>real load: adopt a backup without migrations table"]
     F08["F08<br/>Attachment names fit 255 bytes (Linux/Docker)"]
-    L03["L03<br/>Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις)"]
+    L03["L03<br/>Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO)"]
   end
   subgraph U["1 Urgent patches"]
     S00["S00<br/>Close open admin registration"]
@@ -385,7 +385,7 @@ gantt
   R5i Inbox  a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails :done, r5i, 2026-11-13 19:07, 19m
   R5j Inbox  files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart :done, r5j, 2026-11-13 19:26, 19m
   R5k Inbox  registering says so until done (notice, spinners, the yellow button too); one registration at a time :done, r5k, 2026-11-13 19:45, 19m
-  L03 Real copy  optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις) :done, l03, 2026-11-13 20:04, 19m
+  L03 Real copy  optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) :done, l03, 2026-11-13 20:04, 19m
   R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 20:23, 19m
   section Batch 10
   A01 Integrity-check engine + page :a01, 2026-11-13 20:42, 33m
@@ -485,7 +485,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5i** 🔴 | Inbox: a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails | R5h | 0.3 | 0.1 | 7.2 | 7.5 | 7.2 | 7.5 | -0.0 | #90 |
 | ✅ | **R5j** 🔴 | Inbox: files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart | R5i | 0.3 | 0.1 | 7.5 | 7.9 | 7.5 | 7.9 | -0.0 | #91 |
 | ✅ | **R5k** 🔴 | Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time | R5j | 0.3 | 0.1 | 7.9 | 8.2 | 7.9 | 8.2 | -0.0 | #92 |
-| ✅ | **L03** | Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις) | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 8.2 | 8.5 | 7.0 | #94 |
+| ✅ | **L03** | Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 8.2 | 8.5 | 7.0 | #94 |
 | ✅ | **R5l** 🔴 | Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 8.2 | 8.5 | 0.0 | #93 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 7.4 | 8.0 | 3.2 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 8.2 | 8.5 | 3.5 |  |

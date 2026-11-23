@@ -163,7 +163,8 @@ Open *Εισερχόμενα*.
 - [ ] **54.** Real copy with a test mailbox: run `./dev.sh real up`, fill in `local-data/test-mailbox.env` (the
   mailbox made for testing, never the production one), run `./dev.sh real up` again, then on http://localhost:8081
   *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* → *Δοκιμαστικός λογαριασμός (…)* → *Αποθήκευση*. *Εισερχόμενα*
-  shows its e-mails. Steps: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md#a-temporary-test-mailbox-optional).
+  shows its e-mails. Optional: fill in `TEST_SMTP_HOST` / `TEST_SMTP_PORT` too; a receipt or assignment notice
+  then arrives in the test mailbox with *«[ΔΟΚΙΜΗ] προς: …»* (never at the real recipient). Steps: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md#a-temporary-test-mailbox-optional).
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

@@ -105,6 +105,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   carry a `label`, `SettingsCatalog::imapAccounts` shows it). The owner's login lives in git-ignored
   `local-data/test-mailbox.env` (created from `docker/dev/test-mailbox.env.example` by `./dev.sh real up`, passed to
   ep-real-app by `env_file … required: false`). Never read that file. `real load` still resets to `default`.
+  Optional `TEST_SMTP_*` (owner's choice: real SMTP, redirected): `config/mail.php` `$smtp` for both mailers +
+  `mail.test` (`enabled`, `only_to`); `App\Support\Mail\TestMailRedirect` (MessageSending listener in
+  AppServiceProvider) keeps only `TEST_MAIL_ONLY_TO` recipients (default the test mailbox), else first allowed +
+  `[ΔΟΚΙΜΗ] προς: …` subject, empty list = not sent. IMAP `tls` = implicit TLS (use `ssl`/993 or `starttls`/143).
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -206,7 +210,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select |
+| 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |
 | 2026-11-19 14:10 | D07 | #77 | folder glossary (owner's list) + `folders:glossary`, merge Φ.43 → Φ.46; 2 import bugs fixed |
 | 2026-11-18 23:26 | R7 | #69 | `/print` = Livewire `PrintPage` (book / attachments tabs, live count, limit warning); `PrintController` (`/printed` GET+POST, xlsx via `target=xls`, `/printedAttachments`, `/receipt`) on `layouts/print`; `App\\Services\\Printing\\PrintRange` (old param names, ignored list, `limit()`, `describe()`, `params()`); handlers by name incl. inactive; each attachment its own keep/expiry; POST /receiptToEmail removed (form's sendReceipt); only auth pages left on the old layout |
 | 2026-11-18 23:17 | R6c | #68 | `/settings` = Livewire `SettingsPage` from `App\\Support\\SettingsCatalog` (groups, label, help, kind, rules; only known keys saved; errors at the field); `/backups` = `BackupPage` (create/delete actions); `/arxeio` = `ArchivePage` + `App\\Services\\Attachments\\Expired`; `/expired` print on new `layouts/print` (R7 reuses); removed POST /settings, GET /backup, /deleteBackup, /delExpired, /delDeleted; unused settings removed (migration + seeder); `InboxAccess` whole usernames; e2e `setSetting` uses `#s-<key>` |

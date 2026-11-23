@@ -65,6 +65,12 @@ printf 'TEST_IMAP_HOST=imap.example.org\nTEST_IMAP_USERNAME=demo@example.org\n' 
 if (cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real up 2>&1) | grep -q "Test mailbox: set" \
    && grep -q '^TEST_IMAP_HOST=imap.example.org' "$WORK/repo/local-data/test-mailbox.env"; then
   echo "ok   real up keeps a filled-in test mailbox and says so"; else echo "FAIL real up with a test mailbox"; fails=$((fails+1)); fi
+# an older file without the SMTP lines gets them appended once, its own lines kept
+printf 'TEST_IMAP_HOST=imap.example.org\n' > "$WORK/repo/local-data/test-mailbox.env"
+(cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real up >/dev/null 2>&1)
+(cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real up >/dev/null 2>&1)
+if [ "$(grep -c '^TEST_SMTP_HOST=$' "$WORK/repo/local-data/test-mailbox.env")" = 1 ] && grep -q '^TEST_IMAP_HOST=imap.example.org' "$WORK/repo/local-data/test-mailbox.env"; then
+  echo "ok   real up adds the SMTP lines to an older test mailbox file once"; else echo "FAIL real up: SMTP lines"; fails=$((fails+1)); fi
 run "real check-names (F08)"       "php tools/check-attachment-names.php storage/app" real check-names
 run "real load: no dump → message"  -                                    real help
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"

@@ -33,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Gate::policy(Protocol::class, ProtocolPolicy::class);
+        // L03: the test mailbox's SMTP (local real-data copy) delivers only to TEST_MAIL_ONLY_TO
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Mail\Events\MessageSending::class, [\App\Support\Mail\TestMailRedirect::class, 'handle']);
 
         Paginator::useBootstrap();
 

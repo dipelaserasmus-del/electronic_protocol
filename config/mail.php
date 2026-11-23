@@ -1,5 +1,38 @@
 <?php
 
+// L03: optional SMTP of the test mailbox (only the local real-data copy sets TEST_SMTP_HOST, from
+// local-data/test-mailbox.env). Its mail then reaches only TEST_MAIL_ONLY_TO (App\Support\Mail\TestMailRedirect).
+$pick = function (string ...$names): ?string {
+    foreach ($names as $name) {
+        $value = env($name);
+        if ($value !== null && trim((string) $value) !== '') {
+            return trim((string) $value);
+        }
+    }
+
+    return null;
+};
+$testSmtp = $pick('TEST_SMTP_HOST') !== null;
+
+$smtp = $testSmtp ? [
+    'transport' => 'smtp',
+    'host' => $pick('TEST_SMTP_HOST'),
+    'port' => (int) ($pick('TEST_SMTP_PORT') ?? 587),   // 465 = SSL; any other port = STARTTLS
+    'username' => $pick('TEST_SMTP_USERNAME', 'TEST_IMAP_USERNAME'),
+    'password' => $pick('TEST_SMTP_PASSWORD', 'TEST_IMAP_PASSWORD'),
+    'timeout' => env('MAIL_TIMEOUT', 10),
+    'auth_mode' => null,
+] : [
+    'transport' => 'smtp',
+    'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+    'port' => env('MAIL_PORT', 587),
+    'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+    'username' => env('MAIL_USERNAME'),
+    'password' => env('MAIL_PASSWORD'),
+    'timeout' => env('MAIL_TIMEOUT', 10),   // seconds; a slow SMTP server must not hang a save (B09/B07)
+    'auth_mode' => null,
+];
+
 return [
 
     /*
@@ -34,27 +67,10 @@ return [
     */
 
     'mailers' => [
-        'smtp' => [
-            'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => env('MAIL_TIMEOUT', 10),   // seconds; a slow SMTP server must not hang a save (B09/B07)
-            'auth_mode' => null,
-        ],
+        // L03: with TEST_SMTP_HOST (local real-data copy) both mailers send through the test mailbox's SMTP
+        'smtp' => $smtp,
 
-        'intra-mail' => [
-            'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
-            'port' => env('MAIL_PORT', 587),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => env('MAIL_TIMEOUT', 10),   // seconds; a slow SMTP server must not hang a save (B09/B07)
-            'auth_mode' => null,
-        ],
+        'intra-mail' => $smtp,
 
         'ses' => [
             'transport' => 'ses',
@@ -95,7 +111,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => $testSmtp ? ($pick('TEST_SMTP_FROM', 'TEST_SMTP_USERNAME', 'TEST_IMAP_USERNAME') ?? env('MAIL_FROM_ADDRESS')) : env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
@@ -116,6 +132,14 @@ return [
         'paths' => [
             resource_path('views/vendor/mail'),
         ],
+    ],
+
+
+    // L03: test mailbox SMTP on (local real-data copy) and the only addresses its mail may reach
+    'test' => [
+        'enabled' => $testSmtp,
+        'only_to' => array_values(array_filter(array_map('trim', explode(',',
+            (string) ($pick('TEST_MAIL_ONLY_TO', 'TEST_SMTP_FROM', 'TEST_SMTP_USERNAME', 'TEST_IMAP_USERNAME') ?? ''))))),
     ],
 
 ];

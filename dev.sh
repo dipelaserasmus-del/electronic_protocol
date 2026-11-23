@@ -58,6 +58,8 @@ real_cmd() {
   mkdir -p local-data/db local-data/storage/app local-data/mail-preload local-data/tmp
   # L03: login of the optional test mailbox (left empty = no test account)
   [ -f local-data/test-mailbox.env ] || cp docker/dev/test-mailbox.env.example local-data/test-mailbox.env
+  # an older file: add the (empty) outgoing-mail lines, nothing else is changed
+  grep -q '^TEST_SMTP_HOST=' local-data/test-mailbox.env || sed -n '/^# Outgoing mail/,$p' docker/dev/test-mailbox.env.example >> local-data/test-mailbox.env
   case "${1:-help}" in
     up)
       # optional private e-mails for the local test mailbox
@@ -74,6 +76,9 @@ real_cmd() {
       echo "Local copy: http://localhost:$(grep '^APP_PORT=' "$REAL_ENV" | cut -d= -f2)  ·  caught e-mails: http://localhost:8026"
       if grep -qE '^TEST_IMAP_HOST=.+' local-data/test-mailbox.env; then
         echo "Test mailbox: set (local-data/test-mailbox.env) - choose it in Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων"
+      fi
+      if grep -qE '^TEST_SMTP_HOST=.+' local-data/test-mailbox.env; then
+        echo "Test SMTP: set - e-mails reach only TEST_MAIL_ONLY_TO (default: the test mailbox); others stay off"
       fi
       ;;
     load)

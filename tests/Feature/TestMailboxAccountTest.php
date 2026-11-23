@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Livewire\SettingsPage;
 use App\Models\Config;
+use App\Services\OutgoingMail;
+use App\Support\Mail\TestMailRedirect;
 use App\Support\SettingsCatalog;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
 /**
@@ -14,7 +17,8 @@ use Livewire\Livewire;
 class TestMailboxAccountTest extends FeatureTestCase
 {
     private const VARS = ['TEST_IMAP_HOST', 'TEST_IMAP_PORT', 'TEST_IMAP_ENCRYPTION', 'TEST_IMAP_VALIDATE_CERT',
-        'TEST_IMAP_USERNAME', 'TEST_IMAP_PASSWORD'];
+        'TEST_IMAP_USERNAME', 'TEST_IMAP_PASSWORD', 'TEST_SMTP_HOST', 'TEST_SMTP_PORT', 'TEST_SMTP_USERNAME',
+        'TEST_SMTP_PASSWORD', 'TEST_SMTP_FROM', 'TEST_MAIL_ONLY_TO'];
 
     protected function tearDown(): void
     {
@@ -92,5 +96,90 @@ class TestMailboxAccountTest extends FeatureTestCase
         Livewire::actingAs($this->admin())->test(SettingsPage::class)
             ->set('values.defaultImapEmail', 'test')->call('save')->assertHasErrors('values.defaultImapEmail');
         $this->assertNotSame('test', Config::getConfigValueOf('defaultImapEmail'));
+    }
+
+    /** @return array<string, mixed> config/mail.php as it reads the environment now */
+    private function mailConfig(): array
+    {
+        return require config_path('mail.php');
+    }
+
+    public function test_without_a_test_smtp_host_mail_settings_are_unchanged(): void
+    {
+        $this->environment(['TEST_IMAP_HOST' => 'imap.example.org', 'TEST_IMAP_USERNAME' => 'demo@example.org']);
+        $mail = $this->mailConfig();
+        $this->assertFalse($mail['test']['enabled']);
+        $this->assertSame(env('MAIL_HOST', 'smtp.mailgun.org'), $mail['mailers']['smtp']['host']);
+        $this->assertSame($mail['mailers']['smtp'], $mail['mailers']['intra-mail']);
+        $this->assertSame(env('MAIL_FROM_ADDRESS', 'hello@example.com'), $mail['from']['address']);
+    }
+
+    public function test_the_test_smtp_reuses_the_imap_login_and_sends_only_to_the_test_mailbox(): void
+    {
+        $this->environment(['TEST_IMAP_HOST' => 'imap.example.org', 'TEST_IMAP_USERNAME' => 'demo@example.org',
+            'TEST_IMAP_PASSWORD' => 'invented-secret', 'TEST_SMTP_HOST' => 'smtp.example.org', 'TEST_SMTP_PORT' => '465',
+            'TEST_SMTP_USERNAME' => '', 'TEST_MAIL_ONLY_TO' => '']);
+        $mail = $this->mailConfig();
+        $this->assertTrue($mail['test']['enabled']);
+        foreach (['smtp', 'intra-mail'] as $mailer) {
+            $this->assertSame(['smtp.example.org', 465, 'demo@example.org', 'invented-secret'], [$mail['mailers'][$mailer]['host'],
+                $mail['mailers'][$mailer]['port'], $mail['mailers'][$mailer]['username'], $mail['mailers'][$mailer]['password']]);
+        }
+        $this->assertSame('demo@example.org', $mail['from']['address']);
+        $this->assertSame(['demo@example.org'], $mail['test']['only_to']);
+
+        $this->environment(['TEST_SMTP_HOST' => 'smtp.example.org', 'TEST_SMTP_USERNAME' => 'sender@example.org',
+            'TEST_SMTP_FROM' => 'from@example.org', 'TEST_MAIL_ONLY_TO' => ' a@example.org, b@example.org ,']);
+        $mail = $this->mailConfig();
+        $this->assertSame([587, 'from@example.org'], [$mail['mailers']['smtp']['port'], $mail['from']['address']]);
+        $this->assertSame(['a@example.org', 'b@example.org'], $mail['test']['only_to']);
+    }
+
+    /** @return list<\Symfony\Component\Mime\Email> */
+    private function sent(): array
+    {
+        return array_map(fn ($m) => $m->getOriginalMessage(), iterator_to_array(Mail::mailer('array')->getSymfonyTransport()->messages()));
+    }
+
+    /** @param list<\Symfony\Component\Mime\Address> $addresses @return list<string> */
+    private function addresses(array $addresses): array
+    {
+        return array_map(fn ($a) => $a->getAddress(), $addresses);
+    }
+
+    public function test_real_recipients_are_taken_off_and_the_mail_goes_to_the_test_mailbox(): void
+    {
+        config(['mail.test' => ['enabled' => true, 'only_to' => ['Demo@Example.org', 'other@example.org']]]);
+        $out = app(OutgoingMail::class);
+
+        $this->assertTrue($out->sendHtml('staff@example.org', 'Ανάθεση πρωτοκόλλου 12', '<p>x</p>'));
+        $this->assertTrue($out->sendHtml('other@example.org', 'Απόδειξη', '<p>y</p>'));
+        Mail::mailer('array')->raw('z', fn ($m) => $m->to(['staff@example.org', 'demo@example.org'])
+            ->cc('boss@example.org')->bcc('other@example.org')->subject('Πολλοί'));
+
+        [$redirected, $allowed, $mixed] = $this->sent();
+        $this->assertSame(['demo@example.org'], $this->addresses($redirected->getTo()));
+        $this->assertSame('[ΔΟΚΙΜΗ] προς: staff@example.org · Ανάθεση πρωτοκόλλου 12', $redirected->getSubject());
+        $this->assertSame('staff@example.org', $redirected->getHeaders()->get('X-Test-Original-Recipients')->getBodyAsString());
+
+        $this->assertSame(['other@example.org'], $this->addresses($allowed->getTo()));
+        $this->assertSame('Απόδειξη', $allowed->getSubject());
+
+        $this->assertSame(['demo@example.org'], $this->addresses($mixed->getTo()));
+        $this->assertSame([], $mixed->getCc());
+        $this->assertSame(['other@example.org'], $this->addresses($mixed->getBcc()));
+        $this->assertStringStartsWith(TestMailRedirect::SUBJECT_PREFIX.' προς: staff@example.org, boss@example.org · ', $mixed->getSubject());
+    }
+
+    public function test_no_allowed_address_means_nothing_is_sent_and_off_means_untouched(): void
+    {
+        config(['mail.test' => ['enabled' => true, 'only_to' => []]]);
+        app(OutgoingMail::class)->sendHtml('staff@example.org', 'Θέμα', '<p>x</p>');
+        $this->assertSame([], $this->sent());
+
+        config(['mail.test' => ['enabled' => false, 'only_to' => []]]);
+        app(OutgoingMail::class)->sendHtml('staff@example.org', 'Θέμα', '<p>x</p>');
+        $this->assertSame(['staff@example.org'], $this->addresses($this->sent()[0]->getTo()));
+        $this->assertSame('Θέμα', $this->sent()[0]->getSubject());
     }
 }

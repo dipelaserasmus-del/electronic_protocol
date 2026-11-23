@@ -55,7 +55,7 @@ return [
             'host' => env('TEST_IMAP_HOST'),
             'port' => env('TEST_IMAP_PORT', 993),
             'protocol' => 'imap',
-            'encryption' => env('TEST_IMAP_ENCRYPTION', 'ssl'), // ssl, tls (STARTTLS) or false
+            'encryption' => env('TEST_IMAP_ENCRYPTION', 'ssl'), // ssl (993) or starttls (143); 'tls' = TLS from the start, like ssl
             'validate_cert' => env('TEST_IMAP_VALIDATE_CERT', true),
             'username' => env('TEST_IMAP_USERNAME', ''),
             'password' => env('TEST_IMAP_PASSWORD', ''),

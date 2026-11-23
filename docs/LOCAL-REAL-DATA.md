@@ -71,14 +71,21 @@ production account): registering an e-mail moves it out of that mailbox's inbox,
    TEST_IMAP_USERNAME=test-mailbox@example.org
    TEST_IMAP_PASSWORD=its-password
    ```
-   Gmail needs an *app password* (Google account → Security → 2-Step Verification → App passwords).
+   Use `ssl` with port 993 (or `starttls` with 143; `tls` with 143 fails). Gmail needs an *app password* (Google account → Security → 2-Step Verification → App passwords).
 3. Run `./dev.sh real up` again. It prints *Test mailbox: set*.
 4. In the copy (http://localhost:8081): *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* →
    **Δοκιμαστικός λογαριασμός (…)** → *Αποθήκευση*. *Εισερχόμενα* now shows that mailbox.
 
+**Sending through the test mailbox (optional).** Fill in `TEST_SMTP_HOST` and `TEST_SMTP_PORT` in the same file
+(465 = SSL, 587 = STARTTLS; the username and password default to the IMAP ones) and run `./dev.sh real up`.
+For safety, e-mails then reach **only** the addresses in `TEST_MAIL_ONLY_TO` (default: the test mailbox itself).
+Anyone else, such as the real staff in your copy who get assignment notices, is taken off. The message goes to the
+first allowed address instead, with *«[ΔΟΚΙΜΗ] προς: …»* and the original recipients in its subject. To send to a
+colleague's test address too, add it to `TEST_MAIL_ONLY_TO` (comma-separated). Empty `TEST_SMTP_HOST` = Mailpit again.
+
 Back to the local test mailbox: choose `default` there. `./dev.sh real load` always switches back to `default`.
 To remove the test account, empty `TEST_IMAP_HOST` (or delete the file) and run `./dev.sh real up`.
-Receipts and notices still go to Mailpit (http://localhost:8026), never out.
+Without `TEST_SMTP_HOST`, receipts and notices go to Mailpit (http://localhost:8026), never out.
 
 ## Trying a change against your data
 ```bash
