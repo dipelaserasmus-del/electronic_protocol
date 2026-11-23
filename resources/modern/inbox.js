@@ -76,6 +76,35 @@ function inboxPage() {
     };
 }
 
+let stopKeeping = null;
+
+/**
+ * R5o: keep `el` at `top` (px from the window's top) while the page's height changes: at once, then as HTML frames load
+ * and are fitted, for a moment, unless the user scrolls, types or presses the mouse (also on the scrollbar) meanwhile.
+ * One at a time: a new toggle replaces the previous one (two would pull the page two ways).
+ */
+export function keepInPlace(el, top) {
+    stopKeeping?.();
+    const adjust = () => {
+        const off = el.getBoundingClientRect().top - top;
+        // instant: Bootstrap makes the page scroll smoothly, and a correction still moving would be measured again
+        if (Math.abs(off) > 1) window.scrollBy({ top: off, behavior: 'instant' });
+    };
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+    const observer = new ResizeObserver(adjust);
+    const stop = () => {
+        observer.disconnect();
+        clearTimeout(timer);
+        events.forEach((t) => window.removeEventListener(t, stop));
+        if (stopKeeping === stop) stopKeeping = null;
+    };
+    const timer = setTimeout(stop, 2000);
+    observer.observe(document.body);
+    requestAnimationFrame(adjust);
+    events.forEach((t) => window.addEventListener(t, stop, { passive: true }));
+    stopKeeping = stop;
+}
+
 /** One collapsible part of an e-mail: x-data="inboxPart('text')" or ('html'). */
 function inboxPart(kind) {
     return {
@@ -87,6 +116,10 @@ function inboxPart(kind) {
         destroy() { window.removeEventListener('inbox-part', this.onChange); },
         toggle() {
             const open = !this.open;
+            // R5o (owner, 2026-11-23): the part opens / closes in every e-mail of the page; those above the clicked one
+            // change height and moved it (the page seemed to jump up). The clicked toggle stays where it was.
+            const button = this.$root.querySelector('.inbox-part-toggle');
+            keepInPlace(button, button.getBoundingClientRect().top);
             remember(kind, open);
             window.dispatchEvent(new CustomEvent('inbox-part', { detail: { kind, open } }));
             if (open) this.$nextTick(() => this.$root.querySelectorAll('iframe').forEach(fit));

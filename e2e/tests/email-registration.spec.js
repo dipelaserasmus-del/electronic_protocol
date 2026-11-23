@@ -50,6 +50,11 @@ test('register an e-mail from the inbox: protocol created and e-mail leaves the 
   expect(notice).not.toContain('δεν μεταφέρθηκε');
   await message.scrollIntoViewIfNeeded();
   await evidence(page, 'email-registered', { clip: await message.boundingBox() });
+  // R5o (owner): in the list on the left, ✓ and the number under the e-mail's time
+  const item = page.locator('#inbox-sidebar .inbox-sidebar-item.is-done').first();
+  await expect(item.locator('.inbox-sidebar-when .inbox-sidebar-done')).toContainText(/\d+\/\d{4}/);
+  await expect(item.locator('.inbox-sidebar-when .bi-check-lg')).toBeVisible();
+  await evidence(page, 'r5o-list-registered', { clip: await item.boundingBox() });
 
   await page.reload();
   await inboxReady(page);
