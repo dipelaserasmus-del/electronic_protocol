@@ -117,6 +117,24 @@ class InboxLoadingTest extends FeatureTestCase
         $this->assertSame([7, 8], $page->get('uids'));
     }
 
+    /** Review of R5n: the server renumbered the mailbox (new UIDVALIDITY): a reused UID gets its own e-mail's form */
+    public function test_a_renumbered_mailbox_does_not_keep_the_old_forms(): void
+    {
+        $files = glob(base_path('tests/fixtures/emails/synthetic/*.eml'));
+        Livewire::actingAs($this->admin())->test(EmailInbox::class);   // snapshot: UID 1 = the first e-mail
+        config(['imap.deferred_inbox' => true]);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $old = $page->get('forms.1.thema');
+
+        $this->mailbox->validity = '2002';   // rebuilt: UID 1 is now another e-mail
+        $this->mailbox->messages = [1 => file_get_contents($files[1])];
+        $page->set('forms.1.in_num', 'typed for the old e-mail')->call('connect');
+
+        $this->assertNotSame($old, $page->get('forms.1.thema'));
+        $this->assertNotSame('typed for the old e-mail', $page->get('forms.1.in_num'));
+        $this->assertSame('2002', $page->get('uidValidity'));
+    }
+
     /** R5n: an e-mail registered since the last check shows as done in the first view, so nobody starts on it */
     public function test_emails_done_since_the_last_check_show_as_done(): void
     {

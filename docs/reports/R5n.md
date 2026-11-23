@@ -34,6 +34,8 @@ After R5m the page appeared at once, but it was empty until the mail server answ
   - E-mails registered or read since the snapshot (`InboxClaims`, R5m) show as done in the first view, with who did
     it, so nobody starts on them.
   - Registering still needs the mail server, and stays once per e-mail.
+  - Review fix: if the server renumbers the mailbox (a new UIDVALIDITY), forms typed into the cached view are
+    dropped, because a reused UID may now be another e-mail. A form keeps its text only for the very same e-mail.
   - An e-mail no longer in the cache is left out of the first view. One registered meanwhile says *«δεν είναι πια
     διαθέσιμο»*.
 - **The cached view never changes the page asked for** (`?page=3`). Only the server's answer may, as before. The first
@@ -49,8 +51,9 @@ After R5m the page appeared at once, but it was empty until the mail server answ
   - the server failing on `connect()` keeps the e-mails with the "may not be current" line; *Ανανέωση* then shows the
     fresh list and time;
   - the first view keeps `?page=3`, also after `connect()`;
-  - an e-mail registered since the snapshot shows as done, is not registered again, and is gone after `connect()`.
-- **Full suite:** PHPUnit 585 tests pass.
+  - an e-mail registered since the snapshot shows as done, is not registered again, and is gone after `connect()`;
+  - a renumbered mailbox (new UIDVALIDITY) does not keep the old e-mail's form for a reused UID.
+- **Full suite:** PHPUnit 586 tests pass.
 - **Browser:**
   - new R5n test: after a check, reload with the server's answer held back. The same e-mails appear at once with the
     stale note and the state *connecting*, then the fresh list without the note;

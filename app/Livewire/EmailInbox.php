@@ -451,6 +451,13 @@ class EmailInbox extends Component
     /** The page's e-mails (from the server, or R5n: from the snapshot); forms keep what was typed */
     private function show(\App\Services\Mail\InboxPage $page): void
     {
+        // review of R5n: another mailbox or UIDVALIDITY (the server renumbered it): a UID may now be another e-mail, so
+        // nothing typed or done is kept for it (a form keeps its text only for the very same e-mail)
+        if ($this->mailboxId !== $page->mailboxId || $this->uidValidity !== $page->uidValidity) {
+            $this->forms = [];
+            $this->done = [];
+            $this->confirming = [];
+        }
         $this->mailboxId = $page->mailboxId;
         $this->uidValidity = $page->uidValidity;
         $this->total = $page->total;
