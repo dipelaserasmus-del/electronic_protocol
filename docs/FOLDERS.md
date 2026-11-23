@@ -99,6 +99,18 @@ number do count: `Φ.1.1` is not `Φ.11`.
 | Φ.47 | Αιτήσεις για 2η παράλληλη |
 | Φ.48 | Γνησιότητες (Αιτήσεις και Βεβαιώσεις) |
 
+## Ίδιος φάκελος, άλλος κωδικός (aliases)
+
+The owner's decision (2026-11-23): in the database these folders are written
+with another code. The command updates that folder with the description above and **keeps its code** (no second
+folder is added).
+
+| Κωδικός | Στη βάση | Σημείωση |
+|---|---|---|
+| Φ.29 | Φ29Α | Owner, 2026-11-23: Φ29Α is the same folder as Φ.29. |
+| Φ.32β | Φ32.β | Owner, 2026-11-23: Φ32.β is the same folder as Φ.32β. |
+| Φ.33.1 | Φ33.β | Owner, 2026-11-23: Φ33.β is the sub-folder of Φ.33 that the list calls Φ.33.1 (other wording). |
+
 ## Συγχωνεύσεις (merges)
 
 Applied by the same command; **every later data migration must apply them too.**

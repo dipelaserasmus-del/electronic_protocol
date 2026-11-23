@@ -41,7 +41,7 @@ class FolderGlossaryCommand extends Command
         $this->line('  Changed:   '.$this->codes($by('update')));
         $this->line('  Unchanged: '.count($by('same')));
         foreach ($respelled as $from => $to) {
-            $this->line("  $from is written $to in your list: that folder is updated.");
+            $this->line("  $from is your $to: the same folder (it keeps its code, no second one is added).");
         }
         $this->line('  Not in the glossary, kept as they are: '.$this->codes($untouched));
         foreach ($rows->where('status', 'error') as $row) {

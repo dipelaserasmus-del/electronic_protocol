@@ -14,6 +14,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   the deployment** (in OWNER-TODO's deployment steps). Sub-folders Φ.43.x are only named (ask the owner). Import fixes:
   cells trimmed by characters (trim() cut Π = CE A0), codes matched normalised on both sides (`matchKey`), existing
   folders keep their code. `FileNames::available` (was Trash::free). Owner's try-it **38** = apply on the real copy.
+- **D09 (owner, 2026-11-23): glossary `aliases`.** A glossary folder may list `aliases`: the same folder written
+  with another code in the database (`Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`). `FolderGlossary::records`
+  updates that folder (it keeps its code); the list's own code wins when both exist. New owner decisions of this kind go
+  in `folders.json` (`aliases` + `aliasNote`), then `--docs`.
 - Cloud sandbox note (2026-11-19): a cached app image without npm/mysqldump → build the frontend on the host
   (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
   `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
@@ -229,6 +233,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-23 12:53 | D09 | — | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
 | 2026-11-23 10:15 | R5m | #95 | inbox page deferred with «Σύνδεση με τον διακομιστή…» + seconds; failures slow/login/other + «Δοκιμή ξανά»; `IMAP_TIMEOUT`; one registration per e-mail across users (`InboxClaims`) |
 | 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |

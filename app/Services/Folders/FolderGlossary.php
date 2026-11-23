@@ -19,7 +19,7 @@ final class FolderGlossary
         return database_path('data/folders.json');
     }
 
-    /** @return array{folders: list<array{code: string, describe: string}>, merges: list<array{from: string, into: string, note?: string}>} */
+    /** @return array{folders: list<array{code: string, describe: string, aliases?: list<string>}>, merges: list<array{from: string, into: string, note?: string}>} */
     public static function load(?string $path = null): array
     {
         $data = json_decode((string) file_get_contents($path ?? self::path()), true, flags: JSON_THROW_ON_ERROR);
@@ -30,6 +30,8 @@ final class FolderGlossary
     /**
      * The glossary as import rows. A code that is written differently in the list (FolderCode: "Φ1.1" = "Φ.1.1",
      * case and accents do not count) takes the list's spelling, so the existing folder is updated, not duplicated.
+     * D09: so does a folder the owner named as the same one under another code (`aliases`, e.g. Φ32.β = Φ.32β); the
+     * code itself is matched first, an alias only when the list has no folder with the code.
      *
      * @return array{records: list<array{0: int, 1: list<string>}>, respelled: array<string, string>} respelled: glossary code => list code
      */
@@ -44,6 +46,9 @@ final class FolderGlossary
         foreach ($glossary['folders'] as $i => $f) {
             $code = $f['code'];
             $listed = $byKey[FolderCode::key($code)] ?? null;
+            foreach ($f['aliases'] ?? [] as $alias) {
+                $listed ??= $byKey[FolderCode::key($alias)] ?? null;
+            }
             if ($listed !== null && mb_strtolower($listed) !== mb_strtolower($code)) {
                 $respelled[$code] = $listed;
                 $code = $listed;
@@ -67,6 +72,15 @@ final class FolderGlossary
             ."| Κωδικός | Περιγραφή |\n|---|---|\n";
         foreach ($glossary['folders'] as $f) {
             $md .= '| '.$f['code'].' | '.str_replace('|', '\\|', $f['describe'])." |\n";
+        }
+        $aliases = array_filter($glossary['folders'], fn ($f) => ! empty($f['aliases']));
+        if ($aliases) {
+            $md .= "\n## Ίδιος φάκελος, άλλος κωδικός (aliases)\n\nThe owner's decision (2026-11-23): in the database these folders are written\n"
+                ."with another code. The command updates that folder with the description above and **keeps its code** (no second\n"
+                ."folder is added).\n\n| Κωδικός | Στη βάση | Σημείωση |\n|---|---|---|\n";
+            foreach ($aliases as $f) {
+                $md .= '| '.$f['code'].' | '.implode(', ', $f['aliases']).' | '.str_replace('|', '\\|', $f['aliasNote'] ?? '')." |\n";
+            }
         }
         if ($glossary['merges']) {
             $md .= "\n## Συγχωνεύσεις (merges)\n\nApplied by the same command; **every later data migration must apply them too.**\n\n"
