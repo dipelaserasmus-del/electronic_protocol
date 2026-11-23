@@ -143,9 +143,9 @@ test('incoming date: the app\'s date field; keyword suggestions from the file na
   await date.fill('9');
   await date.press('Tab');
   await expect(date).toHaveValue(`09/${pad(now.getMonth() + 1)}/${now.getFullYear()}`);
-  await message.locator('[data-date-input]').locator('[data-date-action=prev]').click();
+  await message.locator('[data-section="incoming"] [data-date-input]').locator('[data-date-action=prev]').click();
   await expect(date).toHaveValue(`08/${pad(now.getMonth() + 1)}/${now.getFullYear()}`);
-  await expect(message.locator('[data-date-input] [data-date-action=calendar]')).toBeVisible();
+  await expect(message.locator('[data-section="incoming"] [data-date-input] [data-date-action=calendar]')).toBeVisible();
 
   // suggestions: words of the file names, not only of the subject
   const suggestions = message.locator('.keyword-suggestions');
@@ -447,4 +447,73 @@ test('the last check\'s e-mails are shown at once while the server is slow (R5n)
   await inboxReady(page);                                                     // the fresh list
   await expect(page.locator('#inbox-connecting')).toHaveCount(0);
   await expect(page.locator('#inbox-stale-note')).toHaveCount(0);
+});
+
+test('opening Κείμενο / HTML keeps the clicked e-mail in place; form sections as in the protocol form (R5o)', async ({ page }) => {
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'emailNumFetch', 5);
+  try {
+    await openInbox(page);
+    const messages = page.locator('article.inbox-message');
+    expect(await messages.count()).toBeGreaterThan(2);
+    // start with every Κείμενο closed (it opens / closes in all e-mails at once)
+    const firstText = page.locator('[data-part-toggle="text"]').first();
+    if ((await firstText.getAttribute('aria-expanded')) === 'true') {
+      await firstText.click();
+      await page.waitForTimeout(2200);   // that click keeps its toggle in place for 2 s (a user's scroll would stop it)
+    }
+
+    // a lower e-mail's toggle: the e-mails above it grow when it is clicked
+    const toggle = page.locator('[data-part-toggle="text"]').nth(2);
+    // in the middle of the window (a toggle out of view would be scrolled to by the click itself)
+    await toggle.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    const before = (await toggle.boundingBox()).y;
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await page.waitForTimeout(600);
+    expect(Math.abs((await toggle.boundingBox()).y - before)).toBeLessThan(4);
+
+    // and closing it again
+    const again = (await toggle.boundingBox()).y;
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await page.waitForTimeout(600);
+    expect(Math.abs((await toggle.boundingBox()).y - again)).toBeLessThan(4);
+
+    // HTML: frames load late and are fitted to their content; the clicked toggle still stays
+    const html = page.locator('[data-part-toggle="html"]');
+    if (await html.count() > 1) {
+      if ((await html.first().getAttribute('aria-expanded')) === 'true') await html.first().click();
+      const h = html.nth(1);
+      await h.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      const top = (await h.boundingBox()).y;
+      await h.click();
+      await page.waitForTimeout(1500);
+      expect(Math.abs((await h.boundingBox()).y - top)).toBeLessThan(4);
+      await h.click();
+    }
+
+    // the form: Εισερχόμενο (green) open, Εξερχόμενο (blue) folded; HTML in a new tab is an icon by «Εμφάνιση HTML»
+    const first = messages.first();
+    await expect(first.locator('[data-section="incoming"] legend')).toHaveClass(/bg-success-subtle/);
+    const out = first.locator('[data-section="outgoing"]');
+    await expect(out.locator('legend')).toHaveClass(/bg-info-subtle/);
+    await expect(out.locator('input[id$="-out_to"]')).toBeHidden();
+    await out.locator('[data-section-toggle="outgoing"]').click();
+    await expect(out.locator('input[id$="-out_to"]')).toBeVisible();
+    await expect(page.getByText('HTML σε νέα καρτέλα')).toHaveCount(0);
+    await expect(page.getByText('αποθηκεύεται με το πρωτόκολλο')).toHaveCount(0);
+    await first.scrollIntoViewIfNeeded();
+    await evidence(page, 'r5o-form-sections', { clip: await first.boundingBox() });
+
+    // the list on the left: each e-mail's place, as in its (lavender) header
+    const side = page.locator('#inbox-sidebar');
+    await expect(side.locator('.inbox-sidebar-n').first()).toHaveText(/^\d+ από \d+$/);
+    await expect(side.locator('.inbox-sidebar-n').first()).toHaveText((await first.locator('header .badge').innerText()).trim());
+    expect(await first.locator('header').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await evidence(page, 'r5o-list-and-headers', { fullPage: false });
+  } finally {
+    await setSetting(page, 'emailNumFetch', previous);
+  }
 });

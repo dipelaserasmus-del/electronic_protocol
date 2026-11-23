@@ -381,6 +381,53 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /**
+     * R5o (owner, 2026-11-23): the form has the protocol form's sections and colours: Εισερχόμενο (green), Εξερχόμενο
+     * (blue, folded); the HTML opens in a new tab from an icon next to «Εμφάνιση HTML»; no "✓ = …" note.
+     */
+    public function test_the_form_has_incoming_and_folded_outgoing_sections(): void
+    {
+        $this->setting('emailNumFetch', 8);
+        $html = Livewire::actingAs($this->writer())->test(EmailInbox::class)->html();
+
+        $this->assertStringContainsString('data-section="incoming"', $html);
+        $this->assertMatchesRegularExpression('~<legend class="card-header[^"]*bg-success-subtle[^"]*">Εισερχόμενο</legend>~', $html);
+        $this->assertMatchesRegularExpression('~data-section="outgoing">\s*<legend class="card-header[^"]*bg-info-subtle~', $html);
+        $this->assertStringContainsString('id="f-2-out_to"', $html);
+        $this->assertStringContainsString('id="f-2-out_date"', $html);
+        $this->assertStringContainsString('id="f-2-out_perilipsi"', $html);
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s+style="display: none"~', $html);   // folded
+        $this->assertStringContainsString('class="btn btn-sm btn-link px-1 text-reset inbox-html-tab"', $html);
+        $this->assertStringNotContainsString('HTML σε νέα καρτέλα</', $html);
+        $this->assertStringNotContainsString('αποθηκεύεται με το πρωτόκολλο', $html);
+        // the list on the left shows each e-mail's place, as its header; headers are lavender (inbox-message-head)
+        $this->assertSame(8, substr_count($html, 'inbox-sidebar-n'));
+        $this->assertMatchesRegularExpression('~inbox-sidebar-n">1 από 8</span>~', $html);
+        $this->assertMatchesRegularExpression('~inbox-sidebar-n">8 από 8</span>~', $html);
+        $this->assertSame(8, substr_count($html, 'card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head'));
+    }
+
+    /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */
+    public function test_outgoing_fields_are_registered_and_an_error_opens_their_section(): void
+    {
+        $this->setting('protocolValidate', 1);   // the protocol's checks: an outgoing document needs its date
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])
+            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->call('register', 2, false)
+            ->assertHasErrors('forms.2.out_date');
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $page->html());   // open, with its error
+        $this->assertSame(0, \App\Models\Protocol::count());
+
+        $page->set('forms.2.out_date', '20/11/2026')->set('forms.2.out_perilipsi', 'Διαβιβαστικό')->call('register', 2, false)
+            ->assertHasNoErrors();
+        $p = \App\Models\Protocol::sole();
+        // R5o (owner): in the list on the left the number, with ✓, under the e-mail's time
+        $this->assertMatchesRegularExpression('~inbox-sidebar-when">\s*<small[^>]*>[^<]+</small>(?:(?!</div>).)*?<span class="badge text-bg-success inbox-sidebar-done"><i class="bi bi-check-lg" aria-hidden="true"></i> '
+            .preg_quote($p->protocolnum.'/'.$p->etos, '~').'</span>~s', $page->html());
+        $this->assertSame('Διεύθυνση Δοκιμών', $p->out_to);
+        $this->assertSame('2026-11-20', $p->dateOf('out_date')->format('Y-m-d'));
+        $this->assertSame('Διαβιβαστικό', $p->out_perilipsi);
+    }
+
     /** R5d: the same document registered before: a notice with links, and a second explicit click registers it. */
     public function test_similar_protocol_is_shown_and_needs_a_second_click(): void
     {

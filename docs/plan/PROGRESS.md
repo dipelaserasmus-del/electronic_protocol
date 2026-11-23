@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **83 / 94** `██████████████████████████░░░░` 88% |
-| Effort done (PERT) | **37.2 / 42.3 h** `██████████████████████████░░░░` 88% |
-| Remaining effort, one agent in sequence | **5.1 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **84 / 95** `███████████████████████████░░░` 88% |
+| Effort done (PERT) | **37.7 / 42.6 h** `███████████████████████████░░░` 88% |
+| Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
-| Next task | **R5o** — Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form |
+| Next task | **R2l** — List: remove the «Αναζήτηση» button (the search field has its own) |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** Z01 → Z02 → Z03
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ⬜R5o ✅R5l | 26/27 | `██████████` |
+| 9.5 | ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ⬜R2l ✅R5l | 27/28 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -134,7 +134,8 @@ flowchart LR
     R5k["R5k<br/>Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time"]
     R5m["R5m<br/>Inbox: page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users"]
     R5n["R5n<br/>Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server)"]
-    R5o["R5o<br/>Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form"]
+    R5o["R5o<br/>Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers"]
+    R2l["R2l<br/>List: remove the «Αναζήτηση» button (the search field has its own)"]
     R5l["R5l<br/>Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on"]
   end
   subgraph Z["5 Finish"]
@@ -258,6 +259,7 @@ flowchart LR
   R5l --> R5m
   R5m --> R5n
   R5n --> R5o
+  R2k --> R2l
   R5k --> R5l
   R2 --> A01
   A01 --> A03
@@ -284,8 +286,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5l done
-  class R5o,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R5l done
+  class R2l,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
 ```
@@ -394,19 +396,20 @@ gantt
   L03 Real copy  optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) :done, l03, 2026-11-13 20:04, 19m
   R5m Inbox  page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users :done, r5m, 2026-11-13 20:23, 33m
   R5n Inbox  while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) :done, r5n, 2026-11-13 20:56, 33m
-  R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form :r5o, 2026-11-13 21:29, 33m
-  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 22:02, 19m
+  R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers :done, r5o, 2026-11-13 21:29, 33m
+  R2l List  remove the «Αναζήτηση» button (the search field has its own) :r2l, 2026-11-13 22:02, 19m
+  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 22:21, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-13 22:21, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-13 22:54, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-13 23:13, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-13 23:32, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 00:05, 19m
-  X01 Audit log — recording :x01, 2026-11-14 00:24, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 00:57, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 01:30, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 02:03, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 02:22, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-13 22:40, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-13 23:13, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-13 23:32, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-13 23:51, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 00:24, 19m
+  X01 Audit log — recording :x01, 2026-11-14 00:43, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 01:16, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 01:49, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 02:22, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 02:41, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -476,20 +479,20 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.6 | 10.2 | 5.5 | #72 |
 | ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 9.6 | 10.2 | 5.1 | #73 |
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.2 | 6.6 | 1.7 | #74 |
-| ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 8.9 | 9.2 | 4.7 | #75 |
+| ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 8.6 | 8.9 | 4.4 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 9.9 | 10.2 | 5.1 | #76 |
 | ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 9.5 | 9.9 | 5.4 | #77 |
 | ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 9.9 | 10.2 | 4.6 | #87 |
 | ✅ | **R1j** 🔴 | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 5.6 | 5.9 | -0.0 | #78 |
 | ✅ | **R3e** 🔴 | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 5.9 | 6.2 | -0.0 | #79 |
-| ✅ | **R2i** | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 9.2 | 9.5 | 3.0 | #80 |
+| ✅ | **R2i** | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 8.9 | 9.2 | 2.6 | #80 |
 | ✅ | **R3f** | Search: whole words or numbers («=» before a value, εισ:=120, «Ολόκληρες λέξεις» switch), in the help too | R3a, R3b | 0.3 | 0.1 | 4.7 | 5.0 | 9.9 | 10.2 | 5.1 | #81 |
 | ✅ | **R1k** | Protocol page: a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed | R1j | 0.3 | 0.1 | 5.9 | 6.2 | 9.9 | 10.2 | 3.9 | #82 |
-| ✅ | **R2j** | List: assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) | R2i | 0.3 | 0.1 | 6.6 | 6.9 | 9.5 | 9.9 | 3.0 | #83 |
+| ✅ | **R2j** | List: assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) | R2i | 0.3 | 0.1 | 6.6 | 6.9 | 9.2 | 9.5 | 2.6 | #83 |
 | ✅ | **R5f** 🔴 | Top bar: a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute | R5c, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 6.2 | 6.6 | -0.0 | #84 |
 | ✅ | **R5g** 🔴 | Inbox: the list pager above and below the e-mails, and the page in the list on the left | R5f, R2g | 0.3 | 0.1 | 6.6 | 6.9 | 6.6 | 6.9 | -0.0 | #85 |
 | ✅ | **R3g** | Top bar: Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις) | R3e | 0.3 | 0.1 | 6.2 | 6.6 | 9.9 | 10.2 | 3.6 | #86 |
-| ✅ | **R2k** | List: every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) | R2i, R2j | 0.3 | 0.1 | 6.9 | 7.2 | 9.9 | 10.2 | 3.0 | #88 |
+| ✅ | **R2k** | List: every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) | R2i, R2j | 0.3 | 0.1 | 6.9 | 7.2 | 9.5 | 9.9 | 2.6 | #88 |
 | ✅ | **R5h** 🔴 | Inbox: going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) | R5g | 0.3 | 0.1 | 6.9 | 7.2 | 6.9 | 7.2 | -0.0 | #89 |
 | ✅ | **R5i** 🔴 | Inbox: a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails | R5h | 0.3 | 0.1 | 7.2 | 7.5 | 7.2 | 7.5 | -0.0 | #90 |
 | ✅ | **R5j** 🔴 | Inbox: files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart | R5i | 0.3 | 0.1 | 7.5 | 7.9 | 7.5 | 7.9 | -0.0 | #91 |
@@ -497,7 +500,8 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **L03** | Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 9.9 | 10.2 | 8.7 | #94 |
 | ✅ | **R5m** 🔴 | Inbox: page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users | R5l | 0.5 | 0.1 | 8.5 | 9.1 | 8.5 | 9.1 | 0.0 | #95 |
 | ✅ | **R5n** 🔴 | Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) | R5m | 0.5 | 0.1 | 9.1 | 9.6 | 9.1 | 9.6 | 0.0 | #96 |
-| ⬜ | **R5o** 🔴 | Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form | R5n | 0.5 | 0.1 | 9.6 | 10.2 | 9.6 | 10.2 | 0.0 |  |
+| ✅ | **R5o** 🔴 | Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers | R5n | 0.5 | 0.1 | 9.6 | 10.2 | 9.6 | 10.2 | 0.0 | #97 |
+| ⬜ | **R2l** | List: remove the «Αναζήτηση» button (the search field has its own) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 9.9 | 10.2 | 2.6 |  |
 | ✅ | **R5l** 🔴 | Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 8.2 | 8.5 | 0.0 | #93 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 9.9 | 10.2 | 5.1 |  |

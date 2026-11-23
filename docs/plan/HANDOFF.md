@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-23 11:01 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m and R5n; next: R5o; times are Greek time)
+## Current state — 2026-11-23 12:13 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n and R5o; next: R2l; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -125,9 +125,13 @@ Read this first when (re)starting work. Update it at the end of every task.
   `cachedPage` (cache only). `EmailInbox::mount` (deferred_inbox on) = `showSnapshot()` (`stale`, `connecting`, claims
   shown as done; never changes `page`), root `wire:init="connect"`; `load()` writes the snapshot, keeps the e-mails
   shown on failure (`stale`), `gotoPage` restores the page number on failure. R5m's Livewire placeholder removed.
-  **Next R5o** (owner, 2026-11-23): no scroll jump when Κείμενο / HTML opens; the Εξερχόμενο fields in the e-mail
-  form, collapsed by default; Εισερχόμενο / Εξερχόμενο backgrounds as in the protocol form; the preview's colour is an
-  open question for the owner (it asked for the Εισερχόμενα green first).
+- **R5o:** `inbox.js` `keepInPlace(el, top)` (one at a time, instant scroll, stops on wheel/touch/key/pointerdown) on
+  every Κείμενο / HTML toggle; form sections `data-section="incoming"` (bg-success-subtle) / `"outgoing"` (bg-info-subtle,
+  folded, Alpine `open`; `wire:key` carries open/folded so an error re-opens it; only if `ProtocolAccess::out`); out_*
+  in `EmailRegistration::defaults` (empty) and `EmailInbox::FIELDS` / input; preview `.inbox-mail` light purple
+  (owner's choice), headers `.inbox-message-head` lavender (done: green); HTML tab icon `.inbox-html-tab`; list
+  `.inbox-sidebar-n` («N από M») and `.inbox-sidebar-when` (time + ✓ number / αναγνωσμένο). **Next R2l:** remove the
+  list page's «Αναζήτηση» button (owner, 2026-11-23).
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -229,6 +233,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-23 12:13 | R5o | #97 | inbox: no jump on Κείμενο / HTML; Εισερχόμενο / Εξερχόμενο (folded) sections; purple preview, lavender headers; HTML tab icon; list «N από M» and ✓ number |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
 | 2026-11-23 10:15 | R5m | #95 | inbox page deferred with «Σύνδεση με τον διακομιστή…» + seconds; failures slow/login/other + «Δοκιμή ξανά»; `IMAP_TIMEOUT`; one registration per e-mail across users (`InboxClaims`) |
 | 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |

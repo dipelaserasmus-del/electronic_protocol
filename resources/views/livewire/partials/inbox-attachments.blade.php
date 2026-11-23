@@ -11,7 +11,7 @@
 @endif
 @if ($m['attachments'])
     <div class="inbox-attachments mb-2" role="group" aria-label="Συνημμένα">
-        <div class="fw-semibold mb-1">Συνημμένα @unless ($state)<span class="fw-normal text-body-secondary">(✓ = αποθηκεύεται με το πρωτόκολλο)</span>@endunless</div>
+        <div class="fw-semibold mb-1">Συνημμένα</div>
         <ul class="list-unstyled mb-0 d-flex flex-wrap gap-2">
             @foreach ($m['attachments'] as $a)
                 <li class="inbox-attachment border rounded px-2 py-1 d-flex align-items-center gap-2" wire:key="a-{{ $uid }}-{{ $a['key'] }}">

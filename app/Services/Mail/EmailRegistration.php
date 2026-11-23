@@ -144,6 +144,10 @@ final class EmailRegistration
             'in_topos_ekdosis' => '',
             'in_arxi_ekdosis' => MailContent::sender($summary),
             'in_paraliptis' => (string) $user->name,
+            // R5o (owner, 2026-11-23): some e-mails in the inbox are outgoing documents: the Εξερχόμενο fields, empty
+            'out_to' => '',
+            'out_date' => '',
+            'out_perilipsi' => '',
             'in_perilipsi' => mb_substr(trim((string) preg_replace('~^\s+|\s+$~u', '', $summary['text'])), 0, 250),
             'keywords' => '',
             'keep' => (string) $keep,

@@ -48,7 +48,7 @@ class EmailInbox extends Component
 {
     /** The fields each e-mail's form shows (errors about anything else go above the form) */
     private const FIELDS = ['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis',
-        'in_perilipsi', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
+        'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
 
     #[Url(as: 'page', except: 1)]
     public int $page = 1;
@@ -242,8 +242,11 @@ class EmailInbox extends Component
         if (! Config::getConfigValueOf('allowUserChangeKeepSelect')) {
             $form['keep'] = self::keepFor((string) ($form['fakelos'] ?? ''));
         }
+        if (! $access->out) {
+            $form['out_to'] = $form['out_date'] = $form['out_perilipsi'] = '';
+        }
         $input = array_intersect_key($form, array_flip(['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis',
-            'in_paraliptis', 'in_perilipsi', 'keywords', 'keep', 'diekp_eos']))
+            'in_paraliptis', 'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'keywords', 'keep', 'diekp_eos']))
             + ['diekperaiosi' => array_merge(array_map(fn ($id) => "d$id", (array) ($form['handle'] ?? [])), array_map(fn ($id) => "e$id", (array) ($form['inform'] ?? [])))];
         $keys = array_map('strval', array_keys(array_filter((array) ($form['files'] ?? []))));
         $to = $receipt ? (trim((string) ($form['reply_to_email'] ?? '')) ?: null) : null;
@@ -565,6 +568,7 @@ class EmailInbox extends Component
             // R5g: for the list pager above and below the e-mails
             'paginator' => new \Illuminate\Pagination\LengthAwarePaginator(array_fill(0, count($this->uids), null), $this->total, max(1, $this->perPage), $this->page),
             'canAssign' => ProtocolAccess::for($user, new \App\Models\Protocol())->canAssign,
+            'canOut' => ProtocolAccess::for($user, new \App\Models\Protocol())->out,   // R5o: the Εξερχόμενο fields
             'mayChangeKeep' => (bool) Config::getConfigValueOf('allowUserChangeKeepSelect'),
             'receiptOnly' => (bool) Config::getConfigValueOf('alwaysSendReceitForEmails'),
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),
