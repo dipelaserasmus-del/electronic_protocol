@@ -273,8 +273,8 @@
                                     </div>
                                     {{-- R5o: Εξερχόμενο (blue): some e-mails are outgoing documents; folded unless filled in or wrong --}}
                                     @if ($canOut)
-                                        @php $outOpen = trim(($f['out_to'] ?? '').($f['out_date'] ?? '').($f['out_perilipsi'] ?? '')) !== ''
-                                            || $err($uid, 'out_to') || $err($uid, 'out_date') || $err($uid, 'out_perilipsi'); @endphp
+                                        @php $outOpen = trim(($f['out_to'] ?? '').($f['out_date'] ?? '').($f['out_perilipsi'] ?? '').($f['diekp_date'] ?? '')) !== ''
+                                            || $err($uid, 'out_to') || $err($uid, 'out_date') || $err($uid, 'out_perilipsi') || $err($uid, 'diekp_date'); @endphp
                                         <div class="col-12" x-data="{ open: @js($outOpen) }" wire:key="out-{{ $uid }}-{{ $outOpen ? 'open' : 'folded' }}">
                                             <fieldset class="card border-info-subtle inbox-section" data-section="outgoing">
                                                 <legend class="card-header h6 mb-0 w-100 bg-info-subtle py-1 small fw-semibold">
@@ -303,6 +303,15 @@
                                                                       wire:model="forms.{{ $uid }}.out_perilipsi">{{ $f['out_perilipsi'] ?? '' }}</textarea>
                                                             @if ($err($uid, 'out_perilipsi'))<div class="invalid-feedback">{{ $err($uid, 'out_perilipsi') }}</div>@endif
                                                         </div>
+                                                        {{-- review of R5o: with «Διεκπεραίωση» (Ανάθεση), an outgoing document needs it (protocol checks) --}}
+                                                        @if ($canDone)
+                                                            <div class="col-md-6">
+                                                                <label for="f-{{ $uid }}-diekp_date" class="form-label small fw-semibold mb-1">Διεκπεραιώθηκε την</label>
+                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :value="$f['diekp_date'] ?? ''" :help="false"
+                                                                              wire:model="forms.{{ $uid }}.diekp_date" />
+                                                                @if ($err($uid, 'diekp_date'))<div class="text-danger small">{{ $err($uid, 'diekp_date') }}</div>@endif
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </fieldset>

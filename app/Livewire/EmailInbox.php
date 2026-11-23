@@ -48,7 +48,7 @@ class EmailInbox extends Component
 {
     /** The fields each e-mail's form shows (errors about anything else go above the form) */
     private const FIELDS = ['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis',
-        'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
+        'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'diekp_date', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
 
     #[Url(as: 'page', except: 1)]
     public int $page = 1;
@@ -245,8 +245,11 @@ class EmailInbox extends Component
         if (! $access->out) {
             $form['out_to'] = $form['out_date'] = $form['out_perilipsi'] = '';
         }
+        if (! $access->doneDate) {
+            $form['diekp_date'] = '';
+        }
         $input = array_intersect_key($form, array_flip(['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis',
-            'in_paraliptis', 'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'keywords', 'keep', 'diekp_eos']))
+            'in_paraliptis', 'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'diekp_date', 'keywords', 'keep', 'diekp_eos']))
             + ['diekperaiosi' => array_merge(array_map(fn ($id) => "d$id", (array) ($form['handle'] ?? [])), array_map(fn ($id) => "e$id", (array) ($form['inform'] ?? [])))];
         $keys = array_map('strval', array_keys(array_filter((array) ($form['files'] ?? []))));
         $to = $receipt ? (trim((string) ($form['reply_to_email'] ?? '')) ?: null) : null;
@@ -569,6 +572,8 @@ class EmailInbox extends Component
             'paginator' => new \Illuminate\Pagination\LengthAwarePaginator(array_fill(0, count($this->uids), null), $this->total, max(1, $this->perPage), $this->page),
             'canAssign' => ProtocolAccess::for($user, new \App\Models\Protocol())->canAssign,
             'canOut' => ProtocolAccess::for($user, new \App\Models\Protocol())->out,   // R5o: the Εξερχόμενο fields
+            // review of R5o: an outgoing document with Διεκπεραίωση needs «Διεκπεραιώθηκε την» (protocol checks)
+            'canDone' => ProtocolAccess::for($user, new \App\Models\Protocol())->doneDate,
             'mayChangeKeep' => (bool) Config::getConfigValueOf('allowUserChangeKeepSelect'),
             'receiptOnly' => (bool) Config::getConfigValueOf('alwaysSendReceitForEmails'),
             'keepYears' => Keepvalue::whereNotNull('keep')->distinct()->orderBy('keep')->pluck('keep'),

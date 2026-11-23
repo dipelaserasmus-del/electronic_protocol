@@ -148,6 +148,7 @@ final class EmailRegistration
             'out_to' => '',
             'out_date' => '',
             'out_perilipsi' => '',
+            'diekp_date' => '',
             'in_perilipsi' => mb_substr(trim((string) preg_replace('~^\s+|\s+$~u', '', $summary['text'])), 0, 250),
             'keywords' => '',
             'keep' => (string) $keep,

@@ -36,7 +36,9 @@ button moved **204 px**.
     - it opens by itself when filled in or when one of its fields has an error;
     - only for users allowed to fill the outgoing fields (`ProtocolAccess::out`); the server ignores them otherwise.
 
-  The protocol's own checks apply as in the protocol form: with *Απευθύνεται σε*, the date is needed.
+  The protocol's own checks apply as in the protocol form: with *Απευθύνεται σε*, the date is needed. Review fix: an
+  outgoing document that also has *Διεκπεραίωση* needs *Διεκπεραιώθηκε την*. The inbox had no such field, so it could
+  not be registered; the field is now in *Εξερχόμενο*, for users who may set it (`ProtocolAccess::doneDate`).
 - **Colours:**
   - the e-mail preview is light purple (`rgba(111, 66, 193, .07)`, purple left bar), apart from the form's green /
     blue and the yellow warnings;
@@ -67,9 +69,11 @@ button moved **204 px**.
   - the list has *«N από M»* for each e-mail, and each header has the lavender class;
   - the outgoing fields are saved on the protocol (recipient, date, summary);
   - a recipient without a date is refused at the date, and the section opens;
+  - outgoing with a handler: asked for *Διεκπεραιώθηκε την* in the open section, then saved (the test fails without
+    the fix);
   - after registering, the list shows *✓ number* under the time;
   - 7 separators for 8 e-mails, each *↓ N από M ↓*, none before the first.
-- **Full suite:** PHPUnit 588 tests pass.
+- **Full suite:** PHPUnit 589 tests pass.
 - **Browser, new R5o test:**
   - on a page of 5 e-mails, opening and closing *Κείμενο* and *HTML* on a lower e-mail keeps its toggle within
     4 px (without the fix: 204 px);

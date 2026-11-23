@@ -432,6 +432,27 @@ class InboxTest extends FeatureTestCase
         $this->assertSame('Διαβιβαστικό', $p->out_perilipsi);
     }
 
+    /**
+     * Review of R5o: an outgoing document with «Διεκπεραίωση» needs «Διεκπεραιώθηκε την» (protocol checks); the inbox
+     * has the field in Εξερχόμενο, so it can be registered (the error was shown with nowhere to fix it).
+     */
+    public function test_outgoing_with_a_handler_asks_for_the_completion_date_in_its_section(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $handler = $this->writer();
+        $page = Livewire::actingAs($this->admin())->test(EmailInbox::class)->set('forms.2.files', [])
+            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->set('forms.2.out_date', '20/11/2026')
+            ->set('forms.2.handle', [$handler->id])
+            ->call('register', 2, false)->assertHasErrors('forms.2.diekp_date');
+        $html = $page->html();
+        $this->assertStringContainsString('id="f-2-diekp_date"', $html);
+        $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $html);   // open, with its error
+        $this->assertSame(0, \App\Models\Protocol::count());
+
+        $page->set('forms.2.diekp_date', '21/11/2026')->call('register', 2, false)->assertHasNoErrors();
+        $this->assertSame('2026-11-21', \App\Models\Protocol::sole()->dateOf('diekp_date')->format('Y-m-d'));
+    }
+
     /** R5d: the same document registered before: a notice with links, and a second explicit click registers it. */
     public function test_similar_protocol_is_shown_and_needs_a_second_click(): void
     {
