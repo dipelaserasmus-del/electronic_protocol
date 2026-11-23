@@ -363,20 +363,63 @@ test('the inbox appears at once and says it is waiting for the mail server (R5m)
   // hold the component's first request back for a while, as a busy mail server would
   let held = false;
   await page.route('**/livewire*/update', async (route) => {
-    if (!held) { held = true; await new Promise((r) => setTimeout(r, 8000)); }
+    if (!held) { held = true; await new Promise((r) => setTimeout(r, 4000)); }
     await route.continue();
   });
   await page.goto('/inbox');
   const waiting = page.locator('#inbox-connecting');
   await expect(waiting).toBeVisible();
   await expect(waiting).toContainText('Σύνδεση με τον διακομιστή email');
-  await expect(waiting.locator('.inbox-connecting-slow')).toBeHidden();      // not at once
-  await expect(waiting.locator('.inbox-connecting-slow')).toBeVisible({ timeout: 7500 });   // after a few seconds
-  await expect(waiting.locator('.inbox-connecting-slow')).toContainText('δεν είναι πρόβλημα της εφαρμογής');
-  await expect(waiting).toContainText(/\d+ δευτ\./);                          // the seconds counter
+  await expect(waiting).toContainText('Παρακαλώ περιμένετε…');
+  await expect(waiting.getByText(/^[1-9]\d* δευτ\.$/)).toBeVisible();         // the seconds counter, running
   await evidence(page, 'r5m-waiting', { clip: await waiting.boundingBox() });
 
   await inboxReady(page);
   await expect(page.locator('#inbox-connecting')).toHaveCount(0);
   await expect(page.locator('article.inbox-message').first()).toBeVisible();
+  // owner: when the e-mails last came from the mail server, next to «Ανανέωση»
+  await expect(page.locator('#inbox-checked-at')).toHaveText(/^Τελευταία ανανέωση: \d\d:\d\d$/);
+});
+
+/** nginx's own page when it gives up waiting for PHP (what the owner saw in Livewire's dark popup) */
+const GATEWAY_TIMEOUT = { status: 504, contentType: 'text/html',
+  body: '<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center><hr><center>nginx</center></body></html>' };
+
+test('a web server time-out is said in the banner, not in a popup (R5m)', async ({ page }) => {
+  await login(page, 'admin');
+  let first = true;
+  await page.route('**/livewire*/update', async (route) => {
+    if (first) { first = false; await route.fulfill(GATEWAY_TIMEOUT); } else await route.continue();
+  });
+  await page.goto('/inbox');
+  const banner = page.locator('#inbox-connecting');
+  await expect(banner).toContainText('Ο διακομιστής email δεν απάντησε εγκαίρως.');
+  await expect(banner).toHaveClass(/alert-warning/);
+  await expect(banner.getByText('Παρακαλώ περιμένετε…')).toBeHidden();        // the waiting line gave way
+  await expect(page.locator('#livewire-error')).toHaveCount(0);              // Livewire's popup
+  await expect(page.locator('iframe')).toHaveCount(0);
+  await evidence(page, 'r5m-timeout', { clip: await banner.boundingBox() });
+
+  await banner.getByRole('button', { name: 'Δοκιμή ξανά' }).click();         // reloads: the server answers now
+  await inboxReady(page);
+  await expect(page.locator('article.inbox-message').first()).toBeVisible();
+});
+
+test('a refresh the web server gave up on is said above the e-mails (R5m)', async ({ page }) => {
+  await login(page, 'admin');
+  await openInbox(page);
+  let fail = true;
+  await page.route('**/livewire*/update', async (route) => {
+    if (fail) { fail = false; await route.fulfill(GATEWAY_TIMEOUT); } else await route.continue();
+  });
+  await page.getByRole('button', { name: 'Ανανέωση' }).click();
+  const box = page.locator('#inbox-unreachable');
+  await expect(box).toBeVisible();
+  await expect(box).toContainText('Ο διακομιστής email δεν απάντησε εγκαίρως.');
+  await expect(page.locator('#livewire-error')).toHaveCount(0);
+  await expect(page.locator('article.inbox-message').first()).toBeVisible();   // the e-mails already shown stay
+
+  await box.getByRole('button', { name: 'Δοκιμή ξανά' }).click();
+  await expect(box).toBeHidden();
+  await expect(page.locator('#inbox-checked-at')).toBeVisible();
 });

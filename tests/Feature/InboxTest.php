@@ -339,6 +339,30 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /**
+     * Review of R5m: registered, but the move failed (the e-mail stays in the inbox on purpose). «Αναγνωσμένο» still
+     * moves it out, as before the claims; it is never registered again.
+     */
+    public function test_a_registered_email_whose_move_failed_can_still_be_marked_read(): void
+    {
+        $this->setting('protocolValidate', 0);
+        $this->mailbox->refuseMoves = true;
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])
+            ->call('register', 2, false)->assertSee('το πρωτόκολλο έχει ήδη καταχωριστεί');
+        $this->assertSame(1, \App\Models\Protocol::count());
+        $this->assertSame([], $this->mailbox->moves);
+
+        $this->mailbox->refuseMoves = false;   // the server works again; the e-mail is still in the inbox
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $page->call('markRead', 2)->assertHasNoErrors()->assertSee('μεταφέρθηκε τώρα στα αναγνωσμένα');
+        $this->assertSame([[2, (string) config('imapFolders.beenRead')]], $this->mailbox->moves);
+        $this->assertSame('registered', $page->get('done')[2]['type']);
+
+        // and it is still never registered again
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])->call('register', 2, false, true);
+        $this->assertSame(1, \App\Models\Protocol::count());
+    }
+
     /** R5m: while one user's registration runs, another's click on the same e-mail is told to wait */
     public function test_an_email_being_registered_by_another_user_waits(): void
     {

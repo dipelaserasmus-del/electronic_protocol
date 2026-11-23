@@ -36,10 +36,12 @@ class InboxLoadingTest extends FeatureTestCase
 
         $this->assertStringContainsString('id="inbox-connecting"', $html);
         $this->assertStringContainsString('Σύνδεση με τον διακομιστή email (imap.example.org)…', $html);
-        $this->assertStringContainsString('δεν
-                είναι πρόβλημα της εφαρμογής', $html);
-        $this->assertStringContainsString('έως 45 δευτερόλεπτα', $html);
-        $this->assertStringContainsString('x-init="setInterval(() => s++, 1000)"', $html);   // the seconds counter
+        $this->assertStringContainsString('Παρακαλώ περιμένετε…', $html);
+        $this->assertStringContainsString('x-data="inboxWait(true)"', $html);   // the seconds counter
+        // a web server that gives up (504) turns this banner into a plain message (owner: not Livewire's popup)
+        $this->assertStringContainsString('@inbox-unreachable.window="unreachable()"', $html);
+        $this->assertStringContainsString('Ο διακομιστής email δεν απάντησε εγκαίρως.', $html);
+        $this->assertStringNotContainsString('πρόβλημα της εφαρμογής', $html);
         $this->assertStringNotContainsString('id="inbox-failure"', $html);
         $this->assertStringNotContainsString('inbox-message', $html);
     }
@@ -61,7 +63,7 @@ class InboxLoadingTest extends FeatureTestCase
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)
             ->assertSee('id="inbox-failure"', false)->assertSee('data-kind="slow"', false)
             ->assertSee('Ο διακομιστής email (imap.example.org) δεν απάντησε μέσα σε')
-            ->assertSee('δεν είναι πρόβλημα της εφαρμογής')
+            ->assertSee('Δοκιμάστε ξανά σε λίγο.')->assertDontSee('πρόβλημα της εφαρμογής')
             ->assertSee('id="inbox-retry"', false)->assertSee('Κωδικός σφάλματος: E-', false)
             ->assertDontSee('Η σύνδεση με τον λογαριασμό email απέτυχε');
 
@@ -89,7 +91,26 @@ class InboxLoadingTest extends FeatureTestCase
     {
         Livewire::actingAs($this->writer())->test(EmailInbox::class)
             ->assertSee('wire:target="refresh,gotoPage,previousPage,nextPage"', false)
-            ->assertSee('id="inbox-reconnecting"', false);
+            ->assertSee('id="inbox-reconnecting"', false)->assertSee('Παρακαλώ περιμένετε…')
+            // a refresh the web server gave up on: said above the e-mails, with «Δοκιμή ξανά» (refresh)
+            ->assertSee('id="inbox-unreachable"', false)->assertSee('@click="failed = false; $wire.refresh()"', false);
+    }
+
+    /** owner, 2026-11-23: «Τελευταία ανανέωση: ΩΡΑ» next to «Ανανέωση»; a failed refresh keeps the last good time */
+    public function test_the_last_refresh_time_is_shown_next_to_the_button(): void
+    {
+        $this->setting('timeZone', 'Europe/Athens');
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 06:42:00', 'UTC'));
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)
+            ->assertSeeHtml('id="inbox-checked-at"')->assertSee('Τελευταία ανανέωση: 08:42');
+
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 07:15:00', 'UTC'));
+        $this->mailbox->unreachable = true;
+        $page->call('refresh')->assertSee('id="inbox-failure"', false)->assertSee('Τελευταία ανανέωση: 08:42');
+
+        $this->mailbox->unreachable = false;
+        $page->call('refresh')->assertSee('Τελευταία ανανέωση: 09:15');
+        \Carbon\Carbon::setTestNow();
     }
 
     public function test_failure_kinds(): void

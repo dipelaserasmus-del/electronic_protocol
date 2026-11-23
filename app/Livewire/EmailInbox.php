@@ -75,6 +75,10 @@ class EmailInbox extends Component
     #[Locked]
     public int $failureSeconds = 0;
 
+    /** R5m (owner, 2026-11-23): time the e-mails last came from the mail server («Τελευταία ανανέωση: 10:42») */
+    #[Locked]
+    public ?string $checkedAt = null;
+
     /** @var array<int, array<string, mixed>> the form of each message, by UID */
     public array $forms = [];
 
@@ -244,10 +248,15 @@ class EmailInbox extends Component
     public function markRead(int $uid): void
     {
         $this->allowed();
-        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid]) || $this->doneByOther($uid)) {
+        if (! in_array($uid, $this->uids, true) || isset($this->done[$uid])) {
             return;
         }
-        $this->claimed($uid, fn () => $this->markReadNow($uid));
+        // review of R5m: registered, but its move failed (it stayed in the inbox on purpose): «Αναγνωσμένο» still moves
+        // it out, as before; it is never registered again. Read already: nothing to do.
+        if ($this->doneByOther($uid, moveOnly: true)) {
+            return;
+        }
+        $this->claimed($uid, fn () => $this->markReadNow($uid), moveOnly: true);
     }
 
     private function markReadNow(int $uid): void
@@ -267,7 +276,7 @@ class EmailInbox extends Component
      * R5m: $work runs while this user holds the e-mail (InboxClaims): another user's click on the same e-mail is told
      * to wait, and an e-mail done meanwhile by someone else shows that instead. What $work did is remembered for all.
      */
-    private function claimed(int $uid, \Closure $work): void
+    private function claimed(int $uid, \Closure $work, bool $moveOnly = false): void
     {
         $claims = app(\App\Services\Mail\InboxClaims::class);
         $lock = $claims->lock($this->mailboxId, $this->uidValidity, $uid);
@@ -277,11 +286,16 @@ class EmailInbox extends Component
             return;
         }
         try {
-            if ($this->doneByOther($uid)) {
+            if ($this->doneByOther($uid, $moveOnly)) {
                 return;
             }
+            $registered = $claims->done($this->mailboxId, $this->uidValidity, $uid);   // only with $moveOnly: registered, not moved
             $work();
-            if (isset($this->done[$uid])) {
+            if ($registered !== null && ($this->done[$uid]['type'] ?? null) === 'read') {
+                // moved now: the page says what it was (number, by whom); the record stays "registered"
+                $who = trim((string) ($registered['user'] ?? '')) ?: 'άλλος χρήστης';
+                $this->done[$uid] = ['messages' => ["Το email είχε ήδη καταχωριστεί ($who): μεταφέρθηκε τώρα στα αναγνωσμένα."], 'warnings' => []] + $registered;
+            } elseif (isset($this->done[$uid])) {
                 $claims->remember($this->mailboxId, $this->uidValidity, $uid, $this->done[$uid] + ['user' => (string) Auth::user()->name]);
             }
         } finally {
@@ -289,11 +303,14 @@ class EmailInbox extends Component
         }
     }
 
-    /** R5m: done by another user (or in another tab) meanwhile: the page shows that, and nothing is done again */
-    private function doneByOther(int $uid): bool
+    /**
+     * R5m: done by another user (or in another tab) meanwhile: the page shows that, and nothing is done again.
+     * $moveOnly («Αναγνωσμένο»): a registered e-mail may still be moved out (its move had failed), so it is not "done".
+     */
+    private function doneByOther(int $uid, bool $moveOnly = false): bool
     {
         $state = app(\App\Services\Mail\InboxClaims::class)->done($this->mailboxId, $this->uidValidity, $uid);
-        if ($state === null) {
+        if ($state === null || ($moveOnly && ($state['type'] ?? null) === 'registered')) {
             return false;
         }
         $who = trim((string) ($state['user'] ?? '')) ?: 'άλλος χρήστης';
@@ -364,6 +381,7 @@ class EmailInbox extends Component
             $this->total = 0;
             return;
         }
+        $this->checkedAt = now()->setTimezone(EmailRegistration::zone())->format('H:i');
         $this->mailboxId = $page->mailboxId;
         $this->uidValidity = $page->uidValidity;
         $this->total = $page->total;

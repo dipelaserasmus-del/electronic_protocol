@@ -112,8 +112,11 @@ Read this first when (re)starting work. Update it at the end of every task.
   `config/imap.php` `$imapEncryption` maps `tls` on a port ≠ 993 to `starttls` (default and test accounts).
 - **R5m (owner, 2026-11-23: morning timeouts; cache safe for several users):** `inbox.blade.php` renders
   `<livewire:email-inbox :defer=…>` (config `imap.deferred_inbox`, tests of the loaded page set it false);
-  `EmailInbox::placeholder` = `livewire/partials/inbox-connecting` (also as wire:loading for refresh/pages; CSS
-  `.inbox-connecting-slow` appears after 6 s). Root `data-inbox-state` connecting/ready/failed (e2e `openInbox` /
+  `EmailInbox::placeholder` = `livewire/partials/inbox-connecting` (Alpine `inboxWait`; also as wire:loading for
+  refresh/pages). Owner's notes: «Παρακαλώ περιμένετε…» (no long text), «Τελευταία ανανέωση: ΩΡΑ» (`checkedAt`),
+  502/503/504/no answer on the inbox page → `inbox.js` `interceptRequest` stops Livewire's popup and fires
+  `inbox-unreachable` (banner / `#inbox-unreachable` say it, «Δοκιμή ξανά»); nginx `fastcgi_read_timeout 180s`.
+  Review: `markRead` may still move a registered-but-not-moved e-mail (`moveOnly`). Root `data-inbox-state` connecting/ready/failed (e2e `openInbox` /
   `inboxReady` in helpers.js wait for it). `App\Support\Mail\MailboxFailure` slow/login/other (+ elapsed ≥ 0.8 ×
   timeout); `IMAP_TIMEOUT` (accounts' `timeout`). `App\Services\Mail\InboxClaims`: per-e-mail lock + 7-day done record
   (who, number); `EmailInbox::claimed()` wraps registerNow / markReadNow, `doneByOther()`. Next **R5n**: show the

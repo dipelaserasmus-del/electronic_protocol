@@ -95,9 +95,50 @@ function inboxPart(kind) {
     };
 }
 
+/**
+ * R5m (owner, 2026-11-23): when the web server gives up waiting (502/503/504) or nothing comes back, Livewire would show
+ * the raw error page in a dark popup, unreadable for users. On the inbox page it becomes an "inbox-unreachable" event
+ * instead: the waiting banner (or the box above the e-mails) says so in plain words, with «Δοκιμή ξανά».
+ */
+function catchUnreachable() {
+    if (!window.Livewire?.interceptRequest || window.__inboxUnreachable) return;
+    window.__inboxUnreachable = true;
+    const onInbox = () => document.querySelector('[data-inbox-state]') !== null;
+    const tell = (status) => window.dispatchEvent(new CustomEvent('inbox-unreachable', { detail: { status } }));
+    window.Livewire.interceptRequest(({ onError, onFailure }) => {
+        onError(({ response, preventDefault }) => {
+            if (onInbox() && [502, 503, 504].includes(response.status)) {
+                preventDefault();
+                tell(response.status);
+            }
+        });
+        onFailure(() => { if (onInbox()) tell(0); });
+    });
+}
+
+/** R5m: the waiting banner: seconds counter; turns into the failure message on "inbox-unreachable" */
+function inboxWait(counting = true) {
+    return {
+        seconds: 0,
+        failed: false,
+        timer: null,
+        init() {
+            if (counting) this.timer = setInterval(() => this.seconds++, 1000);
+        },
+        destroy() { clearInterval(this.timer); },
+        unreachable() {
+            this.failed = true;
+            clearInterval(this.timer);
+        },
+    };
+}
+
 const register = () => {
     window.Alpine.data('inboxPage', inboxPage);
     window.Alpine.data('inboxPart', inboxPart);
+    window.Alpine.data('inboxWait', inboxWait);
+    catchUnreachable();
 };
+document.addEventListener('livewire:init', catchUnreachable);
 if (window.Alpine) register();
 else document.addEventListener('alpine:init', register);

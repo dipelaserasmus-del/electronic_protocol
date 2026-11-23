@@ -167,9 +167,10 @@ Open *Εισερχόμενα*.
   then arrives in the test mailbox with *«[ΔΟΚΙΜΗ] προς: …»* (never at the real recipient). Steps: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md#a-temporary-test-mailbox-optional).
 
 ### The inbox on a slow mail server (R5m, 2026-11-23)
-- [ ] **55.** Open *Εισερχόμενα*: the page appears at once with *«Σύνδεση με τον διακομιστή email…»* and a seconds
-  counter; if the server is slow, after a few seconds it explains that this is the server, not the application. If it
-  gives up, the yellow message says so, with *Δοκιμή ξανά*. Best seen on your real copy (8081) early in the morning.
+- [ ] **55.** Open *Εισερχόμενα*: the page appears at once with *«Σύνδεση με τον διακομιστή email… Παρακαλώ
+  περιμένετε…»* and a seconds counter. If the server gives up, the same banner turns yellow with a plain message and
+  *Δοκιμή ξανά* (no dark popup). Next to *Ανανέωση*: *Τελευταία ανανέωση: ΩΡΑ*. Best seen on your real copy (8081) early
+  in the morning (after `git pull`, the copy's nginx needs `./dev.sh real down && ./dev.sh real up`).
 - [ ] **56.** Two users, the same e-mail: open *Εισερχόμενα* as two users (two browsers), press *Καταχώριση* on the
   same e-mail in both: the second says it was already registered, by whom and with which number; no second protocol.
 

@@ -14,9 +14,24 @@
                 · {{ $newestFirst ? 'νεότερα πρώτα' : 'παλαιότερα πρώτα' }}
             </span>
         @endif
+        {{-- R5m (owner, 2026-11-23): when the e-mails last came from the mail server --}}
+        @if ($checkedAt)
+            <span class="small text-body-secondary" id="inbox-checked-at" title="Τελευταία φορά που ήρθαν τα email από τον διακομιστή">Τελευταία ανανέωση: {{ $checkedAt }}</span>
+        @endif
         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" wire:click="refresh" wire:loading.attr="disabled" title="Νέα email από τον διακομιστή">
             <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Ανανέωση
         </button>
+    </div>
+
+    {{-- R5m: «Ανανέωση» / a page change that the web server gave up on (504) or that got no answer --}}
+    <div x-data="{ failed: false }" @inbox-unreachable.window="failed = true" x-show="failed" style="display: none"
+         class="alert alert-warning mb-3" role="alert" id="inbox-unreachable">
+        <strong>Ο διακομιστής email δεν απάντησε εγκαίρως.</strong> Δοκιμάστε ξανά σε λίγο.
+        <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" @click="failed = false; $wire.refresh()">
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Δοκιμή ξανά
+            </button>
+        </div>
     </div>
 
     {{-- R5m: while «Ανανέωση» / a page change waits for the mail server --}}
@@ -34,7 +49,7 @@
         <div class="alert {{ $failureKind === 'slow' ? 'alert-warning' : 'alert-danger' }} mb-3" role="alert" id="inbox-failure" data-kind="{{ $failureKind }}">
             @if ($failureKind === 'slow')
                 <strong>Ο διακομιστής email{{ $host !== '' ? " ($host)" : '' }} δεν απάντησε μέσα σε {{ max($failureSeconds, 1) }} δευτερόλεπτα.</strong>
-                Είναι φορτωμένος, κάτι που συμβαίνει συχνά τις πρωινές ώρες: δεν είναι πρόβλημα της εφαρμογής. Δοκιμάστε ξανά σε λίγο.
+                Δοκιμάστε ξανά σε λίγο.
             @elseif ($failureKind === 'login')
                 <strong>Ο διακομιστής email δεν δέχτηκε τη σύνδεση του λογαριασμού.</strong>
                 Το όνομα χρήστη ή ο κωδικός δεν έγινε δεκτός: ενημερώστε τον διαχειριστή (Ρυθμίσεις → E-mail).
