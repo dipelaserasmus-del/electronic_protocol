@@ -99,19 +99,27 @@
                     @foreach ($messages as $uid => $m)
                         <a href="#msg-{{ $uid }}" class="list-group-item list-group-item-action py-2 inbox-sidebar-item @if (isset($done[$uid])) is-done @endif"
                            wire:key="side-{{ $uid }}" x-on:click.prevent="go({{ $uid }})" :class="{ active: current === {{ $uid }} }">
-                            <div class="d-flex gap-1 align-items-baseline">
-                                <span class="fw-semibold text-truncate flex-grow-1">{{ $m['from_name'] ?: $m['from_email'] }}</span>
-                                <small class="text-body-secondary text-nowrap">{{ $date($m['date'], 'd/m H:i') }}</small>
+                            {{-- R5o (owner, 2026-11-23): place in the inbox, as in the e-mail's header; the result (✓ number) under the time --}}
+                            <div class="d-flex gap-2">
+                                <div class="flex-grow-1" style="min-width: 0">
+                                    <div class="d-flex gap-1 align-items-baseline">
+                                        <span class="badge rounded-pill border text-reset fw-normal inbox-sidebar-n">{{ $first + $loop->index }} από {{ $total }}</span>
+                                        <span class="fw-semibold text-truncate flex-grow-1">{{ $m['from_name'] ?: $m['from_email'] }}</span>
+                                    </div>
+                                    <div class="small text-truncate">
+                                        @if ($m['attachments'])<i class="bi bi-paperclip" aria-label="με συνημμένα"></i>@endif
+                                        {{ $m['subject'] !== '' ? $m['subject'] : '(χωρίς θέμα)' }}
+                                    </div>
+                                </div>
+                                <div class="text-end flex-shrink-0 inbox-sidebar-when">
+                                    <small class="d-block text-body-secondary text-nowrap">{{ $date($m['date'], 'd/m H:i') }}</small>
+                                    @if (($done[$uid]['type'] ?? null) === 'registered')
+                                        <span class="badge text-bg-success inbox-sidebar-done"><i class="bi bi-check-lg" aria-hidden="true"></i> {{ $done[$uid]['label'] }}</span>
+                                    @elseif (($done[$uid]['type'] ?? null) === 'read')
+                                        <span class="badge text-bg-secondary inbox-sidebar-done">αναγνωσμένο</span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="small text-truncate">
-                                @if ($m['attachments'])<i class="bi bi-paperclip" aria-label="με συνημμένα"></i>@endif
-                                {{ $m['subject'] !== '' ? $m['subject'] : '(χωρίς θέμα)' }}
-                            </div>
-                            @if (($done[$uid]['type'] ?? null) === 'registered')
-                                <span class="badge text-bg-success">{{ $done[$uid]['label'] }}</span>
-                            @elseif (($done[$uid]['type'] ?? null) === 'read')
-                                <span class="badge text-bg-secondary">αναγνωσμένο</span>
-                            @endif
                         </a>
                     @endforeach
                 </nav>
@@ -120,9 +128,16 @@
             <div class="col-lg-9">
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
-                    <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
+                    {{-- R5o (owner, 2026-11-23, option B): where one e-mail ends and the next starts: a thin line with ↓ N από M ↓ --}}
+                    @unless ($loop->first)
+                        <div class="inbox-sep" role="separator" wire:key="sep-{{ $uid }}">
+                            <span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> {{ $n }} από {{ $total }} <i class="bi bi-arrow-down" aria-hidden="true"></i></span>
+                        </div>
+                    @endunless
+                    <article class="card shadow-sm inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
                              data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}" x-data="{ shown: false }" :class="{ 'mail-shown': shown }">
-                        <header class="card-header d-flex flex-wrap gap-2 align-items-baseline">
+                        {{-- R5o (owner, 2026-11-23): lavender like the e-mail below, so the e-mails stand apart (done: green) --}}
+                        <header class="card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head">
                             <span class="badge text-bg-primary">{{ $n }} από {{ $total }}</span>
                             <h2 class="h6 mb-0 flex-grow-1 text-break inbox-subject">{{ $m['subject'] !== '' ? $m['subject'] : '(χωρίς θέμα)' }}</h2>
                             <small class="text-body-secondary text-nowrap">{{ $date($m['date'], 'd/m/Y H:i:s') }}</small>
@@ -212,40 +227,96 @@
                                             </x-notice>
                                         </div>
                                     @endif
-                                    <div class="col-12 col-sm-4 col-md-2">
-                                        <label for="f-{{ $uid }}-in_num" class="form-label small fw-semibold mb-1">Αριθ. εισερχ.</label>
-                                        <input id="f-{{ $uid }}-in_num" class="form-control @if ($err($uid, 'in_num')) is-invalid @endif" autocomplete="off" wire:model="forms.{{ $uid }}.in_num" value="{{ $f['in_num'] ?? '' }}">
-                                        @if ($err($uid, 'in_num'))<div class="invalid-feedback">{{ $err($uid, 'in_num') }}</div>@endif
-                                    </div>
-                                    <div class="col-12 col-sm-8 col-md-4">
-                                        <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημ/νία εισερχ.</label>
-                                        {{-- R5e (owner, 2026-11-19): the app's date field: "9" → 09/this month, ◀ ▶, Σήμερα, calendar --}}
-                                        <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :value="$f['in_date'] ?? ''" :help="false"
-                                                      wire:model="forms.{{ $uid }}.in_date" />
-                                        @if ($err($uid, 'in_date'))<div class="text-danger small">{{ $err($uid, 'in_date') }}</div>@endif
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="f-{{ $uid }}-in_arxi_ekdosis" class="form-label small fw-semibold mb-1">Αρχή έκδοσης</label>
-                                        <input id="f-{{ $uid }}-in_arxi_ekdosis" class="form-control @if ($err($uid, 'in_arxi_ekdosis')) is-invalid @endif" autocomplete="off" list="suggest-in_arxi_ekdosis"
-                                               wire:model="forms.{{ $uid }}.in_arxi_ekdosis" value="{{ $f['in_arxi_ekdosis'] ?? '' }}">
-                                        @if ($err($uid, 'in_arxi_ekdosis'))<div class="invalid-feedback">{{ $err($uid, 'in_arxi_ekdosis') }}</div>@endif
-                                    </div>
-                                    <div class="col-md-5">
-                                        <label for="f-{{ $uid }}-in_topos_ekdosis" class="form-label small fw-semibold mb-1">Τόπος έκδοσης</label>
-                                        <input id="f-{{ $uid }}-in_topos_ekdosis" class="form-control" autocomplete="off" list="suggest-in_topos_ekdosis"
-                                               wire:model="forms.{{ $uid }}.in_topos_ekdosis" value="{{ $f['in_topos_ekdosis'] ?? '' }}">
-                                    </div>
-                                    <div class="col-md-7">
-                                        <label for="f-{{ $uid }}-in_paraliptis" class="form-label small fw-semibold mb-1">Παραλήπτης</label>
-                                        <input id="f-{{ $uid }}-in_paraliptis" class="form-control @if ($err($uid, 'in_paraliptis')) is-invalid @endif" autocomplete="off" list="suggest-in_paraliptis"
-                                               wire:model="forms.{{ $uid }}.in_paraliptis" value="{{ $f['in_paraliptis'] ?? '' }}">
-                                        @if ($err($uid, 'in_paraliptis'))<div class="invalid-feedback">{{ $err($uid, 'in_paraliptis') }}</div>@endif
-                                    </div>
+                                    {{-- R5o (owner, 2026-11-23): the protocol form's sections and colours: Εισερχόμενο (green) --}}
                                     <div class="col-12">
-                                        <label for="f-{{ $uid }}-in_perilipsi" class="form-label small fw-semibold mb-1">Περίληψη</label>
-                                        <textarea id="f-{{ $uid }}-in_perilipsi" rows="2" class="form-control @if ($err($uid, 'in_perilipsi')) is-invalid @endif" wire:model="forms.{{ $uid }}.in_perilipsi">{{ $f['in_perilipsi'] ?? '' }}</textarea>
-                                        @if ($err($uid, 'in_perilipsi'))<div class="invalid-feedback">{{ $err($uid, 'in_perilipsi') }}</div>@endif
+                                        <fieldset class="card border-success-subtle inbox-section" data-section="incoming">
+                                            <legend class="card-header h6 mb-0 w-100 bg-success-subtle py-1 small fw-semibold">Εισερχόμενο</legend>
+                                            <div class="card-body p-2">
+                                                <div class="row g-2">
+                                                <div class="col-12 col-sm-4 col-md-2">
+                                                    <label for="f-{{ $uid }}-in_num" class="form-label small fw-semibold mb-1">Αριθ. εισερχ.</label>
+                                                    <input id="f-{{ $uid }}-in_num" class="form-control @if ($err($uid, 'in_num')) is-invalid @endif" autocomplete="off" wire:model="forms.{{ $uid }}.in_num" value="{{ $f['in_num'] ?? '' }}">
+                                                    @if ($err($uid, 'in_num'))<div class="invalid-feedback">{{ $err($uid, 'in_num') }}</div>@endif
+                                                </div>
+                                                <div class="col-12 col-sm-8 col-md-4">
+                                                    <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημ/νία εισερχ.</label>
+                                                    {{-- R5e (owner, 2026-11-19): the app's date field: "9" → 09/this month, ◀ ▶, Σήμερα, calendar --}}
+                                                    <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :value="$f['in_date'] ?? ''" :help="false"
+                                                                  wire:model="forms.{{ $uid }}.in_date" />
+                                                    @if ($err($uid, 'in_date'))<div class="text-danger small">{{ $err($uid, 'in_date') }}</div>@endif
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="f-{{ $uid }}-in_arxi_ekdosis" class="form-label small fw-semibold mb-1">Αρχή έκδοσης</label>
+                                                    <input id="f-{{ $uid }}-in_arxi_ekdosis" class="form-control @if ($err($uid, 'in_arxi_ekdosis')) is-invalid @endif" autocomplete="off" list="suggest-in_arxi_ekdosis"
+                                                           wire:model="forms.{{ $uid }}.in_arxi_ekdosis" value="{{ $f['in_arxi_ekdosis'] ?? '' }}">
+                                                    @if ($err($uid, 'in_arxi_ekdosis'))<div class="invalid-feedback">{{ $err($uid, 'in_arxi_ekdosis') }}</div>@endif
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <label for="f-{{ $uid }}-in_topos_ekdosis" class="form-label small fw-semibold mb-1">Τόπος έκδοσης</label>
+                                                    <input id="f-{{ $uid }}-in_topos_ekdosis" class="form-control" autocomplete="off" list="suggest-in_topos_ekdosis"
+                                                           wire:model="forms.{{ $uid }}.in_topos_ekdosis" value="{{ $f['in_topos_ekdosis'] ?? '' }}">
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <label for="f-{{ $uid }}-in_paraliptis" class="form-label small fw-semibold mb-1">Παραλήπτης</label>
+                                                    <input id="f-{{ $uid }}-in_paraliptis" class="form-control @if ($err($uid, 'in_paraliptis')) is-invalid @endif" autocomplete="off" list="suggest-in_paraliptis"
+                                                           wire:model="forms.{{ $uid }}.in_paraliptis" value="{{ $f['in_paraliptis'] ?? '' }}">
+                                                    @if ($err($uid, 'in_paraliptis'))<div class="invalid-feedback">{{ $err($uid, 'in_paraliptis') }}</div>@endif
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="f-{{ $uid }}-in_perilipsi" class="form-label small fw-semibold mb-1">Περίληψη</label>
+                                                    <textarea id="f-{{ $uid }}-in_perilipsi" rows="2" class="form-control @if ($err($uid, 'in_perilipsi')) is-invalid @endif" wire:model="forms.{{ $uid }}.in_perilipsi">{{ $f['in_perilipsi'] ?? '' }}</textarea>
+                                                    @if ($err($uid, 'in_perilipsi'))<div class="invalid-feedback">{{ $err($uid, 'in_perilipsi') }}</div>@endif
+                                                </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
                                     </div>
+                                    {{-- R5o: Εξερχόμενο (blue): some e-mails are outgoing documents; folded unless filled in or wrong --}}
+                                    @if ($canOut)
+                                        @php $outOpen = trim(($f['out_to'] ?? '').($f['out_date'] ?? '').($f['out_perilipsi'] ?? '').($f['diekp_date'] ?? '')) !== ''
+                                            || $err($uid, 'out_to') || $err($uid, 'out_date') || $err($uid, 'out_perilipsi') || $err($uid, 'diekp_date'); @endphp
+                                        <div class="col-12" x-data="{ open: @js($outOpen) }" wire:key="out-{{ $uid }}-{{ $outOpen ? 'open' : 'folded' }}">
+                                            <fieldset class="card border-info-subtle inbox-section" data-section="outgoing">
+                                                <legend class="card-header h6 mb-0 w-100 bg-info-subtle py-1 small fw-semibold">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 text-reset fw-semibold text-decoration-none w-100 text-start"
+                                                            x-on:click="open = ! open" :aria-expanded="open" aria-controls="out-{{ $uid }}" data-section-toggle="outgoing">
+                                                        <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'" aria-hidden="true"></i> Εξερχόμενο
+                                                    </button>
+                                                </legend>
+                                                <div class="card-body p-2" id="out-{{ $uid }}" x-show="open" @unless ($outOpen) style="display: none" @endunless>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <label for="f-{{ $uid }}-out_to" class="form-label small fw-semibold mb-1">Απευθύνεται σε</label>
+                                                            <input id="f-{{ $uid }}-out_to" class="form-control @if ($err($uid, 'out_to')) is-invalid @endif" autocomplete="off" list="suggest-out_to"
+                                                                   wire:model="forms.{{ $uid }}.out_to" value="{{ $f['out_to'] ?? '' }}">
+                                                            @if ($err($uid, 'out_to'))<div class="invalid-feedback">{{ $err($uid, 'out_to') }}</div>@endif
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label for="f-{{ $uid }}-out_date" class="form-label small fw-semibold mb-1">Ημ/νία εξερχομένου</label>
+                                                            <x-date-input name="out_date" :id="'f-'.$uid.'-out_date'" :value="$f['out_date'] ?? ''" :help="false"
+                                                                          wire:model="forms.{{ $uid }}.out_date" />
+                                                            @if ($err($uid, 'out_date'))<div class="text-danger small">{{ $err($uid, 'out_date') }}</div>@endif
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label for="f-{{ $uid }}-out_perilipsi" class="form-label small fw-semibold mb-1">Περίληψη</label>
+                                                            <textarea id="f-{{ $uid }}-out_perilipsi" rows="2" class="form-control @if ($err($uid, 'out_perilipsi')) is-invalid @endif"
+                                                                      wire:model="forms.{{ $uid }}.out_perilipsi">{{ $f['out_perilipsi'] ?? '' }}</textarea>
+                                                            @if ($err($uid, 'out_perilipsi'))<div class="invalid-feedback">{{ $err($uid, 'out_perilipsi') }}</div>@endif
+                                                        </div>
+                                                        {{-- review of R5o: with «Διεκπεραίωση» (Ανάθεση), an outgoing document needs it (protocol checks) --}}
+                                                        @if ($canDone)
+                                                            <div class="col-md-6">
+                                                                <label for="f-{{ $uid }}-diekp_date" class="form-label small fw-semibold mb-1">Διεκπεραιώθηκε την</label>
+                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :value="$f['diekp_date'] ?? ''" :help="false"
+                                                                              wire:model="forms.{{ $uid }}.diekp_date" />
+                                                                @if ($err($uid, 'diekp_date'))<div class="text-danger small">{{ $err($uid, 'diekp_date') }}</div>@endif
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                        </div>
+                                    @endif
                                     {{-- R5d: keywords as tags (R1f), with suggestions from the e-mail's subject --}}
                                     <div class="col-md-8" x-data="tagBox('keywords', true, [{{ $uid }}])">
                                         <label for="f-{{ $uid }}-keywords" class="form-label small fw-semibold mb-1">Λέξεις κλειδιά</label>
@@ -371,9 +442,6 @@
                                     <x-pill wire:click="markRead({{ $uid }})" wire:loading.attr="disabled" wire:target="register,markRead" data-action="mark-read" title="Το email φεύγει από τα εισερχόμενα χωρίς πρωτόκολλο">
                                         <i class="bi bi-envelope-open" aria-hidden="true"></i> Αναγνωσμένο
                                     </x-pill>
-                                    @if ($m['has_html'])
-                                        <x-pill :href="url('/viewEmailHtml/'.$uid)" target="_blank"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> HTML σε νέα καρτέλα</x-pill>
-                                    @endif
                                 </x-pill-actions>
                             </form>
                         @endif
@@ -407,6 +475,9 @@
                                     <button type="button" class="btn btn-sm btn-link px-0 text-reset fw-semibold inbox-part-toggle" x-on:click="toggle()" :aria-expanded="open" data-part-toggle="html">
                                         <i class="bi" :class="open ? 'bi-chevron-up' : 'bi-chevron-down'" aria-hidden="true"></i> Εμφάνιση HTML
                                     </button>
+                                    {{-- R5o (owner, 2026-11-23): was the pill «HTML σε νέα καρτέλα» among the actions --}}
+                                    <a href="{{ url('/viewEmailHtml/'.$uid) }}" target="_blank" rel="noopener" class="btn btn-sm btn-link px-1 text-reset inbox-html-tab"
+                                       title="Άνοιγμα του HTML σε νέα καρτέλα" aria-label="Άνοιγμα του HTML σε νέα καρτέλα"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>
                                     <div x-show="open" x-cloak wire:ignore>
                                         <iframe class="inbox-html w-100 border rounded" title="Το email ως HTML" loading="lazy"
                                                 sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
