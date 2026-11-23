@@ -33,7 +33,7 @@ return [
     | array below.
     |
     */
-    'accounts' => [
+    'accounts' => array_filter([
 
         'default' => [ // account identifier
             'host'  => env('IMAP_HOST', 'localhost'),
@@ -44,6 +44,22 @@ return [
             'username' => env('IMAP_USERNAME', ''),
             'password' => env('IMAP_PASSWORD', ''),
         ],
+
+        /*
+        | L03: optional test account (a real mailbox kept only for trying things out). Present only when
+        | TEST_IMAP_HOST is set: the local real-data copy reads it from local-data/test-mailbox.env
+        | (./dev.sh real up). Chosen in Ρυθμίσεις → E-mail → «Λογαριασμός εισερχομένων».
+        */
+        'test' => env('TEST_IMAP_HOST') ? [
+            'label' => 'Δοκιμαστικός λογαριασμός'.(env('TEST_IMAP_USERNAME') ? ' ('.env('TEST_IMAP_USERNAME').')' : ''),
+            'host' => env('TEST_IMAP_HOST'),
+            'port' => env('TEST_IMAP_PORT', 993),
+            'protocol' => 'imap',
+            'encryption' => env('TEST_IMAP_ENCRYPTION', 'ssl'), // ssl, tls (STARTTLS) or false
+            'validate_cert' => env('TEST_IMAP_VALIDATE_CERT', true),
+            'username' => env('TEST_IMAP_USERNAME', ''),
+            'password' => env('TEST_IMAP_PASSWORD', ''),
+        ] : null,
 
         'gmail' => [ // account identifier
             'host' => 'imap.gmail.com',
@@ -63,7 +79,7 @@ return [
             'password' => '',
         ]
 
-    ],
+    ]),
 
     /*
     | Header decoding. ext-imap is not installed (removed from PHP core, unmaintained), so a

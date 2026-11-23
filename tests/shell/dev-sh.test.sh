@@ -8,7 +8,7 @@ ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 WORK=$(mktemp -d); trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/repo/docker/dev" "$WORK/bin"
 cp "$ROOT/dev.sh" "$ROOT/.env.development.example" "$ROOT/.env.real.example" "$WORK/repo/"
-cp "$ROOT/docker/dev/cloud-setup.sh" "$WORK/repo/docker/dev/"
+cp "$ROOT/docker/dev/cloud-setup.sh" "$ROOT/docker/dev/test-mailbox.env.example" "$WORK/repo/docker/dev/"
 LOG="$WORK/docker.log"
 
 cat > "$WORK/bin/docker" <<'FAKE'
@@ -58,6 +58,13 @@ FAKE_UNAME=Darwin run "e2e on macOS: host.docker.internal" "APP_URL=http://host.
 FAKE_UNAME=Darwin run "e2e on macOS: passes arguments" "-- --grep smoke" e2e --grep smoke
 run "doctor"                        "version --format"                   doctor
 run "real up"                       "compose -p electronic-protocol-real" real up
+# L03: the optional test mailbox file is created empty (no account) and kept once filled in
+if [ -f "$WORK/repo/local-data/test-mailbox.env" ] && ! grep -qE '^TEST_IMAP_HOST=.+' "$WORK/repo/local-data/test-mailbox.env"; then
+  echo "ok   real up creates an empty local-data/test-mailbox.env"; else echo "FAIL real up: local-data/test-mailbox.env"; fails=$((fails+1)); fi
+printf 'TEST_IMAP_HOST=imap.example.org\nTEST_IMAP_USERNAME=demo@example.org\n' > "$WORK/repo/local-data/test-mailbox.env"
+if (cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real up 2>&1) | grep -q "Test mailbox: set" \
+   && grep -q '^TEST_IMAP_HOST=imap.example.org' "$WORK/repo/local-data/test-mailbox.env"; then
+  echo "ok   real up keeps a filled-in test mailbox and says so"; else echo "FAIL real up with a test mailbox"; fails=$((fails+1)); fi
 run "real check-names (F08)"       "php tools/check-attachment-names.php storage/app" real check-names
 run "real load: no dump → message"  -                                    real help
 mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local-data/db/test.sql.gz"

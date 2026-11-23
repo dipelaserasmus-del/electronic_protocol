@@ -15,7 +15,8 @@ committed, never uploaded, and is never read by Claude.
 - **No e-mail leaves your computer.** Everything the copy "sends" (receipts, assignment notices) is caught
   by Mailpit at http://localhost:8026.
 - **Your real mailbox is never touched.** The e-mail page connects to a local test mailbox, not to your real
-  account. To see real e-mails there, put `.eml` files in `local-data/emails/` (see below).
+  account. To see real e-mails there, put `.eml` files in `local-data/emails/` (see below), or connect a
+  **temporary test mailbox** of your own ([below](#a-temporary-test-mailbox-optional)).
 - **Separate database** (`protocol_real`, own Docker volume): the demo stack and a normal installation are not affected.
 - `git` ignores `local-data/` and `.env.real`, and CI fails if such files are ever committed.
 
@@ -55,6 +56,29 @@ Then open **http://localhost:8081** and log in with your usual production userna
 | `./dev.sh real load [file]` | (re)load the newest backup, or the given file |
 | `./dev.sh real down` | stop it |
 | `./dev.sh real wipe` | delete the copy's database (your files in `local-data/` are kept) |
+
+## A temporary test mailbox (optional)
+To try the inbox with real e-mails as they arrive, connect a mailbox made **only for testing** (never the
+production account): registering an e-mail moves it out of that mailbox's inbox, as it does on the server.
+
+1. Run `./dev.sh real up` once: it creates `local-data/test-mailbox.env` (git-ignored, stays on your computer).
+2. Fill it in (the file explains each line):
+   ```
+   TEST_IMAP_HOST=imap.example.org
+   TEST_IMAP_PORT=993
+   TEST_IMAP_ENCRYPTION=ssl
+   TEST_IMAP_VALIDATE_CERT=true
+   TEST_IMAP_USERNAME=test-mailbox@example.org
+   TEST_IMAP_PASSWORD=its-password
+   ```
+   Gmail needs an *app password* (Google account → Security → 2-Step Verification → App passwords).
+3. Run `./dev.sh real up` again. It prints *Test mailbox: set*.
+4. In the copy (http://localhost:8081): *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* →
+   **Δοκιμαστικός λογαριασμός (…)** → *Αποθήκευση*. *Εισερχόμενα* now shows that mailbox.
+
+Back to the local test mailbox: choose `default` there. `./dev.sh real load` always switches back to `default`.
+To remove the test account, empty `TEST_IMAP_HOST` (or delete the file) and run `./dev.sh real up`.
+Receipts and notices still go to Mailpit (http://localhost:8026), never out.
 
 ## Trying a change against your data
 ```bash
