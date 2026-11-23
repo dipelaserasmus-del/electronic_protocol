@@ -163,9 +163,9 @@ jobs:
   dev-sh:
     # ./dev.sh must work with macOS's bash 3.2 + BSD tools as well as on Linux (L02)
     name: dev.sh on ${{ matrix.os }}
-    # F09: macOS runners are often scarce, and the time waiting for one counted against the limit (cut off at 15 min
-    # on PR #97 before any step ran): macOS 90, Linux 15
-    timeout-minutes: ${{ matrix.os == 'macos-latest' && 90 || 15 }}
+    # F09. A macOS leg cancelled after ~15 min with no step run is GitHub's own queue limit ("not acquired by Runner
+    # ... capacity constraints"), not this one: re-run that job.
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:

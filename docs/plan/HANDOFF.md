@@ -135,7 +135,8 @@ Read this first when (re)starting work. Update it at the end of every task.
 - **R2l (owner, 2026-11-23):** the list page's «Αναζήτηση» pill removed (top-bar search box + its advanced button cover it).
 - **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
   before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
-  the image builds hang for an hour (cancel + re-run the stuck run if it happens again).
+  the image builds hang for an hour (cancel + re-run the stuck run if it happens again). A macOS leg cancelled after
+  ~15 min with 0 steps is GitHub's runner-capacity limit (annotation «not acquired by Runner»), not ours: re-run it.
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -237,7 +238,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 follow-up: macOS dev.sh job 90 min (queue time counted) |
+| 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 12:13 | R5o | #97 | inbox: no jump on Κείμενο / HTML; Εισερχόμενο / Εξερχόμενο (folded) sections; purple preview, lavender headers; HTML tab icon; list «N από M» and ✓ number |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
