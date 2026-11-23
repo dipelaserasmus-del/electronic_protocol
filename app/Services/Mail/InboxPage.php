@@ -13,6 +13,8 @@ final class InboxPage
         public readonly int $page,
         public readonly int $perPage,
         public readonly array $messages,
+        /** @var list<int> R5n: every UID in the folder (by arrival), for the shared snapshot */
+        public readonly array $all = [],
     ) {}
 
     public function lastPage(): int

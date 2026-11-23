@@ -4,8 +4,8 @@
 @section('title', 'Εισερχόμενα')
 
 @section('content')
-    {{-- R5m: deferred: the page arrives at once, the component then waits for the mail server (EmailInbox::placeholder) --}}
-    <livewire:email-inbox :defer="(bool) config('imap.deferred_inbox', true)" />
+    {{-- R5m/R5n: drawn at once without the mail server (last check's e-mails); then it connects (wire:init) --}}
+    <livewire:email-inbox />
 
     {{-- values offered while typing (most used in recent protocols) and the folders (R1f picker) --}}
     @foreach (\App\Support\Suggestions::for(auth()->user()) as $field => $values)

@@ -26,10 +26,12 @@ class InboxLoadingTest extends FeatureTestCase
         $this->mailbox = FakeMailbox::install($this->app);
         $this->mailbox->messages[1] = file_get_contents(glob(base_path('tests/fixtures/emails/synthetic/*.eml'))[0]);
         config(['imap.accounts.default.host' => 'imap.example.org', 'imap.accounts.default.timeout' => 45]);
+        config(['imap.deferred_inbox' => false]);   // the loaded page; the tests of the first view switch it on
     }
 
     public function test_the_page_arrives_at_once_and_waits_for_the_mail_server(): void
     {
+        config(['imap.deferred_inbox' => true]);
         $this->mailbox->unreachable = true;   // not even asked yet: the page must not wait for it
 
         $html = $this->actingAs($this->writer())->get('/inbox')->assertOk()->getContent();
@@ -44,6 +46,90 @@ class InboxLoadingTest extends FeatureTestCase
         $this->assertStringNotContainsString('πρόβλημα της εφαρμογής', $html);
         $this->assertStringNotContainsString('id="inbox-failure"', $html);
         $this->assertStringNotContainsString('inbox-message', $html);
+        $this->assertStringNotContainsString('Δεν υπάρχουν εισερχόμενα', $html);   // not "empty" while waiting
+        $this->assertStringContainsString('wire:init="connect"', $html);
+        $this->assertStringContainsString('data-inbox-state="connecting"', $html);
+    }
+
+    /** R5n: with no earlier check, the page waits with the banner only; connect() then shows the e-mails */
+    public function test_connect_asks_the_mail_server_once_the_page_is_shown(): void
+    {
+        config(['imap.deferred_inbox' => true]);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)
+            ->assertSee('id="inbox-connecting"', false)->assertDontSee('inbox-message', false);
+        $this->assertSame([], $this->mailbox->fetches);
+
+        $page->call('connect')->assertSee('inbox-message', false)->assertSee('data-inbox-state="ready"', false)
+            ->assertDontSee('id="inbox-connecting"', false)->assertDontSee('wire:init="connect"', false);
+        $fetches = count($this->mailbox->fetches);
+        $page->call('connect');   // once only (a second call does nothing)
+        $this->assertSame($fetches, count($this->mailbox->fetches));
+    }
+
+    /**
+     * R5n (owner, 2026-11-23): while the server is slow, the e-mails of the last check are shown at once, from the
+     * cache, to every user (one shared snapshot); if the server then fails, they stay, marked as possibly not current.
+     */
+    public function test_the_last_checks_emails_are_shown_at_once_while_it_connects(): void
+    {
+        $this->setting('timeZone', 'Europe/Athens');
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 06:05:00', 'UTC'));
+        Livewire::actingAs($this->admin())->test(EmailInbox::class)->assertSee('inbox-message', false);   // a check, by someone
+
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 07:30:00', 'UTC'));
+        config(['imap.deferred_inbox' => true]);
+        $this->mailbox->unreachable = true;   // a slow morning: the page must not wait for it
+        $fetches = count($this->mailbox->fetches);
+        $html = $this->actingAs($this->writer())->get('/inbox')->assertOk()->getContent();   // another user
+
+        $this->assertStringContainsString('inbox-message', $html);
+        $this->assertStringContainsString('Μέχρι τότε βλέπετε τα email της τελευταίας ανανέωσης (08:05).', $html);
+        $this->assertStringContainsString('Τελευταία ανανέωση: 08:05', $html);
+        $this->assertStringContainsString('wire:init="connect"', $html);
+        $this->assertStringNotContainsString('id="inbox-failure"', $html);
+        $this->assertSame($fetches, count($this->mailbox->fetches));   // from the cache, not the server
+
+        // the server fails: the e-mails stay, said to be of the last check
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)->call('connect')
+            ->assertSee('id="inbox-failure"', false)->assertSee('inbox-message', false)
+            ->assertSee('Τα email που βλέπετε είναι της τελευταίας ανανέωσης (08:05): μπορεί να μην είναι τα τρέχοντα.');
+
+        // it answers again: fresh, no longer "of the last check"
+        $this->mailbox->unreachable = false;
+        $page->call('refresh')->assertDontSee('id="inbox-failure"', false)->assertDontSee('τελευταίας ανανέωσης')
+            ->assertSee('Τελευταία ανανέωση: 09:30');
+        \Carbon\Carbon::setTestNow();
+    }
+
+    /** R5n: the cached first view keeps the page asked for (?page=3), even when the cache has nothing for it */
+    public function test_the_first_view_keeps_the_page_asked_for(): void
+    {
+        foreach (range(2, 8) as $uid) {
+            $this->mailbox->messages[$uid] = $this->mailbox->messages[1];
+        }
+        Livewire::actingAs($this->admin())->test(EmailInbox::class);   // snapshot: 8 e-mails, page 1 cached only
+        config(['imap.deferred_inbox' => true]);
+
+        $page = Livewire::withQueryParams(['page' => 3])->actingAs($this->writer())->test(EmailInbox::class);
+        $this->assertSame(3, $page->get('page'));
+        $page->call('connect');
+        $this->assertSame(3, $page->get('page'));
+        $this->assertSame([7, 8], $page->get('uids'));
+    }
+
+    /** R5n: an e-mail registered since the last check shows as done in the first view, so nobody starts on it */
+    public function test_emails_done_since_the_last_check_show_as_done(): void
+    {
+        $this->setting('protocolValidate', 0);
+        Livewire::actingAs($this->admin())->test(EmailInbox::class)->set('forms.1.files', [])
+            ->call('register', 1, false)->assertHasNoErrors();   // the snapshot (taken before) still lists it
+        config(['imap.deferred_inbox' => true]);
+
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)
+            ->assertSee('Το email είχε ήδη καταχωριστεί')->assertSee('inbox-done', false)
+            ->call('register', 1, false)
+            ->call('connect')->assertDontSee('inbox-message', false);   // gone from the server's list
+        $this->assertSame(1, \App\Models\Protocol::count());
     }
 
     /** with the switch off (other inbox tests) the page shows the e-mails at once */

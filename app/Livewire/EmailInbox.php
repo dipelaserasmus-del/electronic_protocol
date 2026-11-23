@@ -35,7 +35,12 @@ use Livewire\Component;
  * was; a registered (or read) e-mail shows what happened in its place until the page is opened again.
  * The mail server is asked only when the page is opened, changed or refreshed; clicks read the cached messages.
  *
- * R5m: deferred by the page (inbox.blade.php, config imap.deferred_inbox). The page arrives at once with «Σύνδεση με τον διακομιστή email…» and a seconds counter (placeholder);
+ * R5n: the page is drawn without the mail server: the e-mails of the last check (Inbox::snapshot, shared by all users,
+ * from the cache) or, with none yet, only the waiting banner; the browser then calls connect() (wire:init) and the
+ * fresh list replaces it. Registering still needs the server, and InboxClaims keeps it to once per e-mail.
+ * Config imap.deferred_inbox false (tests of the loaded page): mount() asks the server itself, as before.
+ *
+ * R5m: the page arrives at once with «Σύνδεση με τον διακομιστή email…» and a seconds counter (placeholder);
  * the component then connects in a second request. The organisation's server is often slow in the mornings: the
  * page says so, and a failure says whether the server did not answer in time, refused the login, or something else.
  */
@@ -79,6 +84,14 @@ class EmailInbox extends Component
     #[Locked]
     public ?string $checkedAt = null;
 
+    /** R5n: the mail server is still to be asked (connect() runs once the page is in the browser) */
+    #[Locked]
+    public bool $connecting = false;
+
+    /** R5n: the e-mails shown are those of the last check (snapshot), not yet confirmed by the server */
+    #[Locked]
+    public bool $stale = false;
+
     /** @var array<int, array<string, mixed>> the form of each message, by UID */
     public array $forms = [];
 
@@ -93,13 +106,55 @@ class EmailInbox extends Component
     public function mount(): void
     {
         $this->allowed();
+        if (! config('imap.deferred_inbox', true)) {
+            $this->load();
+
+            return;
+        }
+        $this->connecting = true;
+        $this->showSnapshot();
+    }
+
+    /** R5n: called by the page once it is shown (wire:init): now ask the mail server */
+    public function connect(): void
+    {
+        $this->allowed();
+        if (! $this->connecting) {
+            return;
+        }
+        $this->connecting = false;
+        $this->done = [];   // the fresh list decides (a registered e-mail whose move failed is workable again)
         $this->load();
+    }
+
+    /**
+     * R5n: the e-mails of the last check, from the cache only. E-mails registered or read since then (InboxClaims) show
+     * as done, so nobody starts on them.
+     */
+    private function showSnapshot(): void
+    {
+        $inbox = app(Inbox::class);
+        $snapshot = $inbox->snapshot((string) Config::getConfigValueOf('defaultImapEmail'), (string) config('imapFolders.inbox'));
+        if ($snapshot === null) {
+            return;
+        }
+        $perPage = max(1, (int) (Config::getConfigValueOf('emailNumFetch') ?: 1));
+        $newest = (bool) Config::getConfigValueOf('emailFetchOrderDesc');
+        // the page asked for, even if the cache has nothing for it: only the server's answer may change the page
+        $page = $inbox->cachedPage($snapshot, $this->page, $perPage, $newest);
+        $this->stale = true;
+        $this->checkedAt = \Carbon\Carbon::parse($snapshot['at'])->setTimezone(EmailRegistration::zone())->format('H:i');
+        $this->show($page);
+        foreach ($this->uids as $uid) {
+            $this->doneByOther($uid);   // done since the snapshot: shown as done (connect() then shows the fresh list)
+        }
     }
 
     /** The mail server again (new e-mails); the forms of messages still shown keep what was typed. */
     public function refresh(): void
     {
         $this->allowed();
+        $this->connecting = false;
         $this->done = [];
         $this->load();
     }
@@ -108,9 +163,14 @@ class EmailInbox extends Component
     public function gotoPage(int $page, string $name = 'page'): void
     {
         $this->allowed();
+        $this->connecting = false;
+        $before = $this->page;
         $this->page = max(1, min($page, (int) ceil($this->total / max(1, $this->perPage)) ?: 1));
         $this->done = [];
         $this->load();
+        if ($this->failure !== null && $this->uids !== []) {
+            $this->page = $before;   // R5n: the e-mails still shown are those of the page before
+        }
     }
 
     /** R5g: the list pager's previous / next (x-list-pager, as on the other paged screens) */
@@ -338,12 +398,6 @@ class EmailInbox extends Component
         }
     }
 
-    /** R5m: shown until the deferred component has connected to the mail server */
-    public function placeholder(): \Illuminate\Contracts\View\View
-    {
-        return view('livewire.partials.inbox-connecting', self::serverFacts() + ['initial' => true]);
-    }
-
     /** @return array{host: string, timeout: int} the mail server of the inbox and the seconds it is given */
     public static function serverFacts(): array
     {
@@ -377,17 +431,29 @@ class EmailInbox extends Component
             $seconds = microtime(true) - $started;
             $this->failureSeconds = (int) round($seconds);
             $this->failureKind = \App\Support\Mail\MailboxFailure::kind($e, $seconds, self::serverFacts()['timeout']);
-            $this->uids = [];
-            $this->total = 0;
+            // R5n: e-mails already shown stay (from the last check); the page says they may not be current
+            if ($this->uids === []) {
+                $this->total = 0;
+            } else {
+                $this->stale = true;
+            }
             return;
         }
+        $this->stale = false;
         $this->checkedAt = now()->setTimezone(EmailRegistration::zone())->format('H:i');
-        $this->mailboxId = $page->mailboxId;
-        $this->uidValidity = $page->uidValidity;
-        $this->total = $page->total;
+        app(Inbox::class)->rememberSnapshot((string) Config::getConfigValueOf('defaultImapEmail'), (string) config('imapFolders.inbox'), $page);
         // R5f: the top bar's badge, for everybody, and at once on this page
         \App\Services\Mail\InboxCount::put($page->total);
         $this->dispatch('inbox-count', count: $page->total);
+        $this->show($page);
+    }
+
+    /** The page's e-mails (from the server, or R5n: from the snapshot); forms keep what was typed */
+    private function show(\App\Services\Mail\InboxPage $page): void
+    {
+        $this->mailboxId = $page->mailboxId;
+        $this->uidValidity = $page->uidValidity;
+        $this->total = $page->total;
         $this->perPage = $page->perPage;
         $this->uids = array_map(fn ($m) => $m->uid, $page->messages);
         // the attachment and HTML addresses read the messages this user's page shows (R5a)
@@ -498,6 +564,8 @@ class EmailInbox extends Component
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),
             'zone' => EmailRegistration::zone(),
+            'connecting' => $this->connecting,
+            'stale' => $this->stale,
         ] + self::serverFacts());
     }
 }
