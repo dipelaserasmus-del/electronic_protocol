@@ -7,6 +7,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PHP_VERSION=${PHP_VERSION} \
     COMPOSER_ALLOW_SUPERUSER=1
 
+# F09: an Ubuntu mirror that stops answering (security.ubuntu.com, 2026-11-23) made apt wait without end and the CI
+# image builds hang for an hour: every request now gives up after 30 s and is tried again, up to 5 times.
+RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
+      > /etc/apt/apt.conf.d/80-retries
+
 # ext-imap is intentionally NOT installed: it was removed from PHP core in 8.4, depends on the
 # unmaintained c-client library, and webklex/php-imap talks IMAP over native sockets.
 # mysql-client provides mysqldump for Ρυθμίσεις → Backup (B10).

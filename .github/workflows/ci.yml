@@ -13,6 +13,8 @@ concurrency:
 jobs:
   tests:
     name: Tests (PHP ${{ matrix.php }}, MySQL 8.4)
+    # F09: a hung step (e.g. an unreachable package mirror) fails here instead of running for 6 hours
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -66,6 +68,7 @@ jobs:
 
   security-audit:
     name: Dependency security audit
+    timeout-minutes: 10   # F09
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -80,6 +83,7 @@ jobs:
 
   plan:
     name: Progress tracker & data hygiene
+    timeout-minutes: 10   # F09
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -102,6 +106,7 @@ jobs:
 
   e2e:
     name: Browser tests (full Docker stack)
+    timeout-minutes: 45   # F09
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -134,6 +139,7 @@ jobs:
 
   docker-build:
     name: Docker image builds
+    timeout-minutes: 40   # F09
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -145,6 +151,7 @@ jobs:
   docker-arm64:
     # Apple Silicon Macs run arm64 containers: the app image must build and work there too (L02)
     name: Docker image builds (arm64, like Apple Silicon Macs)
+    timeout-minutes: 30   # F09
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -156,6 +163,7 @@ jobs:
   dev-sh:
     # ./dev.sh must work with macOS's bash 3.2 + BSD tools as well as on Linux (L02)
     name: dev.sh on ${{ matrix.os }}
+    timeout-minutes: 15   # F09
     strategy:
       fail-fast: false
       matrix:
