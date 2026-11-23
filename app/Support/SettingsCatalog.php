@@ -224,12 +224,12 @@ final class SettingsCatalog
         return collect(self::all())->mapWithKeys(fn ($d, $k) => ['values.'.$k => '«'.$d['label'].'»'])->all();
     }
 
-    /** @return array<string, string> '' => none, then the accounts of config/imap.php */
+    /** @return array<string, string> '' => none, then the accounts of config/imap.php (their 'label', else the name) */
     public static function imapAccounts(): array
     {
         $accounts = ['' => '—'];
-        foreach (array_keys((array) config('imap.accounts', [])) as $name) {
-            $accounts[(string) $name] = (string) $name;
+        foreach ((array) config('imap.accounts', []) as $name => $account) {
+            $accounts[(string) $name] = (string) ($account['label'] ?? $name);
         }
 
         return $accounts;

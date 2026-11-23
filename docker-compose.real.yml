@@ -3,10 +3,15 @@
 # separate from the demo stack (8080) and from any normal installation.
 #
 # Safety: outgoing mail goes to Mailpit, the mailbox connection goes to the mock IMAP server,
-# so a local copy can never e-mail real people or touch the real mailbox.
+# so a local copy can never e-mail real people or touch the real mailbox. The one exception is opt-in (L03):
+# a temporary test mailbox whose login the owner puts in local-data/test-mailbox.env, chosen in Ρυθμίσεις.
 services:
   app:
     container_name: ep-real-app
+    env_file:
+      # L03: TEST_IMAP_* of the owner's test mailbox (git-ignored, optional; empty host = no test account)
+      - path: ./local-data/test-mailbox.env
+        required: false
     environment:
       APP_ENV: real          # Laravel reads .env.real (created from .env.real.example)
       ASSETS_AUTO_BUILD: "0"   # ./dev.sh builds the frontend as your user (files stay yours)

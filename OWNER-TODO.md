@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-20 11:20 (after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 09:10 (L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -158,6 +158,13 @@ Open *Εισερχόμενα*.
   done the e-mail says *«Καταχωρίστηκε με αριθμό …»*.
 - [ ] **53.** After *Καταχώριση* or *Αναγνωσμένο*, the e-mail folds to its result line. *Εμφάνιση email ▾* opens it
   again (*Απόκρυψη ▴* folds it); *Επόμενο email ↓* goes to the next e-mail still waiting on the page.
+
+### Your test mailbox (L03, 2026-11-23)
+- [ ] **54.** Real copy with a test mailbox: run `./dev.sh real up`, fill in `local-data/test-mailbox.env` (the
+  mailbox made for testing, never the production one), run `./dev.sh real up` again, then on http://localhost:8081
+  *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* → *Δοκιμαστικός λογαριασμός (…)* → *Αποθήκευση*. *Εισερχόμενα*
+  shows its e-mails. Optional: fill in `TEST_SMTP_HOST` / `TEST_SMTP_PORT` too; a receipt or assignment notice
+  then arrives in the test mailbox with *«[ΔΟΚΙΜΗ] προς: …»* (never at the real recipient). Steps: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md#a-temporary-test-mailbox-optional).
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
