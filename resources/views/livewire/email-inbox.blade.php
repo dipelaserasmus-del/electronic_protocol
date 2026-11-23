@@ -128,7 +128,13 @@
             <div class="col-lg-9">
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
-                    <article class="card shadow-sm mb-3 inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
+                    {{-- R5o (owner, 2026-11-23, option B): where one e-mail ends and the next starts: a thin line with ↓ N από M ↓ --}}
+                    @unless ($loop->first)
+                        <div class="inbox-sep" role="separator" wire:key="sep-{{ $uid }}">
+                            <span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> {{ $n }} από {{ $total }} <i class="bi bi-arrow-down" aria-hidden="true"></i></span>
+                        </div>
+                    @endunless
+                    <article class="card shadow-sm inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
                              data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}" x-data="{ shown: false }" :class="{ 'mail-shown': shown }">
                         {{-- R5o (owner, 2026-11-23): lavender like the e-mail below, so the e-mails stand apart (done: green) --}}
                         <header class="card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head">

@@ -16,6 +16,8 @@
 5. The list on the left: each e-mail's *«N από M»*, as in its header. Each e-mail's header in the preview's lavender,
    so the e-mails stand apart.
 6. In the list, the green pill with the new protocol number under the time, with a ✓.
+7. More space between e-mails and a thin line, so it is clear where one ends and the next starts. The owner chose
+   option B of three rendered suggestions, with small arrows down on either side of the text.
 
 ## What was wrong (1)
 *Κείμενο* and *HTML* open and close in **every** e-mail of the page at once (R5c). The e-mails above the clicked one
@@ -47,7 +49,12 @@ button moved **204 px**.
   - the result sits under the e-mail's time: green *«✓ 284/2026»* for a registered e-mail, grey *αναγνωσμένο* for a
     read one.
 
+- **Between two e-mails** (option B): space above and below a thin grey line, with *«↓ N από M ↓»* (the next e-mail)
+  in the middle. There is none before the first e-mail.
+
 ![Form sections and the purple preview](img/R5o/r5o-form-sections.png)
+
+![Between two e-mails](img/R5o/r5o-separator.png)
 
 ![List with positions; lavender header](img/R5o/r5o-list-and-headers.png)
 
@@ -60,12 +67,14 @@ button moved **204 px**.
   - the list has *«N από M»* for each e-mail, and each header has the lavender class;
   - the outgoing fields are saved on the protocol (recipient, date, summary);
   - a recipient without a date is refused at the date, and the section opens;
-  - after registering, the list shows *✓ number* under the time.
+  - after registering, the list shows *✓ number* under the time;
+  - 7 separators for 8 e-mails, each *↓ N από M ↓*, none before the first.
 - **Full suite:** PHPUnit 588 tests pass.
 - **Browser, new R5o test:**
   - on a page of 5 e-mails, opening and closing *Κείμενο* and *HTML* on a lower e-mail keeps its toggle within
     4 px (without the fix: 204 px);
-  - the sections and their colours; *Εξερχόμενο* opens; the list's positions match the headers.
+  - the sections and their colours; *Εξερχόμενο* opens; the list's positions match the headers; the separator shows
+    *2 από M* with two arrows.
 - **Browser, other changes:**
   - the registration test checks the *✓ number* in the list;
   - the R5e date test now points at the incoming date (there are two date fields now);

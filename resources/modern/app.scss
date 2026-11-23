@@ -158,6 +158,12 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-message { scroll-margin-top: calc(var(--app-topbar-height, 3.2rem) + .75rem); }
 .inbox-message:focus { outline: none; }   // R5h: focused when reached from the list (for the keyboard)
 .inbox-message:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+// R5o (owner, 2026-11-23, option B): between two e-mails a thin line with «↓ N από M ↓» in the middle
+.inbox-sep { display: flex; align-items: center; gap: .75rem; margin: 1.5rem .25rem; color: var(--bs-secondary-color); font-size: .8rem; }
+.inbox-sep::before, .inbox-sep::after { content: ""; flex: 1; height: 1px; background: var(--bs-border-color); }
+.inbox-sep-label { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.inbox-sep-label .bi { font-size: .75rem; }
+.inbox-message:last-child { margin-bottom: 1rem; }
 // R5o (owner, 2026-11-23): each e-mail's header lavender, as its preview (apart from the next one); done: green
 .inbox-message > .inbox-message-head { background: rgba(111, 66, 193, .12); }
 .inbox-message.is-done > .card-header { background: rgba(var(--bs-success-rgb), .08); }

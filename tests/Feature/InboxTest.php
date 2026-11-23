@@ -405,6 +405,10 @@ class InboxTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~inbox-sidebar-n">1 από 8</span>~', $html);
         $this->assertMatchesRegularExpression('~inbox-sidebar-n">8 από 8</span>~', $html);
         $this->assertSame(8, substr_count($html, 'card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head'));
+        // option B: between two e-mails a thin line with «↓ N από M ↓» (none before the first)
+        $this->assertSame(7, substr_count($html, 'class="inbox-sep" role="separator"'));
+        $this->assertStringNotContainsString('</i> 1 από 8 <i', $html);
+        $this->assertMatchesRegularExpression('~<span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> 2 από 8 <i class="bi bi-arrow-down" aria-hidden="true"></i></span>~', $html);
     }
 
     /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */
@@ -714,7 +718,7 @@ class InboxTest extends FeatureTestCase
         $first = substr($html, strpos($html, 'id="msg-1"'));
         $first = substr($first, 0, strpos($first, '</article>'));
 
-        $this->assertMatchesRegularExpression('~class="card shadow-sm mb-3 inbox-message\s+is-done\s*"\s+id="msg-1"~', $html);
+        $this->assertMatchesRegularExpression('~class="card shadow-sm inbox-message\s+is-done\s*"\s+id="msg-1"~', $html);
         $this->assertStringContainsString('data-action="show-mail"', $first);
         $this->assertStringContainsString('x-on:click="go(2)" data-action="next-mail"', $first, 'the next one still waiting');
         $this->assertStringContainsString('id="mail-1"', $first, 'the e-mail is still there, folded by CSS');

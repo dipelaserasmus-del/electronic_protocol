@@ -130,7 +130,8 @@ Read this first when (re)starting work. Update it at the end of every task.
   folded, Alpine `open`; `wire:key` carries open/folded so an error re-opens it; only if `ProtocolAccess::out`); out_*
   in `EmailRegistration::defaults` (empty) and `EmailInbox::FIELDS` / input; preview `.inbox-mail` light purple
   (owner's choice), headers `.inbox-message-head` lavender (done: green); HTML tab icon `.inbox-html-tab`; list
-  `.inbox-sidebar-n` («N από M») and `.inbox-sidebar-when` (time + ✓ number / αναγνωσμένο). **Next R2l:** remove the
+  `.inbox-sidebar-n` («N από M») and `.inbox-sidebar-when` (time + ✓ number / αναγνωσμένο); between e-mails
+  `.inbox-sep` «↓ N από M ↓» (owner chose option B; articles no longer `mb-3`). **Next R2l:** remove the
   list page's «Αναζήτηση» button (owner, 2026-11-23).
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.

@@ -182,7 +182,7 @@ Open *Εισερχόμενα*.
   it was. The ↗ next to *Εμφάνιση HTML* opens it in a new tab.
 - [ ] **59.** The form: green *Εισερχόμενο*, blue *Εξερχόμενο* (folded; open it for an outgoing document), the e-mail
   below in light purple, each header lavender. The list on the left: *«N από M»* on each e-mail; after *Καταχώριση*,
-  *✓ number* under its time.
+  *✓ number* under its time. Between two e-mails: a thin line with *«↓ N από M ↓»*.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

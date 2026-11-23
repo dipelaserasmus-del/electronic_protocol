@@ -513,6 +513,14 @@ test('opening Κείμενο / HTML keeps the clicked e-mail in place; form sect
     expect(await first.locator('header').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await evidence(page, 'r5o-list-and-headers', { fullPage: false });
+
+    // option B: «↓ N από M ↓» on a thin line between two e-mails
+    const sep = page.locator('.inbox-sep').first();
+    await expect(sep).toHaveText(/^\s*2 από \d+\s*$/);
+    await expect(sep.locator('.bi-arrow-down')).toHaveCount(2);
+    await sep.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    const s = await sep.boundingBox();
+    await evidence(page, 'r5o-separator', { clip: { x: s.x - 10, y: s.y - 120, width: s.width + 20, height: s.height + 240 } });
   } finally {
     await setSetting(page, 'emailNumFetch', previous);
   }
