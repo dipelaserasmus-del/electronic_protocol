@@ -10,6 +10,19 @@
 *  -
 */
 
+/*
+| The old app (PHP's imap extension) read "tls" as STARTTLS, and production's .env says IMAP_PORT=143 with
+| IMAP_ENCRYPTION=tls. This library reads "tls" as TLS from the first byte, which fails on 143. So "tls" on any
+| port but 993 means STARTTLS here too (L03), and the same .env keeps working after the migration.
+*/
+$imapEncryption = function (mixed $encryption, mixed $port): mixed {
+    if (is_string($encryption) && strtolower(trim($encryption)) === 'tls' && (int) $port !== 993) {
+        return 'starttls';
+    }
+
+    return $encryption;
+};
+
 return [
 
     /*
@@ -39,7 +52,7 @@ return [
             'host'  => env('IMAP_HOST', 'localhost'),
             'port'  => env('IMAP_PORT', 993),
             'protocol'  => env('IMAP_PROTOCOL', 'imap'), //might also use imap, [pop3 or nntp (untested)]
-            'encryption'    => env('IMAP_ENCRYPTION', 'ssl'), // Supported: false, 'ssl', 'tls'
+            'encryption'    => $imapEncryption(env('IMAP_ENCRYPTION', 'ssl'), env('IMAP_PORT', 993)), // false, 'ssl', 'starttls'; 'tls' see above
             'validate_cert' => env('IMAP_VALIDATE_CERT', true),
             'username' => env('IMAP_USERNAME', ''),
             'password' => env('IMAP_PASSWORD', ''),
@@ -55,7 +68,7 @@ return [
             'host' => env('TEST_IMAP_HOST'),
             'port' => env('TEST_IMAP_PORT', 993),
             'protocol' => 'imap',
-            'encryption' => env('TEST_IMAP_ENCRYPTION', 'ssl'), // ssl (993) or starttls (143); 'tls' = TLS from the start, like ssl
+            'encryption' => $imapEncryption(env('TEST_IMAP_ENCRYPTION', 'ssl'), env('TEST_IMAP_PORT', 993)), // ssl (993) or tls/starttls (143)
             'validate_cert' => env('TEST_IMAP_VALIDATE_CERT', true),
             'username' => env('TEST_IMAP_USERNAME', ''),
             'password' => env('TEST_IMAP_PASSWORD', ''),

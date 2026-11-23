@@ -108,7 +108,8 @@ Read this first when (re)starting work. Update it at the end of every task.
   Optional `TEST_SMTP_*` (owner's choice: real SMTP, redirected): `config/mail.php` `$smtp` for both mailers +
   `mail.test` (`enabled`, `only_to`); `App\Support\Mail\TestMailRedirect` (MessageSending listener in
   AppServiceProvider) keeps only `TEST_MAIL_ONLY_TO` recipients (default the test mailbox), else first allowed +
-  `[ΔΟΚΙΜΗ] προς: …` subject, empty list = not sent. IMAP `tls` = implicit TLS (use `ssl`/993 or `starttls`/143).
+  `[ΔΟΚΙΜΗ] προς: …` subject, empty list = not sent. IMAP: the library's `tls` = TLS from the start, but production's `.env` (old ext-imap) has 143 + `tls` = STARTTLS:
+  `config/imap.php` `$imapEncryption` maps `tls` on a port ≠ 993 to `starttls` (default and test accounts).
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the

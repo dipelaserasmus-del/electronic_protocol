@@ -71,8 +71,32 @@ class TestMailboxAccountTest extends FeatureTestCase
         $this->environment(['TEST_IMAP_HOST' => 'mail.example.org', 'TEST_IMAP_PORT' => '143',
             'TEST_IMAP_ENCRYPTION' => 'tls', 'TEST_IMAP_VALIDATE_CERT' => 'false']);
         $test = $this->imapConfig()['accounts']['test'];
-        $this->assertSame(['Δοκιμαστικός λογαριασμός', '143', 'tls', false],
+        // the old app's "tls" = STARTTLS (production .env: 143 + tls); this library's "tls" would be TLS from the start
+        $this->assertSame(['Δοκιμαστικός λογαριασμός', '143', 'starttls', false],
             [$test['label'], $test['port'], $test['encryption'], $test['validate_cert']]);
+        $this->environment(['TEST_IMAP_HOST' => 'mail.example.org', 'TEST_IMAP_PORT' => '993', 'TEST_IMAP_ENCRYPTION' => 'tls']);
+        $this->assertSame('tls', $this->imapConfig()['accounts']['test']['encryption']);
+    }
+
+    /** production's .env (old app, ext-imap): IMAP_PORT=143 + IMAP_ENCRYPTION=tls must keep working after the migration */
+    public function test_the_default_account_reads_tls_on_143_as_starttls(): void
+    {
+        $original = [$_SERVER['IMAP_PORT'] ?? null, $_SERVER['IMAP_ENCRYPTION'] ?? null];
+        try {
+            foreach ([['143', 'tls', 'starttls'], ['993', 'ssl', 'ssl'], ['143', 'false', false], ['993', 'tls', 'tls']] as [$port, $enc, $want]) {
+                $_SERVER['IMAP_PORT'] = $_ENV['IMAP_PORT'] = $port;
+                $_SERVER['IMAP_ENCRYPTION'] = $_ENV['IMAP_ENCRYPTION'] = $enc;
+                $this->assertSame($want, $this->imapConfig()['accounts']['default']['encryption'], "$port + $enc");
+            }
+        } finally {
+            foreach (['IMAP_PORT' => $original[0], 'IMAP_ENCRYPTION' => $original[1]] as $name => $value) {
+                if ($value === null) {
+                    unset($_SERVER[$name], $_ENV[$name]);
+                } else {
+                    $_SERVER[$name] = $_ENV[$name] = $value;
+                }
+            }
+        }
     }
 
     public function test_settings_offer_the_test_account_by_its_label_and_save_it(): void

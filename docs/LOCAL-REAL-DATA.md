@@ -71,7 +71,7 @@ production account): registering an e-mail moves it out of that mailbox's inbox,
    TEST_IMAP_USERNAME=test-mailbox@example.org
    TEST_IMAP_PASSWORD=its-password
    ```
-   Use `ssl` with port 993 (or `starttls` with 143; `tls` with 143 fails). Gmail needs an *app password* (Google account → Security → 2-Step Verification → App passwords).
+   Use `ssl` with port 993, or `tls` with 143 as on the production server. Gmail needs an *app password* (Google account → Security → 2-Step Verification → App passwords).
 3. Run `./dev.sh real up` again. It prints *Test mailbox: set*.
 4. In the copy (http://localhost:8081): *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* →
    **Δοκιμαστικός λογαριασμός (…)** → *Αποθήκευση*. *Εισερχόμενα* now shows that mailbox.
