@@ -452,3 +452,14 @@ test('every row two lines tall: one file and one pill with +N; Από / Προς
   await expect(row.locator('.from-to')).toContainText(`Φ.9/${stamp}`);
   await expect(row.locator('.more-files')).toBeHidden();
 });
+
+test('the list has no «Αναζήτηση» button of its own; the search box has it (R2l)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  const head = page.locator('.protocol-list > div').first();
+  await expect(head.getByRole('link', { name: 'Νέο' })).toBeVisible();
+  await expect(head.getByRole('button', { name: 'Ανανέωση' })).toBeVisible();
+  await expect(head.getByText('Αναζήτηση', { exact: true })).toHaveCount(0);
+  await expect(page.locator('#app-search-advanced')).toBeVisible();                 // Σύνθετη αναζήτηση, in the top bar
+  await evidence(page, 'r2l-list-head', { clip: { x: 0, y: 0, width: 1440, height: 140 } });
+});

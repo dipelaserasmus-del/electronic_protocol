@@ -17,7 +17,7 @@
         <h1 class="h4 mb-0 me-auto" id="list-title">{{ $title }}</h1>
         <x-pill-actions class="flex-grow-0">
             <x-pill :href="url('/home')" variant="primary">Νέο</x-pill>
-            <x-pill :href="url('/find')">Αναζήτηση</x-pill>
+            {{-- R2l (owner, 2026-11-23): no «Αναζήτηση» here: the search box in the top bar has it (and Σύνθετη αναζήτηση) --}}
             <x-pill wire:click="$refresh">Ανανέωση</x-pill>
         </x-pill-actions>
     </div>
