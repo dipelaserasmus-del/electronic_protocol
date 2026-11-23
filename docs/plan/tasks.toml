@@ -52,7 +52,7 @@ tasks = [
   { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 4, size = "L", deps = ["N01"], status = "done", pr = 36 },
   { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 37 },
   # Found 2026-11-23: security.ubuntu.com stopped answering; CI image builds hung for an hour (owner asked for the fix)
-  { id = "F09", title = "Docker build: apt retries + 30 s time-outs; CI jobs with time limits", phase = "F", batch = 9.5, size = "S", deps = ["F03"], status = "done", pr = 98 },
+  { id = "F09", title = "Docker build: apt retries + 30 s time-outs; CI jobs with time limits", phase = "F", batch = 9.5, size = "S", deps = ["F03"], status = "done", pr = 99 },
 
   # ---------------- Batch 5 ----------------
   { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 38 },

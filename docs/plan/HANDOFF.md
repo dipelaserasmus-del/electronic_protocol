@@ -232,7 +232,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-23 13:55 | F09 | #98 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
+| 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
 | 2026-11-23 10:15 | R5m | #95 | inbox page deferred with «Σύνδεση με τον διακομιστή…» + seconds; failures slow/login/other + «Δοκιμή ξανά»; `IMAP_TIMEOUT`; one registration per e-mail across users (`InboxClaims`) |
 | 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |

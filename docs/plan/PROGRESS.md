@@ -475,7 +475,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 8.4 | 8.8 | 4.3 | #67 |
 | ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.2 | 8.8 | 4.6 | #68 |
 | ✅ | **R7** | Printing & exports | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 8.2 | 8.8 | 4.0 | #69 |
-| ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 9.9 | 10.2 | 9.3 | #98 |
+| ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 9.9 | 10.2 | 9.3 | #99 |
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.7 | #71 |
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.6 | 10.2 | 5.5 | #72 |
 | ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 9.6 | 10.2 | 5.1 | #73 |
