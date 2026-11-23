@@ -51,6 +51,8 @@ tasks = [
   { id = "D01", title = "Subject/summary → TEXT", phase = "D", batch = 4, size = "S", deps = ["F02"], status = "done", pr = 35 },
   { id = "R5a", title = "Email service, EML cache, charsets", phase = "R", batch = 4, size = "L", deps = ["N01"], status = "done", pr = 36 },
   { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 37 },
+  # Found 2026-11-23: security.ubuntu.com stopped answering; CI image builds hung for an hour (owner asked for the fix)
+  { id = "F09", title = "Docker build: apt retries + 30 s time-outs; CI jobs with time limits", phase = "F", batch = 9.5, size = "S", deps = ["F03"], status = "done", pr = 99 },
 
   # ---------------- Batch 5 ----------------
   { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 38 },
@@ -129,7 +131,7 @@ tasks = [
   # Owner's notes (2026-11-23): page jumps when Κείμενο / HTML opens; Εξερχόμενο fields in the e-mail form (collapsed); colours
   { id = "R5o", title = "Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form", phase = "R", batch = 9.5, size = "M", deps = ["R5n"], status = "todo" },
   # Owner (2026-11-23, try-it 38): Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1 (same folders, other codes)
-  { id = "D09", title = "Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β)", phase = "D", batch = 9.5, size = "S", deps = ["D07", "D08"], status = "in-progress" },
+  { id = "D09", title = "Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β)", phase = "D", batch = 9.5, size = "S", deps = ["D07", "D08"], status = "done", pr = 98 },
   { id = "R5l", title = "Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on", phase = "R", batch = 9.5, size = "S", deps = ["R5k"], status = "done", pr = 93 },
 
   # ---------------- Batch 10 ----------------

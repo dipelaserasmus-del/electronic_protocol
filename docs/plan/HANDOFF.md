@@ -132,6 +132,9 @@ Read this first when (re)starting work. Update it at the end of every task.
   **Next R5o** (owner, 2026-11-23): no scroll jump when Κείμενο / HTML opens; the Εξερχόμενο fields in the e-mail
   form, collapsed by default; Εισερχόμενο / Εξερχόμενο backgrounds as in the protocol form; the preview's colour is an
   open question for the owner (it asked for the Εισερχόμενα green first).
+- **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
+  before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
+  the image builds hang for an hour (cancel + re-run the stuck run if it happens again).
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -233,7 +236,8 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-23 12:53 | D09 | — | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
+| 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
+| 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
 | 2026-11-23 10:15 | R5m | #95 | inbox page deferred with «Σύνδεση με τον διακομιστή…» + seconds; failures slow/login/other + «Δοκιμή ξανά»; `IMAP_TIMEOUT`; one registration per e-mail across users (`InboxClaims`) |
 | 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |
