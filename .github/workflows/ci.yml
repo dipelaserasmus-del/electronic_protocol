@@ -163,7 +163,9 @@ jobs:
   dev-sh:
     # ./dev.sh must work with macOS's bash 3.2 + BSD tools as well as on Linux (L02)
     name: dev.sh on ${{ matrix.os }}
-    timeout-minutes: 15   # F09
+    # F09: macOS runners are often scarce, and the time waiting for one counted against the limit (cut off at 15 min
+    # on PR #97 before any step ran): macOS 90, Linux 15
+    timeout-minutes: ${{ matrix.os == 'macos-latest' && 90 || 15 }}
     strategy:
       fail-fast: false
       matrix:
