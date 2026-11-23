@@ -1,12 +1,12 @@
 // R5a: inbox from the mail cache; sender names split inside a Greek letter; HTML preview behind login.
 // R5c: the rebuilt inbox: list on the left, text/HTML sections that open and close (remembered), sizes.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, setSetting } = require('./helpers');
+const { login, evidence, setSetting, openInbox, inboxReady } = require('./helpers');
 
 /** The message (<article>) of the synthetic e-mail whose text contains `text`, on whichever page it is. */
 async function findEmail(page, text) {
   for (const p of [1, 2, 3, 4, 5, 6, 7, 8]) {
-    await page.goto(`/inbox?page=${p}`);
+    await openInbox(page, `/inbox?page=${p}`);
     const message = page.locator('article.inbox-message', { hasText: text });   // one e-mail each
     if (await message.count()) return message;
   }
@@ -61,7 +61,7 @@ test('attachment name cut inside a Greek letter is shown and downloaded correctl
 test('inbox: the list on the left goes to a message; attachments show type and size (R5c)', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await login(page, 'admin');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const items = page.locator('#inbox-sidebar a.inbox-sidebar-item');
   const n = await items.count();
   expect(n).toBeGreaterThan(1);
@@ -85,7 +85,7 @@ test('inbox: the list on the left goes to a message; attachments show type and s
 
 test('inbox: text and HTML open and close together, and the browser remembers it (R5c)', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const texts = page.locator('.inbox-text');
   await expect(texts.first()).toBeVisible();
 
@@ -94,6 +94,7 @@ test('inbox: text and HTML open and close together, and the browser remembers it
   for (const t of await texts.all()) await expect(t).toBeHidden();   // every message's text
 
   await page.reload();
+  await inboxReady(page);
   await expect(texts.first()).toBeHidden();                           // remembered
   await expect(page.locator('[data-part-toggle="text"]').first()).toHaveAttribute('aria-expanded', 'false');
   await page.locator('[data-part-toggle="text"]').first().click();
@@ -170,7 +171,7 @@ test('incoming date: the app\'s date field; keyword suggestions from the file na
 
 test('a red badge next to Εισερχόμενα counts the e-mails waiting; checked again when coming back to the tab (R5f)', async ({ page }) => {
   await login(page, 'writer');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const said = (await page.locator('#inbox-count').innerText()).replace(/\s+/g, ' ');   // «1–3 από 8 · …» or «2 email · …»
   const total = Number((said.match(/από (\d+)/) ?? said.match(/^\s*(\d+) email/))[1]);
   expect(total).toBeGreaterThan(0);
@@ -204,7 +205,7 @@ test('every e-mail can be reached: the pager above and below, and in the list on
   await login(page, 'admin');
   const previous = await setSetting(page, 'emailNumFetch', 2);
   try {
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const top = page.locator('#pager-top');
   await expect(top).toBeVisible();   // above the first e-mail, no scrolling needed
   const side = page.locator('.inbox-sidebar-pager');
@@ -233,7 +234,7 @@ test('every e-mail can be reached: the pager above and below, and in the list on
 
 test('the list on the left scrolls to the e-mail and it stays there; the folder list does not open (R5h)', async ({ page }) => {
   await login(page, 'writer');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const items = page.locator('.inbox-sidebar-item');
   const n = await items.count();
   expect(n).toBeGreaterThan(2);
@@ -339,7 +340,7 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
 
 test('a done e-mail folds: «Εμφάνιση email» opens it again, «Επόμενο email» goes on (R5l)', async ({ page }) => {
   await login(page, 'writer');
-  await page.goto('/inbox');
+  await openInbox(page, '/inbox');
   const first = page.locator('article.inbox-message').first();
   await first.locator('[data-action=mark-read]').click();
   await expect(first.locator('.inbox-done')).toContainText('Μεταφέρθηκε στα αναγνωσμένα');
@@ -355,4 +356,70 @@ test('a done e-mail folds: «Εμφάνιση email» opens it again, «Επόμ
   await next.click();
   await expect(page).toHaveURL(new RegExp(`#msg-${target}$`));
   await expect(page.locator(`#msg-${target}`)).toBeInViewport();
+});
+
+test('the inbox appears at once and says it is waiting for the mail server (R5m)', async ({ page }) => {
+  await login(page, 'admin');
+  // hold the component's first request back for a while, as a busy mail server would
+  let held = false;
+  await page.route('**/livewire*/update', async (route) => {
+    if (!held) { held = true; await new Promise((r) => setTimeout(r, 4000)); }
+    await route.continue();
+  });
+  await page.goto('/inbox');
+  const waiting = page.locator('#inbox-connecting');
+  await expect(waiting).toBeVisible();
+  await expect(waiting).toContainText('Σύνδεση με τον διακομιστή email');
+  await expect(waiting).toContainText('Παρακαλώ περιμένετε…');
+  await expect(waiting.getByText(/^[1-9]\d* δευτ\.$/)).toBeVisible();         // the seconds counter, running
+  await evidence(page, 'r5m-waiting', { clip: await waiting.boundingBox() });
+
+  await inboxReady(page);
+  await expect(page.locator('#inbox-connecting')).toHaveCount(0);
+  await expect(page.locator('article.inbox-message').first()).toBeVisible();
+  // owner: when the e-mails last came from the mail server, next to «Ανανέωση»
+  await expect(page.locator('#inbox-checked-at')).toHaveText(/^Τελευταία ανανέωση: \d\d:\d\d$/);
+});
+
+/** nginx's own page when it gives up waiting for PHP (what the owner saw in Livewire's dark popup) */
+const GATEWAY_TIMEOUT = { status: 504, contentType: 'text/html',
+  body: '<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center><hr><center>nginx</center></body></html>' };
+
+test('a web server time-out is said in the banner, not in a popup (R5m)', async ({ page }) => {
+  await login(page, 'admin');
+  let first = true;
+  await page.route('**/livewire*/update', async (route) => {
+    if (first) { first = false; await route.fulfill(GATEWAY_TIMEOUT); } else await route.continue();
+  });
+  await page.goto('/inbox');
+  const banner = page.locator('#inbox-connecting');
+  await expect(banner).toContainText('Ο διακομιστής email δεν απάντησε εγκαίρως.');
+  await expect(banner).toHaveClass(/alert-warning/);
+  await expect(banner.getByText('Παρακαλώ περιμένετε…')).toBeHidden();        // the waiting line gave way
+  await expect(page.locator('#livewire-error')).toHaveCount(0);              // Livewire's popup
+  await expect(page.locator('iframe')).toHaveCount(0);
+  await evidence(page, 'r5m-timeout', { clip: await banner.boundingBox() });
+
+  await banner.getByRole('button', { name: 'Δοκιμή ξανά' }).click();         // reloads: the server answers now
+  await inboxReady(page);
+  await expect(page.locator('article.inbox-message').first()).toBeVisible();
+});
+
+test('a refresh the web server gave up on is said above the e-mails (R5m)', async ({ page }) => {
+  await login(page, 'admin');
+  await openInbox(page);
+  let fail = true;
+  await page.route('**/livewire*/update', async (route) => {
+    if (fail) { fail = false; await route.fulfill(GATEWAY_TIMEOUT); } else await route.continue();
+  });
+  await page.getByRole('button', { name: 'Ανανέωση' }).click();
+  const box = page.locator('#inbox-unreachable');
+  await expect(box).toBeVisible();
+  await expect(box).toContainText('Ο διακομιστής email δεν απάντησε εγκαίρως.');
+  await expect(page.locator('#livewire-error')).toHaveCount(0);
+  await expect(page.locator('article.inbox-message').first()).toBeVisible();   // the e-mails already shown stay
+
+  await box.getByRole('button', { name: 'Δοκιμή ξανά' }).click();
+  await expect(box).toBeHidden();
+  await expect(page.locator('#inbox-checked-at')).toBeVisible();
 });

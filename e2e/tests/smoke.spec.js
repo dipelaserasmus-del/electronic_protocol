@@ -1,6 +1,6 @@
 // @smoke: the main screens work for every role, and the core actions succeed in a real browser.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, toasts } = require('./helpers');
+const { login, evidence, toasts, openInbox } = require('./helpers');
 const { fillProtocol, saveProtocol, notice } = require('./helpers');
 
 test.describe('@smoke', () => {
@@ -42,7 +42,7 @@ test.describe('@smoke', () => {
 
   test('inbox shows the mock mailbox with Greek subjects decoded', async ({ page }) => {
     await login(page, 'admin');
-    await page.goto('/inbox');
+    await openInbox(page, '/inbox');
     const body = page.locator('body');
     await expect(page.locator('#inbox-count')).toContainText(/από \d+|\d+ email/);
     // whichever mock e-mails are left on page 1 (other tests register some, the order differs between machines):

@@ -28,6 +28,8 @@ class EmailRegistrationTest extends FeatureTestCase
         parent::setUp();
         $this->setting('defaultImapEmail', 'default');
         $this->mailbox = FakeMailbox::install($this->app);
+        // R5m: the inbox page is deferred (placeholder first); these tests are about the loaded page (InboxLoadingTest: the wait)
+        config(['imap.deferred_inbox' => false]);
     }
 
     public function test_email_is_registered_with_decoded_headers_body_and_attachment(): void
@@ -341,8 +343,16 @@ class EmailRegistrationTest extends FeatureTestCase
     /** The e-mail is the one message of the inbox (UID self::UID). */
     private function putEml(int $userId, string $eml): void
     {
+        // another message under the same UID: a real server changes UIDVALIDITY then (UIDs are never reused within one;
+        // R5m remembers per UID what was done with an e-mail)
+        if ($this->lastEml !== null && $this->lastEml !== $eml) {
+            $this->mailbox->validity = (string) ((int) $this->mailbox->validity + 1);
+        }
+        $this->lastEml = $eml;
         $this->mailbox->messages = [self::UID => $eml];
     }
+
+    private ?string $lastEml = null;
 
     /**
      * Opens the inbox as $user, changes the fields given, keeps ticked only the attachments $keys (none by default, as

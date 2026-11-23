@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 09:10 (L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 10:15 (R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -165,6 +165,14 @@ Open *Εισερχόμενα*.
   *Ρυθμίσεις → E-mail → Λογαριασμός εισερχομένων* → *Δοκιμαστικός λογαριασμός (…)* → *Αποθήκευση*. *Εισερχόμενα*
   shows its e-mails. Optional: fill in `TEST_SMTP_HOST` / `TEST_SMTP_PORT` too; a receipt or assignment notice
   then arrives in the test mailbox with *«[ΔΟΚΙΜΗ] προς: …»* (never at the real recipient). Steps: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md#a-temporary-test-mailbox-optional).
+
+### The inbox on a slow mail server (R5m, 2026-11-23)
+- [ ] **55.** Open *Εισερχόμενα*: the page appears at once with *«Σύνδεση με τον διακομιστή email… Παρακαλώ
+  περιμένετε…»* and a seconds counter. If the server gives up, the same banner turns yellow with a plain message and
+  *Δοκιμή ξανά* (no dark popup). Next to *Ανανέωση*: *Τελευταία ανανέωση: ΩΡΑ*. Best seen on your real copy (8081) early
+  in the morning (after `git pull`, the copy's nginx needs `./dev.sh real down && ./dev.sh real up`).
+- [ ] **56.** Two users, the same e-mail: open *Εισερχόμενα* as two users (two browsers), press *Καταχώριση* on the
+  same e-mail in both: the second says it was already registered, by whom and with which number; no second protocol.
 
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code

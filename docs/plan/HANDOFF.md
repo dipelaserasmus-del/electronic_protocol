@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-23 09:10 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l and L03; times are Greek time)
+## Current state — 2026-11-23 10:15 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03 and R5m; next: R5n; times are Greek time)
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -110,6 +110,17 @@ Read this first when (re)starting work. Update it at the end of every task.
   AppServiceProvider) keeps only `TEST_MAIL_ONLY_TO` recipients (default the test mailbox), else first allowed +
   `[ΔΟΚΙΜΗ] προς: …` subject, empty list = not sent. IMAP: the library's `tls` = TLS from the start, but production's `.env` (old ext-imap) has 143 + `tls` = STARTTLS:
   `config/imap.php` `$imapEncryption` maps `tls` on a port ≠ 993 to `starttls` (default and test accounts).
+- **R5m (owner, 2026-11-23: morning timeouts; cache safe for several users):** `inbox.blade.php` renders
+  `<livewire:email-inbox :defer=…>` (config `imap.deferred_inbox`, tests of the loaded page set it false);
+  `EmailInbox::placeholder` = `livewire/partials/inbox-connecting` (Alpine `inboxWait`; also as wire:loading for
+  refresh/pages). Owner's notes: «Παρακαλώ περιμένετε…» (no long text), «Τελευταία ανανέωση: ΩΡΑ» (`checkedAt`),
+  502/503/504/no answer on the inbox page → `inbox.js` `interceptRequest` stops Livewire's popup and fires
+  `inbox-unreachable` (banner / `#inbox-unreachable` say it, «Δοκιμή ξανά»); nginx `fastcgi_read_timeout 180s`.
+  Review: `markRead` may still move a registered-but-not-moved e-mail (`moveOnly`). Root `data-inbox-state` connecting/ready/failed (e2e `openInbox` /
+  `inboxReady` in helpers.js wait for it). `App\Support\Mail\MailboxFailure` slow/login/other (+ elapsed ≥ 0.8 ×
+  timeout); `IMAP_TIMEOUT` (accounts' `timeout`). `App\Services\Mail\InboxClaims`: per-e-mail lock + 7-day done record
+  (who, number); `EmailInbox::claimed()` wraps registerNow / markReadNow, `doneByOther()`. Next **R5n**: show the
+  last check's e-mails from the cache while the server is slow.
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -211,6 +222,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-23 10:15 | R5m | #95 | inbox page deferred with «Σύνδεση με τον διακομιστή…» + seconds; failures slow/login/other + «Δοκιμή ξανά»; `IMAP_TIMEOUT`; one registration per e-mail across users (`InboxClaims`) |
 | 2026-11-23 09:10 | L03 | #94 | real copy: optional test IMAP account `test` from `local-data/test-mailbox.env` (compose `env_file`, optional), chosen in Ρυθμίσεις; account labels in the select; optional test SMTP whose mail reaches only `TEST_MAIL_ONLY_TO` |
 | 2026-11-19 14:10 | D07 | #77 | folder glossary (owner's list) + `folders:glossary`, merge Φ.43 → Φ.46; 2 import bugs fixed |
 | 2026-11-18 23:26 | R7 | #69 | `/print` = Livewire `PrintPage` (book / attachments tabs, live count, limit warning); `PrintController` (`/printed` GET+POST, xlsx via `target=xls`, `/printedAttachments`, `/receipt`) on `layouts/print`; `App\\Services\\Printing\\PrintRange` (old param names, ignored list, `limit()`, `describe()`, `params()`); handlers by name incl. inactive; each attachment its own keep/expiry; POST /receiptToEmail removed (form's sendReceipt); only auth pages left on the old layout |

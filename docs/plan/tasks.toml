@@ -123,6 +123,9 @@ tasks = [
   { id = "R5k", title = "Inbox: registering says so until done (notice, spinners, the yellow button too); one registration at a time", phase = "R", batch = 9.5, size = "S", deps = ["R5j"], status = "done", pr = 92 },
   # Owner's request (2026-11-23): real e-mails in the real-data copy from a temporary test mailbox
   { id = "L03", title = "Real copy: optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO)", phase = "F", batch = 9.5, size = "S", deps = ["L01"], status = "done", pr = 94 },
+  # Owner (2026-11-23): the organisation's mail server is often overloaded in the mornings; caching safe for several users
+  { id = "R5m", title = "Inbox: page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users", phase = "R", batch = 9.5, size = "M", deps = ["R5l"], status = "done", pr = 95 },
+  { id = "R5n", title = "Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server)", phase = "R", batch = 9.5, size = "M", deps = ["R5m"], status = "todo" },
   { id = "R5l", title = "Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on", phase = "R", batch = 9.5, size = "S", deps = ["R5k"], status = "done", pr = 93 },
 
   # ---------------- Batch 10 ----------------
