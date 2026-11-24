@@ -326,6 +326,50 @@ final class ProtocolWriter
         app(\App\Services\Attachments\Trash::class)->trash($attachment, $user);
     }
 
+    /**
+     * R4d: rename an attachment. Only the name shown (attachments.name) changes; the file keeps its path. The extension
+     * stays the one the attachment has (typed again, it is not doubled); characters not allowed in file names are
+     * replaced as on upload (FileNames::clean). Same rule as removing one: whoever may save the protocol.
+     *
+     * @return string the new name
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \InvalidArgumentException when nothing usable is typed
+     */
+    public function renameAttachment(User $user, Attachment $attachment, string $typed): string
+    {
+        $protocol = $attachment->protocol;
+        if (! $protocol || ! ProtocolAccess::for($user, $protocol)->canSave || \Illuminate\Support\Facades\Gate::forUser($user)->denies('update', $protocol)) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Δεν επιτρέπεται η μετονομασία αυτού του συνημμένου.');
+        }
+        if ($attachment->trashed() || (string) $attachment->savedPath === '') {
+            throw new \InvalidArgumentException('Μόνο συνημμένα με αρχείο μετονομάζονται.');
+        }
+        $extension = self::extensionOf($attachment);
+        $base = trim(TextInput::clean($typed) ?? '');
+        if ($extension !== '' && mb_strtolower(mb_substr($base, -mb_strlen($extension) - 1)) === '.' . mb_strtolower($extension)) {
+            $base = mb_substr($base, 0, -mb_strlen($extension) - 1);   // typed with its extension
+        }
+        $base = rtrim($base, ' .');
+        if (trim($base, ' .-') === '') {
+            throw new \InvalidArgumentException('Γράψτε το νέο όνομα.');
+        }
+        // cleaned with a dummy extension, so a dot in the base is never read as the extension
+        $clean = \App\Support\FileNames::clean($base . '.' . ($extension !== '' ? $extension : 'x'));
+        $name = $extension !== '' ? $clean : substr($clean, 0, -2);
+        if ($name !== $attachment->name) {
+            $attachment->name = $name;
+            $attachment->save();
+        }
+        return $name;
+    }
+
+    /** R4d: the extension a renamed attachment keeps: its name's, or else its stored file's */
+    public static function extensionOf(Attachment $attachment): string
+    {
+        $extension = pathinfo((string) $attachment->name, PATHINFO_EXTENSION);
+        return $extension !== '' ? $extension : pathinfo((string) $attachment->savedPath, PATHINFO_EXTENSION);
+    }
+
     public static function isPlaceholder(Protocol $p): bool
     {
         $t = mb_strtoupper(trim((string) $p->thema, " \t\n.!-*"));
