@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 19:57 (after Batch 9, Batch 9.5, R3h, R3i, R4d, R4e, R4c, R4f, R4g, R4h, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: R5p; times are Greek time)
+## Current state — 2026-11-24 19:58 (after Batch 9, Batch 9.5, R3h, R3i, R4d, R4e, R4c, R4f, R4g, R4h, R5p, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: N05; times are Greek time)
 - **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R4h → R5p → N05 → R6e (BACKLOG «Batch 9.6»; R4h added 2026-11-24 13:30: deleted protocols to the trash). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
 - **R4e:** `App\Services\Stamp\{StampTemplate (setting stampTemplate, JSON; emblem storage/app/stamp/emblem.png),
   StampRenderer (GD, PRINT_DPI 600), Pdf\{PdfReader, PdfParser, PdfStamper, IncrementalUpdate}}`: PDFs stamped by an
@@ -24,6 +24,8 @@ Read this first when (re)starting work. Update it at the end of every task.
   ids). `ProtocolWriter::delete` → trash. Restore: same id, original number if free else `next(yearInUse)` under the
   numbering lock + note. `mayRestore`: admin all; writer/assigner own (`user_id`). TrashPage tabs (`tab`, `q`);
   daily purge (`PurgeTrashDaily`, `attachments:purge-trash`) purges protocols first. FolderMerge updates snapshots.
+- **R5p:** `.inbox-envelope-{airmail|paper|plain}` (setting `inboxEnvelope`), strip `.inbox-envelope-n/-from/-date`;
+  `.inbox-sep` gone.
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -292,6 +294,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 19:58 | R5p | #113 | inbox envelopes: three looks (setting `inboxEnvelope`: airmail / paper / plain) for the owner to choose |
 | 2026-11-24 19:57 | R4h | #112 | «Διαγραφή» moves a protocol to the trash (`trashed_protocols`, number freed); restore with its number or a new one + note; writers / assigners their own |
 | 2026-11-24 19:57 | R4g | #111 | old UniDoc stamps recognised exactly; `stamp:old [--list] [--apply]` takes them out of PDFs, originals kept; Word files stay |
 | 2026-11-24 19:57 | R4f | #110 | files stored unstamped; stamped copy on view / download / print (`StampedCopy`, cached); «Με σφραγίδα» per user; `stamp_in_file` files never stamped twice |

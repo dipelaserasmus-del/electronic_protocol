@@ -428,10 +428,24 @@ class InboxTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~inbox-sidebar-n">1 από 8</span>~', $html);
         $this->assertMatchesRegularExpression('~inbox-sidebar-n">8 από 8</span>~', $html);
         $this->assertSame(8, substr_count($html, 'card-header d-flex flex-wrap gap-2 align-items-baseline inbox-message-head'));
-        // option B: between two e-mails a thin line with «↓ N από M ↓» (none before the first)
-        $this->assertSame(7, substr_count($html, 'class="inbox-sep" role="separator"'));
-        $this->assertStringNotContainsString('</i> 1 από 8 <i', $html);
-        $this->assertMatchesRegularExpression('~<span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> 2 από 8 <i class="bi bi-arrow-down" aria-hidden="true"></i></span>~', $html);
+        // R5p (replaces R5o's thin line): each e-mail in an envelope, «N από M», the sender and the date on its strip
+        $this->assertSame(8, substr_count($html, 'class="inbox-envelope inbox-envelope-airmail"'));
+        $this->assertStringNotContainsString('inbox-sep', $html);
+        $this->assertMatchesRegularExpression('~<span class="inbox-envelope-n">2 από 8</span>~', $html);
+    }
+
+    /** R5p: the three looks (setting inboxEnvelope); an unknown value falls back to air mail */
+    public function test_the_envelope_look_follows_the_setting(): void
+    {
+        $this->setting('emailNumFetch', 2);
+        foreach (['paper' => 'paper', 'plain' => 'plain', 'airmail' => 'airmail', 'nonsense' => 'airmail'] as $value => $class) {
+            $this->setting('inboxEnvelope', $value);
+            $html = Livewire::actingAs($this->writer())->test(EmailInbox::class)->html();
+            $this->assertSame(2, substr_count($html, "class=\"inbox-envelope inbox-envelope-$class\""), $value);
+        }
+        // the sender and the date on the strip
+        $this->assertMatchesRegularExpression('~<span class="inbox-envelope-from text-truncate">[^<]+~', $html);
+        $this->assertMatchesRegularExpression('~<span class="inbox-envelope-date text-nowrap">\d{2}/\d{2}/\d{4} \d{2}:\d{2}</span>~', $html);
     }
 
     /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */

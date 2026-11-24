@@ -567,6 +567,8 @@ class EmailInbox extends Component
             'extra' => $extra,
             'account' => (string) Config::getConfigValueOf('defaultImapEmail'),
             'newestFirst' => (bool) Config::getConfigValueOf('emailFetchOrderDesc'),
+            // R5p: the envelope's look (airmail by default)
+            'envelope' => in_array($look = (string) Config::getConfigValueOf('inboxEnvelope'), ['airmail', 'paper', 'plain'], true) ? $look : 'airmail',
             'lastPage' => max(1, (int) ceil($this->total / max(1, $this->perPage))),
             // R5g: for the list pager above and below the e-mails
             'paginator' => new \Illuminate\Pagination\LengthAwarePaginator(array_fill(0, count($this->uids), null), $this->total, max(1, $this->perPage), $this->page),
