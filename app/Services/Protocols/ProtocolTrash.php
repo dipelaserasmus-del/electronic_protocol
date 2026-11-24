@@ -98,7 +98,7 @@ final class ProtocolTrash
     }
 
     /**
-     * @return array{protocol: Protocol, newNumber: bool, original: string}
+     * @return array{protocol: Protocol, newNumber: bool, original: string, failed: int} failed: files that did not come back
      * @throws AuthorizationException
      */
     public function restore(User $by, TrashedProtocol $t): array
@@ -135,10 +135,22 @@ final class ProtocolTrash
             $t->delete();
             return Protocol::findOrFail($t->protocol_id);
         });
+        $failed = 0;
         foreach (Attachment::onlyTrashed()->whereIn('id', $t->data['attachments'] ?? [])->where('protocol_id', $protocol->id)->get() as $a) {
-            $this->files->restore($a);
+            try {
+                $back = $this->files->restore($a);
+            } catch (\Throwable $e) {   // a disk may throw instead of answering false
+                report($e);
+                $back = false;
+            }
+            if (! $back) {
+                // review of R4h: it stays in the files' trash (its protocol is back, so it can be restored there),
+                // counted from today so the daily clean-up does not take it soon
+                $failed++;
+                \Illuminate\Support\Facades\DB::table('attachments')->where('id', $a->id)->update(['deleted_at' => Carbon::now()]);
+            }
         }
-        return ['protocol' => $protocol, 'newNumber' => $newNumber, 'original' => $original];
+        return ['protocol' => $protocol, 'newNumber' => $newNumber, 'original' => $original, 'failed' => $failed];
     }
 
     /** For good: the snapshot and the attachments that were trashed with it */
