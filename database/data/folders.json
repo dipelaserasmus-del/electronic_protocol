@@ -1,5 +1,5 @@
 {
-  "about": "Folder glossary (Φάκελοι αρχείου) — owner's official list, 2026-11-19. Source of truth for keepvalues.describe. Apply with: php artisan fakeloi:sync (preview) / --apply. Codes not listed here (e.g. Φ.37–Φ.42 school units) are never changed.",
+  "about": "Folder glossary (Φάκελοι αρχείου) — owner's official list, 2026-11-19. Source of truth for keepvalues.describe. Apply with: php artisan folders:glossary (preview) / --apply. Codes not listed here (e.g. Φ.37–Φ.42 school units) are never changed. aliases: the same folder written with another code in the database (owner, 2026-11-23); it is updated and keeps its code.",
   "folders": [
     {
       "code": "Φ.1",
@@ -283,7 +283,11 @@
     },
     {
       "code": "Φ.29",
-      "describe": "ΚΑΤΑΣΚΗΝΩΣΕΙΣ: Οργάνωση και λειτουργία, προϋπολογισμοί, απολογισμοί, μαθητικές εστίες, σύσταση επιτροπών μαθητικών συσσιτίων και εξοχών (ΕΜΣ), αποστολή εκπαιδευτικών - μαθητών στις μαθητικές κατασκηνώσεις σχετική αλληλογραφία"
+      "describe": "ΚΑΤΑΣΚΗΝΩΣΕΙΣ: Οργάνωση και λειτουργία, προϋπολογισμοί, απολογισμοί, μαθητικές εστίες, σύσταση επιτροπών μαθητικών συσσιτίων και εξοχών (ΕΜΣ), αποστολή εκπαιδευτικών - μαθητών στις μαθητικές κατασκηνώσεις σχετική αλληλογραφία",
+      "aliases": [
+        "Φ29Α"
+      ],
+      "aliasNote": "Owner, 2026-11-23: Φ29Α is the same folder as Φ.29."
     },
     {
       "code": "Φ.30",
@@ -307,7 +311,11 @@
     },
     {
       "code": "Φ.32β",
-      "describe": "Περιφερειακή Επόπτρια Κρήτης Συμβούλων Εκπαίδευσης"
+      "describe": "Περιφερειακή Επόπτρια Κρήτης Συμβούλων Εκπαίδευσης",
+      "aliases": [
+        "Φ32.β"
+      ],
+      "aliasNote": "Owner, 2026-11-23: Φ32.β is the same folder as Φ.32β."
     },
     {
       "code": "Φ.33",
@@ -315,7 +323,11 @@
     },
     {
       "code": "Φ.33.1",
-      "describe": "Εγκύκλιοι και νομοθεσία μόνιμου διοικητικού προσωπικού"
+      "describe": "Εγκύκλιοι και νομοθεσία μόνιμου διοικητικού προσωπικού",
+      "aliases": [
+        "Φ33.β"
+      ],
+      "aliasNote": "Owner, 2026-11-23: Φ33.β is the sub-folder of Φ.33 that the list calls Φ.33.1 (other wording)."
     },
     {
       "code": "Φ.33.2",

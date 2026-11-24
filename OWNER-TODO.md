@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 12:13 (R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 14:28 (R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -184,6 +184,9 @@ Open *Εισερχόμενα*.
   below in light purple, each header lavender. The list on the left: *«N από M»* on each e-mail; after *Καταχώριση*,
   *✓ number* under its time. Between two e-mails: a thin line with *«↓ N από M ↓»*.
 
+- [ ] **60.** *Λίστα*: the header has *Νέο* and *Ανανέωση* only; search from the box at the top (its sliders button
+  opens *Σύνθετη αναζήτηση*).
+
 ### Your folder list (D07, 2026-11-19)
 - [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
   terminal:
@@ -197,7 +200,8 @@ Open *Εισερχόμενα*.
   ./dev.sh real artisan folders:glossary --apply
   ```
   Then *Φάκελοι και διατήρηση*: search a word (e.g. *αναρρωτικές* → Φ.12.1); Φ.43 is gone and its protocols are under
-  Φ.46 with their files. Send me the two lines starting *Folders:* and *Merge*, plus any line about *Sub-folders of
+  Φ.46 with their files. Since D09 (your answer, 2026-11-23) `Φ29Α`, `Φ32.β` and `Φ33.β` show as *the same folder*,
+  not under *New* / *Not in the glossary*. Send me the two lines starting *Folders:* and *Merge*, plus any line about *Sub-folders of
   Φ.43* (counts and codes only).
 
 ## Questions for you
@@ -210,8 +214,6 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
-5. **Sub-folders of Φ.43 (D07):** if your list has Φ.43.1, Φ.43.2 …, where do they go: into Φ.46 itself, to new
-   Φ.46.x folders, or stay as they are? Try-it 38's preview names them, if any.
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
@@ -244,6 +246,8 @@ Open *Εισερχόμενα*.
 ## Already decided (no action)
 - *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the
   attachment has no protocol number of the sender; when it has one, type that number over it (2026-11-20).
+- Same folder, other code (2026-11-23, [D09](docs/reports/D09.md)): `Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`.
+  The glossary updates your folder and keeps its code (no second folder). Φ.43 has no sub-folders.
 - Folder codes (2026-11-20): the dot after Φ is only for readability. `Φ12`, `Φ.12` and `φ12` are the same folder in
   search, in the folder picker and in the Φ.43 → Φ.46 merge; your protocols keep their code as written ([D08](docs/reports/D08.md)).
 - Your folder list (2026-11-19) is the folders glossary: [docs/FOLDERS.md](docs/FOLDERS.md), from

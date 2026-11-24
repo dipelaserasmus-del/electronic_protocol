@@ -9,6 +9,17 @@ use Livewire\Livewire;
 /** R2: the rebuilt protocol list (App\Livewire\ProtocolList). */
 class ProtocolListTest extends FeatureTestCase
 {
+    /** R2l (owner, 2026-11-23): the list's own «Αναζήτηση» pill is gone; the top bar's search box has it */
+    public function test_the_list_has_no_search_button_of_its_own(): void
+    {
+        $html = $this->actingAs($this->writer())->get('/home/list')->assertOk()->getContent();
+        $list = substr($html, strpos($html, 'class="protocol-list"'));
+        $this->assertStringContainsString('>Νέο</a>', $list);
+        $this->assertStringContainsString('Ανανέωση', $list);
+        $this->assertStringNotContainsString('>Αναζήτηση</a>', $list);
+        $this->assertStringContainsString('id="app-search-advanced"', $html);   // the top bar's advanced search stays
+    }
+
     public function test_filters_for_oneself_at_the_old_addresses(): void
     {
         [$me, $other] = [$this->writer(), $this->writer()];

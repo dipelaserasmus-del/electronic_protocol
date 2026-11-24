@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-23 12:13 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n and R5o; next: R2l; times are Greek time)
+## Current state — 2026-11-23 14:28 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; next: R3h (Batch 9.6); times are Greek time)
 - **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R5p → N05 → R6e (BACKLOG «Batch 9.6»). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
@@ -15,6 +15,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   the deployment** (in OWNER-TODO's deployment steps). Sub-folders Φ.43.x are only named (ask the owner). Import fixes:
   cells trimmed by characters (trim() cut Π = CE A0), codes matched normalised on both sides (`matchKey`), existing
   folders keep their code. `FileNames::available` (was Trash::free). Owner's try-it **38** = apply on the real copy.
+- **D09 (owner, 2026-11-23): glossary `aliases`.** A glossary folder may list `aliases`: the same folder written
+  with another code in the database (`Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`). `FolderGlossary::records`
+  updates that folder (it keeps its code); the list's own code wins when both exist. New owner decisions of this kind go
+  in `folders.json` (`aliases` + `aliasNote`), then `--docs`.
 - Cloud sandbox note (2026-11-19): a cached app image without npm/mysqldump → build the frontend on the host
   (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
   `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
@@ -132,11 +136,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   in `EmailRegistration::defaults` (empty) and `EmailInbox::FIELDS` / input; preview `.inbox-mail` light purple
   (owner's choice), headers `.inbox-message-head` lavender (done: green); HTML tab icon `.inbox-html-tab`; list
   `.inbox-sidebar-n` («N από M») and `.inbox-sidebar-when` (time + ✓ number / αναγνωσμένο); between e-mails
-  `.inbox-sep` «↓ N από M ↓» (owner chose option B; articles no longer `mb-3`). **Next R2l:** remove the
-  list page's «Αναζήτηση» button (owner, 2026-11-23).
+  `.inbox-sep` «↓ N από M ↓» (owner chose option B; articles no longer `mb-3`).
+- **R2l (owner, 2026-11-23):** the list page's «Αναζήτηση» pill removed (top-bar search box + its advanced button cover it).
 - **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
   before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
-  the image builds hang for an hour (cancel + re-run the stuck run if it happens again).
+  the image builds hang for an hour (cancel + re-run the stuck run if it happens again). A macOS leg cancelled after
+  ~15 min with 0 steps is GitHub's runner-capacity limit (annotation «not acquired by Runner»), not ours: re-run it.
 - **Squash merges (owner, 2026-11-20):** #85 → #91 and R5k squash-merged and their branches deleted: their history
   held an R5g screenshot with a private e-mail. Merge with `--squash` anything whose history includes those branches.
 - **Inbox incoming number (owner, 2026-11-20, keep):** `EmailRegistration::defaults` fills *Αριθ. εισερχ.* with the
@@ -238,6 +243,8 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
+| 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 12:13 | R5o | #97 | inbox: no jump on Κείμενο / HTML; Εισερχόμενο / Εξερχόμενο (folded) sections; purple preview, lavender headers; HTML tab icon; list «N από M» and ✓ number |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |

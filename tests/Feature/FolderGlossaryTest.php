@@ -41,6 +41,13 @@ class FolderGlossaryTest extends FeatureTestCase
         }
         $this->assertSame([['from' => 'Φ.43', 'into' => 'Φ.46']], array_map(fn ($m) => ['from' => $m['from'], 'into' => $m['into']], $g['merges']));
         $this->assertArrayHasKey('Φ.46', $codes);
+
+        // D09 (owner, 2026-11-23): the same folder under another code in the database
+        $aliases = array_column(array_filter($g['folders'], fn ($f) => isset($f['aliases'])), 'aliases', 'code');
+        $this->assertSame(['Φ.29' => ['Φ29Α'], 'Φ.32β' => ['Φ32.β'], 'Φ.33.1' => ['Φ33.β']], $aliases);
+        foreach (array_merge(...array_values($aliases)) as $alias) {
+            $this->assertArrayNotHasKey(FolderCode::key($alias), $keys, "alias $alias is another folder's code");
+        }
     }
 
     public function test_docs_folders_md_is_generated_from_the_glossary(): void
@@ -86,10 +93,44 @@ class FolderGlossaryTest extends FeatureTestCase
         Keepvalue::where('fakelos', 'Φ.2.1')->delete();
         Keepvalue::create(['fakelos' => 'Φ. 2.1', 'describe' => 'Ίδρυση']);   // as an old list may have it
 
-        $this->artisan('folders:glossary', ['--apply' => true])->expectsOutputToContain('Φ.2.1 is written Φ. 2.1')->assertSuccessful();
+        $this->artisan('folders:glossary', ['--apply' => true])->expectsOutputToContain('Φ.2.1 is your Φ. 2.1: the same folder')->assertSuccessful();
 
         $this->assertSame(['Φ. 2.1'], Keepvalue::pluck('fakelos')->filter(fn ($c) => FolderCode::key($c) === 'φ2.1')->values()->all());
         $this->assertStringStartsWith('Ίδρυση, έδρα, όρια', Keepvalue::where('fakelos', 'Φ. 2.1')->value('describe'));
+    }
+
+    public function test_an_alias_updates_the_existing_folder_and_keeps_its_code(): void
+    {
+        // D09: the owner's copy writes Φ.32β as Φ32.β, Φ.29 as Φ29Α and Φ.33.1 as Φ33.β
+        Keepvalue::whereIn('fakelos', ['Φ.29', 'Φ.32β', 'Φ.33.1'])->delete();
+        foreach (['Φ29Α' => 'Κατασκηνώσεις', 'Φ32.β' => 'Επόπτρια', 'Φ33.β' => 'Μόνιμοι διοικητικοί'] as $code => $text) {
+            Keepvalue::create(['fakelos' => $code, 'keep' => 5, 'describe' => $text, 'remarks' => 'σημ.']);
+        }
+
+        $this->artisan('folders:glossary')
+            ->expectsOutputToContain('Φ.32β is your Φ32.β: the same folder')
+            ->expectsOutputToContain('Φ.29 is your Φ29Α: the same folder')
+            ->expectsOutputToContain('Φ.33.1 is your Φ33.β: the same folder')
+            ->doesntExpectOutputToContain('Φ32.β, ')   // not among the folders kept as they are
+            ->assertSuccessful();
+        $this->artisan('folders:glossary', ['--apply' => true])->assertSuccessful();
+
+        $this->assertSame(0, Keepvalue::whereIn('fakelos', ['Φ.29', 'Φ.32β', 'Φ.33.1'])->count(), 'no second folder');
+        $this->assertSame('Περιφερειακή Επόπτρια Κρήτης Συμβούλων Εκπαίδευσης', Keepvalue::where('fakelos', 'Φ32.β')->value('describe'));
+        $this->assertStringStartsWith('ΚΑΤΑΣΚΗΝΩΣΕΙΣ: Οργάνωση και λειτουργία', Keepvalue::where('fakelos', 'Φ29Α')->value('describe'));
+        $sub = Keepvalue::where('fakelos', 'Φ33.β')->first();
+        $this->assertSame(['Εγκύκλιοι και νομοθεσία μόνιμου διοικητικού προσωπικού', 5, 'σημ.'], [$sub->describe, $sub->keep, $sub->remarks]);
+    }
+
+    public function test_the_code_itself_wins_over_an_alias(): void
+    {
+        Keepvalue::firstOrCreate(['fakelos' => 'Φ.33.1'], ['describe' => 'Εγκύκλιοι']);
+        Keepvalue::create(['fakelos' => 'Φ33.β', 'describe' => 'Μόνιμοι διοικητικοί']);
+
+        $this->artisan('folders:glossary', ['--apply' => true])->assertSuccessful();
+
+        $this->assertSame('Εγκύκλιοι και νομοθεσία μόνιμου διοικητικού προσωπικού', Keepvalue::where('fakelos', 'Φ.33.1')->value('describe'));
+        $this->assertSame('Μόνιμοι διοικητικοί', Keepvalue::where('fakelos', 'Φ33.β')->value('describe'));
     }
 
     // ---- the merge ----
