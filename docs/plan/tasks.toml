@@ -148,6 +148,8 @@ tasks = [
   { id = "R4e", title = "Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "todo" },
   { id = "R4f", title = "Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice", phase = "R", batch = 9.6, size = "M", deps = ["R4c", "R4e"], status = "todo" },
   { id = "R4g", title = "Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe)", phase = "R", batch = 9.6, size = "S", deps = ["R4f"], status = "todo" },
+  # Owner (2026-11-24): a deleted protocol goes to the trash; restore with the original number if free, else a new one (original kept in the notes)
+  { id = "R4h", title = "Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own", phase = "R", batch = 9.6, size = "M", deps = ["R4b"], status = "todo" },
   { id = "R5p", title = "Inbox: each e-mail in an envelope (2–3 versions, owner chooses)", phase = "R", batch = 9.6, size = "S", deps = ["R5o"], status = "todo" },
   { id = "N05", title = "Notepad per user on every page: sections, to-dos, markdown, autosave", phase = "N", batch = 9.6, size = "M", deps = ["N04"], status = "todo" },
   { id = "R6e", title = "Log viewer for administrators (Console-like: levels, search, pages by day)", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "todo" },
