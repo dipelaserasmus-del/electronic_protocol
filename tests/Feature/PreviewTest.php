@@ -125,6 +125,13 @@ class PreviewTest extends FeatureTestCase
         $greek = $this->attach('παλιό.csv', iconv('UTF-8', 'WINDOWS-1253', "Επώνυμο;Όνομα\nΠαπαδόπουλος;Γιώργος"));
         $this->actingAs($this->admin())->get('/preview/' . $greek->id)->assertSee('Παπαδόπουλος;Γιώργος');
 
+        // review of R4c: a long UTF-8 file cut inside a character stays UTF-8 (not read as Windows-1253)
+        $cut = $this->attach('ελληνικά.txt', 'a' . str_repeat('α', 600000));
+        $this->actingAs($this->admin())->get('/preview/' . $cut->id)->assertSee('aααα')->assertDontSee('Ξ±');
+        $this->assertSame('aα', Preview::wholeCharacters("a\xCE\xB1\xCE"));
+        $this->assertSame("a\xCE\xB1", Preview::wholeCharacters("a\xCE\xB1"));
+        $this->assertSame('a€', Preview::wholeCharacters("a\xE2\x82\xAC\xE2\x82"));
+
         // only the start of a long file
         $long = $this->attach('μεγάλο.txt', str_repeat("γραμμή κειμένου\n", 70000));
         $this->actingAs($this->admin())->get('/preview/' . $long->id)->assertSee('εμφανίζεται μόνο η αρχή του αρχείου');

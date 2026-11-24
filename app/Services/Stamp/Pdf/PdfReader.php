@@ -45,14 +45,22 @@ final class PdfReader
                 throw new PdfException('xref loop');
             }
             $seen[$offset] = true;
-            [$trailer, $isStream] = $this->readXref($offset);
+            [$trailer, $isStream, $entries] = $this->readXref($offset);
+            if (isset($trailer['XRefStm']) && is_int($trailer['XRefStm'])) {
+                // hybrid file: its stream supplies the objects the table marks free (review of R4e)
+                foreach ($this->readXref($trailer['XRefStm'])[2] as $n => $e) {
+                    if (! isset($entries[$n]) || $entries[$n][0] === 0) {
+                        $entries[$n] = $e;
+                    }
+                }
+            }
+            foreach ($entries as $n => $e) {
+                $this->xref[$n] ??= $e;   // a newer section wins
+            }
             if ($first) {
                 $this->trailer = $trailer;
                 $this->xrefStream = $isStream;
                 $first = false;
-            }
-            if (isset($trailer['XRefStm']) && is_int($trailer['XRefStm'])) {   // hybrid file
-                $this->readXref($trailer['XRefStm']);
             }
             $offset = isset($trailer['Prev']) && is_int($trailer['Prev']) ? $trailer['Prev'] : null;
         }
@@ -91,8 +99,8 @@ final class PdfReader
             return $this->cache[$num];
         }
         $e = $this->xref[$num] ?? null;
-        if ($e === null) {
-            return $this->cache[$num] = null;
+        if ($e === null || $e[0] === 0) {
+            return $this->cache[$num] = null;   // free
         }
         if ($e[0] === 1) {
             $value = $this->objectAt($e[1], $num);
@@ -148,9 +156,10 @@ final class PdfReader
         }
     }
 
-    /** @return array{0: array, 1: bool} trailer, is a stream */
+    /** @return array{0: array, 1: bool, 2: array<int, array{0: int, 1: int, 2: int}>} trailer, is a stream, its entries */
     private function readXref(int $offset): array
     {
+        $entries = [];
         $p = new PdfParser($this->data, $offset);
         $p->skipSpace();
         if (substr($this->data, $p->pos, 4) === 'xref') {
@@ -163,7 +172,7 @@ final class PdfReader
                     if (! is_array($trailer)) {
                         throw new PdfException('bad trailer');
                     }
-                    return [$trailer, false];
+                    return [$trailer, false, $entries];
                 }
                 if (! preg_match('/\G(\d+)\s+(\d+)/', $this->data, $m, 0, $p->pos)) {
                     throw new PdfException('bad xref');
@@ -176,11 +185,7 @@ final class PdfReader
                         throw new PdfException('bad xref entry');
                     }
                     $p->pos += 18;
-                    if ($e[3] === 'n' && ! isset($this->xref[$start + $i])) {
-                        $this->xref[$start + $i] = [1, (int) $e[1], (int) $e[2]];
-                    } elseif ($e[3] === 'f' && ! isset($this->xref[$start + $i])) {
-                        $this->xref[$start + $i] = [0, 0, 0];
-                    }
+                    $entries[$start + $i] = $e[3] === 'n' ? [1, (int) $e[1], (int) $e[2]] : [0, 0, 0];
                 }
             }
         }
@@ -212,13 +217,11 @@ final class PdfReader
                     $f[$k] = $width === 0 && $k === 0 ? 1 : $v;
                 }
                 $pos += $row;
-                if (! isset($this->xref[$n])) {
-                    $this->xref[$n] = match ($f[0]) { 1 => [1, $f[1], $f[2]], 2 => [2, $f[1], $f[2]], default => [0, 0, 0] };
-                }
+                $entries[$n] = match ($f[0]) { 1 => [1, $f[1], $f[2]], 2 => [2, $f[1], $f[2]], default => [0, 0, 0] };
             }
         }
         $this->cache[$num] = $value;
-        return [$value->dict, true];
+        return [$value->dict, true, $entries];
     }
 
     private function objectAt(int $offset, int $expected): mixed

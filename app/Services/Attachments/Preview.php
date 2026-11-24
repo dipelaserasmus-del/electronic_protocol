@@ -125,13 +125,29 @@ final class Preview
         $size = filesize($path);
         $text = (string) file_get_contents($path, false, null, 0, self::MAX_TEXT_BYTES);
         $text = preg_replace('/^\xEF\xBB\xBF/', '', $text);
+        if ($size > self::MAX_TEXT_BYTES) {
+            $text = self::wholeCharacters($text);   // the read may end inside a UTF-8 character (review of R4c)
+        }
         if (! mb_check_encoding($text, 'UTF-8')) {
-            // UTF-8 cut inside a character at the end is still UTF-8; anything else is taken as Greek Windows-1253
-            $probe = $size > self::MAX_TEXT_BYTES ? substr($text, 0, -4) : $text;
-            $text = mb_check_encoding($probe, 'UTF-8') ? mb_scrub($text, 'UTF-8') : (string) @iconv('WINDOWS-1253', 'UTF-8//IGNORE', $text);
+            $text = (string) @iconv('WINDOWS-1253', 'UTF-8//IGNORE', $text);   // Greek files of older programs
         }
         $cut = $size > self::MAX_TEXT_BYTES ? '<p class="cut">… εμφανίζεται μόνο η αρχή του αρχείου.</p>' : '';
         return '<pre>' . e($text) . '</pre>' . $cut;
+    }
+
+    /** $bytes without an incomplete UTF-8 character at its end (a lead byte without all its continuation bytes) */
+    public static function wholeCharacters(string $bytes): string
+    {
+        $len = strlen($bytes);
+        for ($back = 1; $back <= min(3, $len); $back++) {
+            $byte = ord($bytes[$len - $back]);
+            if (($byte & 0xC0) === 0x80) {
+                continue;   // a continuation byte: look further back for its lead byte
+            }
+            $need = $byte >= 0xF0 ? 4 : ($byte >= 0xE0 ? 3 : ($byte >= 0xC0 ? 2 : 1));
+            return $need > $back ? substr($bytes, 0, $len - $back) : $bytes;
+        }
+        return $bytes;
     }
 
     /** Word (docx) or OpenDocument text (odt) → HTML (PhpWord) */

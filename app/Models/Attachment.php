@@ -50,7 +50,8 @@ class Attachment extends Model
         'mimeType',
         'keep',
         'expires',
-        'flag'
+        'flag',
+        'stamp_in_file',   // R4f
     ];
 
     /** D03: numbers; D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
