@@ -149,7 +149,7 @@ flowchart LR
     R4e["R4e<br/>Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally"]
     R4f["R4f<br/>Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice"]
     R4g["R4g<br/>Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe)"]
-    R4h["R4h<br/>Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes)"]
+    R4h["R4h<br/>Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own"]
     R5p["R5p<br/>Inbox: each e-mail in an envelope (2–3 versions, owner chooses)"]
     R6e["R6e<br/>Log viewer for administrators (Console-like: levels, search, pages by day)"]
   end
@@ -444,7 +444,7 @@ gantt
   R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :r4e, 2026-11-14 01:35, 33m
   R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :crit, r4f, 2026-11-14 02:08, 33m
   R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :crit, r4g, 2026-11-14 02:41, 19m
-  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes) :r4h, 2026-11-14 03:00, 33m
+  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :r4h, 2026-11-14 03:00, 33m
   R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :r5p, 2026-11-14 03:33, 19m
   N05 Notepad per user on every page  sections, to-dos, markdown, autosave :n05, 2026-11-14 03:52, 33m
   R6e Log viewer for administrators (Console-like  levels, search, pages by day) :r6e, 2026-11-14 04:25, 33m
@@ -562,7 +562,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ⬜ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 |  |
 | ⬜ | **R4f** | Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice | R4c, R4e | 0.5 | 0.1 | 4.7 | 5.3 | 9.6 | 10.2 | 4.9 |  |
 | ⬜ | **R4g** | Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.2 | 10.5 | 4.9 |  |
-| ⬜ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes) | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 9.9 | 10.5 | 7.1 |  |
+| ⬜ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 9.9 | 10.5 | 7.1 |  |
 | ⬜ | **R5p** 🔴 | Inbox: each e-mail in an envelope (2–3 versions, owner chooses) | R5o | 0.3 | 0.1 | 10.2 | 10.5 | 10.2 | 10.5 | 0.0 |  |
 | ⬜ | **N05** | Notepad per user on every page: sections, to-dos, markdown, autosave | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 9.9 | 10.5 | 6.3 |  |
 | ⬜ | **R6e** | Log viewer for administrators (Console-like: levels, search, pages by day) | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.9 | 10.5 | 5.8 |  |
