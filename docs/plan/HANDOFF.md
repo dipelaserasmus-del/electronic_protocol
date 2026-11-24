@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 18:40 (after Batches 1–9, 9.5 and 9.6; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-24 19:58 (after Batches 1–9, 9.5 and 9.6; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
@@ -305,9 +305,16 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-24 18:40 | docs | — | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries |
+| 2026-11-24 19:58 | docs | — | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |
+| 2026-11-24 19:58 | R6e | #115 | log viewer `/logs` (admin): a day at a time, levels, search, details; big logs read in parts; `LOG_DAILY_DAYS` |
+| 2026-11-24 19:58 | N05 | #114 | private notepad per user (`user_notes`, markdown with to-dos, autosave, version check: two tabs never overwrite) |
+| 2026-11-24 19:58 | R5p | #113 | inbox envelopes: three looks (setting `inboxEnvelope`: airmail / paper / plain) for the owner to choose |
+| 2026-11-24 19:57 | R4h | #112 | «Διαγραφή» moves a protocol to the trash (`trashed_protocols`, number freed); restore with its number or a new one + note; writers / assigners their own |
+| 2026-11-24 19:57 | R4g | #111 | old UniDoc stamps recognised exactly; `stamp:old [--list] [--apply]` takes them out of PDFs, originals kept; Word files stay |
+| 2026-11-24 19:57 | R4f | #110 | files stored unstamped; stamped copy on view / download / print (`StampedCopy`, cached); «Με σφραγίδα» per user; `stamp_in_file` files never stamped twice |
+| 2026-11-24 19:56 | R4c | #108 | preview 👁 in a large window, ‹ › through a protocol's / e-mail's files: PDF, images, text; Word / spreadsheets converted on the server (PhpWord / PhpSpreadsheet, CSP sandbox) |
+| 2026-11-24 19:56 | R4e | #109 | stamp designer (`/stamp`: emblem, lines, colour, size, corner; live preview); own PDF stamper (incremental update after `%EP-STAMP`, 600 dpi, first page, real size); `stamp:import`; `configs.value` TEXT |
 | 2026-11-24 16:00 | R4d | #107 | rename an attachment (✎; shown name only, extension fixed, characters cleaned; same rule as ✕) |
-| 2026-11-24 16:00 | R4c–R6e | #108–#115 | Batch 9.6 (stacked): preview, stamp designer + PDF stamper, stamp on view, old stamps, protocol trash, envelopes, notepad, log viewer; batch summary |
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
 | 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
