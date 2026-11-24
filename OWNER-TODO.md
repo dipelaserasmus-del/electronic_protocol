@@ -1,23 +1,25 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (R6e log viewer; N05 notepad; R5p inbox envelopes; R4h protocols to the trash; R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
-Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
+Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
+previewing files, the stamp (editable, put when files are shown, your official stamp ready locally), a trash for
+deleted protocols, envelopes in the inbox, a notepad and the log viewer. Batch 9.5 (your notes after Batch 9) now has
+its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 
-**No hurry.** Below is everything to try, batch by batch. Take the time you need; whatever you report I fix first.
-When you are ready, start a **new conversation** and send:
+**Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
+preview of Word / Excel files.
+
+**No hurry.** Try the new steps 63–73 below at your own pace. When you are ready, start a **new conversation** and
+send your answers and anything you found, or:
 
 ```
-run batch 9.6
+run batch 10
 ```
 
-Batch 9.6 is your requests of 2026-11-23: direct links to a protocol, *σήμερα / χθες / εβδομάδα* in search, renaming
-and previewing attachments, the stamp (editable, printed with or without it), envelopes in the inbox, a notepad and a
-log viewer. During it I will ask you to choose one of 2–3 envelope designs (screenshots).
-
-Then `run batch 10` (A01–A06, X01–X02, Z01–Z03), the last one: integrity checks, a log of who changed what, removing
-the old code, and a final security review. After it, I write the deployment guide.
+Batch 10 (A01–A06, X01–X02, Z01–Z03) is the last one: integrity checks, a log of who changed what, removing the old
+code, and a final security review. After it, I write the deployment guide.
 
 ## Try it, batch by batch (optional)
 Before you start: *Update: get latest version from GitHub*, then *Demo: start*. Open http://localhost:8080 and log in
@@ -93,7 +95,7 @@ Open *Εισερχόμενα*.
   the field.
 - [ ] **30.** *Εκτύπωση πρωτοκόλλου*: choose one month (dates) and press *Εκτύπωση*. Compare with an old printout.
 
-### Batch 9.5: your notes after Batch 9
+### Batch 9.5: your notes after Batch 9 ([summary](docs/reports/BATCH-9.5.md))
 - [ ] **31.** *Λίστα*: the pager is above the list as well as below it. Try *Επόμενη ›* and *‹ Προηγούμενη*, and choose
   a page from *Σελίδα [ ▾ ] από …*: both pagers go to that page. Reload: you stay on it. (On a phone: the buttons and
   the page list only.)
@@ -191,7 +193,7 @@ Open *Εισερχόμενα*.
 - [ ] **60.** *Λίστα*: the header has *Νέο* and *Ανανέωση* only; search from the box at the top (its sliders button
   opens *Σύνθετη αναζήτηση*).
 
-### Batch 9.6: your requests of 2026-11-23
+### Batch 9.6: your requests of 2026-11-23 and 2026-11-24 ([summary](docs/reports/BATCH-9.6.md))
 - [ ] **63.** Open a protocol and press *Σύνδεσμος* (right, next to *Απόδειξη*): it says *Αντιγράφηκε*. Paste the link
   in a new tab (e.g. `http://localhost:8080/protocol/1`): the protocol opens. `…/protocol/1/2025` opens no. 1 of 2025;
   a number that does not exist says *Δεν υπάρχει* (the same as for a protocol you may not see).

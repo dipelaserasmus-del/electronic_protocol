@@ -14,7 +14,10 @@ environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md
 3. Verify in the running app for anything user-visible: add/extend a spec in `e2e/tests/` and run
    `EVIDENCE=<ID> ./dev.sh e2e` (screenshots go to `docs/reports/img/<ID>/`; CI runs the same suite).
 4. Evidence report `docs/reports/<ID>.md`: what was wrong, what changed, how verified (tests + browser), owner actions.
-5. Update `docs/plan/tasks.toml` (status, `pr`) and run `python3 docs/plan/tools/pert.py`; update `HANDOFF.md`.
+5. **In every task's own PR** (owner, 2026-11-24; also for stacked PRs — never collected into one docs PR at the end):
+   update `docs/plan/tasks.toml` (status, `pr`), run `python3 docs/plan/tools/pert.py` (PROGRESS.md), update
+   `HANDOFF.md` (state + task log) and `OWNER-TODO.md` (its try-it step, questions, owner actions, `Last update:`), so
+   `master` is current after each merge.
 6. Open a PR to `master`, wait for **all CI jobs green**, read automated review comments (Codex bot): verify each,
    fix real ones (with tests), reply on the thread. Then merge. The owner allowed Claude to run the **whole PR procedure
    on its own** (commit, push, review replies, merge on green CI) without asking.

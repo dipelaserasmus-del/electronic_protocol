@@ -2,18 +2,24 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 19:58 (after Batch 9, Batch 9.5, R3h, R3i, R4d, R4e, R4c, R4f, R4g, R4h, R5p, N05, R6e, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: Batch 9.6 summary (docs PR), then Batch 10; times are Greek time)
-- **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R4h → R5p → N05 → R6e (BACKLOG «Batch 9.6»; R4h added 2026-11-24 13:30: deleted protocols to the trash). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
+## Current state — 2026-11-24 19:58 (after Batches 1–9, 9.5 and 9.6; next: Batch 10 when the owner says so; times are Greek time)
+- **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
+  R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
+  R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
+  The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
+  Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **No new dependencies without the owner (2026-11-24):** `npm install` of new packages was refused by the session's
+  auto-mode check (R4c). Prefer libraries already in composer.json / package.json; ask the owner before adding one.
+- **R4c:** `App\Services\Attachments\Preview` (kind: pdf/image from `/download`, text/word/sheet converted by
+  PhpWord / PhpSpreadsheet at `/preview/{id}`, `/previewEmailAttachment/{uid}/{key}`; CSP `sandbox; default-src 'none'`;
+  PhpWord output escaping on; sheets 500×50, formulas = saved values). `<x-preview-button>` + `partials/preview-modal`
+  (one per page) + `resources/modern/preview.js` (groups, ‹ ›, arrows). `ATTACHMENT_PREVIEW_MAX_KB` (10 MB).
 - **R4e:** `App\Services\Stamp\{StampTemplate (setting stampTemplate, JSON; emblem storage/app/stamp/emblem.png),
   StampRenderer (GD, PRINT_DPI 600), Pdf\{PdfReader, PdfParser, PdfStamper, IncrementalUpdate}}`: PDFs stamped by an
   incremental update after `%EP-STAMP` (classic + stream xref, ObjStm, PNG predictors, /Rotate, CropBox, first page
   only); markpdf (1 px = 1 pt, all pages) only as fallback with an A4-wide canvas + `-w`. Word: first-section header
   (FIRST), absolute position in pt. `/stamp` (StampDesigner: admin, assigner, writer). `stamp:import <dir> [--preview]`.
   `configs.value` TEXT. Tests build PDFs with `tests/Support/PdfBuilder`.
-- **R4c:** `App\Services\Attachments\Preview` (kind: pdf/image from `/download`, text/word/sheet converted by
-  PhpWord / PhpSpreadsheet at `/preview/{id}`, `/previewEmailAttachment/{uid}/{key}`; CSP `sandbox; default-src 'none'`;
-  PhpWord output escaping on; sheets 500×50, formulas = saved values). `<x-preview-button>` + `partials/preview-modal`
-  (one per page) + `resources/modern/preview.js` (groups, ‹ ›, arrows). `ATTACHMENT_PREVIEW_MAX_KB` (10 MB).
 - **R4f:** files stored unstamped; `App\Services\Stamp\StampedCopy::pathFor` serves `storage/app/stamped/<id>-<key>.<ext>`
   (key: template hash, number, year, date, path, sha256) unless the user preference `stamped` = no or `?original=1`;
   `attachments.stamp_in_file` (all pre-R4f pdf/docx/odt) never stamped again. `<x-stamp-toggle>` (form + preview
@@ -299,6 +305,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 19:58 | docs | #116 | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |
 | 2026-11-24 19:58 | R6e | #115 | log viewer `/logs` (admin): a day at a time, levels, search, details; big logs read in parts; `LOG_DAILY_DAYS` |
 | 2026-11-24 19:58 | N05 | #114 | private notepad per user (`user_notes`, markdown with to-dos, autosave, version check: two tabs never overwrite) |
 | 2026-11-24 19:58 | R5p | #113 | inbox envelopes: three looks (setting `inboxEnvelope`: airmail / paper / plain) for the owner to choose |
@@ -311,7 +318,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
 | 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
-| 2026-11-24 13:30 | D11 | — | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |
+| 2026-11-24 13:30 | D11 | #103 | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |
 | 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
 | 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
