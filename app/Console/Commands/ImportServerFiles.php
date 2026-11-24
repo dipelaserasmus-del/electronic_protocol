@@ -39,9 +39,13 @@ class ImportServerFiles extends Command
             $this->error("  Could not copy: {$r['failed']}");
         }
         $this->line("  Server files no attachment points to (not copied): {$r['orphans']}");
+        if ($r['newer']) {
+            $this->line("    of them, their protocol is not in the database (saved after the export?): {$r['newer']}");
+        }
+        $this->line("  Other server files, not attachments (placeholders, backups, the copy tool's index): {$r['other']}");
         if ($this->option('list')) {
             foreach (['missing' => 'Not on the server', 'conflicts' => 'Another file already here', 'failed' => 'Could not copy',
-                'orphans' => 'No attachment points to'] as $key => $title) {
+                'orphans' => 'No attachment points to (← what the database has)', 'other' => 'Not attachments'] as $key => $title) {
                 if ($r['lists'][$key]) {
                     $this->newLine();
                     $this->line("$title:");

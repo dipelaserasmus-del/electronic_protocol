@@ -54,7 +54,8 @@ class ServerFilesTest extends FeatureTestCase
             ->expectsOutputToContain('Server files: 4 in the server\'s folder; 3 attachments in the database.')
             ->expectsOutputToContain('Copied:      2')
             ->expectsOutputToContain('Not on the server:        1')
-            ->expectsOutputToContain('Server files no attachment points to (not copied): 2')
+            ->expectsOutputToContain('Server files no attachment points to (not copied): 1')
+            ->expectsOutputToContain('Other server files, not attachments (placeholders, backups, the copy tool\'s index): 1')
             ->doesntExpectOutputToContain('ξεχασμένο')   // names only with --list
             ->assertSuccessful();
 
@@ -141,6 +142,54 @@ class ServerFilesTest extends FeatureTestCase
 
         $this->artisan('attachments:import', ['source' => $this->server, '--list' => true])
             ->expectsOutputToContain('arxeio/Φ.12/χαμένο.pdf')->expectsOutputToContain('arxeio/Φ.12/ξεχασμένο.pdf')->assertSuccessful();
+    }
+
+    public function test_files_that_are_not_attachments_are_counted_apart(): void
+    {
+        // D11: placeholders, backups, the old SQLite file, the copy tool's index, Windows' own files
+        foreach (['arxeio/dummy', 'arxeio/emails/dummy', 'trash/dummy', 'arxeio/backups/x_back_1.sql', 'arxeio/protocol.sqlite',
+            'arxeio/protocol.sqlite.example', '.hist/up2k.db', 'arxeio/Φ.12/.hist/index', 'arxeio/Φ.12/Thumbs.db', 'u1/temp.pdf'] as $f) {
+            $this->onServer($f);
+        }
+        // protocols without a folder put their files in arxeio/emails/ or directly in arxeio/: those still count
+        $this->onServer('arxeio/emails/7-20261101_email_1.eml');
+        $this->onServer('arxeio/8-20261101_0_έγγραφο.pdf');
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--list' => true])
+            ->expectsOutputToContain('Server files no attachment points to (not copied): 2')
+            ->expectsOutputToContain('Other server files, not attachments (placeholders, backups, the copy tool\'s index): 10')
+            ->expectsOutputToContain('Not attachments:')
+            ->expectsOutputToContain('  .hist/up2k.db')
+            ->assertSuccessful();
+    }
+
+    public function test_list_says_what_the_database_has_for_each_orphan(): void
+    {
+        // D11: a row with the same name elsewhere (the folder written two ways on the server)
+        $this->onServer('arxeio/Φ.43/10-20261103_a.pdf');
+        $this->onServer('arxeio/Φ43/10-20261103_a.pdf');
+        $this->row('arxeio/Φ.43/10-20261103_a.pdf', 10);
+        // the protocol is not in the database: saved after the export
+        $this->onServer('arxeio/Φ.12/20-20261124_new.pdf');
+        // the protocol is there, with other files
+        $this->row('arxeio/Φ.12/30-20261113_other.pdf', 30);
+        $this->onServer('arxeio/Φ.12/30-20261113_other.pdf');
+        $this->onServer('arxeio/Φ.12/30-20261113_replaced.pdf');
+        $this->onServer('arxeio/Φ.12/σημείωση.pdf');
+        Protocol::where('protocolnum', 10)->update(['etos' => 2026]);
+        Protocol::where('protocolnum', 30)->update(['etos' => 2026]);
+
+        $this->artisan('attachments:import', ['source' => $this->server])
+            ->expectsOutputToContain('Server files no attachment points to (not copied): 4')
+            ->expectsOutputToContain('of them, their protocol is not in the database (saved after the export?): 1')
+            ->doesntExpectOutputToContain('←')
+            ->assertSuccessful();
+        $this->artisan('attachments:import', ['source' => $this->server, '--list' => true])
+            ->expectsOutputToContain('arxeio/Φ43/10-20261103_a.pdf  ← a row has this name at arxeio/Φ.43/10-20261103_a.pdf')
+            ->expectsOutputToContain('arxeio/Φ.12/20-20261124_new.pdf  ← protocol 20/2026 is not in the database (saved after the export?)')
+            ->expectsOutputToContain('arxeio/Φ.12/30-20261113_replaced.pdf  ← protocol 30/2026 (folder Φ.12) has no attachment with this name')
+            ->expectsOutputToContain('arxeio/Φ.12/σημείωση.pdf  ← no protocol number in the name')
+            ->assertSuccessful();
     }
 
     public function test_a_wrong_folder_is_refused(): void
