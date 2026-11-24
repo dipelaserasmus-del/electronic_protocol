@@ -307,3 +307,16 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .notepad-view .note-todos { list-style: none; padding-left: .25rem; }
 .notepad-view .note-todo.done span { text-decoration: line-through; color: var(--bs-secondary-color); }
 .min-h-0 { min-height: 0; }
+
+// R6e: the log viewer
+.log-entry .log-time { font-size: .8rem; white-space: nowrap; }
+.log-entry .log-level { min-width: 4.5rem; text-transform: uppercase; font-size: .7rem; }
+.log-entry .log-message { font-size: .85rem; }
+.log-details { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; font-size: .78rem;
+    background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); border-radius: .375rem; padding: .5rem; }
+.log-details .lt-n { color: var(--bs-secondary-color); }
+.log-details .lt-file { color: var(--bs-primary-text-emphasis); }
+.log-details .lt-line { color: var(--bs-danger-text-emphasis); font-weight: 600; }
+.log-details .lt-call { color: var(--bs-success-text-emphasis); }
+.log-entry[data-level="error"], .log-entry[data-level="critical"], .log-entry[data-level="alert"], .log-entry[data-level="emergency"] { box-shadow: inset 3px 0 0 var(--bs-danger); }
+.log-entry[data-level="warning"] { box-shadow: inset 3px 0 0 var(--bs-warning); }
