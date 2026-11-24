@@ -10,6 +10,7 @@ import './preferences';
 import './inbox';
 import './unsaved';   // R1k
 import './inbox-count';   // R5f
+import './notes';   // N05
 import './preview';   // R4c
 import './copy-link';   // R3h
 

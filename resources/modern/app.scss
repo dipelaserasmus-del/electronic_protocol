@@ -293,3 +293,17 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .stamp-page .stamp-on-page { position: absolute; z-index: 1; }
 .stamp-page-lines { position: absolute; inset: 22% 12% 12% 12%;
     background: repeating-linear-gradient(to bottom, var(--bs-secondary-bg) 0 4px, transparent 4px 14px); }
+
+// N05: the notepad: a tab on the right edge, a side panel
+.notepad-tab { position: fixed; right: 0; top: 45%; z-index: 1035; writing-mode: vertical-rl; transform: rotate(180deg);
+    border-radius: 0 .5rem .5rem 0; padding: .6rem .35rem; font-size: .85rem; }
+.notepad-tab .bi { transform: rotate(90deg); }
+.notepad-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 1040; width: min(26rem, 100vw); background: var(--bs-body-bg);
+    display: flex; flex-direction: column; }
+.notepad-text { resize: none; font-family: ui-monospace, Consolas, monospace; font-size: .85rem; min-height: 0; }
+.notepad-view { font-size: .9rem; overflow-wrap: anywhere; }
+.notepad-view .note-section > summary { font-weight: 600; cursor: pointer; margin: .5rem 0 .25rem; }
+.notepad-view .note-h1 > summary { font-size: 1.1rem; }
+.notepad-view .note-todos { list-style: none; padding-left: .25rem; }
+.notepad-view .note-todo.done span { text-decoration: line-through; color: var(--bs-secondary-color); }
+.min-h-0 { min-height: 0; }
