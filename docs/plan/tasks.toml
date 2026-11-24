@@ -137,12 +137,12 @@ tasks = [
   # Owner (2026-11-24): a fresh real copy = the phpMyAdmin dump + the server's files; load rehearses the whole move
   { id = "D10", title = "Real data: load copies the server's files by the database (local-data/server-files → storage/app, attachments:import) and applies the folder glossary", phase = "D", batch = 9.5, size = "M", deps = ["D09", "L01", "D03"], status = "done", pr = 102 },
   # Owner (2026-11-24): after the first real load with files, the leftovers that are not attachments apart
-  { id = "D11", title = "attachments:import: server files that are not attachments counted apart; --list says why each other file has no row", phase = "D", batch = 9.5, size = "S", deps = ["D10"], status = "in-progress" },
+  { id = "D11", title = "attachments:import: server files that are not attachments counted apart; --list says why each other file has no row", phase = "D", batch = 9.5, size = "S", deps = ["D10"], status = "done", pr = 103 },
   { id = "R5l", title = "Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on", phase = "R", batch = 9.5, size = "S", deps = ["R5k"], status = "done", pr = 93 },
 
   # ---------------- Batch 9.6 (owner's requests, 2026-11-23; before Batch 10) ----------------
-  { id = "R3h", title = "Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill", phase = "R", batch = 9.6, size = "S", deps = ["R1b"], status = "todo" },
-  { id = "R3i", title = "Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons", phase = "R", batch = 9.6, size = "M", deps = ["R3f"], status = "todo" },
+  { id = "R3h", title = "Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill", phase = "R", batch = 9.6, size = "S", deps = ["R1b"], status = "done", pr = 105 },
+  { id = "R3i", title = "Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons", phase = "R", batch = 9.6, size = "M", deps = ["R3f"], status = "done", pr = 106 },
   { id = "R4d", title = "Rename an attachment (shown name only; extension fixed)", phase = "R", batch = 9.6, size = "S", deps = ["R1c"], status = "todo" },
   { id = "R4c", title = "Preview in the app: PDF, images, text; docx / xlsx converted in the browser", phase = "R", batch = 9.6, size = "M", deps = ["R4a"], status = "todo" },
   { id = "R4e", title = "Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "todo" },

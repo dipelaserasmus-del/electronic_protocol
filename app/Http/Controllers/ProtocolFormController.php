@@ -26,6 +26,24 @@ class ProtocolFormController extends Controller
         return view('protocols.list', ['filter' => $filter, 'userId' => $userId]);
     }
 
+    /**
+     * R3h: direct link /protocol/{num} (this year) or /protocol/{num}/{year} → the protocol's form. A number that does
+     * not exist, a protocol the user may not see and a malformed number or year all get the same «Δεν υπάρχει» page
+     * (404), so the link never tells whether a protocol exists.
+     */
+    public function link(string $num, ?string $year = null)
+    {
+        $year ??= now()->format('Y');
+        $protocol = null;
+        if (preg_match('/^\d{1,9}$/', $num) && preg_match('/^\d{4}$/', $year)) {
+            $protocol = Protocol::where('etos', (int) $year)->where('protocolnum', (int) $num)->first();
+        }
+        if ($protocol === null || Auth::user()->cannot('view', $protocol)) {
+            return response()->view('protocols.missing', ['num' => $num, 'year' => $year], 404);
+        }
+        return redirect('/home/' . $protocol->id);
+    }
+
     /** R3a: the advanced search (App\Livewire\SearchPage) */
     public function search()
     {

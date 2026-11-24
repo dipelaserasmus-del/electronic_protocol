@@ -130,6 +130,10 @@
         "web",
         "writer:home/list"
     ],
+    "GET protocol/{num}/{year?}": [
+        "auth",
+        "web"
+    ],
     "GET receipt/{protocol}": [
         "auth",
         "web",

@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **88 / 110** `████████████████████████░░░░░░` 80% |
-| Effort done (PERT) | **39.2 / 49.3 h** `████████████████████████░░░░░░` 80% |
-| Remaining effort, one agent in sequence | **10.1 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **91 / 110** `█████████████████████████░░░░░` 83% |
+| Effort done (PERT) | **40.4 / 49.3 h** `█████████████████████████░░░░░` 82% |
+| Remaining effort, one agent in sequence | **8.9 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
-| In progress | D11 |
-| Next task | **R3h** — Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill |
+| In progress | — |
+| Next task | **R4d** — Rename an attachment (shown name only; extension fixed) |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** R4c → R4f → R4g
@@ -33,8 +33,8 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 🔄D11 ✅R5l | 31/32 | `██████████` |
-| 9.6 | ⬜R3h ⬜R3i ⬜R4d ⬜R4c ⬜R4e ⬜R4f ⬜R4g ⬜R4h ⬜R5p ⬜N05 ⬜R6e | 0/11 | `░░░░░░░░░░` |
+| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
+| 9.6 | ✅R3h ✅R3i ⬜R4d ⬜R4c ⬜R4e ⬜R4f ⬜R4g ⬜R4h ⬜R5p ⬜N05 ⬜R6e | 2/11 | `██░░░░░░░░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -321,9 +321,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,R5l done
-  class D11 inprogress
-  class R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i done
+  class R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R4c,R4f,R4g critical
 ```
@@ -437,11 +436,11 @@ gantt
   R2l List  remove the «Αναζήτηση» button (the search field has its own) :done, r2l, 2026-11-13 22:21, 19m
   D09 Folder glossary  aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) :done, d09, 2026-11-13 22:40, 19m
   D10 Real data  load copies the server's files by the database (local-data/server-files → storage/app, attachments import) and applies the folder glossary :done, d10, 2026-11-13 22:59, 33m
-  D11 attachments import  server files that are not attachments counted apart; --list says why each other file has no row :active, d11, 2026-11-13 23:32, 19m
+  D11 attachments import  server files that are not attachments counted apart; --list says why each other file has no row :done, d11, 2026-11-13 23:32, 19m
   R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 23:51, 19m
   section Batch 9.6
-  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :r3h, 2026-11-14 00:10, 19m
-  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :r3i, 2026-11-14 00:29, 33m
+  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :done, r3h, 2026-11-14 00:10, 19m
+  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :done, r3i, 2026-11-14 00:29, 33m
   R4d Rename an attachment (shown name only; extension fixed) :r4d, 2026-11-14 01:02, 19m
   R4c Preview in the app  PDF, images, text; docx / xlsx converted in the browser :crit, r4c, 2026-11-14 01:21, 33m
   R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :r4e, 2026-11-14 01:54, 33m
@@ -557,10 +556,10 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2l** | List: remove the «Αναζήτηση» button (the search field has its own) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 10.2 | 10.5 | 3.0 | #100 |
 | ✅ | **D09** | Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) | D07, D08 | 0.3 | 0.1 | 5.6 | 5.9 | 9.3 | 9.6 | 3.7 | #98 |
 | ✅ | **D10** | Real data: load copies the server's files by the database (local-data/server-files → storage/app, attachments:import) and applies the folder glossary | D09, L01, D03 | 0.5 | 0.1 | 5.9 | 6.5 | 9.6 | 10.2 | 3.7 | #102 |
-| 🔄 | **D11** | attachments:import: server files that are not attachments counted apart; --list says why each other file has no row | D10 | 0.3 | 0.1 | 6.5 | 6.8 | 10.2 | 10.5 | 3.7 |  |
+| ✅ | **D11** | attachments:import: server files that are not attachments counted apart; --list says why each other file has no row | D10 | 0.3 | 0.1 | 6.5 | 6.8 | 10.2 | 10.5 | 3.7 | #103 |
 | ✅ | **R5l** 🔴 | Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 8.2 | 8.5 | 0.0 | #93 |
-| ⬜ | **R3h** | Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.2 | 10.5 | 6.0 |  |
-| ⬜ | **R3i** | Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons | R3f | 0.5 | 0.1 | 5.0 | 5.6 | 9.9 | 10.5 | 4.9 |  |
+| ✅ | **R3h** | Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.2 | 10.5 | 6.0 | #105 |
+| ✅ | **R3i** | Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons | R3f | 0.5 | 0.1 | 5.0 | 5.6 | 9.9 | 10.5 | 4.9 | #106 |
 | ⬜ | **R4d** | Rename an attachment (shown name only; extension fixed) | R1c | 0.3 | 0.1 | 4.7 | 5.0 | 10.2 | 10.5 | 5.5 |  |
 | ⬜ | **R4c** | Preview in the app: PDF, images, text; docx / xlsx converted in the browser | R4a | 0.5 | 0.1 | 2.3 | 2.8 | 9.1 | 9.6 | 6.8 |  |
 | ⬜ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 |  |
