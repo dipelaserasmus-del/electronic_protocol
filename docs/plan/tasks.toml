@@ -152,7 +152,7 @@ tasks = [
   { id = "R4h", title = "Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own", phase = "R", batch = 9.6, size = "M", deps = ["R4b"], status = "done", pr = 112 },
   { id = "R5p", title = "Inbox: each e-mail in an envelope (2–3 versions, owner chooses)", phase = "R", batch = 9.6, size = "S", deps = ["R5o"], status = "done", pr = 113 },
   { id = "N05", title = "Notepad per user on every page: sections, to-dos, markdown, autosave", phase = "N", batch = 9.6, size = "M", deps = ["N04"], status = "done", pr = 114 },
-  { id = "R6e", title = "Log viewer for administrators (Console-like: levels, search, pages by day)", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "todo" },
+  { id = "R6e", title = "Log viewer for administrators (Console-like: levels, search, pages by day)", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "done", pr = 115 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
