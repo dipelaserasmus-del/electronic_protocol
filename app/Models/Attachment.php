@@ -50,11 +50,12 @@ class Attachment extends Model
         'mimeType',
         'keep',
         'expires',
-        'flag'
+        'flag',
+        'stamp_in_file',   // R4f
     ];
 
     /** D03: numbers; D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
-    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class];
+    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class, 'stamp_in_file' => 'boolean'];
 
     public function protocol(){
         return $this->belongsTo('App\Models\Protocol');
@@ -77,6 +78,7 @@ class Attachment extends Model
         });
         // D03: who moved it to the trash (soft delete); cleared when restored
         static::softDeleted(function (Attachment $attachment) {
+            \App\Services\Stamp\StampedCopy::forget($attachment);   // R4f: the stamped copy is made again if restored
             $attachment->deleted_by = auth()->id();
             $attachment->saveQuietly();
         });

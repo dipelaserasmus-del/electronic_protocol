@@ -254,7 +254,8 @@ class ProtocolController extends Controller implements HasMiddleware
         $protocol = $attachment->protocol;
         $allowed = $protocol ? Gate::allows('view', $protocol) : Auth::user()->role->role === 'Διαχειριστής';
         abort_unless($allowed, 404);
-        $path = $attachment->storedFilePath();
+        // R4f: with the stamp (made now, kept) unless the user chose the originals or asks for one (?original=1)
+        $path = app(\App\Services\Stamp\StampedCopy::class)->pathFor($attachment, Auth::user(), request()->boolean('original'));
         if ($path !== null) {
             return \App\Support\SafeFile::download(Storage::path($path), $attachment->name ?: basename($path), $attachment->mimeType);
         }

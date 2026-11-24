@@ -368,12 +368,17 @@
                         <span class="badge rounded-pill text-bg-secondary ms-1">{{ count($attachments) + count((array) $uploads) }}</span></x-form.section-head>
                 </h2>
                 <div class="card-body" @unless ($open('attachments')) hidden @endunless>
+                    @if (count($attachments))
+                        {{-- R4f: files open / download / print with the stamp, or as stored --}}
+                        <div class="d-flex justify-content-end mb-1" wire:ignore><x-stamp-toggle id="form-stamp" /></div>
+                    @endif
                     @forelse ($attachments as $a)
                         <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row" wire:key="att-{{ $a->id }}">
                             <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
                             @if ($a->savedPath)
                                 {{-- R4c: 👁 opens it here; ‹ › go through this protocol's files --}}
-                                <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id" />
+                                <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id"
+                                                  :stamp-in-file="$putStamp && $a->stamp_in_file" />
                             @endif
                             @if ($a->savedPath && $access->canSave)
                                 {{-- R4d: ✎ renames (the name shown; the file keeps its path; the extension stays) --}}
@@ -401,6 +406,11 @@
                                 <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break me-auto">{{ $a->name }}</a>
                             @else
                                 <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
+                            @endif
+                            @if ($putStamp && $a->stamp_in_file && $a->savedPath)
+                                {{-- R4f: saved before R4f with the stamp inside: shown as it is, never stamped twice --}}
+                                <span class="small text-body-secondary stamp-in-file" title="Αποθηκεύτηκε με τη σφραγίδα μέσα στο αρχείο: ανοίγει όπως είναι, με ή χωρίς «Με σφραγίδα».">
+                                    <i class="bi bi-patch-check" aria-hidden="true"></i> η σφραγίδα είναι μέσα στο αρχείο</span>
                             @endif
                             @if ($a->ada)
                                 @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light">ΑΔΑ {{ $a->ada }}</a>
@@ -459,12 +469,6 @@
                                 </select>
                             </div>
                         </div>
-                        @if ($putStamp)
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="f-nostamp" wire:model="noStamp">
-                                <label class="form-check-label" for="f-nostamp">Χωρίς σφραγίδα αριθμού στα αρχεία</label>
-                            </div>
-                        @endif
 
                     @endif
                 </div>

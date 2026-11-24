@@ -13,10 +13,10 @@ use App\Models\User;
  */
 final class UserPreferences
 {
-    public const DEFAULTS = ['width' => 'full'];
+    public const DEFAULTS = ['width' => 'full', 'stamped' => 'yes'];
 
     /** allowed values per key */
-    public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e']];
+    public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e'], 'stamped' => ['yes', 'no']];   // R4f: files with the stamp or the original
 
     /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */
     public const HOMES = [

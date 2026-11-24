@@ -28,7 +28,7 @@ use Illuminate\Validation\ValidationException;
  * Input: the form's fields (dates as typed: "9/4/25", "09/04/2025" …; assignments as ["d14", "e10"] or "d14,e10").
  * What it does, in order: cleans every text (TextInput), applies who may change what (ProtocolAccess: locked parts
  * keep their stored value whatever is posted), validates, takes the number (B03/B08 rules, ΕΛΕΥΘΕΡΟ placeholder),
- * saves the protocol and its assignments, stores new attachments (stamp, size/hash), moves files when the folder
+ * saves the protocol and its assignments, stores new attachments (unstamped since R4f; size/hash), moves files when the folder
  * changes, links related numbers both ways, and sends the assignment / receipt e-mails.
  *
  * Errors the user can fix come back as a ValidationException with field keys, never as an SQL error.
@@ -404,7 +404,6 @@ final class ProtocolWriter
         // R5c: registering an e-mail: its date ("the message you sent on …") and the e-mail form of the receipt
         $v['email_date'] = TextInput::clean($input['email_date'] ?? null);
         $v['replace_placeholder'] = filter_var($input['replace_placeholder'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $v['no_stamp'] = ! empty($input['explicityNoStamp']);
 
         return $v;
     }
@@ -604,69 +603,56 @@ final class ProtocolWriter
     {
         $protocol = $result->protocol;
         $strict = $written !== null;
-        $stamp = null;
         $date = $protocol->dateOf('protocoldate');
         // R6d: unless "Ελεύθερη επιλογή χρόνου διατήρησης" is on, the retention is the folder's, whatever was sent
         $keep = Config::getConfigValueOf('allowUserChangeKeepSelect') ? $v['keep'] : (Keepvalue::retentionOf($protocol->fakelos) ?: null);
         $expires = ($keep !== null && is_numeric($keep) && $date) ? $date->addYears((int) $keep)->format('Y-m-d') : null;
 
-        try {
-            foreach ($attachments as $row) {
-                $file = $row['file'] ?? null;
-                $content = $row['content'] ?? null;
-                $ada = TextInput::clean($row['ada'] ?? null);
-                if (! $file && $content === null && $ada === null) {
+        foreach ($attachments as $row) {
+            $file = $row['file'] ?? null;
+            $content = $row['content'] ?? null;
+            $ada = TextInput::clean($row['ada'] ?? null);
+            if (! $file && $content === null && $ada === null) {
+                continue;
+            }
+            // "dir": where the file goes when the protocol has no folder (the e-mail's own copy: arxeio/emails)
+            $dir = $protocol->fakelos === null && isset($row['dir']) ? $row['dir'] : self::folderPath($protocol->fakelos);
+            $name = $mime = $path = null;
+            if ($file || $content !== null) {
+                $name = $file
+                    ? FileNames::clean($file->getClientOriginalName(), $file->getClientMimeType())
+                    : FileNames::clean((string) ($row['name'] ?? ''), $row['mime'] ?? null);
+                $mime = $file ? $file->getMimeType() : ($row['mime'] ?? null);
+                $storeAs = FileNames::fit($protocol->protocolnum . '-' . $date?->format('Ymd') . '_' . ($row['prefix'] ?? ''), $name, $dir);
+                try {
+                    $path = $file
+                        ? ($file->isValid() ? $file->storeAs($dir, $storeAs) : false)
+                        : (Storage::put("$dir/$storeAs", $content) ? "$dir/$storeAs" : false);
+                } catch (\Throwable $e) {
+                    if ($strict) {
+                        throw $e;
+                    }
+                    report($e);
+                    $path = false;
+                }
+                if (! $path) {
+                    if ($strict) {
+                        throw new \RuntimeException("file not written: $dir/$storeAs");
+                    }
+                    // before R1a the row was saved anyway, with an empty path, and the save reported success
+                    $result->warnings[] = "Το αρχείο «{$name}» δεν αποθηκεύτηκε. Επισυνάψτε το ξανά.";
                     continue;
                 }
-                // "dir": where the file goes when the protocol has no folder (the e-mail's own copy: arxeio/emails)
-                $dir = $protocol->fakelos === null && isset($row['dir']) ? $row['dir'] : self::folderPath($protocol->fakelos);
-                $name = $mime = $path = null;
-                if ($file || $content !== null) {
-                    $name = $file
-                        ? FileNames::clean($file->getClientOriginalName(), $file->getClientMimeType())
-                        : FileNames::clean((string) ($row['name'] ?? ''), $row['mime'] ?? null);
-                    $mime = $file ? $file->getMimeType() : ($row['mime'] ?? null);
-                    $storeAs = FileNames::fit($protocol->protocolnum . '-' . $date?->format('Ymd') . '_' . ($row['prefix'] ?? ''), $name, $dir);
-                    try {
-                        $path = $file
-                            ? ($file->isValid() ? $file->storeAs($dir, $storeAs) : false)
-                            : (Storage::put("$dir/$storeAs", $content) ? "$dir/$storeAs" : false);
-                    } catch (\Throwable $e) {
-                        if ($strict) {
-                            throw $e;
-                        }
-                        report($e);
-                        $path = false;
-                    }
-                    if (! $path) {
-                        if ($strict) {
-                            throw new \RuntimeException("file not written: $dir/$storeAs");
-                        }
-                        // before R1a the row was saved anyway, with an empty path, and the save reported success
-                        $result->warnings[] = "Το αρχείο «{$name}» δεν αποθηκεύτηκε. Επισυνάψτε το ξανά.";
-                        continue;
-                    }
-                    if ($strict) {
-                        $written[] = $path;
-                    }
-                    if ($row['stamp'] ?? true) {
-                        if ($stamp === null) {
-                            $stamp = new Stamp();
-                            if (! Config::getConfigValueOf('putStamp') || $v['no_stamp'] || ! $stamp->prepare($protocol)) {
-                                $stamp->cleanup();
-                            }
-                        }
-                        $stamp->apply($path);
-                    }
+                if ($strict) {
+                    $written[] = $path;
                 }
-                Attachment::updateOrCreate(
-                    ['protocol_id' => $protocol->id, 'ada' => $ada, 'name' => $name, 'mimeType' => $mime, 'savedPath' => $path],
-                    ['keep' => $keep, 'expires' => $expires],
-                );
-                $result->attachmentsAdded++;
             }
-        } finally {
-            $stamp?->cleanup();
+            Attachment::updateOrCreate(
+                ['protocol_id' => $protocol->id, 'ada' => $ada, 'name' => $name, 'mimeType' => $mime, 'savedPath' => $path],
+                // R4f review: a file uploaded again over an old one is stored unstamped, whatever the old one carried
+                ['keep' => $keep, 'expires' => $expires] + ($path ? ['stamp_in_file' => false] : []),
+            );
+            $result->attachmentsAdded++;
         }
     }
 
