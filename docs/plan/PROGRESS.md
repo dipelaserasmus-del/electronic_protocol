@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **96 / 110** `██████████████████████████░░░░` 87% |
-| Effort done (PERT) | **42.7 / 49.3 h** `██████████████████████████░░░░` 87% |
-| Remaining effort, one agent in sequence | **6.6 h ± 0.4** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **97 / 110** `██████████████████████████░░░░` 88% |
+| Effort done (PERT) | **43.3 / 49.3 h** `██████████████████████████░░░░` 88% |
+| Remaining effort, one agent in sequence | **6.0 h ± 0.4** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
-| Next task | **R4h** — Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own |
+| Next task | **R5p** — Inbox: each e-mail in an envelope (2–3 versions, owner chooses) |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
 **Critical path (remaining):** Z01 → Z02 → Z03
@@ -34,7 +34,7 @@
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
-| 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ⬜R4h ⬜R5p ⬜N05 ⬜R6e | 7/11 | `██████░░░░` |
+| 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ⬜R5p ⬜N05 ⬜R6e | 8/11 | `███████░░░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -321,8 +321,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g done
-  class R4h,R5p,N05,R6e,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h done
+  class R5p,N05,R6e,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
 ```
@@ -446,7 +446,7 @@ gantt
   R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :done, r4e, 2026-11-14 01:54, 33m
   R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :done, r4f, 2026-11-14 02:27, 33m
   R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :done, r4g, 2026-11-14 03:00, 19m
-  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :r4h, 2026-11-14 03:19, 33m
+  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :done, r4h, 2026-11-14 03:19, 33m
   R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :r5p, 2026-11-14 03:52, 19m
   N05 Notepad per user on every page  sections, to-dos, markdown, autosave :n05, 2026-11-14 04:11, 33m
   R6e Log viewer for administrators (Console-like  levels, search, pages by day) :r6e, 2026-11-14 04:44, 33m
@@ -565,7 +565,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 | #109 |
 | ✅ | **R4f** | Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice | R4c, R4e | 0.5 | 0.1 | 4.7 | 5.3 | 9.6 | 10.2 | 4.9 | #110 |
 | ✅ | **R4g** | Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.2 | 10.5 | 4.9 | #111 |
-| ⬜ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 9.9 | 10.5 | 7.1 |  |
+| ✅ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 9.9 | 10.5 | 7.1 | #112 |
 | ⬜ | **R5p** 🔴 | Inbox: each e-mail in an envelope (2–3 versions, owner chooses) | R5o | 0.3 | 0.1 | 10.2 | 10.5 | 10.2 | 10.5 | 0.0 |  |
 | ⬜ | **N05** | Notepad per user on every page: sections, to-dos, markdown, autosave | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 9.9 | 10.5 | 6.3 |  |
 | ⬜ | **R6e** | Log viewer for administrators (Console-like: levels, search, pages by day) | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.9 | 10.5 | 5.8 |  |
