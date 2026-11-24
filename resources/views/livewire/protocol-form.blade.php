@@ -385,11 +385,11 @@
                                     <div class="input-group input-group-sm flex-grow-1" x-show="editing" x-cloak style="max-width: 32rem">
                                         <input type="text" class="form-control rename-input" x-ref="input" x-model="base" maxlength="200"
                                                aria-label="Νέο όνομα του «{{ $a->name }}»"
-                                               x-on:keydown.enter.prevent="editing = false; $wire.renameAttachment({{ $a->id }}, base + @js($ext !== '' ? '.'.$ext : ''))"
+                                               x-on:keydown.enter.prevent="editing = false; $wire.renameAttachment({{ $a->id }}, base)"
                                                x-on:keydown.escape.prevent.stop="editing = false">
                                         @if ($ext !== '')<span class="input-group-text">.{{ $ext }}</span>@endif
                                         <button type="button" class="btn btn-primary" data-action="rename-save"
-                                                x-on:click="editing = false; $wire.renameAttachment({{ $a->id }}, base + @js($ext !== '' ? '.'.$ext : ''))">Αποθήκευση</button>
+                                                x-on:click="editing = false; $wire.renameAttachment({{ $a->id }}, base)">Αποθήκευση</button>
                                         <button type="button" class="btn btn-outline-secondary" x-on:click="editing = false">Άκυρο</button>
                                     </div>
                                 </div>

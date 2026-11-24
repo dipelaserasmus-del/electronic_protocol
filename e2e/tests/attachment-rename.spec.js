@@ -42,6 +42,20 @@ test('rename an attachment: ✎, type, Enter; the extension stays and the downlo
   await expect(page.locator('#app-toasts .toast').last()).toContainText('Μετονομάστηκε σε');
   await evidence(page, 'r4d-renamed', await around(page, row));
 
+  // review of R4d: the extension typed (or pasted) with the name is not doubled
+  await row.locator('[data-action=rename]').click();
+  await input.fill(`Πρόσκληση ${stamp}.pdf`);
+  const again = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+  await row.locator('[data-action=rename-save]').click();
+  await again;
+  await expect(link).toHaveText(`Πρόσκληση ${stamp}.pdf`);
+  await row.locator('[data-action=rename]').click();
+  await input.fill(`Πρόσκληση σε ημερίδα ${stamp}`);
+  const third = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
+  await input.press('Enter');
+  await third;
+  await expect(link).toHaveText(`Πρόσκληση σε ημερίδα ${stamp}.pdf`);
+
   // the same file downloads, under the new name
   const response = await page.request.get(await link.getAttribute('href'));
   expect(response.status()).toBe(200);

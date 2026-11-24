@@ -99,6 +99,13 @@ class AttachmentRenameTest extends FeatureTestCase
         $form->call('renameAttachment', $a->id, 'Πρόσκληση ημερίδας.pdf')
             ->assertDispatched('toast', message: 'Μετονομάστηκε σε «Πρόσκληση ημερίδας.pdf».', type: 'success')
             ->assertSee('Πρόσκληση ημερίδας.pdf');
+        // review of R4d: the field sends what was typed: without the extension, or with it (not doubled)
+        $form->call('renameAttachment', $a->id, 'Απόφαση')->assertSee('Απόφαση.pdf');
+        $this->assertSame('Απόφαση.pdf', $a->fresh()->name);
+        $form->call('renameAttachment', $a->id, 'Απόφαση.pdf');
+        $this->assertSame('Απόφαση.pdf', $a->fresh()->name);
+        $this->assertStringNotContainsString("base + '.pdf'", $form->html(), 'the field adds nothing');
+        $form->call('renameAttachment', $a->id, 'Πρόσκληση ημερίδας');
         $form->call('renameAttachment', $a->id, '')->assertDispatched('toast', message: 'Γράψτε το νέο όνομα.', type: 'error');
 
         Livewire::actingAs($admin)->withQueryParams(['q' => 'συνημμένο:ημερίδας'])->test(SearchResults::class)->assertSee('Με συνημμένο');
