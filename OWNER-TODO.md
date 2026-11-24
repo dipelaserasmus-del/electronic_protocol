@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 16:00 (R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:57 (R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -201,6 +201,17 @@ Open *Εισερχόμενα*.
   *Καταχωρίστηκε από*.
 - [ ] **65.** In a protocol's *Συνημμένα*, the ✎ next to a file's name: type a new name (the `.pdf` stays) and press
   *Enter*; *Escape* leaves it. The file opens / downloads under the new name, and `συνημμένο:` finds it.
+- [ ] **66.** In a protocol's *Συνημμένα*, the 👁 next to a file: it opens in a large window; ‹ › (or ← →) go to the
+  protocol's other files; PDF, pictures, text, Word and Excel / LibreOffice files are shown, others offer *Λήψη*. In
+  *Εισερχόμενα* the same for an e-mail's attachments.
+- [ ] **67.** *Διαχείριση → Σφραγίδα αρχείων* (also as Συγγραφέας / Αναθέτων): change lines, colour, width, the
+  emblem, the corner; the preview follows. On your real copy you can load your official stamp:
+  `./dev.sh real artisan stamp:import local-data/stamp --preview` (look at `local-data/stamp/preview.png`), then without
+  `--preview`; fine-tune it on the page.
+- [ ] **68.** Turn on *Ρυθμίσεις → Σφραγίδα στα συνημμένα*, add a PDF to a protocol, open it with 👁 or download it: it
+  has the stamp, top right of the first page. Turn *Με σφραγίδα* off (in *Συνημμένα* or in the preview window): the
+  file as you uploaded it. Older files say *η σφραγίδα είναι μέσα στο αρχείο*.
+- [ ] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
@@ -224,6 +235,9 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
+6. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
+   has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
+   as it is (my suggestion), or ask for the browser libraries.
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
@@ -243,6 +257,8 @@ Open *Εισερχόμενα*.
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
    - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07, after the files
      are copied: it moves them);
+   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e), and if you want the old files to
+     follow the new stamp: `php artisan stamp:old`, then `--apply` (R4g; it keeps the files as they were);
    - if you applied the Apache rules below in the meantime, remove them before the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
