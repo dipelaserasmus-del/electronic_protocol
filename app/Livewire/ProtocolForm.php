@@ -256,6 +256,21 @@ class ProtocolForm extends Component
         }
     }
 
+    /** R4d: rename an attachment (the name shown; the file keeps its path) */
+    public function renameAttachment(int $attachmentId, string $name, ProtocolWriter $writer): void
+    {
+        $attachment = Attachment::where('protocol_id', $this->protocolId)->findOrFail($attachmentId);
+        $before = $attachment->name;
+        try {
+            $after = $writer->renameAttachment(Auth::user(), $attachment, mb_substr($name, 0, 1000));
+            if ($after !== $before) {
+                $this->dispatch('toast', message: "Μετονομάστηκε σε «{$after}».", type: 'success');
+            }
+        } catch (AuthorizationException|\InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
     public function updatedPicked(): void
     {
         $this->resetErrorBag('picked');
