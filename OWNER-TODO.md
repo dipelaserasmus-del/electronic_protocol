@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:57 (R4h protocols to the trash; R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (R5p inbox envelopes; R4h protocols to the trash; R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -215,6 +215,8 @@ Open *Εισερχόμενα*.
 - [ ] **70.** With *Έλεγχοι καταχώρισης* off, *Διαγραφή* on a test protocol: it goes to *Κάδος → Πρωτόκολλα* and its
   number is free. *Επαναφορά*: back with its number (or a new one, with a note in *Παρατηρήσεις*, if the number was
   given meanwhile). As Συγγραφέας you see only your own deleted protocols.
+- [ ] **71.** *Εισερχόμενα*: each e-mail in an envelope. Try the three looks in *Ρυθμίσεις → E-mail → Εμφάνιση των
+  e-mail* and tell me A, B or C (question 5).
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
@@ -238,6 +240,8 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
+5. **Envelopes in the inbox (R5p):** A (air mail), B (paper with a stamp) or C (plain)? Screenshots in
+   [R5p](docs/reports/R5p.md); try them live in *Ρυθμίσεις → E-mail*. I keep the one you choose.
 6. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
    has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
    as it is (my suggestion), or ask for the browser libraries.
