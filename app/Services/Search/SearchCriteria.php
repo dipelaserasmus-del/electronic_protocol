@@ -49,6 +49,12 @@ final class SearchCriteria
     /** @var array<string, array{0: ?CarbonImmutable, 1: ?CarbonImmutable}> date field => [from, to] (both included) */
     public array $dates = [];
 
+    /**
+     * @var array<string, string> R3i: date field => the relative value it came from (σήμερα, χθες, εβδομάδα, 7μέρες,
+     * μήνας, φέτος, πέρσι), written back by QueryParser::format() instead of the dates
+     */
+    public array $relative = [];
+
     /** '' = any folder, NO_FOLDER, or a code / part of a code or of its description */
     public string $folder = '';
 
@@ -63,6 +69,12 @@ final class SearchCriteria
 
     /** Part of the name of a user assigned for διεκπεραίωση */
     public ?string $assigneeName = null;
+
+    /** R3i: the user who registered the protocol (protocols.user_id) */
+    public ?int $registrarId = null;
+
+    /** R3i: part of the name of the user who registered the protocol */
+    public ?string $registrarName = null;
 
     /**
      * Pending check (owner, 2026-11-18): protocols without a folder or with ΕΚΚΡΕΜΟΤΗΤΑ in the subject (added while
@@ -81,6 +93,7 @@ final class SearchCriteria
         return $this->number === null && $this->year === null && ! array_filter($this->dates, fn ($r) => $r[0] || $r[1])
             && $this->folder === '' && ! array_filter($this->text, fn ($t) => trim($t) !== '') && ! $this->empty
             && $this->assigneeId === null && ($this->assigneeName ?? '') === '' && ! $this->pending
+            && $this->registrarId === null && ($this->registrarName ?? '') === ''
             && ! array_filter($this->words, fn ($w) => trim($w) !== '');
     }
 
