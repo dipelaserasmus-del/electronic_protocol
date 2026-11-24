@@ -15,7 +15,7 @@ test('the log viewer: days, levels, search, details (R6e)', async ({ page }) => 
   const level = await entries.first().getAttribute('data-level');
   await page.locator(`label[for="lvl-${level}"]`).click();
   await expect(page.locator('.log-entry').first()).toHaveAttribute('data-level', level);
-  expect(await page.locator(`.log-entry:not([data-level="${level}"])`).count()).toBe(0);
+  await expect(page.locator(`.log-entry:not([data-level="${level}"])`)).toHaveCount(0);
   await page.locator(`label[for="lvl-${level}"]`).click();
 
   // search: the first word of the first message, marked
