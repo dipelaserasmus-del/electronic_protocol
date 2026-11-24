@@ -100,6 +100,10 @@
         "guest",
         "web"
     ],
+    "GET notes": [
+        "auth",
+        "web"
+    ],
     "GET password/reset": [
         "guest",
         "web"
@@ -227,6 +231,11 @@
         "web"
     ],
     "POST logout": [
+        "web"
+    ],
+    "POST notes": [
+        "auth",
+        "throttle:120,1",
         "web"
     ],
     "POST password/email": [

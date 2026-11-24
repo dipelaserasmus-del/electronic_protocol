@@ -67,6 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/search', [SearchController::class, 'results']);   // R3c: results of the top-bar box
     Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1');
     Route::post('/preferences', [PreferencesController::class, 'update'])->middleware('throttle:60,1');   // R3d
+    Route::get('/notes', [\App\Http\Controllers\NotesController::class, 'show']);   // N05: the user's notepad
+    Route::post('/notes', [\App\Http\Controllers\NotesController::class, 'update'])->middleware('throttle:120,1');
     // autocomplete: the forms send the search term as ?term=... (path form kept for compatibility)
     Route::get('/getValues/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValuesQuery']);
     Route::get('/getValues/{term}/{field}/{id}/{divId}/{multi}', [ProtocolController::class, 'getValues']);

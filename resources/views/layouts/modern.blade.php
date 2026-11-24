@@ -25,7 +25,7 @@
     @vite(['resources/modern/app.scss', 'resources/modern/app.js'])
     @livewireStyles
 </head>
-<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif">
+<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif @auth has-notepad @endauth">
 {{-- R3e (owner, 2026-11-20): the menu stays open from 768px up (it folded under 992px); see app.scss --}}
 <nav class="navbar navbar-expand-md navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
@@ -163,6 +163,7 @@
 {{-- N04 toasts: window.appToast(message, type, link), session('toast') = [message, type], Livewire dispatch('toast').
      R1e: top centre under the top bar (bottom right covered the save button); a click closes them --}}
 @include('partials.preview-modal')   {{-- R4c --}}
+@auth @include('partials.notepad') @endauth   {{-- N05 --}}
 <div id="app-toasts" class="toast-container position-fixed start-50 translate-middle-x p-3">
     @if (is_array(session('toast')))
         <div hidden data-toast-message="{{ session('toast')[0] ?? '' }}" data-toast-type="{{ session('toast')[1] ?? 'success' }}"></div>
