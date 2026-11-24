@@ -266,4 +266,28 @@ class StampTest extends FeatureTestCase
         array_map('unlink', glob("$dir/*"));
         rmdir($dir);
     }
+
+    /** docx: the stamp in the first page's header, at its size and distance from the corner */
+    public function test_word_files_get_the_stamp_in_the_first_page_header(): void
+    {
+        $this->template()->save();
+        $word = new \PhpOffice\PhpWord\PhpWord();
+        $word->addSection()->addText('Έγγραφο δοκιμής');
+        $file = tempnam(sys_get_temp_dir(), 'docx');
+        \PhpOffice\PhpWord\IOFactory::createWriter($word, 'Word2007')->save($file);
+        Storage::put('arxeio/t/doc.docx', file_get_contents($file));
+        unlink($file);
+
+        $stamp = new Stamp();
+        $stamp->prepare(Protocol::factory()->number(43)->create());
+        $stamp->apply('arxeio/t/doc.docx');
+
+        $zip = new \ZipArchive();
+        $zip->open(Storage::path('arxeio/t/doc.docx'));
+        $this->assertStringContainsString('<w:titlePg/>', $zip->getFromName('word/document.xml'), 'first page only');
+        $header = (string) $zip->getFromName('word/header1.xml');
+        $zip->close();
+        $this->assertMatchesRegularExpression('/width:141\.7\dpt; height:[\d.]+pt; margin-left:425\.2\d?pt; margin-top:22\.68pt; position:absolute/', $header);
+        $this->assertStringContainsString('mso-position-horizontal-relative:page', $header);
+    }
 }

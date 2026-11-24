@@ -126,22 +126,21 @@ final class Stamp
         }
         $type = $t->firstPageOnly ? \PhpOffice\PhpWord\Element\Footer::FIRST : \PhpOffice\PhpWord\Element\Footer::AUTO;
         $container = str_contains($t->corner, 'top') ? $section->addHeader($type) : $section->addFooter($type);
-        $right = str_contains($t->corner, 'right');
-        $top = str_contains($t->corner, 'top');
+        // placed from the page's own size (twips → points), the stamp's distance from the corner kept
+        $style = $section->getStyle();
+        [$pageW, $pageH] = [($style->getPageSizeW() ?: 11906) / 20, ($style->getPageSizeH() ?: 16838) / 20];
+        $left = str_contains($t->corner, 'right') ? $pageW - ($t->x + $w) * $pt : $t->x * $pt;
+        $top = str_contains($t->corner, 'top') ? $t->y * $pt : $pageH - ($t->y + $h) * $pt;
         $container->addImage($png, [
             'width' => round($w * $pt, 2), 'height' => round($h * $pt, 2),
             'wrappingStyle' => \PhpOffice\PhpWord\Style\Image::WRAPPING_STYLE_INFRONT,
             'positioning' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
+            'posHorizontal' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
+            'posVertical' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
             'posHorizontalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
             'posVerticalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
-            'posHorizontal' => $right ? \PhpOffice\PhpWord\Style\Image::POSITION_HORIZONTAL_RIGHT : \PhpOffice\PhpWord\Style\Image::POSITION_HORIZONTAL_LEFT,
-            'posVertical' => $top ? \PhpOffice\PhpWord\Style\Image::POSITION_VERTICAL_TOP : \PhpOffice\PhpWord\Style\Image::POSITION_VERTICAL_BOTTOM,
-            $right ? 'wrapDistanceRight' : 'wrapDistanceLeft' => round($t->x * $pt, 2),
-            $top ? 'wrapDistanceTop' : 'wrapDistanceBottom' => round($t->y * $pt, 2),
+            'marginLeft' => round($left, 2), 'marginTop' => round($top, 2),
         ]);
-        if ($t->firstPageOnly) {
-            $section->getStyle()->setTitlePg(true);   // a first-page header of its own
-        }
         $doc->save($out, $ext === 'odt' ? 'ODText' : 'Word2007');
         return is_file($out) ? file_get_contents($out) : null;
     }
