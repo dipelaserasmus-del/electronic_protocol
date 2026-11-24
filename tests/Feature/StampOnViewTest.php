@@ -160,4 +160,25 @@ class StampOnViewTest extends FeatureTestCase
         (require database_path('migrations/2026_11_24_000002_attachments_stamp_in_file.php'))->up();   // twice: no harm
         $this->assertTrue($pdf->fresh()->stamp_in_file);
     }
+
+    /** review of R4f: the office's name is part of the stamp; a file uploaded again over an old one is stamped */
+    public function test_office_name_and_a_file_uploaded_again(): void
+    {
+        $a = $this->attachment();
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/download/' . $a->id)->assertOk();
+        $before = $this->copies();
+        $this->setting('ipiresiasName', 'Άλλη υπηρεσία');
+        $this->actingAs($admin)->get('/download/' . $a->id)->assertOk();
+        $this->assertNotSame($before, $this->copies(), 'made again with the new name');
+
+        $p = Protocol::factory()->number(9)->create(['fakelos' => 'Φ.1']);
+        $old = $this->attachment(['name' => 'παλιό.pdf', 'stamp_in_file' => true, 'mimeType' => 'application/pdf'], $p);
+        $old->forceFill(['savedPath' => 'arxeio/Φ.1/9-' . $p->dateOf('protocoldate')->format('Ymd') . '_παλιό.pdf'])->save();
+        Storage::put($old->savedPath, $this->pdf);
+        app(\App\Services\Protocols\ProtocolWriter::class)->update($admin, $p->fresh(), $this->protocolForm(['thema' => $p->thema, 'fakelos' => $p->fakelos]),
+            [['file' => UploadedFile::fake()->createWithContent('παλιό.pdf', $this->pdf)]]);
+        $again = Attachment::where('protocol_id', $p->id)->where('name', 'παλιό.pdf')->get();
+        $this->assertSame([[$old->id, false]], $again->map(fn ($x) => [$x->id, $x->stamp_in_file])->all(), 'the same row, now unstamped');
+    }
 }

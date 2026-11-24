@@ -86,10 +86,24 @@ class OldStamps extends Command
             return false;
         }
         $keep = self::ORIGINALS . '/' . $path;
-        if (! Storage::exists($keep)) {
-            Storage::put($keep, $pdf);   // the file as it was, before this command
+        // the file as it was, before this command: kept first, or nothing is changed (review of R4g); a disk may
+        // answer false or throw
+        $write = function (string $to, string $bytes): bool {
+            try {
+                return Storage::put($to, $bytes) && Storage::get($to) === $bytes;
+            } catch (\Throwable $e) {
+                report($e);
+                return false;
+            }
+        };
+        if (! Storage::exists($keep) && ! $write($keep, $pdf)) {
+            $this->warn("#{$a->id}: δεν κρατήθηκε αντίγραφο· το αρχείο έμεινε ως έχει.");
+            return false;
         }
-        Storage::put($path, $clean);
+        if (! $write($path, $clean)) {
+            $this->warn("#{$a->id}: δεν γράφτηκε· το αρχείο έμεινε ως έχει.");
+            return false;
+        }
         $a->stamp_in_file = false;
         $a->save();   // size and SHA-256 of the file now stored
         StampedCopy::forget($a);

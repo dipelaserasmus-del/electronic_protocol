@@ -8,6 +8,7 @@ namespace App\Services\Stamp\Pdf;
  */
 final class PdfParser
 {
+    /** a key marking a PHP array as a dictionary (an empty one, or one whose names are 0, 1, …); never written */
     public const EMPTY_DICT = "\0dict";
 
     private const SPACE = " \t\r\n\f\0";
@@ -143,7 +144,8 @@ final class PdfParser
             $this->skipSpace();
             if (substr($this->data, $this->pos, 2) === '>>') {
                 $this->pos += 2;
-                return $dict ?: [self::EMPTY_DICT => true];
+                // marked as a dictionary when PHP would take it for a list (empty, or names /0 /1 …: review of R4e)
+                return $dict === [] || array_is_list($dict) ? $dict + [self::EMPTY_DICT => true] : $dict;
             }
             $key = $this->value();
             if (! $key instanceof PdfName) {
