@@ -193,6 +193,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   `user:` → `registrarName` (LIKE on users.name → `protocols.user_id`), menu `by` → `registrarId` (menu wins).
   `/find`: `quickDate(key)` buttons (`SearchPage::QUICK_DATES`) fill from/to and clear the year; a protocol date typed
   in «Οπουδήποτε» clears the prefilled year unless `έτος:` is typed.
+- **R4d (Batch 9.6):** `ProtocolWriter::renameAttachment(user, attachment, typed)` (same rule as `removeAttachment`:
+  `ProtocolAccess::canSave` + policy update; only `attachments.name`, path untouched; extension from
+  `ProtocolWriter::extensionOf` = the name's or the stored file's, not doubled when typed; `FileNames::clean`;
+  `InvalidArgumentException` «Γράψτε το νέο όνομα.» / ΑΔΑ-only). Form: Alpine inline editor in `.attachment-name`
+  (`data-action="rename"`, `.rename-input`, fixed `.input-group-text` extension, Enter / Escape), Livewire
+  `ProtocolForm::renameAttachment`.
 - **R2l (owner, 2026-11-23):** the list page's «Αναζήτηση» pill removed (top-bar search box + its advanced button cover it).
 - **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
   before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
@@ -299,6 +305,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 16:00 | R4d | #107 | rename an attachment (✎; shown name only, extension fixed, characters cleaned; same rule as ✕) |
 | 2026-11-24 16:00 | R4c–R6e | #108–#115 | Batch 9.6 (stacked): preview, stamp designer + PDF stamper, stamp on view, old stamps, protocol trash, envelopes, notepad, log viewer; batch summary |
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |

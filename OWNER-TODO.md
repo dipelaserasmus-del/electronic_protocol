@@ -200,6 +200,8 @@ Open *Εισερχόμενα*.
   `πότε:μήνας`, `πότε:πέρσι`; `χρήστης:` + part of a name = registered by that user (e.g.
   `πότε:7μέρες χρήστης:Συγγραφέας`). On *Σύνθετη αναζήτηση*: the buttons under the dates (*Σήμερα … Πέρσι*) and
   *Καταχωρίστηκε από*.
+- [ ] **65.** In a protocol's *Συνημμένα*, the ✎ next to a file's name: type a new name (the `.pdf` stays) and press
+  *Enter*; *Escape* leaves it. The file opens / downloads under the new name, and `συνημμένο:` finds it.
 - [ ] **66.** In a protocol's *Συνημμένα*, the 👁 next to a file: it opens in a large window; ‹ › (or ← →) go to the
   protocol's other files; PDF, pictures, text, Word and Excel / LibreOffice files are shown, others offer *Λήψη*. In
   *Εισερχόμενα* the same for an e-mail's attachments.
