@@ -150,6 +150,28 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 |----|------|-----|-----|------|---------|
 | R7 | Protocol book print, receipts (+ email receipt), XLS export, attachment-clearance print: rebuilt on new layout, output checked against legacy output | UI | P2 | M | R2 |
 
+### Batch 9.6 — owner's requests (2026-11-23)
+Answers (owner, 2026-11-23): `putStamp` is on in production; preview option (b) (browser + JS converters for docx/xlsx);
+one note per user, with sections and to-dos; Batch 9.6 runs **before Batch 10** (so Z01–Z03 cover the new pages).
+Stamp: attachments must print **with or without** the stamp, the stamp's contents are editable (owner, 2026-11-24: by
+**Διαχειριστής and Συγγραφέας** — Αναθέτων too, as it has every Συγγραφέας right; Αναγνώστης cannot; position stays
+**top right of the first page** for now), and it follows the
+organisation's official stamp (the owner's image is in git-ignored `local-data/`: it names the organisation, so it is
+**never committed**; the repository ships an invented «ΥΠΗΡΕΣΙΑ ΔΟΚΙΜΗΣ» stamp).
+
+| ID | Task | Cat | Pri | Size | Depends |
+|----|------|-----|-----|------|---------|
+| R3h | **Direct links** `/protocol/{num}` (this year) and `/protocol/{num}/{year}` → the protocol's form. Not found, not allowed, bad number/year → the **same** «Δεν υπάρχει» page (does not reveal that a protocol exists), with a search link. «Σύνδεσμος» pill in the form copies the link | UI/SEC | P2 | S | R1b |
+| R3i | **Relative dates + who registered**: `πότε:` = `ημ:`; values `σήμερα`, `χθες`, `εβδομάδα` (Mon→today), `7μέρες`/`τελευταίες7` (any N), `μήνας`, `πέρσι`, for every date operator; `χρήστης:`/`καταχώρισε:`/`user:` on `protocols.user_id` (partial name, like `ανάθεση:`); `format()` writes them back. Advanced search: quick date buttons and «Καταχωρίστηκε από». E.g. `πότε:7μέρες χρήστης:Α είναι:εκκρεμές` | BE/UI | P2 | M | R3f |
+| R4d | **Rename an attachment**: ✎ next to the name for users who may edit the protocol; only `attachments.name` changes (extension fixed, characters cleaned; the file on disk keeps its path); found at once by `συνημμένο:`; recorded by X01 once it exists | UI | P2 | S | R1c |
+| R4c | **Preview in the app**: 👁 opens a large modal with ‹ › over the protocol's files (inbox attachments too). PDF in the browser's viewer, images, txt/csv as escaped text; docx (docx-preview) and xlsx/ods (SheetJS) converted in the browser, sandboxed, approximate layout noted; other types → «Δεν υποστηρίζεται» + download. Same access checks as download | UI/SEC | P2 | M | R4a |
+| R4e | **Stamp designer**: the stamp is a template, not a fixed image: optional emblem (high-resolution PNG), text lines (size, bold, spacing, alignment) and field lines with `{αριθμός}` `{ημερομηνία}` `{έτος}` `{υπηρεσία}` over a dotted line, colour, size in mm, position on the page (corner + offset, first/all pages). Editor in Ρυθμίσεις → «Σφραγίδα» with live preview; drawn at 600 dpi (sharp in print). Owner's stamp: rebuilt locally from `local-data/official stamp.jpg` (emblem from the public state emblem, vector → PNG) into `local-data/stamp/`, loaded with `php artisan stamp:import` by the owner only | UI/BE | P1 | M | R6c |
+| R4f | **Stamp when viewing / printing, not on save**: new files are stored **unstamped**; preview / download / print give the stamped copy by default (cached, rebuilt when number, date or template change) with a «Με σφραγίδα» toggle (remembered per user) to get the original. Inbox registration the same. `attachments.stamp_in_file` (new column): files saved before R4f already carry the old stamp → shown as stored in both modes, with a note «η σφραγίδα είναι μέσα στο αρχείο» (never stamped twice). The form's «Χωρίς σφραγίδα» checkbox goes | BE/UI | P1 | M | R4c, R4e |
+| R4g | **Old stamped files** (investigation): can the old stamp be removed from PDFs stamped by the watermark library (it adds one image per page over the imported page)? Report + tests on synthetic stamped files; only if safe, an owner-run command producing unstamped copies (originals kept) | BE | P3 | S | R4f |
+| R5p | **Envelopes in the inbox**: each e-mail inside an envelope (air-mail border, sender + date as the address strip, gap between envelopes; replaces R5o's thin line, keeps «N από M»). 2–3 versions as screenshots, the owner chooses | UI | P3 | S | R5o |
+| N05 | **Notepad per user**: tab on the right edge of every page, closed by default; side panel with the user's one note (`user_notes`, text): sections (headings, foldable), to-dos (`- [ ]`, ticked with a click in view mode), basic markdown (bold, italic, lists, links; HTML escaped, unsafe links blocked); small toolbar; autosave ~1 s after typing with «Αποθηκεύτηκε HH:MM»; a second tab with an older copy is warned, not silently overwritten; open/closed per browser. Private to the user (administrators too) | UI/BE | P2 | M | N04 |
+| R6e | **Log viewer** (administrators, Διαχείριση): Livewire page like macOS Console: rows (time, coloured level, message), click → stack trace with highlighting; level filters, search with highlighted matches, pages by day (‹ date ›, calendar) and within a day, auto-refresh toggle. Reads big files from the end in chunks; only whitelisted files in `storage/logs` (no path traversal); output escaped. Needs `LOG_CHANNEL=daily` (+ days kept): in the deployment guide, not on the server now; an old single `laravel.log` is split by each line's date | UI/SEC | P2 | M | R6c |
+
 ## Phase 5 — Finish
 
 | ID | Task | Cat | Pri | Size | Depends |
@@ -182,6 +204,7 @@ Each module: new services + Livewire screens on N03/N04, POST/DELETE + CSRF for 
 8. **Batch 8:** R5c → R5d → R5b 📧
 9. **Batch 9:** R6a → R6b → R1d → R6c → R7
    - **Batch 9.5** (owner's notes, 2026-11-19): R2e (list pager above the list too; previous / next; any page from a list) → R6d (settings explained, numbering settings together, settings without effect hidden) → R2f (dates out of order or in the future flagged in the list and the form) → R2g (the list pager on every paged screen) → R2h (row actions under ⋮) → R5e (inbox: date field; suggestions from file names) → R1j (form: floating save, copy/receipt at the far right, Λίστα in the top bar a link) → R3e (each user's home page; the top bar stays open from 768px) → R2i (list: alternating colours, fixed columns, short rows with ▾) → R3f (search: whole words / numbers) → R1k (unsaved changes: red dot, question before leaving) → R2j (assignment pills ✎ / 👁) → R5f (inbox badge with the number of e-mails) → R5g (inbox pagers) → R3g (Διαχείριση in the user menu) → R2k (list rows two lines, Από / Προς tooltip) → R5h (inbox: scrolling to an e-mail stays) → R5i (long recipient lists folded) → R5j (inbox: files above the buttons, e-mail tinted, Θέμα) → R5k (inbox: progress while registering) → R5l (inbox: done e-mails fold)
+   - **Batch 9.6** (owner's requests, 2026-11-23; before Batch 10): R3h (direct links /protocol/N[/YYYY]) → R3i (search: σήμερα / χθες / εβδομάδα / N μέρες, χρήστης:) → R4d (rename attachments) → R4c (preview in the app) → R4e (stamp designer, official stamp) → R4f (stamp when viewing / printing, with or without) → R4g (old stamped files, investigation) → R5p (envelopes in the inbox) → N05 (notepad per user) → R6e (log viewer)
 10. **Batch 10:** A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03
 
 X01 can be moved earlier at any time (it is generic and doesn't depend on module rebuilds).
@@ -231,6 +254,14 @@ X01 can be moved earlier at any time (it is generic and doesn't depend on module
 | [New] Trash for deleted attachments with retention | R4b |
 | [New] Gap banner with start-number setting | A02 |
 | [New] Audit log | X01, X02 |
+| Direct link to a protocol number (/protocol/N[/YYYY]) | R3h |
+| Preview files in the app | R4c |
+| Rename attachments | R4d |
+| Stamp on by default, print with / without, editable official stamp | R4e, R4f, R4g |
+| Envelopes between e-mails | R5p |
+| Notepad per user (markdown, autosave) | N05 |
+| Search: today / yesterday / this week / last N days + who registered | R3i |
+| Laravel logs in the app (Console-like) | R6e |
 
 ## Q&A log
 - **Q-1** (B03): number/date at top can be edited, but save resets date to today and number to next free; user re-enters both.
