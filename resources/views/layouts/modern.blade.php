@@ -162,6 +162,7 @@
 
 {{-- N04 toasts: window.appToast(message, type, link), session('toast') = [message, type], Livewire dispatch('toast').
      R1e: top centre under the top bar (bottom right covered the save button); a click closes them --}}
+@include('partials.preview-modal')   {{-- R4c --}}
 <div id="app-toasts" class="toast-container position-fixed start-50 translate-middle-x p-3">
     @if (is_array(session('toast')))
         <div hidden data-toast-message="{{ session('toast')[0] ?? '' }}" data-toast-type="{{ session('toast')[1] ?? 'success' }}"></div>

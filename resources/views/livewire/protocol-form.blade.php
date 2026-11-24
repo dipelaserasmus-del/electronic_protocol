@@ -372,6 +372,10 @@
                         <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row" wire:key="att-{{ $a->id }}">
                             <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
                             @if ($a->savedPath)
+                                {{-- R4c: 👁 opens it here; ‹ › go through this protocol's files --}}
+                                <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id" />
+                            @endif
+                            @if ($a->savedPath)
                                 <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break me-auto">{{ $a->name }}</a>
                             @else
                                 <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
