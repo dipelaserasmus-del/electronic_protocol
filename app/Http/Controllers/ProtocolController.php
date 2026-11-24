@@ -67,7 +67,7 @@ class ProtocolController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            new Middleware('writer:home/list', except: ['gotonum', 'download', 'about']),
+            new Middleware('writer:home/list', except: ['gotonum', 'download', 'preview', 'about']),
         ];
     }
 
@@ -263,6 +263,17 @@ class ProtocolController extends Controller implements HasMiddleware
             'alert-type' => 'info',
         ]);
         return back();
+    }
+
+    /** R4c: an attachment converted for the preview (Word, spreadsheets, text); same access as the download */
+    public function preview(Attachment $attachment, \App\Services\Attachments\Preview $preview)
+    {
+        $protocol = $attachment->protocol;
+        $allowed = $protocol ? Gate::allows('view', $protocol) : Auth::user()->role->role === 'Διαχειριστής';
+        abort_unless($allowed, 404);
+        $path = $attachment->storedFilePath();
+        abort_if($path === null, 404);
+        return $preview->response(Storage::path($path), $attachment->name ?: basename($path));
     }
 
     public function about()

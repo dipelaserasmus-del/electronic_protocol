@@ -108,6 +108,16 @@
         "guest",
         "web"
     ],
+    "GET preview/{attachment}": [
+        "auth",
+        "web"
+    ],
+    "GET previewEmailAttachment/{uid}/{key}": [
+        "auth",
+        "email",
+        "web",
+        "writer:home/list"
+    ],
     "GET print": [
         "auth",
         "limitList",
