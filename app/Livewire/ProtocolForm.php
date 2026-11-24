@@ -298,7 +298,8 @@ class ProtocolForm extends Component
         $protocol = $this->protocol();
         $label = "{$protocol->protocolnum}/{$protocol->etos}";
         $writer->delete(Auth::user(), $protocol);
-        session()->flash('notification', ['message' => "Διαγράφηκε το πρωτόκολλο $label.", 'alert-type' => 'success']);
+        // R4h: to the trash (its number is free again; it can be restored from the trash)
+        session()->flash('notification', ['message' => "Το πρωτόκολλο $label μεταφέρθηκε στον κάδο. Ο αριθμός του είναι πάλι ελεύθερος· επαναφέρεται από τον Κάδο.", 'alert-type' => 'success']);
         return $this->redirect(url('/home/list'));
     }
 

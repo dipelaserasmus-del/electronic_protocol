@@ -39,7 +39,10 @@ class ProtocolFormController extends Controller
             $protocol = Protocol::where('etos', (int) $year)->where('protocolnum', (int) $num)->first();
         }
         if ($protocol === null || Auth::user()->cannot('view', $protocol)) {
-            return response()->view('protocols.missing', ['num' => $num, 'year' => $year], 404);
+            // R4h: administrators are told when it is in the trash (others get the same page whatever the reason)
+            $trashed = $protocol === null && Auth::user()->role?->role === 'Διαχειριστής' && preg_match('/^\d{1,9}$/', $num) && preg_match('/^\d{4}$/', $year)
+                ? \App\Models\TrashedProtocol::where('etos', (int) $year)->where('protocolnum', (int) $num)->latest('deleted_at')->first() : null;
+            return response()->view('protocols.missing', ['num' => $num, 'year' => $year, 'trashed' => $trashed], 404);
         }
         return redirect('/home/' . $protocol->id);
     }
@@ -56,10 +59,10 @@ class ProtocolFormController extends Controller
         return view('protocols.form', ['protocol' => $protocol, 'copy' => (bool) $copyAsNew, 'prefillNum' => null]);
     }
 
-    /** R4b: the attachments' trash (administrators) */
+    /** R4b: the trash (administrators); R4h: also Συγγραφέας / Αναθέτων, for the protocols they registered */
     public function trash()
     {
-        abort_unless(Auth::user()->role?->role === 'Διαχειριστής', 403);
+        abort_unless(\App\Services\Protocols\ProtocolTrash::mayOpen(Auth::user()), 403);
         return view('trash');
     }
 

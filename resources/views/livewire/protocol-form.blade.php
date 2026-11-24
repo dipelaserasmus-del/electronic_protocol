@@ -108,7 +108,7 @@
                 @endif
                 @if ($access->canDelete)
                     <x-pill variant="danger" wire:click="deleteProtocol"
-                            data-confirm="Να διαγραφεί οριστικά το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} και τα συνημμένα του;">Διαγραφή</x-pill>
+                            data-confirm="Να μεταφερθεί στον κάδο το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} με τα συνημμένα του; Ο αριθμός του γίνεται πάλι ελεύθερος.">Διαγραφή</x-pill>
                 @endif
                 @if ($protocol->exists)
                     {{-- a copy is a new protocol: not for readers, who only view --}}

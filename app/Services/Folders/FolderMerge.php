@@ -82,6 +82,7 @@ final class FolderMerge
             foreach (array_chunk($ids, 500) as $chunk) {
                 $result['protocols'] += DB::table('protocols')->whereIn('id', $chunk)->update(['fakelos' => $into]);
             }
+            $this->trashed($from, $into);   // R4h: protocols in the trash too
             $new = $this->listed($into)->first();
             foreach ($this->listed($from) as $old) {   // "Φ43" and "Φ.43" may both be in the list
                 foreach (FolderAssignment::where('keepvalue_id', $old->id)->get() as $rule) {
@@ -129,6 +130,28 @@ final class FolderMerge
         }
 
         return $result;
+    }
+
+    /**
+     * R4h: protocols in the trash with that folder get the new code (also in their saved row), and their files in the
+     * trash go back under the new folder when restored.
+     */
+    private function trashed(string $from, string $into): void
+    {
+        $key = FolderCode::key($from);
+        foreach (\App\Models\TrashedProtocol::whereNotNull('fakelos')->get() as $t) {
+            if (FolderCode::key((string) $t->fakelos) !== $key) {
+                continue;
+            }
+            $old = (string) $t->fakelos;
+            $data = $t->data;
+            $data['protocol']['fakelos'] = $into;
+            $t->update(['fakelos' => $into, 'data' => $data]);
+            foreach ($t->attachments()->get() as $a) {
+                $back = $a->trashed_from ?: (string) $a->savedPath;
+                DB::table('attachments')->where('id', $a->id)->update(['trashed_from' => $this->target($back, $old, $into)]);
+            }
+        }
     }
 
     /**

@@ -297,23 +297,13 @@ final class ProtocolWriter
     }
 
     /**
-     * R1b: delete a protocol (administrators; the form offers it with "Έλεγχοι καταχώρισης" OFF). R4b: its attachments
-     * go to the trash with the protocol's number and subject, for the retention days (before: deleted at once).
+     * R1b: delete a protocol (administrators; the form offers it with "Έλεγχοι καταχώρισης" OFF). R4h: to the trash
+     * (ProtocolTrash): its number is free again, it can be restored; its attachments go to the trash with it (R4b).
      */
-    public function delete(User $user, Protocol $protocol): void
+    public function delete(User $user, Protocol $protocol): \App\Models\TrashedProtocol
     {
         \Illuminate\Support\Facades\Gate::forUser($user)->authorize('delete', $protocol);
-        $trash = app(\App\Services\Attachments\Trash::class);
-        $label = $trash->label($protocol);
-        foreach (Attachment::withTrashed()->where('protocol_id', $protocol->id)->get() as $attachment) {
-            if ($attachment->trashed()) {
-                $attachment->protocol_label ??= $label;
-                $attachment->saveQuietly();
-            } else {
-                $trash->trash($attachment, $user, $label);
-            }
-        }
-        $protocol->delete();
+        return app(ProtocolTrash::class)->trash($user, $protocol);
     }
 
     /** R1b/R4b: an attachment to the trash (restorable for the retention days, see Attachments\Trash). */

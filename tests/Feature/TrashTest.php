@@ -160,7 +160,11 @@ class TrashTest extends FeatureTestCase
         $this->trash()->trash($gone, null, '99/2025 · Παλιό σβησμένο');
         DB::table('attachments')->where('id', $gone->id)->update(['protocol_id' => 999999]);
 
-        $this->actingAs($writer)->get('/trash')->assertForbidden();
+        // R4h: writers open the trash, but only its «Πρωτόκολλα» (their own); never the files
+        $this->actingAs($writer)->get('/trash')->assertOk()->assertDontSee('ε.pdf')->assertDontSee('id="trash-tab-files"', false);
+        $this->actingAs($writer)->get('/trash?tab=files')->assertOk()->assertDontSee('ε.pdf');
+        $this->actingAs($this->reader())->get('/trash')->assertForbidden();
+        Livewire::actingAs($writer)->test(TrashPage::class)->call('restore', $a->id)->assertForbidden();
         $this->actingAs($writer)->get("/trash/{$a->id}/download")->assertForbidden();
 
         $admin = $this->admin();

@@ -31,6 +31,7 @@ class PurgeTrashDaily
                 ->where(fn ($q) => $q->whereNull('value')->orWhere('value', '!=', $today))
                 ->update(['value' => $today]);
             if ($claimed) {
+                app(\App\Services\Protocols\ProtocolTrash::class)->purgeExpired();   // R4h: protocols first, with their files
                 app(Trash::class)->purgeExpired();
             }
         } catch (\Throwable $e) {

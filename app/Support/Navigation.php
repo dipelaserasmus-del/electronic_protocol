@@ -86,6 +86,9 @@ final class Navigation
         if (\App\Livewire\StampDesigner::allowed($user)) {   // R4e: not readers
             $groups['Φάκελοι'][] = ['label' => 'Σφραγίδα αρχείων', 'icon' => 'patch-check', 'url' => url('/stamp')];
         }
+        if ($role !== self::ADMIN && \App\Services\Protocols\ProtocolTrash::mayOpen($user)) {   // R4h: their own deleted protocols
+            $groups['Φάκελοι'][] = ['label' => 'Κάδος', 'icon' => 'trash3', 'url' => url('/trash')];
+        }
         if ($role === self::ADMIN) {
             $groups['Διαχείριση'] = [   // owner, 2026-11-20 (was «Διαχειριστής»)
                 ['label' => 'Χρήστες', 'icon' => 'people', 'url' => url('/users')],
