@@ -60,15 +60,23 @@ Server files: 3150 in the server's folder; 3100 attachments in the database.
   Copied:      3080
   Already here (same file): 0
   Not on the server:        20
-  Server files no attachment points to (not copied): 70
+  Server files no attachment points to (not copied): 12
+    of them, their protocol is not in the database (saved after the export?): 3
+  Other server files, not attachments (placeholders, backups, the copy tool's index): 58
 …
 Folders: 9 added, 74 updated.
 Merge Φ.43 → Φ.46: 10 protocols; files moved 20 …
 Loaded: 4210 protocols, 9 users, 3100 attachments (3080 files found in local-data/storage/app)
 ```
-*Not on the server* are rows whose file is missing from your copy; *no attachment points to* are server files no row
-uses (old leftovers, the server's backups): they are not copied. To see their names, for yourself only:
-`./dev.sh real artisan attachments:import local-data/server-files --list` (it copies nothing without `--apply`).
+*Not on the server* are rows whose file is missing from your copy; *no attachment points to* are attachment files no
+row uses: they are not copied. *Other server files* are not attachments at all (`dummy` placeholders, `arxeio/backups/`,
+`protocol.sqlite`, hidden folders such as a copy tool's `.hist/`, `Thumbs.db`, anything outside `arxeio/` and
+`trash/`; D11). To see the names, for yourself only:
+`./dev.sh real artisan attachments:import local-data/server-files --list` (it copies nothing without `--apply`). Next to
+each file no attachment points to it says what the database has: *a row has this name at …* (the same file in another
+folder, e.g. `Φ43/` and `Φ.43/`), *protocol N/YYYY is not in the database* (saved after the export: take the export
+and the file copy at the same time), *protocol N/YYYY (folder …) has no attachment with this name* (the protocol's
+attachment was replaced or renumbered on the server), or *no protocol number in the name*.
 
 Without a `server-files/` folder, load uses the files already in `local-data/storage/app` as they are (as before D10)
 and does **not** apply the folder glossary: its merge moves files, and the next load of the same backup would then
