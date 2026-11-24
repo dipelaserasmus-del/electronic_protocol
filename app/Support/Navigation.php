@@ -83,6 +83,9 @@ final class Navigation
             ];
         }
         $groups['Φάκελοι'] = [['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')]];
+        if (\App\Livewire\StampDesigner::allowed($user)) {   // R4e: not readers
+            $groups['Φάκελοι'][] = ['label' => 'Σφραγίδα αρχείων', 'icon' => 'patch-check', 'url' => url('/stamp')];
+        }
         if ($role === self::ADMIN) {
             $groups['Διαχείριση'] = [   // owner, 2026-11-20 (was «Διαχειριστής»)
                 ['label' => 'Χρήστες', 'icon' => 'people', 'url' => url('/users')],
