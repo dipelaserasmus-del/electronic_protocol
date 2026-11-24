@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:57 (R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:57 (R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -211,6 +211,7 @@ Open *Εισερχόμενα*.
 - [ ] **68.** Turn on *Ρυθμίσεις → Σφραγίδα στα συνημμένα*, add a PDF to a protocol, open it with 👁 or download it: it
   has the stamp, top right of the first page. Turn *Με σφραγίδα* off (in *Συνημμένα* or in the preview window): the
   file as you uploaded it. Older files say *η σφραγίδα είναι μέσα στο αρχείο*.
+- [ ] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
@@ -256,7 +257,8 @@ Open *Εισερχόμενα*.
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
    - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07, after the files
      are copied: it moves them);
-   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e);
+   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e), and if you want the old files to
+     follow the new stamp: `php artisan stamp:old`, then `--apply` (R4g; it keeps the files as they were);
    - if you applied the Apache rules below in the meantime, remove them before the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
