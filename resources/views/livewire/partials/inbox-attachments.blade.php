@@ -20,6 +20,9 @@
                                @checked($f['files'][$a['key']] ?? false) aria-label="Αποθήκευση του {{ $a['name'] }}">
                     @endunless
                     <x-file-badge :name="$a['name']" :size="$a['size']" :mime="$a['mime']" />
+                    {{-- R4c: 👁 opens it here; ‹ › go through this e-mail's attachments --}}
+                    <x-preview-button :name="$a['name']" :download="url('/viewEmailAttachment/'.$uid.'/'.$a['key'])"
+                                      :preview="url('/previewEmailAttachment/'.$uid.'/'.$a['key'])" :group="'mail-'.$uid" />
                     <a href="{{ url('/viewEmailAttachment/'.$uid.'/'.$a['key']) }}" target="_blank" class="text-break">{{ $a['name'] }}</a>
                 </li>
             @endforeach

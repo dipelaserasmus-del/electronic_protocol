@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
     Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
+    Route::get('/preview/{attachment}', [ProtocolController::class, 'preview'])->whereNumber('attachment');   // R4c
     Route::get('/trash', [ProtocolFormController::class, 'trash']);   // R4b (administrators)
     Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
@@ -85,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/inbox/count', [InboxController::class, 'count'])->middleware('throttle:30,1');   // R5f: the badge
     Route::get('/viewEmails', [InboxController::class, 'old']);
     Route::get('/viewEmailAttachment/{uid}/{key}', [InboxController::class, 'attachment']);
+    Route::get('/previewEmailAttachment/{uid}/{key}', [InboxController::class, 'preview']);   // R4c
     Route::get('/viewEmailHtml/{uid}', [InboxController::class, 'html']);
 
     // R6c: Livewire pages; saving, creating and deleting are their actions (no more GET links that change things)

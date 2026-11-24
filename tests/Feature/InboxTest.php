@@ -162,6 +162,29 @@ class InboxTest extends FeatureTestCase
         $this->actingAs($user)->get('/viewEmailAttachment/1/0')->assertRedirect();
     }
 
+    /** R4c: an e-mail's attachments have 👁 (‹ › within the e-mail); converted ones are previewed for inbox users only */
+    public function test_attachments_are_previewed_for_inbox_users_only(): void
+    {
+        $csv = iconv('UTF-8', 'WINDOWS-1253', "Επώνυμο;Όνομα\nΔοκιμής;Μαρία\n");
+        $this->mailbox->messages = [5 => implode("\r\n", ['From: grafeio@example.org', 'To: protocol@example.org', 'Subject: CSV',
+            'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="b"', '',
+            '--b', 'Content-Type: text/plain; charset=utf-8', '', 'Σας στέλνω τον πίνακα.', '--b',
+            'Content-Type: text/csv; name="pinakas.csv"', 'Content-Disposition: attachment; filename="pinakas.csv"',
+            'Content-Transfer-Encoding: base64', '', chunk_split(base64_encode($csv)), '--b--', ''])];
+        $user = $this->writer();
+        $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        $page->assertSeeHtml('data-preview-kind="text" data-preview-src="' . url('/previewEmailAttachment/5/0') . '"')
+            ->assertSeeHtml('data-preview-group="mail-5"');
+
+        $this->actingAs($user)->get('/inbox')->assertOk();
+        $r = $this->actingAs($user)->get('/previewEmailAttachment/5/0')->assertOk()->assertSee('Δοκιμής;Μαρία');
+        $this->assertStringStartsWith('sandbox;', $r->headers->get('Content-Security-Policy'));
+        $this->actingAs($user)->get('/previewEmailAttachment/5/9')->assertNotFound();
+
+        $this->setting('allowedEmailUsers', 'someone-else');
+        $this->actingAs($user)->get('/previewEmailAttachment/5/0')->assertRedirect();
+    }
+
     /** R5c: the page says so itself (before: back to the previous page with a pop-up) */
     public function test_unreachable_mail_server_shows_a_reference_code(): void
     {

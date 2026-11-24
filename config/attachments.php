@@ -19,6 +19,9 @@ return [
     ],
 
     // opened in the browser tab; every other type is downloaded. Served with these types, never the stored one.
+    // R4c: the largest file converted for the preview (Word, spreadsheets, text); larger ones are only downloaded
+    'preview_max_kb' => (int) env('ATTACHMENT_PREVIEW_MAX_KB', 10240),
+
     'inline' => [
         'pdf' => 'application/pdf',
         'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'webp' => 'image/webp',

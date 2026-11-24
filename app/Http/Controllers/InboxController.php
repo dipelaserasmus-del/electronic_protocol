@@ -58,6 +58,16 @@ class InboxController extends Controller implements HasMiddleware
         return SafeFile::content($part['content'], $part['name'], $part['mime']);
     }
 
+    /** R4c: an e-mail's attachment converted for the preview (same access as opening it) */
+    public function preview(string $uid, string $key, \App\Services\Attachments\Preview $preview)
+    {
+        $mail = $this->mail($uid);
+        $part = $mail ? MailContent::attachment($mail, $key) : null;
+        abort_if($part === null, 404);
+
+        return $preview->responseFor($part['content'], (string) $part['name']);
+    }
+
     /**
      * R5a: the HTML of an e-mail, for the preview frame: logged-in inbox users only, in a sandbox (no scripts, no forms,
      * no access to the application). Before, it was written to public/tmp and ran on the application's origin.
