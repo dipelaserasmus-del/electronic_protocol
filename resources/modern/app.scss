@@ -296,7 +296,8 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 
 // N05: the notepad: a tab on the right edge, a side panel
 // the page keeps a strip free on the right for the tab: it never covers a button of the page (review of N05)
-@include media-breakpoint-up(lg) { body.has-notepad { padding-right: 2.25rem; } }
+// (on both sides, so a narrow page stays centred)
+@include media-breakpoint-up(lg) { body.has-notepad > main { padding-left: 2.5rem; padding-right: 2.5rem; } }
 .notepad-tab { position: fixed; right: 0; top: 45%; z-index: 1035; width: 2rem; writing-mode: vertical-rl; transform: rotate(180deg);
     border-radius: 0 .5rem .5rem 0; padding: .6rem .25rem; font-size: .85rem; }
 .notepad-tab .bi { transform: rotate(90deg); }

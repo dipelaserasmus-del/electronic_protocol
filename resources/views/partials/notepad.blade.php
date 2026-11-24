@@ -9,7 +9,8 @@
             <h2 class="h6 mb-0 me-auto"><i class="bi bi-journal-text" aria-hidden="true"></i> Οι σημειώσεις μου</h2>
             <div class="btn-group btn-group-sm" role="group" aria-label="Προβολή ή επεξεργασία">
                 <button type="button" class="btn btn-outline-secondary" :class="mode === 'view' && 'active'" x-on:click="save(); mode = 'view'" id="notepad-view">Προβολή</button>
-                <button type="button" class="btn btn-outline-secondary" :class="mode === 'edit' && 'active'" x-on:click="mode = 'edit'; $nextTick(() => $refs.text.focus())" id="notepad-edit">Επεξεργασία</button>
+                <button type="button" class="btn btn-outline-secondary" :class="mode === 'edit' && 'active'" :disabled="! loaded"
+                        x-on:click="mode = 'edit'; $nextTick(() => $refs.text.focus())" id="notepad-edit">Επεξεργασία</button>
             </div>
             <button type="button" class="btn-close" x-on:click="open = false" aria-label="Κλείσιμο"></button>
         </div>
@@ -30,7 +31,7 @@
                     <button type="button" class="btn btn-sm btn-light" title="Εκκρεμότητα" x-on:click="line('- [ ] ')" id="notepad-todo"><i class="bi bi-check2-square"></i></button>
                     <button type="button" class="btn btn-sm btn-light" title="Σύνδεσμος" x-on:click="wrap('[', '](https://)', 'σύνδεσμος')"><i class="bi bi-link-45deg"></i></button>
                 </div>
-                <textarea class="form-control border-0 rounded-0 flex-grow-1 notepad-text" x-ref="text" x-model="body" x-on:input="typed()"
+                <textarea class="form-control border-0 rounded-0 flex-grow-1 notepad-text" x-ref="text" x-model="body" x-on:input="typed()" :readonly="! loaded"
                           maxlength="100000" aria-label="Σημειώσεις" spellcheck="true" id="notepad-text"
                           placeholder="# Ενότητα&#10;- [ ] κάτι να γίνει&#10;**έντονα**, *πλάγια*, [σύνδεσμος](https://…)"></textarea>
             </div>
