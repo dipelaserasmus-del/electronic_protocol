@@ -35,9 +35,20 @@ only after all CI jobs were green and the automated review had been checked.
 - Review (Codex):
   - R3i: a typed relative date cleared a year that had been set on purpose (`πότε:πέρσι έτος:2026` through
     *Σύνθετη αναζήτηση*);
-  - R4d: typing the name with its extension in the field gave `.pdf.pdf`.
+  - R4d: typing the name with its extension in the field gave `.pdf.pdf`;
+  - R4c: a long UTF-8 text cut inside a character was read as Windows-1253;
+  - R4e: PDFs with a hybrid cross-reference, resource names that are numbers, and a page stamped twice (the first
+    stamp would have shown the second image);
+  - R4f: the office's name was not part of the stamped copy's key; a file uploaded again over an old one kept the
+    old one's «stamp inside» mark;
+  - R4g: a stamp added by R4e was taken for «no old stamp»; failed writes were not checked;
+  - R4h (security): a writer could force the trash's files tab open from the browser; files that could not be moved
+    back were not reported;
+  - N05: edits made just before leaving the page, a save while another was on its way, editing before the note had
+    loaded;
+  - R6e: an empty log file, entries of the same second out of order, the end of a long message not reachable.
 
   All fixed, with tests.
 
-Tests: PHPUnit 663, browser tests: see CI (new: direct links, search when/who, rename, preview, stamp
+Tests: PHPUnit 668, browser 118 (locally, all passing), browser tests: see CI (new: direct links, search when/who, rename, preview, stamp
 designer, stamp on view, protocol trash, envelopes, notepad, logs).
