@@ -295,9 +295,18 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
     background: repeating-linear-gradient(to bottom, var(--bs-secondary-bg) 0 4px, transparent 4px 14px); }
 
 // N05: the notepad: a tab on the right edge, a side panel
-.notepad-tab { position: fixed; right: 0; top: 45%; z-index: 1035; writing-mode: vertical-rl; transform: rotate(180deg);
-    border-radius: 0 .5rem .5rem 0; padding: .6rem .35rem; font-size: .85rem; }
+// the page keeps a strip free on the right for the tab: it never covers a button of the page (review of N05)
+@include media-breakpoint-up(lg) { body.has-notepad { padding-right: 2.25rem; } }
+.notepad-tab { position: fixed; right: 0; top: 45%; z-index: 1035; width: 2rem; writing-mode: vertical-rl; transform: rotate(180deg);
+    border-radius: 0 .5rem .5rem 0; padding: .6rem .25rem; font-size: .85rem; }
 .notepad-tab .bi { transform: rotate(90deg); }
+// narrower screens: no strip; a small round button at the bottom left instead
+@include media-breakpoint-down(lg) {
+    .notepad-tab { top: auto; bottom: 1rem; left: 1rem; right: auto; width: 2.75rem; height: 2.75rem; writing-mode: horizontal-tb;
+        transform: none; border-radius: 50%; padding: 0; }
+    .notepad-tab .bi { transform: none; }
+    .notepad-tab span { display: none; }
+}
 .notepad-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 1040; width: min(26rem, 100vw); background: var(--bs-body-bg);
     display: flex; flex-direction: column; }
 .notepad-text { resize: none; font-family: ui-monospace, Consolas, monospace; font-size: .85rem; min-height: 0; }

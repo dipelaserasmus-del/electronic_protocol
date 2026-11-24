@@ -25,7 +25,7 @@
     @vite(['resources/modern/app.scss', 'resources/modern/app.js'])
     @livewireStyles
 </head>
-<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif">
+<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif @auth has-notepad @endauth">
 {{-- R3e (owner, 2026-11-20): the menu stays open from 768px up (it folded under 992px); see app.scss --}}
 <nav class="navbar navbar-expand-md navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
