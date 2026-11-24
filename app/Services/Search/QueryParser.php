@@ -23,6 +23,7 @@ final class QueryParser
         'αρ' => 'number', 'αριθμοσ' => 'number', 'num' => 'number',
         'ετοσ' => 'year', 'year' => 'year',
         'ημ' => 'date:protocoldate', 'ημερομηνια' => 'date:protocoldate', 'date' => 'date:protocoldate',
+        'ποτε' => 'date:protocoldate', 'when' => 'date:protocoldate',   // R3i
         'ημεισ' => 'date:in_date', 'ημεξ' => 'date:out_date',
         'φακελοσ' => 'folder', 'φακ' => 'folder', 'folder' => 'folder',
         'θεμα' => 'text:thema', 'subject' => 'text:thema',
@@ -39,6 +40,7 @@ final class QueryParser
         'συνημμενο' => 'text:name', 'αρχειο' => 'text:name', 'file' => 'text:name',
         'αδα' => 'text:ada', 'ada' => 'text:ada',
         'αναθεση' => 'assignee', 'assignee' => 'assignee',
+        'χρηστησ' => 'registrar', 'καταχωρισε' => 'registrar', 'καταχωρησε' => 'registrar', 'user' => 'registrar',   // R3i
         'κενο' => 'empty', 'empty' => 'empty',
         'ειναι' => 'is', 'is' => 'is',
     ];
@@ -50,7 +52,24 @@ final class QueryParser
         'text:in_paraliptis' => 'παραλήπτης', 'text:in_perilipsi' => 'περίληψη', 'text:out_perilipsi' => 'περίληψηεξ',
         'text:sxetiko' => 'σχετ', 'text:keywords' => 'λέξη', 'text:paratiriseis' => 'παρατηρήσεις', 'text:name' => 'συνημμένο',
         'text:ada' => 'αδα', 'assignee' => 'ανάθεση', 'empty' => 'κενό', 'is' => 'είναι',
+        'registrar' => 'χρήστης',
     ];
+
+    /**
+     * R3i: relative dates (folded value => the word format() writes); "N μέρες" is matched apart (RELATIVE_DAYS).
+     * εβδομάδα = Monday to today, μήνας = the 1st to today, φέτος / πέρσι = the whole year.
+     */
+    private const RELATIVE = [
+        'σημερα' => 'σήμερα', 'today' => 'σήμερα',
+        'χθεσ' => 'χθες', 'yesterday' => 'χθες',
+        'εβδομαδα' => 'εβδομάδα', 'week' => 'εβδομάδα',
+        'μηνασ' => 'μήνας', 'month' => 'μήνας',
+        'φετοσ' => 'φέτος', 'thisyear' => 'φέτος',
+        'περσι' => 'πέρσι', 'lastyear' => 'πέρσι',
+    ];
+
+    /** 7μέρες, 7ημέρες, τελευταίες7, 7days, last7 (folded): the last N days, today included */
+    private const RELATIVE_DAYS = '/^(?:(\d{1,4})(?:μερεσ|ημερεσ|μερα|ημερα|days|day|d)|(?:τελευταιεσ|last)(\d{1,4}))$/u';
 
     /** Values meaning "none" (φάκελος:κανένας, ανάθεση:κανένας) and "every year" (έτος:όλα), folded */
     private const NONE = ['κανενασ', 'κανενα', 'χωρισ', 'none', '-'];
@@ -125,11 +144,20 @@ final class QueryParser
             case 'date:protocoldate':
             case 'date:in_date':
             case 'date:out_date':
+                $field = substr($target, 5);
+                if ($relative = self::relative($value, $today)) {
+                    [$c->relative[$field], $c->dates[$field]] = $relative;
+                    return true;
+                }
                 $range = self::dateRange($value, $today);
                 if ($range) {
-                    $c->dates[substr($target, 5)] = $range;
+                    $c->dates[$field] = $range;
+                    unset($c->relative[$field]);
                 }
                 return (bool) $range;
+            case 'registrar':
+                $c->registrarName = $value;
+                return true;
             case 'folder':
                 $c->folder = in_array($folded, self::NONE, true) ? SearchCriteria::NO_FOLDER : $value;
                 return true;
@@ -162,7 +190,7 @@ final class QueryParser
         return match ($target) {
             'number' => 'αριθμός, από-έως ή αριθμός/έτος (π.χ. αρ:125, αρ:120-130, αρ:125/2026)',
             'year' => 'τετραψήφιο έτος ή «όλα»',
-            'date:protocoldate', 'date:in_date', 'date:out_date' => 'ημερομηνία ή διάστημα (π.χ. ημ:9/1/2026, ημ:1/1/2026..31/3/2026)',
+            'date:protocoldate', 'date:in_date', 'date:out_date' => 'ημερομηνία, διάστημα ή σήμερα, χθες, εβδομάδα, 7μέρες, μήνας, φέτος, πέρσι (π.χ. ημ:9/1/2026, ημ:1/1/2026..31/3/2026, πότε:χθες)',
             'empty' => 'όνομα πεδίου (π.χ. κενό:φάκελος, κενό:θέμα)',
             'is' => 'μόνο είναι:εκκρεμές',
             default => str_starts_with($target, 'text:') ? 'μία τιμή ανά πεδίο (βάλτε τη φράση σε εισαγωγικά)' : 'μη έγκυρη τιμή',
@@ -174,6 +202,32 @@ final class QueryParser
     {
         $t = self::OPERATORS[$folded] ?? null;
         return $t !== null && str_starts_with($t, 'text:') ? substr($t, 5) : null;
+    }
+
+    /**
+     * R3i: a relative date → [the word format() writes, [from, to]], or null when the value is not one.
+     *
+     * @return array{0: string, 1: array{0: CarbonImmutable, 1: CarbonImmutable}}|null
+     */
+    public static function relative(string $value, ?CarbonImmutable $today = null): ?array
+    {
+        $today = ($today ?? CarbonImmutable::now())->startOfDay();
+        $folded = TagList::fold(trim($value));
+        if (preg_match(self::RELATIVE_DAYS, $folded, $m)) {
+            $n = (int) ($m[1] !== '' ? $m[1] : $m[2]);
+            return $n >= 1 ? ["{$n}μέρες", [$today->subDays($n - 1), $today]] : null;
+        }
+        $word = self::RELATIVE[$folded] ?? null;
+        $range = match ($word) {
+            'σήμερα' => [$today, $today],
+            'χθες' => [$today->subDay(), $today->subDay()],
+            'εβδομάδα' => [$today->startOfWeek(\Carbon\CarbonInterface::MONDAY), $today],
+            'μήνας' => [$today->startOfMonth(), $today],
+            'φέτος' => [$today->startOfYear(), $today->endOfYear()->startOfDay()],
+            'πέρσι' => [$today->subYear()->startOfYear(), $today->subYear()->endOfYear()->startOfDay()],
+            default => null,
+        };
+        return $range ? [$word, $range] : null;
     }
 
     /**
@@ -243,6 +297,10 @@ final class QueryParser
         }
         foreach (SearchCriteria::DATE_FIELDS as $field => $_) {
             if (($range = $c->dates[$field] ?? null) && ($range[0] || $range[1])) {
+                if (isset($c->relative[$field])) {   // R3i: stays relative (a saved search keeps meaning "today")
+                    $parts[] = self::NAMES["date:$field"] . ':' . $c->relative[$field];
+                    continue;
+                }
                 [$from, $to] = [$range[0]?->format('d/m/Y') ?? '', $range[1]?->format('d/m/Y') ?? ''];
                 $parts[] = self::NAMES["date:$field"] . ':' . ($from === $to ? $from : "$from..$to");
             }
@@ -258,6 +316,10 @@ final class QueryParser
         $assignee = $c->assigneeName ?? ($c->assigneeId !== null ? \App\Models\User::find($c->assigneeId)?->name : null);
         if (($assignee ?? '') !== '') {
             $parts[] = self::NAMES['assignee'] . ':' . $q($assignee);
+        }
+        $registrar = $c->registrarName ?? ($c->registrarId !== null ? \App\Models\User::find($c->registrarId)?->name : null);
+        if (($registrar ?? '') !== '') {
+            $parts[] = self::NAMES['registrar'] . ':' . $q($registrar);
         }
         foreach (array_unique($c->empty) as $field) {
             $parts[] = match ($field) {

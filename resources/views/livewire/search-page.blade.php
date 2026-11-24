@@ -40,6 +40,13 @@
                             <div class="col-sm-6 col-lg-12">
                                 <x-date-input name="to" id="s-to" label="Ημ/νία έως" :value="$to" wire:model="to" help="" />
                             </div>
+                            {{-- R3i: fill «από / έως» and search (the dates decide the year) --}}
+                            <div class="col-12 d-flex flex-wrap gap-1" id="quick-dates" role="group" aria-label="Γρήγορες ημερομηνίες">
+                                @foreach ($quickDates as $key => $label)
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-0" data-quick-date="{{ $key }}"
+                                            wire:click="quickDate('{{ $key }}')">{{ $label }}</button>
+                                @endforeach
+                            </div>
                         </div>
 
                         {{-- owner, 2026-11-18: protocols on hold have no folder or ΕΚΚΡΕΜΟΤΗΤΑ in the subject --}}
@@ -67,7 +74,7 @@
                                 <input id="s-words" class="form-control @if ($e('words')) is-invalid @endif" wire:model="words" value="{{ $words }}" autocomplete="off"
                                        placeholder="λέξεις σε οποιοδήποτε πεδίο ή αριθμός (π.χ. μετάθεση 125/2026 ή &quot;άδεια μητρότητας&quot;)">
                                 @if ($e('words'))<div class="invalid-feedback">{{ $e('words') }}</div>
-                                @else<div class="form-text">Δέχεται και τις λέξεις της γρήγορης αναζήτησης, π.χ. <code>από:δήμος</code> <code>φάκελος:Φ.1</code> <code>είναι:εκκρεμές</code>.</div>@endif
+                                @else<div class="form-text">Δέχεται και τις λέξεις της γρήγορης αναζήτησης, π.χ. <code>από:δήμος</code> <code>φάκελος:Φ.1</code> <code>πότε:7μέρες</code> <code>χρήστης:Μαρία</code> <code>είναι:εκκρεμές</code>.</div>@endif
                             </div>
                             {{-- R3f (owner, 2026-11-20): whole words, for every field; or "=" before one value --}}
                             <div class="col-12">
@@ -112,6 +119,14 @@
                                 <select id="s-assignee" class="form-select" wire:model="assignee">
                                     <option value="">Οποιοσδήποτε</option>
                                     <option value="none">Κανένας (χωρίς ανάθεση)</option>
+                                    @foreach ($users as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach
+                                </select>
+                            </div>
+                            {{-- R3i: protocols.user_id --}}
+                            <div class="col-md-6">
+                                <label for="s-by" class="form-label small fw-semibold mb-1">Καταχωρίστηκε από</label>
+                                <select id="s-by" class="form-select" wire:model="by">
+                                    <option value="">Οποιονδήποτε</option>
                                     @foreach ($users as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach
                                 </select>
                             </div>
