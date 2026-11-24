@@ -159,11 +159,32 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-message:focus { outline: none; }   // R5h: focused when reached from the list (for the keyboard)
 .inbox-message:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
 // R5o (owner, 2026-11-23, option B): between two e-mails a thin line with «↓ N από M ↓» in the middle
-.inbox-sep { display: flex; align-items: center; gap: .75rem; margin: 1.5rem .25rem; color: var(--bs-secondary-color); font-size: .8rem; }
-.inbox-sep::before, .inbox-sep::after { content: ""; flex: 1; height: 1px; background: var(--bs-border-color); }
-.inbox-sep-label { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
-.inbox-sep-label .bi { font-size: .75rem; }
-.inbox-message:last-child { margin-bottom: 1rem; }
+// R5p (owner, 2026-11-23): each e-mail in an envelope (setting inboxEnvelope), the address strip on top, a gap between
+.inbox-envelope { position: relative; margin-bottom: 2.25rem; border-radius: .6rem; }
+.inbox-envelope > .inbox-message { margin: 0; }
+.inbox-envelope-address { display: flex; align-items: baseline; gap: .75rem; padding: .45rem .9rem; font-size: .85rem; }
+.inbox-envelope-from { flex: 1; min-width: 0; font-weight: 600; }
+.inbox-envelope-from small { font-weight: 400; color: var(--bs-secondary-color); }
+.inbox-envelope-n { font-weight: 600; white-space: nowrap; }
+.inbox-envelope-date { color: var(--bs-secondary-color); }
+// A: air mail: red / white / blue stripes all round
+.inbox-envelope-airmail { padding: 7px;
+    background: repeating-linear-gradient(-45deg, #c8102e 0 12px, #fff 12px 20px, #0b3d91 20px 32px, #fff 32px 40px); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.inbox-envelope-airmail > .inbox-envelope-address { background: #fffdf7; border-radius: .35rem .35rem 0 0; border-bottom: 1px dashed #b9b2a3; }
+.inbox-envelope-airmail .inbox-envelope-n { color: #0b3d91; }
+.inbox-envelope-airmail > .inbox-message { border-top-left-radius: 0; border-top-right-radius: 0; }
+// B: paper envelope: the colour of paper, a flap, a stamp with the number
+.inbox-envelope-paper { padding: 0 .6rem .6rem; background: #f3e9d2; border: 1px solid #d9c9a3; box-shadow: 0 2px 6px rgba(120, 90, 30, .15); }
+.inbox-envelope-paper::before { content: ""; display: block; height: 1.6rem; margin: 0 -.6rem; background: #ead9b4;
+    clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: .6rem .6rem 0 0; }
+.inbox-envelope-paper > .inbox-envelope-address { padding-right: 5.25rem; }
+.inbox-envelope-paper .inbox-envelope-n { position: absolute; top: .45rem; right: .7rem; padding: .35rem .5rem; background: #fff; color: #8a1c1c;
+    border: 2px dashed #c9a14a; outline: 3px solid #fff; font-size: .75rem; transform: rotate(3deg); }
+// C: plain: white paper, air-mail stripes along the top only
+.inbox-envelope-plain { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 0 .5rem .5rem; }
+.inbox-envelope-plain::before { content: ""; display: block; height: 6px; margin: 0 -.5rem .1rem;
+    background: repeating-linear-gradient(90deg, #c8102e 0 18px, transparent 18px 26px, #0b3d91 26px 44px, transparent 44px 52px); border-radius: .6rem .6rem 0 0; }
+.inbox-envelope-plain .inbox-envelope-n { color: var(--bs-secondary-color); }
 // R5o (owner, 2026-11-23): each e-mail's header lavender, as its preview (apart from the next one); done: green
 .inbox-message > .inbox-message-head { background: rgba(111, 66, 193, .12); }
 .inbox-message.is-done > .card-header { background: rgba(var(--bs-success-rgb), .08); }
