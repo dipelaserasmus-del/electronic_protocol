@@ -85,6 +85,13 @@ test('the notepad: markdown, to-dos, autosave, nothing runs (N05)', async ({ pag
   await other.reload();
   await expect(other.locator('#notepad-rendered')).toContainText('Από αυτή την καρτέλα');
 
+  // review of N05: leaving the page right after typing (before the autosave) loses nothing
+  await page.locator('#notepad-text').fill('Γράφτηκε και έφυγα αμέσως');
+  await page.goto('/about');
+  await page.locator('#notepad-edit').click();
+  await expect(page.locator('#notepad-text')).toHaveValue('Γράφτηκε και έφυγα αμέσως');
+  await saved(page);
+
   // leave it empty for the other tests
   await page.locator('#notepad-text').fill('');
   await saved(page);

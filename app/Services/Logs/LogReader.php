@@ -79,7 +79,8 @@ final class LogReader
         if (isset($files['laravel.log']) && ($range = $this->index()[$day] ?? null)) {
             $entries = array_merge($entries, $this->parse($files['laravel.log'], $range[0], $range[1], $day));
         }
-        usort($entries, fn ($a, $b) => [$b['time'], $b['id']] <=> [$a['time'], $a['id']]);
+        // newest first; within one second, by place in the file (numbers, not text: review of R6e)
+        usort($entries, fn ($a, $b) => [$b['time'], $b['file'], $b['offset']] <=> [$a['time'], $a['file'], $a['offset']]);
         return $entries;
     }
 
@@ -90,12 +91,15 @@ final class LogReader
             $this->truncated = true;
             $from = $to - $this->maxBytes;
         }
+        if ($to <= $from) {
+            return [];   // an empty file (fread of 0 bytes throws: review of R6e)
+        }
         $h = fopen($path, 'rb');
         if (! $h) {
             return [];
         }
         fseek($h, $from);
-        $data = (string) fread($h, max(0, $to - $from));
+        $data = (string) fread($h, $to - $from);
         fclose($h);
         if ($from > 0 && ($nl = strpos($data, "\n")) !== false && ! preg_match(self::HEADER, strtok($data, "\n"))) {
             $data = substr($data, $nl + 1);   // started inside an entry: from the next line
@@ -114,7 +118,7 @@ final class LogReader
                     $entries[] = $current;
                 }
                 $current = $m[1] === $day ? [
-                    'id' => basename($path) . ':' . $offset, 'time' => $m[2], 'level' => strtolower($m[4]), 'channel' => $m[3],
+                    'id' => basename($path) . ':' . $offset, 'offset' => $offset, 'time' => $m[2], 'level' => strtolower($m[4]), 'channel' => $m[3],
                     'message' => $m[5], 'details' => '', 'file' => basename($path),
                 ] : null;
             } elseif ($current !== null) {

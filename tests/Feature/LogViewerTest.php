@@ -109,4 +109,26 @@ class LogViewerTest extends FeatureTestCase
         $page->call('step', 1)->assertSet('day', '2026-11-21');
         $page->set('day', '2026-11-25')->assertSee('Καμία καταγραφή');
     }
+
+    /** review of R6e: an empty file, entries of the same second in order, the whole of a long message */
+    public function test_empty_files_same_second_and_long_messages(): void
+    {
+        file_put_contents("$this->dir/laravel-2026-11-24.log", '');
+        $r = new LogReader($this->dir);
+        $this->assertSame([], $r->day('2026-11-24'));
+        Livewire::actingAs($this->admin())->test(LogViewer::class)->assertSet('day', '2026-11-24')->assertSee('Καμία καταγραφή');
+
+        $lines = '';
+        foreach (range(0, 12) as $i) {
+            $lines .= "[2026-11-25 10:00:00] production.INFO: μήνυμα $i\n";
+        }
+        file_put_contents("$this->dir/laravel-2026-11-25.log", $lines);
+        $this->assertSame(array_map(fn ($i) => "μήνυμα $i", range(12, 0)), array_column($r->day('2026-11-25'), 'message'));
+
+        $long = str_repeat('α', 700) . ' ΤΕΛΟΣ';
+        file_put_contents("$this->dir/laravel-2026-11-26.log", "[2026-11-26 10:00:00] production.ERROR: $long\n");
+        $page = Livewire::actingAs($this->admin())->test(LogViewer::class)->set('day', '2026-11-26')->assertDontSee('ΤΕΛΟΣ');
+        $id = (new LogReader($this->dir))->day('2026-11-26')[0]['id'];
+        $page->call('toggle', $id)->assertSee('ΤΕΛΟΣ');
+    }
 }

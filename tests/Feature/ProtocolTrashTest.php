@@ -200,4 +200,23 @@ class ProtocolTrashTest extends FeatureTestCase
         $this->assertStringContainsString('μεταφέρθηκε στον κάδο', session('notification')['message']);
         $this->assertSame(1, TrashedProtocol::count());
     }
+
+    /** review of R4h: the files tab on every request; a file that does not come back is said and kept */
+    public function test_the_files_tab_is_checked_on_every_request_and_failed_files_are_said(): void
+    {
+        $writer = $this->writer();
+        $t = $this->toTrash($this->protocol(80, ['user_id' => $writer->id]));
+        $page = Livewire::actingAs($writer)->test(TrashPage::class)->set('tab', 'files');
+        $page->assertSet('tab', 'protocols')->assertDontSee('αρχείο-80.pdf')->assertDontSeeHtml('class="trash-row"');
+
+        // its file's place in the trash is gone: the protocol comes back, the file is said to be missing and kept
+        $file = Attachment::onlyTrashed()->where('protocol_id', $t->protocol_id)->first();
+        $file->forceFill(['deleted_at' => now()->subDays(29)])->saveQuietly();
+        Storage::deleteDirectory('arxeio/Φ.1');
+        Storage::put('arxeio/Φ.1', 'a file where its folder must go: it cannot be moved back');
+        Livewire::actingAs($writer)->test(TrashPage::class)->call('restoreProtocol', $t->id)
+            ->assertDispatched('toast', fn ($name, $p) => $p['type'] === 'warning' && str_contains($p['message'], '1 αρχείο δεν επανήλθε'));
+        $this->assertTrue($file->fresh()->trashed());
+        $this->assertTrue($file->fresh()->deleted_at->isToday(), 'kept for another full period');
+    }
 }

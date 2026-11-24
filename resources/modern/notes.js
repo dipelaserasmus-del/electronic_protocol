@@ -112,7 +112,20 @@ function notepad({ url }) {
             this.$watch('open', (v) => { store.set('notes.open', v); if (v && !this.loaded) this.load(); });
             // back to this tab: a newer copy saved elsewhere is shown (or, with unsaved changes here, the choice)
             document.addEventListener('visibilitychange', () => { if (!document.hidden && this.open && this.loaded) this.check(); });
-            window.addEventListener('beforeunload', () => { if (this.timer) this.save(); });
+            // leaving with changes not saved yet (review of N05): kept in this browser, and sent with a request that
+            // outlives the page when it is small enough; the next page restores the kept copy if the save was lost
+            window.addEventListener('pagehide', () => this.leaving());
+        },
+        leaving() {
+            if (!this.loaded || (!this.dirty && !this.saving)) return;
+            store.set('notes.draft', { body: this.body, version: this.version });
+            if (!this.dirty || new Blob([this.body]).size > 60000) return;
+            const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            fetch(url, {
+                method: 'POST', credentials: 'same-origin', keepalive: true,
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
+                body: JSON.stringify({ body: this.body, version: this.version }),
+            }).catch(() => {});
         },
         get html() { return render(this.body, this.folded); },
         get dirty() { return this.body !== this.saved; },
@@ -131,10 +144,19 @@ function notepad({ url }) {
                 const { data } = await this.request('GET');
                 this.body = this.saved = data.body ?? '';
                 this.version = data.version ?? 0;
+                // a copy kept when the last page was left with changes not saved (review of N05)
+                const draft = store.get('notes.draft', null);
+                localStorage.removeItem('notes.draft');
+                const restored = draft && typeof draft.body === 'string' && draft.body !== this.saved;
+                if (restored) {
+                    this.body = draft.body;
+                    this.version = draft.version;   // an older base than the server's: the save then asks (409)
+                }
                 this.savedAt = data.saved ?? '';
                 this.status = this.savedAt ? `Αποθηκεύτηκε ${this.savedAt}` : '';
                 this.mode = this.body.trim() === '' ? 'edit' : 'view';
                 this.loaded = true;
+                if (restored) this.save();
             } catch {
                 this.status = 'Οι σημειώσεις δεν φορτώθηκαν. Δοκιμάστε ξανά.';
             }
@@ -156,16 +178,23 @@ function notepad({ url }) {
         async save(force = false) {
             clearTimeout(this.timer);
             this.timer = null;
+            // a save still on its way: this one after it (review of N05: also when the text went back to the saved one)
+            if (this.saving) { this.timer = setTimeout(() => this.save(force), 300); return; }
             if (!force && !this.dirty) {   // typed back to what is stored: nothing to save
                 this.status = this.savedAt ? `Αποθηκεύτηκε ${this.savedAt}` : '';
                 return;
             }
-            if (this.saving) { this.timer = setTimeout(() => this.save(force), 300); return; }
             this.saving = true;
             const body = this.body;
             try {
                 const { status, data } = await this.request('POST', { body, version: this.version, force });
-                if (status === 409) {
+                if (status === 409 && (data.body ?? '') === body) {
+                    // the newer copy is this very text (e.g. sent as the last page was left): nothing to choose
+                    this.saved = body;
+                    this.version = data.version;
+                    this.savedAt = data.saved ?? '';
+                    this.status = this.savedAt ? `Αποθηκεύτηκε ${this.savedAt}` : '';
+                } else if (status === 409) {
                     this.conflict = data;
                     this.status = 'Οι σημειώσεις άλλαξαν σε άλλη καρτέλα: δεν αποθηκεύτηκαν.';
                 } else if (status === 200) {
@@ -174,6 +203,7 @@ function notepad({ url }) {
                     this.conflict = null;
                     this.savedAt = data.saved;
                     this.status = `Αποθηκεύτηκε ${data.saved}`;
+                    if (this.body !== body) this.typed();   // changed while it was being saved: save that too
                 } else {
                     this.status = data.message ?? 'Δεν αποθηκεύτηκε. Δοκιμάστε ξανά.';
                 }

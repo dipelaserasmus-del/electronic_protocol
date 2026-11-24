@@ -290,4 +290,36 @@ class StampTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('/width:141\.7\dpt; height:[\d.]+pt; margin-left:425\.2\d?pt; margin-top:22\.68pt; position:absolute/', $header);
         $this->assertStringContainsString('mso-position-horizontal-relative:page', $header);
     }
+
+    /** review of R4e: a hybrid file (table + /XRefStm), resource names that are numbers, a page stamped twice */
+    public function test_hybrid_files_numeric_names_and_a_second_stamp(): void
+    {
+        $img = (new StampRenderer())->render($this->template(), [], 100);
+        $size = StampRenderer::sizeMm($img, 100);
+
+        // hybrid: the newest table marks the page (in an object stream) free; its /XRefStm says where it is
+        $pdf = PdfBuilder::make([[]], true);
+        preg_match('/startxref\s+(\d+)/', $pdf, $m);
+        $at = strlen($pdf);
+        $pdf .= "xref\n0 1\n0000000000 65535 f \n5 1\n0000000000 00001 f \ntrailer\n<< /Size 9 /Root 1 0 R /XRefStm {$m[1]} >>\nstartxref\n$at\n%%EOF\n";
+        $r = new PdfReader($pdf);
+        $this->assertCount(1, $r->pages(), 'the page is found through the stream');
+        $out = (new PdfStamper())->stamp($pdf, $img, $size, 'top-right', [10, 10], true);
+        $this->assertNotNull($this->stampOn(new PdfReader($out), (new PdfReader($out))->pages()[0][1]));
+
+        // a dictionary whose names are numbers stays a dictionary
+        $dict = (new \App\Services\Stamp\Pdf\PdfParser('<< /0 5 0 R /1 6 0 R >>'))->value();
+        $this->assertSame('<</0 5 0 R /1 6 0 R>>', \App\Services\Stamp\Pdf\PdfParser::write($dict));
+        $this->assertSame('<<>>', \App\Services\Stamp\Pdf\PdfParser::write((new \App\Services\Stamp\Pdf\PdfParser('<< >>'))->value()));
+        $this->assertSame('[1 2]', \App\Services\Stamp\Pdf\PdfParser::write((new \App\Services\Stamp\Pdf\PdfParser('[1 2]'))->value()));
+
+        // stamped twice: the first stamp keeps its own image
+        $once = (new PdfStamper())->stamp(PdfBuilder::make(), $img, $size, 'top-right', [10, 10], true);
+        $twice = (new PdfStamper())->stamp($once, $img, $size, 'bottom-left', [10, 10], true);
+        $page = (new PdfReader($twice))->pages()[0][1];
+        $this->assertSame(['EPStamp', 'EPStamp1'], array_values(array_filter(array_keys($page['Resources']['XObject']), 'is_string')));
+        $r = new PdfReader($twice);
+        $draws = array_filter(array_map(fn ($ref) => $r->resolve($ref)->data, $r->resolve($page['Contents'])), fn ($d) => str_contains($d, ' Do Q'));
+        $this->assertSame(['/EPStamp Do', '/EPStamp1 Do'], array_values(array_map(fn ($d) => preg_match('~/EPStamp\d* Do~', $d, $x) ? $x[0] : '', $draws)));
+    }
 }

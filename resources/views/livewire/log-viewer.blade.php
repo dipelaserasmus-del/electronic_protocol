@@ -42,17 +42,21 @@
     <div class="card shadow-sm">
         <div class="list-group list-group-flush log-entries" id="log-entries">
             @forelse ($entries as $e)
-                @php $isOpen = in_array($e['id'], $open, true); @endphp
+                @php
+                    $isOpen = in_array($e['id'], $open, true);
+                    $long = mb_strwidth($e['message']) > 600;   // review of R6e: the whole message when opened
+                @endphp
                 <div class="list-group-item log-entry px-2 py-1" wire:key="log-{{ $e['id'] }}" data-level="{{ $e['level'] }}">
                     <button type="button" class="log-row btn btn-link text-reset text-decoration-none p-0 w-100 text-start d-flex gap-2 align-items-baseline"
-                            wire:click="toggle(@js($e['id']))" aria-expanded="{{ $isOpen ? 'true' : 'false' }}" @disabled($e['details'] === '')>
+                            wire:click="toggle(@js($e['id']))" aria-expanded="{{ $isOpen ? 'true' : 'false' }}" @disabled($e['details'] === '' && ! $long)>
                         <span class="log-time font-monospace text-body-secondary">{{ $e['time'] }}</span>
                         <span class="badge text-bg-{{ $colour[$e['level']] ?? 'secondary' }} log-level">{{ $e['level'] }}</span>
                         <span class="log-message text-break flex-grow-1">{!! \App\Support\Highlight::html(mb_strimwidth($e['message'], 0, 600, '…'), $q) !!}</span>
-                        @if ($e['details'] !== '')<i class="bi {{ $isOpen ? 'bi-chevron-up' : 'bi-chevron-down' }} text-body-secondary" aria-hidden="true"></i>@endif
+                        @if ($e['details'] !== '' || $long)<i class="bi {{ $isOpen ? 'bi-chevron-up' : 'bi-chevron-down' }} text-body-secondary" aria-hidden="true"></i>@endif
                     </button>
                     @if ($isOpen)
-                        <pre class="log-details mt-1 mb-1">{!! \App\Livewire\LogViewer::details($e['details'], $q) !!}</pre>
+                        @if ($long)<pre class="log-details log-full-message mt-1 mb-1">{!! \App\Support\Highlight::html($e['message'], $q) !!}</pre>@endif
+                        @if ($e['details'] !== '')<pre class="log-details mt-1 mb-1">{!! \App\Livewire\LogViewer::details($e['details'], $q) !!}</pre>@endif
                         <div class="small text-body-secondary">{{ $e['file'] }} · {{ $e['channel'] }}</div>
                     @endif
                 </div>
