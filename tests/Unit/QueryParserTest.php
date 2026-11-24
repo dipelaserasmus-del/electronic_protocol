@@ -119,4 +119,57 @@ class QueryParserTest extends TestCase
         $this->assertSame('"θέμα:άδεια" "subject:leave" "10:30"', QueryParser::format($c));
         $this->assertEquals($c, $this->parse(QueryParser::format($c)));
     }
+
+    /** R3i: relative dates (today = Wednesday 18/11/2026) for every date operator; πότε: = ημ: */
+    public function test_relative_dates(): void
+    {
+        $range = fn (string $text, string $field = 'protocoldate') => array_map(fn ($d) => $d->format('d/m/Y'), $this->parse($text)->dates[$field]);
+        $this->assertSame(['18/11/2026', '18/11/2026'], $range('πότε:σήμερα'));
+        $this->assertSame(['17/11/2026', '17/11/2026'], $range('πότε:χθες'));
+        $this->assertSame(['16/11/2026', '18/11/2026'], $range('πότε:εβδομάδα'), 'Monday to today');
+        $this->assertSame(['12/11/2026', '18/11/2026'], $range('πότε:7μέρες'), 'the last 7 days, today included');
+        $this->assertSame(['12/11/2026', '18/11/2026'], $range('πότε:τελευταίες7'));
+        $this->assertSame(['20/10/2026', '18/11/2026'], $range('ημ:30ημέρες'));
+        $this->assertSame(['18/11/2026', '18/11/2026'], $range('πότε:1μέρα'));
+        $this->assertSame(['01/11/2026', '18/11/2026'], $range('ΠΟΤΕ:ΜΗΝΑΣ'), 'case and accents ignored');
+        $this->assertSame(['01/01/2026', '31/12/2026'], $range('πότε:φέτος'));
+        $this->assertSame(['01/01/2025', '31/12/2025'], $range('πότε:πέρσι'));
+        $this->assertSame(['17/11/2026', '17/11/2026'], $range('ημεισ:χθες', 'in_date'));
+        $this->assertSame(['16/11/2026', '18/11/2026'], $range('ημεξ:week', 'out_date'));
+        $this->assertSame(['12/11/2026', '18/11/2026'], $range('when:last7'));
+
+        // a Monday's week is that day only; a new year's week does not reach back to December
+        $parser = new QueryParser();
+        $c = $parser->parse('πότε:εβδομάδα', CarbonImmutable::create(2026, 11, 16));
+        $this->assertSame('16/11/2026', $c->dates['protocoldate'][0]->format('d/m/Y'));
+        $c = $parser->parse('πότε:εβδομάδα', CarbonImmutable::create(2027, 1, 1));   // a Friday
+        $this->assertSame('28/12/2026', $c->dates['protocoldate'][0]->format('d/m/Y'), 'Monday before, across the year');
+
+        foreach (['πότε:0μέρες', 'πότε:αύριο', 'πότε:μέρες'] as $wrong) {
+            $c = $this->parse($wrong, $parser);
+            $this->assertArrayNotHasKey('protocoldate', $c->dates, $wrong);
+            $this->assertCount(1, $parser->ignored, $wrong);
+        }
+    }
+
+    /** R3i: χρήστης: / καταχώρισε: / user: = who registered the protocol */
+    public function test_registrar(): void
+    {
+        foreach (['χρήστης:Μαρία', 'ΧΡΗΣΤΗΣ:Μαρία', 'καταχώρισε:Μαρία', 'καταχώρησε:Μαρία', 'user:Μαρία'] as $text) {
+            $this->assertSame('Μαρία', $this->parse($text)->registrarName, $text);
+        }
+        $c = $this->parse('πότε:7μέρες χρήστης:Α είναι:εκκρεμές');
+        $this->assertSame(['Α', true, '7μέρες'], [$c->registrarName, $c->pending, $c->relative['protocoldate']]);
+        $this->assertFalse($this->parse('χρήστης:"Μαρία Π."')->isEmpty());
+    }
+
+    /** R3i: relative values are written back as they are (a saved search keeps meaning "today") */
+    public function test_format_keeps_relative_dates_and_the_registrar(): void
+    {
+        $c = $this->parse('πότε:7μέρες ημεισ:χθες ημεξ:01/03/2026 χρήστης:"Μαρία Π."');
+        $this->assertSame('ημ:7μέρες ημεισ:χθες ημεξ:01/03/2026 χρήστης:"Μαρία Π."', QueryParser::format($c));
+        $this->assertEquals($c, $this->parse(QueryParser::format($c)));
+        $this->assertSame('ημ:7μέρες', QueryParser::format($this->parse('πότε:τελευταίες7')));
+        $this->assertSame('ημ:01/03/2026', QueryParser::format($this->parse('πότε:σήμερα ημ:1/3/2026')), 'the later value counts');
+    }
 }
