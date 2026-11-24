@@ -305,7 +305,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-24 19:58 | docs | — | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |
+| 2026-11-24 19:58 | docs | #116 | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |
 | 2026-11-24 19:58 | R6e | #115 | log viewer `/logs` (admin): a day at a time, levels, search, details; big logs read in parts; `LOG_DAILY_DAYS` |
 | 2026-11-24 19:58 | N05 | #114 | private notepad per user (`user_notes`, markdown with to-dos, autosave, version check: two tabs never overwrite) |
 | 2026-11-24 19:58 | R5p | #113 | inbox envelopes: three looks (setting `inboxEnvelope`: airmail / paper / plain) for the owner to choose |
