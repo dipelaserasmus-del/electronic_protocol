@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (R5p inbox envelopes; R4h protocols to the trash; R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (N05 notepad; R5p inbox envelopes; R4h protocols to the trash; R4g old stamps; R4f stamp on view; R4c preview; R4e stamp designer; R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -217,6 +217,8 @@ Open *Εισερχόμενα*.
   given meanwhile). As Συγγραφέας you see only your own deleted protocols.
 - [ ] **71.** *Εισερχόμενα*: each e-mail in an envelope. Try the three looks in *Ρυθμίσεις → E-mail → Εμφάνιση των
   e-mail* and tell me A, B or C (question 5).
+- [ ] **72.** *Σημειώσεις* on the right edge of any page: write `# Σήμερα`, `- [ ] κάτι`, `**έντονα**`; *Προβολή*
+  shows them formatted, a to-do ticks with a click; it saves by itself and stays private to you.
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
