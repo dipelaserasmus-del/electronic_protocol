@@ -128,4 +128,38 @@ class OldStampsTest extends FeatureTestCase
         // run again: nothing more to do
         $this->artisan('stamp:old')->expectsOutputToContain('PDF όπου η παλιά σφραγίδα αφαιρείται: 0')->assertSuccessful();
     }
+
+    /** review of R4g: a stamp added by this application (R4e) is recognised and cut off exactly; failed writes change nothing */
+    public function test_a_stamp_of_this_application_and_failed_writes(): void
+    {
+        $plain = PdfBuilder::make();
+        $img = (new \App\Services\Stamp\StampRenderer())->render(\App\Services\Stamp\StampTemplate::defaults(), [], 100);
+        $stamped = (new \App\Services\Stamp\Pdf\PdfStamper())->stamp($plain, $img, [50, 10], 'top-right', [10, 10], true);
+        $r = new OldStampRemover();
+        $this->assertTrue($r->analyse($stamped)['stamped']);
+        $this->assertSame($plain, $r->remove($stamped));
+
+        $p = Protocol::factory()->number(2)->create();
+        $a = Attachment::factory()->make(['protocol_id' => $p->id, 'name' => 'νέο.pdf']);
+        $a->savedPath = 'arxeio/test/νέο.pdf';
+        Storage::put($a->savedPath, $stamped);
+        $a->stamp_in_file = true;
+        $a->save();
+        $this->artisan('stamp:old', ['--list' => true])->expectsOutputToContain('η παλιά σφραγίδα αφαιρείται')->assertSuccessful();
+        $this->artisan('stamp:old', ['--apply' => true])->assertSuccessful();
+        $this->assertSame($plain, Storage::get($a->savedPath));
+        $this->assertFalse($a->fresh()->stamp_in_file);
+
+        // the copy cannot be kept: nothing changes
+        $b = Attachment::factory()->make(['protocol_id' => $p->id, 'name' => 'άλλο.pdf']);
+        $b->savedPath = 'arxeio/test/άλλο.pdf';
+        Storage::put($b->savedPath, $stamped);
+        $b->stamp_in_file = true;
+        $b->save();
+        Storage::deleteDirectory(OldStamps::ORIGINALS);
+        Storage::put(OldStamps::ORIGINALS . '/arxeio', 'a file where the folder must go');   // the copy cannot be written
+        $this->artisan('stamp:old', ['--apply' => true])->expectsOutputToContain('δεν κρατήθηκε αντίγραφο')->assertSuccessful();
+        $this->assertTrue($b->fresh()->stamp_in_file);
+        $this->assertSame($stamped, Storage::get($b->savedPath), 'not changed');
+    }
 }

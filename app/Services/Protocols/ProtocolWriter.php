@@ -595,7 +595,8 @@ final class ProtocolWriter
             }
             Attachment::updateOrCreate(
                 ['protocol_id' => $protocol->id, 'ada' => $ada, 'name' => $name, 'mimeType' => $mime, 'savedPath' => $path],
-                ['keep' => $keep, 'expires' => $expires],
+                // R4f review: a file uploaded again over an old one is stored unstamped, whatever the old one carried
+                ['keep' => $keep, 'expires' => $expires] + ($path ? ['stamp_in_file' => false] : []),
             );
             $result->attachmentsAdded++;
         }

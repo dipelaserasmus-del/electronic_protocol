@@ -21,6 +21,9 @@ final class OldStampRemover
      */
     public function analyse(string $pdf): array
     {
+        if (self::appended($pdf) !== null) {   // review of R4g: a stamp added by this application (R4e)
+            return ['stamped' => true, 'reason' => 'σφραγίδα της εφαρμογής (R4e)', 'pages' => 0];
+        }
         try {
             $reader = new PdfReader($pdf);
             if ($reader->encrypted()) {
@@ -36,6 +39,9 @@ final class OldStampRemover
     /** The file without the old stamp; PdfException when it does not carry exactly that stamp */
     public function remove(string $pdf): string
     {
+        if (($at = self::appended($pdf)) !== null) {
+            return substr($pdf, 0, $at);   // the file exactly as it was before that stamp
+        }
         $reader = new PdfReader($pdf);
         if ($reader->encrypted()) {
             throw new PdfException('encrypted');
@@ -65,6 +71,13 @@ final class OldStampRemover
     }
 
     private string $why = '';
+
+    /** where a stamp added by PdfStamper (R4e) begins: its marker line, after the file's own bytes; or null */
+    public static function appended(string $pdf): ?int
+    {
+        $at = strpos($pdf, "\n" . PdfStamper::MARK . "\n");
+        return $at === false ? null : $at + 1;
+    }
 
     /** @return list<array{0: int, 1: array, 2: string, 3: string, 4: string}>|null page, dict, drawing without the stamp, GS, image */
     private function find(PdfReader $reader): ?array
