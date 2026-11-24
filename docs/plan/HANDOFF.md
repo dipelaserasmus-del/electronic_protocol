@@ -14,6 +14,10 @@ Read this first when (re)starting work. Update it at the end of every task.
   the deployment** (in OWNER-TODO's deployment steps). Sub-folders Φ.43.x are only named (ask the owner). Import fixes:
   cells trimmed by characters (trim() cut Π = CE A0), codes matched normalised on both sides (`matchKey`), existing
   folders keep their code. `FileNames::available` (was Trash::free). Owner's try-it **38** = apply on the real copy.
+- **D09 (owner, 2026-11-23): glossary `aliases`.** A glossary folder may list `aliases`: the same folder written
+  with another code in the database (`Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`). `FolderGlossary::records`
+  updates that folder (it keeps its code); the list's own code wins when both exist. New owner decisions of this kind go
+  in `folders.json` (`aliases` + `aliasNote`), then `--docs`.
 - Cloud sandbox note (2026-11-19): a cached app image without npm/mysqldump → build the frontend on the host
   (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
   `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
@@ -239,6 +243,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 | Date | Task | PR | Notes |
 |---|---|---|---|
 | 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
+| 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
 | 2026-11-23 12:13 | R5o | #97 | inbox: no jump on Κείμενο / HTML; Εισερχόμενο / Εξερχόμενο (folded) sections; purple preview, lavender headers; HTML tab icon; list «N από M» and ✓ number |
 | 2026-11-23 11:01 | R5n | #96 | inbox first view from the shared snapshot (cache only) with «τελευταίας ανανέωσης (ΩΡΑ)»; `connect()` after the page is shown; e-mails stay on failure |
