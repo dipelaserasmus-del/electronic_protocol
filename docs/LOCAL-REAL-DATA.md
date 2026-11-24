@@ -70,7 +70,9 @@ Loaded: 4210 protocols, 9 users, 3100 attachments (3080 files found in local-dat
 uses (old leftovers, the server's backups): they are not copied. To see their names, for yourself only:
 `./dev.sh real artisan attachments:import local-data/server-files --list` (it copies nothing without `--apply`).
 
-Without a `server-files/` folder, load uses the files already in `local-data/storage/app` as they are (as before D10).
+Without a `server-files/` folder, load uses the files already in `local-data/storage/app` as they are (as before D10)
+and does **not** apply the folder glossary: its merge moves files, and the next load of the same backup would then
+look for them where they were. Run it yourself then: `./dev.sh real artisan folders:glossary --apply`.
 
 Then open **http://localhost:8081** and log in with your usual production username and password.
 

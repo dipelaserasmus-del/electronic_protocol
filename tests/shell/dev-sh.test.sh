@@ -77,14 +77,14 @@ mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local
 run "real load (.sql.gz)"           "artisan migrate --force"            real load
 run "real load adopts old backups"  "artisan migrate:adopt-legacy"       real load
 run "real load measures attachments (D03)" "artisan attachments:fill-metadata" real load
-run "real load applies the folder glossary (D10)" "artisan folders:glossary --apply --brief" real load
-# D10: without local-data/server-files the app's files stay as they are
+# D10: without local-data/server-files the app's files stay as they are, and nothing moves them (no glossary merge)
 : > "$LOG"; (cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real load >/dev/null 2>&1)
-if ! grep -q "rm -rf storage/app/arxeio" "$LOG" && ! grep -q "attachments:import" "$LOG"; then
+if ! grep -q "rm -rf storage/app/arxeio" "$LOG" && ! grep -q "attachments:import" "$LOG" && ! grep -q "folders:glossary" "$LOG"; then
   echo "ok   real load without server-files keeps the app's files"; else echo "FAIL real load without server-files"; fails=$((fails+1)); fi
 # D10: with it, the app's files are rebuilt from it by the database, after migrate, before measuring and the glossary
 mkdir -p "$WORK/repo/local-data/server-files/arxeio"
 run "real load copies the server's files (D10)" "artisan attachments:import local-data/server-files --apply" real load
+run "real load applies the folder glossary (D10)" "artisan folders:glossary --apply --brief" real load
 if [ "$(last 'artisan migrate --force')" -lt "$(last 'rm -rf storage/app/arxeio storage/app/trash')" ] \
    && [ "$(last 'rm -rf storage/app/arxeio')" -lt "$(last 'attachments:import')" ] \
    && [ "$(last 'attachments:import')" -lt "$(last 'attachments:fill-metadata')" ] \

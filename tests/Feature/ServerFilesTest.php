@@ -119,6 +119,21 @@ class ServerFilesTest extends FeatureTestCase
         $this->assertSame('trash/Φ.12/old.pdf', Attachment::withTrashed()->find($old->id)->storedFilePath());
     }
 
+    public function test_the_trash_comes_first_also_when_only_its_case_differs(): void
+    {
+        // review of D10: the row says arxeio/φ.12/…; its file went to trash/Φ.12/…; a newer upload sits at the row's path
+        $this->onServer('trash/Φ.12/old.pdf', 'trashed');
+        $this->onServer('arxeio/φ.12/old.pdf', 'newer upload with the same name');
+        $old = $this->row('arxeio/φ.12/old.pdf');
+        DB::table('attachments')->where('id', $old->id)->update(['deleted_at' => now()]);
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Copied:      1')->assertSuccessful();
+
+        $this->assertSame('trashed', Storage::get('trash/φ.12/old.pdf'));
+        $this->assertFalse(Storage::exists('arxeio/φ.12/old.pdf'), 'the newer upload has no row here: not copied');
+    }
+
     public function test_list_shows_the_names(): void
     {
         $this->row('arxeio/Φ.12/χαμένο.pdf');

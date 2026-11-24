@@ -122,9 +122,14 @@ real_cmd() {
       fi
       # D03: size + SHA-256 of the attachment files (counts only; only files not measured yet)
       in_real php artisan attachments:fill-metadata --no-ansi
-      # D07/D09: the folder glossary and the merges (Φ.43 → Φ.46), as in the move to the new version
-      in_real php artisan folders:glossary --apply --brief --no-ansi \
-        || { echo "FOLDER GLOSSARY NOT APPLIED (see above)." >&2; exit 1; }
+      # D07/D09: the folder glossary and the merges (Φ.43 → Φ.46), as in the move to the new version. Only on files
+      # rebuilt from server-files: the merge moves files, and the next load of the same dump needs them where it says
+      if [ -d local-data/server-files/arxeio ]; then
+        in_real php artisan folders:glossary --apply --brief --no-ansi \
+          || { echo "FOLDER GLOSSARY NOT APPLIED (see above)." >&2; exit 1; }
+      else
+        echo "Folder glossary not applied: it moves files (Φ.43 → Φ.46), so load applies it only with local-data/server-files."
+      fi
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
       in_real php artisan tinker --execute='\App\Models\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
       in_real chmod -R a+rwX storage/app

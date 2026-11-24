@@ -96,16 +96,16 @@ final class ServerFiles
 
     /**
      * The first candidate found on the server: exactly, else whatever the case of its letters (only when that is one
-     * file). @param list<string> $candidates @return array{0: ?string, 1: ?string} [path here, path on the server]
+     * file); a later candidate only when the earlier one is not there at all. @param list<string> $candidates @return array{0: ?string, 1: ?string} [path here, path on the server]
      */
     private function locate(array $candidates, array $exact, array $folded): array
     {
+        // candidate by candidate: their order counts (a trashed row's file in trash/ before a newer upload at the
+        // row's own path, review of D10), so each one is tried exactly and then whatever the case before the next
         foreach ($candidates as $c) {
             if (isset($exact[$c])) {
                 return [$c, $c];
             }
-        }
-        foreach ($candidates as $c) {
             $matches = $folded[self::fold($c)] ?? [];
             if (count($matches) === 1) {
                 return [$c, $matches[0]];
