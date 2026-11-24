@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 14:30 (after Batch 9, Batch 9.5, R3h, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: R3i; times are Greek time)
+## Current state — 2026-11-24 15:00 (after Batch 9, Batch 9.5, R3h, R3i, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: R4d; times are Greek time)
 - **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R4h → R5p → N05 → R6e (BACKLOG «Batch 9.6»; R4h added 2026-11-24 13:30: deleted protocols to the trash). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
@@ -153,6 +153,13 @@ Read this first when (re)starting work. Update it at the end of every task.
   `protocols/missing.blade.php` (404, identical apart from the number; search link `αρ:N/YYYY` or `/find`). Form pill
   `data-action="link"` `data-copy-link` (resources/modern/copy-link.js: clipboard API, `execCommand` fallback for
   plain http, prompt last); for readers it carries `pill-far-right`.
+- **R3i (Batch 9.6):** `QueryParser`: `πότε:`/`when:` = `ημ:`; `QueryParser::relative(value, today)` → [word, [from, to]]
+  (σήμερα, χθες, εβδομάδα = Monday→today, `Nμέρες`/`τελευταίεςN`/`lastN` = N days incl. today, μήνας = 1st→today,
+  φέτος / πέρσι = whole year) for every date operator; `SearchCriteria::$relative` (field → word) makes `format()`
+  write the word back (and `SearchPage::paramsFor` puts it in `w`, not in the date fields). `χρήστης:`/`καταχώρισε:`/
+  `user:` → `registrarName` (LIKE on users.name → `protocols.user_id`), menu `by` → `registrarId` (menu wins).
+  `/find`: `quickDate(key)` buttons (`SearchPage::QUICK_DATES`) fill from/to and clear the year; a protocol date typed
+  in «Οπουδήποτε» clears the prefilled year unless `έτος:` is typed.
 - **R2l (owner, 2026-11-23):** the list page's «Αναζήτηση» pill removed (top-bar search box + its advanced button cover it).
 - **F09 (2026-11-23):** `Dockerfile` writes `/etc/apt/apt.conf.d/80-retries` (Retries 5, http/https Timeout 30 s)
   before `apt-get`; every CI job has `timeout-minutes`. Cause: security.ubuntu.com answering only some requests made
@@ -259,6 +266,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
 | 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
 | 2026-11-24 13:30 | D11 | — | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |

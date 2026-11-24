@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 14:30 (R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 15:00 (R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -195,6 +195,10 @@ Open *Εισερχόμενα*.
 - [ ] **63.** Open a protocol and press *Σύνδεσμος* (right, next to *Απόδειξη*): it says *Αντιγράφηκε*. Paste the link
   in a new tab (e.g. `http://localhost:8080/protocol/1`): the protocol opens. `…/protocol/1/2025` opens no. 1 of 2025;
   a number that does not exist says *Δεν υπάρχει* (the same as for a protocol you may not see).
+- [ ] **64.** In the search box at the top: `πότε:σήμερα`, `πότε:χθες`, `πότε:εβδομάδα` (since Monday), `πότε:7μέρες`,
+  `πότε:μήνας`, `πότε:πέρσι`; `χρήστης:` + part of a name = registered by that user (e.g.
+  `πότε:7μέρες χρήστης:Συγγραφέας`). On *Σύνθετη αναζήτηση*: the buttons under the dates (*Σήμερα … Πέρσι*) and
+  *Καταχωρίστηκε από*.
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):

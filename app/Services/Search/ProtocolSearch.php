@@ -107,6 +107,14 @@ final class ProtocolSearch
             $q->whereHas('assignments', fn ($a) => $a->where('type', 'd')->whereIn('user_id', $ids));
         }
 
+        // R3i: who registered it
+        if ($c->registrarId !== null) {
+            $q->where('user_id', $c->registrarId);
+        }
+        if (($name = trim((string) $c->registrarName)) !== '') {
+            $q->whereIn('user_id', User::where('name', 'LIKE', self::like($name))->pluck('id'));   // unknown name → no results
+        }
+
         foreach ($c->words as $word) {
             [$word, $whole] = self::wholeOf(trim($word));
             if ($word !== '') {
