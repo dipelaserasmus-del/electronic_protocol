@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/home/list', [ProtocolFormController::class, 'list'])->middleware(['redirectAfterLogin']);   // R2
     Route::get('/home/list/{filter?}/{userId?}', [ProtocolFormController::class, 'list']);
     Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolFormController::class, 'show']);   // R1b
+    Route::get('/protocol/{num}/{year?}', [ProtocolFormController::class, 'link']);   // R3h: direct link
     Route::get('getKeep4Fakelos/{fakelos}', [ProtocolController::class, 'getKeep4Fakelos']);
 
     Route::post('/home', [ProtocolController::class, 'store']);
