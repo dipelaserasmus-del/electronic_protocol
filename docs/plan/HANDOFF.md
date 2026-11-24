@@ -287,8 +287,8 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 | Date | Task | PR | Notes |
 |---|---|---|---|
 | 2026-11-24 19:57 | R4f | #110 | files stored unstamped; stamped copy on view / download / print (`StampedCopy`, cached); «Με σφραγίδα» per user; `stamp_in_file` files never stamped twice |
-| 2026-11-24 19:57 | R4c | #108 | preview 👁 in a large window, ‹ › through a protocol's / e-mail's files: PDF, images, text; Word / spreadsheets converted on the server (PhpWord / PhpSpreadsheet, CSP sandbox) |
-| 2026-11-24 19:57 | R4e | #109 | stamp designer (`/stamp`: emblem, lines, colour, size, corner; live preview); own PDF stamper (incremental update after `%EP-STAMP`, 600 dpi, first page, real size); `stamp:import`; `configs.value` TEXT |
+| 2026-11-24 19:56 | R4c | #108 | preview 👁 in a large window, ‹ › through a protocol's / e-mail's files: PDF, images, text; Word / spreadsheets converted on the server (PhpWord / PhpSpreadsheet, CSP sandbox) |
+| 2026-11-24 19:56 | R4e | #109 | stamp designer (`/stamp`: emblem, lines, colour, size, corner; live preview); own PDF stamper (incremental update after `%EP-STAMP`, 600 dpi, first page, real size); `stamp:import`; `configs.value` TEXT |
 | 2026-11-24 16:00 | R4d | #107 | rename an attachment (✎; shown name only, extension fixed, characters cleaned; same rule as ✕) |
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
