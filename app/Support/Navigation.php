@@ -96,6 +96,7 @@ final class Navigation
                 ['label' => 'Backup', 'icon' => 'database-down', 'url' => url('/backups')],
                 ['label' => 'Εκκαθάριση', 'icon' => 'eraser', 'url' => url('/arxeio')],
                 ['label' => 'Κάδος', 'icon' => 'trash3', 'url' => url('/trash')],
+                ['label' => 'Αρχεία καταγραφής', 'icon' => 'terminal', 'url' => url('/logs')],   // R6e
             ];
         }
 

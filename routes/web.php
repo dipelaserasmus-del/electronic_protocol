@@ -95,6 +95,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [ConfigController::class, 'index']);
     Route::get('/stamp', [\App\Http\Controllers\StampController::class, 'show']);   // R4e: the stamp designer (not readers)
     Route::get('/backups', [ConfigController::class, 'backups']);
+    Route::get('/logs', [ConfigController::class, 'logs']);   // R6e: log viewer (administrators)
     Route::get('/downloadBackup/{name}', [ConfigController::class, 'downloadBackup']);
     Route::get('/arxeio', [ConfigController::class, 'arxeio']);
     Route::get('/expired/{deleted?}', [ConfigController::class, 'expired']);

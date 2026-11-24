@@ -27,6 +27,12 @@ class ConfigController extends Controller implements HasMiddleware
         return view('config');
     }
 
+    /** R6e: the application's log (administrators: this controller's middleware) */
+    public function logs()
+    {
+        return view('logs');
+    }
+
     public function backups()
     {
         return view('backup');
