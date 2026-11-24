@@ -262,11 +262,11 @@ class ProtocolFormTest extends FeatureTestCase
 
         $actions = substr($form, strpos($form, 'data-pill-actions'));
         $actions = substr($actions, 0, strpos($actions, 'pill-more'));
-        $order = array_map(fn ($needle) => strpos($actions, $needle), ['Προηγούμενο', 'Επόμενο', 'data-action="copy"', 'data-action="receipt"']);
+        $order = array_map(fn ($needle) => strpos($actions, $needle), ['Προηγούμενο', 'Επόμενο', 'data-action="copy"', 'data-action="link"', 'data-action="receipt"']);
         $this->assertNotContains(false, $order);
         $sorted = $order;
         sort($sorted);
-        $this->assertSame($sorted, $order, 'copy and receipt come last');
+        $this->assertSame($sorted, $order, 'copy, link (R3h) and receipt come last');
         $this->assertMatchesRegularExpression('~pill-far-right[^>]*data-action="copy"[^>]*>\s*<i class="bi bi-copy~', $actions);
         $this->assertMatchesRegularExpression('~data-action="receipt"[^>]*>\s*<i class="bi bi-receipt~', $actions);
 
@@ -274,10 +274,11 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertStringContainsString('id="form-save"', $new, 'a new protocol is saved by the same button');
         $this->assertStringNotContainsString('data-action="copy"', $new);
 
-        // readers only view: no copy as new; the receipt takes the far right
+        // readers only view: no copy as new; the link (R3h) takes the far right, the receipt follows it
         $read = $this->actingAs($this->reader())->get('/home/'.$p->id)->assertOk()->getContent();
         $this->assertStringNotContainsString('data-action="copy"', $read);
-        $this->assertMatchesRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="receipt"~', $read);
+        $this->assertMatchesRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="link"~', $read);
+        $this->assertDoesNotMatchRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="receipt"~', $read);
         $this->assertStringNotContainsString('id="form-save"', $read);
         $this->assertFalse($this->reader()->can('create', Protocol::class));
         $this->assertTrue($this->writer()->can('create', Protocol::class));

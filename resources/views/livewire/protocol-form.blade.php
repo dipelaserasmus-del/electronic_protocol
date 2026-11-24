@@ -116,7 +116,11 @@
                     <x-pill :href="url('/home/'.$protocol->id.'/1')" class="pill-far-right" data-action="copy" title="Νέο πρωτόκολλο με το περιεχόμενο αυτού">
                         <i class="bi bi-copy me-1" aria-hidden="true"></i>Αντιγραφή ως νέο</x-pill>
                     @endif
-                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" :class="$mayCreate ? '' : 'pill-far-right'" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
+                    {{-- R3h: copies the direct link /protocol/N/YYYY (resources/modern/copy-link.js) --}}
+                    <x-pill data-action="link" data-copy-link="{{ url('/protocol/'.$protocol->protocolnum.'/'.$protocol->etos) }}" :class="$mayCreate ? '' : 'pill-far-right'"
+                            title="Αντιγραφή του συνδέσμου {{ url('/protocol/'.$protocol->protocolnum.'/'.$protocol->etos) }}">
+                        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i><span data-copy-label>Σύνδεσμος</span></x-pill>
+                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
                         <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
                 @endif
             </x-pill-actions>

@@ -10,6 +10,7 @@ import './preferences';
 import './inbox';
 import './unsaved';   // R1k
 import './inbox-count';   // R5f
+import './copy-link';   // R3h
 
 window.bootstrap = bootstrap;
 
