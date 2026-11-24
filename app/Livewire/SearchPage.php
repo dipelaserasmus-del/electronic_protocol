@@ -74,6 +74,14 @@ class SearchPage extends Component
     #[Url]
     public string $assignee = '';
 
+    /** R3i: '' anybody, or the id of the user who registered the protocol */
+    #[Url]
+    public string $by = '';
+
+    /** R3i: the quick date buttons (value for QueryParser::relative => label) */
+    public const QUICK_DATES = ['σήμερα' => 'Σήμερα', 'χθες' => 'Χθες', 'εβδομάδα' => 'Εβδομάδα', '7μέρες' => '7 μέρες',
+        '30μέρες' => '30 μέρες', 'μήνας' => 'Μήνας', 'φέτος' => 'Φέτος', 'πέρσι' => 'Πέρσι'];
+
     #[Url]
     public bool $pending = false;
 
@@ -89,10 +97,17 @@ class SearchPage extends Component
     #[Url(as: 's')]
     public bool $searched = false;
 
+    /**
+     * R3i review: the year in the field is only the one filled in on opening (no year in the address, not changed
+     * since); a protocol date typed in «Οπουδήποτε» replaces only such a year
+     */
+    public bool $yearPrefilled = false;
+
     public function mount(): void
     {
         if (! request()->query->has('year')) {
             $this->year = (string) self::currentYear();
+            $this->yearPrefilled = true;
         }
         $this->text = array_intersect_key(array_map(fn ($v) => is_scalar($v) ? (string) $v : '', $this->text), SearchCriteria::TEXT_FIELDS);
         $this->empty = array_values(array_intersect(array_map('strval', $this->empty), array_keys(SearchCriteria::EMPTY_FIELDS)));
@@ -109,13 +124,30 @@ class SearchPage extends Component
         $this->resetPage();
     }
 
+    public function updatedYear(): void
+    {
+        $this->yearPrefilled = false;   // the user's own year counts
+    }
+
+    /** R3i: a quick date button fills «Ημ/νία από / έως» (the dates decide the year, so the year is cleared) and searches */
+    public function quickDate(string $key): void
+    {
+        $relative = array_key_exists($key, self::QUICK_DATES) ? QueryParser::relative($key) : null;
+        if ($relative === null) {
+            return;
+        }
+        [$from, $to] = $relative[1];
+        [$this->from, $this->to, $this->year, $this->yearPrefilled] = [$from->format(DateInput::FORMAT), $to->format(DateInput::FORMAT), '', false];
+        $this->search();
+    }
+
     /**
      * The pending check: only the year and the protocol date range are kept, so "nothing pending" is never the
      * result of another filter left in a field
      */
     public function pendingCheck(): void
     {
-        $this->reset('num', 'inFrom', 'inTo', 'outFrom', 'outTo', 'folder', 'text', 'empty', 'assignee', 'words');
+        $this->reset('num', 'inFrom', 'inTo', 'outFrom', 'outTo', 'folder', 'text', 'empty', 'assignee', 'by', 'words');
         $this->pending = true;
         $this->search();
     }
@@ -138,10 +170,14 @@ class SearchPage extends Component
      */
     public static function paramsFor(SearchCriteria $c): array
     {
-        $date = fn (string $field, int $i) => ($c->dates[$field][$i] ?? null)?->format(DateInput::FORMAT) ?? '';
         $anywhere = new SearchCriteria();
         $anywhere->words = $c->words;
         $anywhere->assigneeName = $c->assigneeName;
+        $anywhere->registrarName = $c->registrarName;
+        // R3i: a relative date stays relative (in «Οπουδήποτε»), so the bookmarked search keeps meaning "today"
+        $anywhere->relative = $c->relative;
+        $anywhere->dates = array_intersect_key($c->dates, $c->relative);
+        $date = fn (string $field, int $i) => isset($c->relative[$field]) ? '' : (($c->dates[$field][$i] ?? null)?->format(DateInput::FORMAT) ?? '');
         $empty = array_values(array_diff($c->empty, ['diekperaiosi']));
 
         return array_filter([
@@ -155,6 +191,7 @@ class SearchPage extends Component
             't' => $c->text,
             'empty' => $empty,
             'assignee' => in_array('diekperaiosi', $c->empty, true) ? 'none' : (string) ($c->assigneeId ?? ''),
+            'by' => (string) ($c->registrarId ?? ''),
             'pending' => $c->pending ? 1 : '',
             'w' => QueryParser::format($anywhere),
         ], fn ($v, $k) => $k === 'year' || ($v !== '' && $v !== []), ARRAY_FILTER_USE_BOTH);
@@ -198,6 +235,9 @@ class SearchPage extends Component
         } elseif (ctype_digit($this->assignee)) {
             $c->assigneeId = (int) $this->assignee;
         }
+        if (ctype_digit($this->by)) {
+            $c->registrarId = (int) $this->by;
+        }
         $c->pending = $this->pending;
         // R3b: «Οπουδήποτε» also takes the search text's operators (φάκελος:Φ.1 …); a field filled in on the form wins
         $parser = new QueryParser();
@@ -212,13 +252,19 @@ class SearchPage extends Component
         if ($parser->yearGiven) {
             $c->year = $typed->year;   // typed (έτος:2025, έτος:όλα, αρ:125/2025): wins over the prefilled year
         }
-        $c->dates += $typed->dates;
+        $typedDates = array_diff_key($typed->dates, $c->dates);   // a date filled in on the form wins
+        $c->dates += $typedDates;
+        $c->relative = array_intersect_key($typed->relative, $typedDates);
+        if (isset($typedDates['protocoldate']) && ! $parser->yearGiven && $this->yearPrefilled) {
+            $c->year = null;   // R3i: a typed protocol date (πότε:πέρσι, ημ:20/12/2025..) decides the year, not the prefilled one
+        }
         $c->folder = $c->folder !== '' ? $c->folder : $typed->folder;
         $c->text += $typed->text;
         // the assignee chosen in the menu wins over ανάθεση: typed in «Οπουδήποτε» (review of R3b)
         $typedEmpty = $this->assignee === '' ? $typed->empty : array_diff($typed->empty, ['diekperaiosi']);
         $c->empty = array_values(array_unique([...$c->empty, ...$typedEmpty]));
         $c->assigneeName = $this->assignee === '' ? $typed->assigneeName : null;
+        $c->registrarName = $this->by === '' ? $typed->registrarName : null;   // R3i: the menu wins, as for ανάθεση
         $c->pending = $c->pending || $typed->pending;
         if ($this->whole) {   // R3f: as if each value were typed with "=" (ProtocolSearch::wholeOf)
             $eq = fn (string $v) => str_starts_with($v, '=') ? $v : '=' . $v;
@@ -277,6 +323,7 @@ class SearchPage extends Component
             'textFields' => SearchCriteria::TEXT_FIELDS,
             'mainText' => self::MAIN_TEXT,
             'emptyFields' => SearchCriteria::EMPTY_FIELDS,
+            'quickDates' => self::QUICK_DATES,
         ]);
     }
 }
