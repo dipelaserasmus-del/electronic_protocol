@@ -13,7 +13,7 @@
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "reset"], "problemMatcher": [] },
     { "label": "Tests: run all", "type": "process", "group": { "kind": "test", "isDefault": true },
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "test"], "problemMatcher": [] },
-    { "label": "Real data: load newest backup from local-data/db", "type": "process",
+    { "label": "Real data: load newest backup + files (local-data/db, local-data/server-files)", "type": "process",
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "load"], "problemMatcher": [] },
     { "label": "Real data: start (http://localhost:8081)", "type": "process",
       "command": "${workspaceFolder}/docker/dev/host-run.sh", "args": ["./dev.sh", "real", "up"], "problemMatcher": [] },

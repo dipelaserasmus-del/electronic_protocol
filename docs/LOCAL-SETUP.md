@@ -23,7 +23,7 @@ http://localhost:8080 and log in as `admin` / `password`. E-mails it "sends" are
    - the database backup (`.sql.gz` from *Ρυθμίσεις → Backup*, or a `mysqldump`) into `db/`
    - the server's whole `storage/app` folder into `storage/app/`
    - optional `.eml` e-mails into `emails/`
-2. **Run Task… → "Real data: load newest backup from local-data/db"**
+2. **Run Task… → "Real data: load newest backup + files (local-data/db, local-data/server-files)"**
 3. Open http://localhost:8081 and log in with your normal production account.
 
 Safety details: [LOCAL-REAL-DATA.md](LOCAL-REAL-DATA.md). In short: e-mails are only caught locally

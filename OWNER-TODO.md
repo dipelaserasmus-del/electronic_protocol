@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-23 14:28 (R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 09:30 (D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
@@ -187,8 +187,18 @@ Open *Εισερχόμενα*.
 - [ ] **60.** *Λίστα*: the header has *Νέο* and *Ανανέωση* only; search from the box at the top (its sliders button
   opens *Σύνθετη αναζήτηση*).
 
+### A fresh copy with its files (D10, 2026-11-24)
+- [ ] **61.** On the server, export the database with phpMyAdmin and, **at the same time**, copy its whole
+  `storage/app` folder. Put the export in `local-data/db/` and the folder's content (`arxeio/`, `trash/` …) in
+  **`local-data/server-files/`** (new; nothing is ever written there). Then *Update: get latest version from GitHub*
+  and *Run Task… → Real data: load newest backup + files (local-data/db, local-data/server-files)*.
+  It loads the database, **rebuilds** `local-data/storage/app` from `server-files/` (each attachment's file where its row
+  says), measures the files and applies the folder glossary and Φ.43 → Φ.46 by itself (so 38 is done too). Send me the
+  lines starting *Server files*, *Copied*, *Not on the server*, *no attachment points to*, *Folders:*, *Merge* and
+  *Loaded* (counts only). Details: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md).
+
 ### Your folder list (D07, 2026-11-19)
-- [ ] **38.** On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
+- [ ] **38.** *(Since D10, Real data: load does this by itself: try-it 61 covers it.)* On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
   terminal:
   ```
   ./dev.sh real artisan folders:glossary
@@ -221,6 +231,8 @@ Open *Εισερχόμενα*.
    - check the attachment file names on the server (`php tools\check-attachment-names.php …`, F08);
    - load the database: `migrate:adopt-legacy`, then `migrate`. This also converts to utf8mb4, long subjects, the
      assignments table, real dates and the trash columns;
+   - copy the attachment files into the new app, by the database: `php artisan attachments:import <the old
+     storage\app folder> --apply` (D10; only reads the old folder; the same as *Real data: load* rehearses);
    - measure the attachments (`php artisan attachments:fill-metadata`, D03);
    - check the user list for unknown administrators, and that everyone who works with the protocol is *Ενεργός*
      (inactive users cannot log in, R6a);

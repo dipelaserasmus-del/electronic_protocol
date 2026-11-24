@@ -16,7 +16,8 @@ class FolderGlossaryCommand extends Command
 {
     protected $signature = 'folders:glossary
         {--apply : write the descriptions and apply the merges}
-        {--docs : write docs/FOLDERS.md from the glossary (for developers)}';
+        {--docs : write docs/FOLDERS.md from the glossary (for developers)}
+        {--brief : counts only, no folder codes (used by ./dev.sh real load, D10)}';
 
     protected $description = 'Folder glossary: full descriptions and merges from database/data/folders.json (preview unless --apply)';
 
@@ -40,8 +41,12 @@ class FolderGlossaryCommand extends Command
         $this->line('  New:       '.$this->codes($by('new')));
         $this->line('  Changed:   '.$this->codes($by('update')));
         $this->line('  Unchanged: '.count($by('same')));
-        foreach ($respelled as $from => $to) {
-            $this->line("  $from is your $to: the same folder (it keeps its code, no second one is added).");
+        if ($this->option('brief')) {
+            $this->line('  Written differently in your list (the same folder, it keeps its code): '.count($respelled));
+        } else {
+            foreach ($respelled as $from => $to) {
+                $this->line("  $from is your $to: the same folder (it keeps its code, no second one is added).");
+            }
         }
         $this->line('  Not in the glossary, kept as they are: '.$this->codes($untouched));
         foreach ($rows->where('status', 'error') as $row) {
@@ -95,6 +100,10 @@ class FolderGlossaryCommand extends Command
 
     private function codes(array $codes): string
     {
+        if ($this->option('brief')) {
+            return (string) count($codes);
+        }
+
         return $codes === [] ? '—' : count($codes).' ('.implode(', ', $codes).')';
     }
 }

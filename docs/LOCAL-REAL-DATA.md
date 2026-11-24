@@ -26,34 +26,60 @@ committed, never uploaded, and is never read by Claude.
    *Do not use the app's Ρυθμίσεις → Backup for now: the version on the server creates empty files (fixed in task B10,
    reaches the server when you deploy it).*
    Older installations have no `migrations` table; `real load` handles that by itself (F07).
-2. **Attachments:** copy the server's whole `storage/app` folder (it contains `arxeio/…` with the files).
-   Take the database and the files **at the same time**: `real load` then reports the same number of attachments and
-   files found, and a difference points to a real problem.
+2. **Attachments:** copy the server's whole `storage/app` folder (it contains `arxeio/…` and `trash/…` with the
+   files), as it is. A later copy may add only the new files to it (for example with your `copy-recent-folders.sh`).
+   Take the database and the files **at the same time**: a file added after the export has no row yet and is only
+   counted, and a row added after the file copy has no file.
 
 ## 2. Put them in `local-data/`
 ```
 local-data/
 ├── db/                 ← the backup file(s); the newest is used
 │   └── protocol.sql (or .sql.gz / .zip)
-├── storage/app/        ← the server's storage/app folder (arxeio/, trash/, …)
+├── server-files/       ← the server's storage/app folder (arxeio/, trash/, …) — load only reads it
+├── storage/app/        ← the copy's own files: rebuilt from server-files/ on every load (do not put files here)
 └── emails/             ← optional: .eml files to show in the local test mailbox
 ```
 
 ## 3. Load and open
 ```bash
-./dev.sh real load
+./dev.sh real load        # VS Code: Run Task… → "Real data: load newest backup + files (local-data/db, local-data/server-files)"
 ```
-This imports the newest backup into the local copy (it replaces the copy's previous content), applies the
-database changes made since then, and prints counts only, for example
-`Loaded: 4210 protocols, 9 users, 3100 attachments (3100 files found in local-data/storage/app)`.
-If "files found" is lower than "attachments", some files were not copied.
+Load does the whole move to the new version, as the deployment will (D10):
+1. imports the newest backup into the local copy (it replaces the copy's previous content) and applies the database
+   changes made since then;
+2. **files:** empties the copy's `local-data/storage/app/arxeio` and `trash`, then copies every attachment's file from
+   `server-files/` to where its row says (`php artisan attachments:import`). `server-files/` is only read. The case of
+   the letters does not matter, as on the Windows server (`φ.12` finds `Φ.12`);
+3. measures the files (size, SHA-256);
+4. applies the folder glossary and the Φ.43 → Φ.46 merge (`folders:glossary --apply`, [FOLDERS.md](FOLDERS.md)).
+
+It prints counts only, for example:
+```
+Server files: 3150 in the server's folder; 3100 attachments in the database.
+  Copied:      3080
+  Already here (same file): 0
+  Not on the server:        20
+  Server files no attachment points to (not copied): 70
+…
+Folders: 9 added, 74 updated.
+Merge Φ.43 → Φ.46: 10 protocols; files moved 20 …
+Loaded: 4210 protocols, 9 users, 3100 attachments (3080 files found in local-data/storage/app)
+```
+*Not on the server* are rows whose file is missing from your copy; *no attachment points to* are server files no row
+uses (old leftovers, the server's backups): they are not copied. To see their names, for yourself only:
+`./dev.sh real artisan attachments:import local-data/server-files --list` (it copies nothing without `--apply`).
+
+Without a `server-files/` folder, load uses the files already in `local-data/storage/app` as they are (as before D10)
+and does **not** apply the folder glossary: its merge moves files, and the next load of the same backup would then
+look for them where they were. Run it yourself then: `./dev.sh real artisan folders:glossary --apply`.
 
 Then open **http://localhost:8081** and log in with your usual production username and password.
 
 | Command | Does |
 |---|---|
 | `./dev.sh real up` | start the copy (after a reboot) |
-| `./dev.sh real load [file]` | (re)load the newest backup, or the given file |
+| `./dev.sh real load [file]` | (re)load the newest backup, or the given file, with the files from `server-files/` and the folder glossary |
 | `./dev.sh real down` | stop it |
 | `./dev.sh real wipe` | delete the copy's database (your files in `local-data/` are kept) |
 

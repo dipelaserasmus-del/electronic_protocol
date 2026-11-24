@@ -11,6 +11,7 @@
 #   ./dev.sh artisan ...   run an artisan command      ./dev.sh shell   open a shell in the app container
 #   ./dev.sh logs          follow logs                 ./dev.sh down    stop the stack
 #   ./dev.sh real ...      local copy of production data (load|up|down|wipe|check-names) — see docs/LOCAL-REAL-DATA.md
+#                          load = newest dump in local-data/db + files from local-data/server-files + folder glossary
 #   ./dev.sh doctor        check the set-up (versions and status only, no data) — safe to send
 #
 # App: http://localhost:8080 (demo users admin / anathetis / writer / reader, password: password)
@@ -106,8 +107,29 @@ real_cmd() {
       in_real php artisan migrate:adopt-legacy
       # bring the imported schema up to the current code (only new migrations run; data is kept)
       in_real php artisan migrate --force
+      # D10: the app's files (local-data/storage/app) are rebuilt from the server's copy (local-data/server-files),
+      # by the database; the server's copy is only read. Without it, the files already there are used as they are.
+      if [ -d local-data/server-files/arxeio ]; then
+        echo "Files: rebuilding local-data/storage/app from local-data/server-files (only read), by the database..."
+        in_real rm -rf storage/app/arxeio storage/app/trash
+        in_real php artisan attachments:import local-data/server-files --apply --no-ansi \
+          || { echo "FILES NOT ALL COPIED (see above). The database is loaded; fix and run load again." >&2; exit 1; }
+      elif [ -d local-data/server-files ]; then
+        echo "local-data/server-files has no arxeio folder: copy the server's whole storage/app folder into it. Nothing was loaded from it." >&2
+        exit 1
+      else
+        echo "No local-data/server-files: the files already in local-data/storage/app are used as they are."
+      fi
       # D03: size + SHA-256 of the attachment files (counts only; only files not measured yet)
       in_real php artisan attachments:fill-metadata --no-ansi
+      # D07/D09: the folder glossary and the merges (Φ.43 → Φ.46), as in the move to the new version. Only on files
+      # rebuilt from server-files: the merge moves files, and the next load of the same dump needs them where it says
+      if [ -d local-data/server-files/arxeio ]; then
+        in_real php artisan folders:glossary --apply --brief --no-ansi \
+          || { echo "FOLDER GLOSSARY NOT APPLIED (see above)." >&2; exit 1; }
+      else
+        echo "Folder glossary not applied: it moves files (Φ.43 → Φ.46), so load applies it only with local-data/server-files."
+      fi
       # safety: the e-mail page of the local copy uses the local test mailbox, never the real account
       in_real php artisan tinker --execute='\App\Models\Config::setConfigValueOf("defaultImapEmail", "default");' >/dev/null
       in_real chmod -R a+rwX storage/app
@@ -207,7 +229,7 @@ case "${1:-help}" in
       code=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "${svc#*|}" 2>/dev/null || true)
       printf '%-14s %s → %s\n' "${svc%%|*}:" "${svc#*|}" "$([ "$code" = 200 ] && echo OK || echo "not running (${code:-no answer})")"
     done
-    echo "local-data: $(ls local-data/db 2>/dev/null | grep -cE '\.sql(\.gz)?$' || true) backup file(s), $(find local-data/storage/app -type f 2>/dev/null | wc -l | tr -d ' ') attachment file(s)"
+    echo "local-data: $(ls local-data/db 2>/dev/null | grep -cE '\.sql(\.gz)?$' || true) backup file(s), $(find local-data/storage/app -type f 2>/dev/null | wc -l | tr -d ' ') attachment file(s), $(find local-data/server-files -type f 2>/dev/null | wc -l | tr -d ' ') server file(s)"
     ;;
   mail) load_mail ;;
   test) shift
