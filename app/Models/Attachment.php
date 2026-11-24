@@ -109,18 +109,27 @@ class Attachment extends Model
     public function storedFilePath(): ?string
     {
         $storage = \Illuminate\Support\Facades\Storage::disk();
-        $candidates = [$this->savedPath];
-        if ($this->trashed() && $this->savedPath) {
-            // attachDelete moves the file to trash/ but keeps the path; look there first, because a newer upload with
-            // the same name may now be at the old path (review finding)
-            array_unshift($candidates, str_replace('arxeio', 'trash', $this->savedPath));
-        }
-        foreach ($candidates as $p) {
-            if (is_string($p) && $p !== '' && $storage->exists($p) && is_file($storage->path($p))) {
+        foreach ($this->fileCandidates() as $p) {
+            if ($storage->exists($p) && is_file($storage->path($p))) {
                 return $p;
             }
         }
         return null;
+    }
+
+    /**
+     * Where the file may be, in the order to look (also used by D10's import of the server's files).
+     * @return list<string>
+     */
+    public function fileCandidates(): array
+    {
+        $path = (string) $this->savedPath;
+        if ($path === '') {
+            return [];
+        }
+        // attachDelete moves the file to trash/ but keeps the path; look there first, because a newer upload with
+        // the same name may now be at the old path (review finding)
+        return $this->trashed() ? array_values(array_unique([str_replace('arxeio', 'trash', $path), $path])) : [$path];
     }
 
     /** R6c: the end of the keeping time as a date (the attribute itself is Ymd for legacy code until Z01), or null */

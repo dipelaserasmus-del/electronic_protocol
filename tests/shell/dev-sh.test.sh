@@ -77,6 +77,24 @@ mkdir -p "$WORK/repo/local-data/db"; echo "SELECT 1;" | gzip > "$WORK/repo/local
 run "real load (.sql.gz)"           "artisan migrate --force"            real load
 run "real load adopts old backups"  "artisan migrate:adopt-legacy"       real load
 run "real load measures attachments (D03)" "artisan attachments:fill-metadata" real load
+run "real load applies the folder glossary (D10)" "artisan folders:glossary --apply --brief" real load
+# D10: without local-data/server-files the app's files stay as they are
+: > "$LOG"; (cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real load >/dev/null 2>&1)
+if ! grep -q "rm -rf storage/app/arxeio" "$LOG" && ! grep -q "attachments:import" "$LOG"; then
+  echo "ok   real load without server-files keeps the app's files"; else echo "FAIL real load without server-files"; fails=$((fails+1)); fi
+# D10: with it, the app's files are rebuilt from it by the database, after migrate, before measuring and the glossary
+mkdir -p "$WORK/repo/local-data/server-files/arxeio"
+run "real load copies the server's files (D10)" "artisan attachments:import local-data/server-files --apply" real load
+if [ "$(last 'artisan migrate --force')" -lt "$(last 'rm -rf storage/app/arxeio storage/app/trash')" ] \
+   && [ "$(last 'rm -rf storage/app/arxeio')" -lt "$(last 'attachments:import')" ] \
+   && [ "$(last 'attachments:import')" -lt "$(last 'attachments:fill-metadata')" ] \
+   && [ "$(last 'attachments:fill-metadata')" -lt "$(last 'folders:glossary')" ]; then
+  echo "ok   real load: migrate → files → measure → glossary"; else echo "FAIL real load order"; sed 's/^/     /' "$LOG"; fails=$((fails+1)); fi
+# D10: a server-files folder without arxeio/ stops before anything is deleted
+rmdir "$WORK/repo/local-data/server-files/arxeio"; : > "$LOG"
+if ! (cd "$WORK/repo" && PATH="$WORK/bin:$PATH" FAKE_LOG="$LOG" "$BASH_BIN" ./dev.sh real load >/dev/null 2>&1) && ! grep -q "rm -rf" "$LOG"; then
+  echo "ok   real load: server-files without arxeio stops, deletes nothing"; else echo "FAIL real load: server-files without arxeio"; fails=$((fails+1)); fi
+rm -rf "$WORK/repo/local-data/server-files"
 rm -f "$WORK/repo/local-data/db/"*; (cd "$WORK" && echo "SELECT 1;" > dump.sql && zip -q repo/local-data/db/export.zip dump.sql)
 run "real load (.zip from phpMyAdmin)" "artisan migrate --force"          real load
 run "real down"                     "compose -p electronic-protocol-real" real down

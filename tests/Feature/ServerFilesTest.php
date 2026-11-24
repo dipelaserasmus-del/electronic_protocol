@@ -1,0 +1,149 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Attachment;
+use App\Models\Protocol;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+
+/** D10: `attachments:import` copies the old server's files into the app by the database (used by ./dev.sh real load). */
+class ServerFilesTest extends FeatureTestCase
+{
+    private string $server;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->server = sys_get_temp_dir().'/server-files-'.uniqid();
+        File::makeDirectory($this->server.'/arxeio', 0775, true);
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->server);
+        parent::tearDown();
+    }
+
+    /** a file on the "server" (the copy of its storage/app) */
+    private function onServer(string $path, ?string $content = null): void
+    {
+        File::ensureDirectoryExists(dirname($this->server.'/'.$path));
+        file_put_contents($this->server.'/'.$path, $content ?? "%PDF $path");
+    }
+
+    private function row(string $path, int $number = 1): Attachment
+    {
+        $p = Protocol::factory()->number($number)->create(['fakelos' => 'Φ.12']);
+
+        return Attachment::create(['protocol_id' => $p->id, 'name' => basename($path), 'savedPath' => $path, 'mimeType' => 'application/pdf']);
+    }
+
+    public function test_each_attachment_gets_its_file_where_its_row_says(): void
+    {
+        $this->onServer('arxeio/Φ.12/απόφαση.pdf', 'one');
+        $this->onServer('arxeio/emails/μήνυμα.eml', 'two');
+        $this->row('arxeio/Φ.12/απόφαση.pdf', 1);
+        $this->row('arxeio/emails/μήνυμα.eml', 2);
+        $this->row('arxeio/Φ.12/χαμένο.pdf', 3);          // the known gap: the row is there, the file is not
+        $this->onServer('arxeio/Φ.12/ξεχασμένο.pdf');     // no row points to it
+        $this->onServer('arxeio/backups/old_back.sql.gz');
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Server files: 4 in the server\'s folder; 3 attachments in the database.')
+            ->expectsOutputToContain('Copied:      2')
+            ->expectsOutputToContain('Not on the server:        1')
+            ->expectsOutputToContain('Server files no attachment points to (not copied): 2')
+            ->doesntExpectOutputToContain('ξεχασμένο')   // names only with --list
+            ->assertSuccessful();
+
+        $this->assertSame('one', Storage::get('arxeio/Φ.12/απόφαση.pdf'));
+        $this->assertSame('two', Storage::get('arxeio/emails/μήνυμα.eml'));
+        $this->assertFalse(Storage::exists('arxeio/Φ.12/ξεχασμένο.pdf'), 'orphans are not copied');
+        $this->assertFalse(Storage::exists('arxeio/backups/old_back.sql.gz'));
+        $this->assertTrue(is_file($this->server.'/arxeio/Φ.12/απόφαση.pdf'), 'the server folder is only read');
+    }
+
+    public function test_preview_copies_nothing_and_a_second_run_has_nothing_to_do(): void
+    {
+        $this->onServer('arxeio/Φ.12/a.pdf');
+        $this->row('arxeio/Φ.12/a.pdf');
+
+        $this->artisan('attachments:import', ['source' => $this->server])
+            ->expectsOutputToContain('To copy:     1')->expectsOutputToContain('Nothing was copied')->assertSuccessful();
+        $this->assertFalse(Storage::exists('arxeio/Φ.12/a.pdf'));
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])->assertSuccessful();
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Copied:      0')->expectsOutputToContain('Already here (same file): 1')->assertSuccessful();
+    }
+
+    public function test_a_different_file_already_here_is_never_overwritten(): void
+    {
+        $this->onServer('arxeio/Φ.12/a.pdf', 'server');
+        $this->row('arxeio/Φ.12/a.pdf');
+        Storage::put('arxeio/Φ.12/a.pdf', 'here');
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Another file already here, not overwritten: 1')->assertSuccessful();
+
+        $this->assertSame('here', Storage::get('arxeio/Φ.12/a.pdf'));
+    }
+
+    public function test_the_case_of_the_letters_does_not_count_on_the_windows_server(): void
+    {
+        // the old app built the path from the folder as typed ("φ.12"); Windows put it in the existing Φ.12 folder
+        $this->onServer('arxeio/Φ.12/Απόφαση.PDF', 'x');
+        $this->row('arxeio/φ.12/Απόφαση.PDF');
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Copied:      1')->expectsOutputToContain('no attachment points to (not copied): 0')->assertSuccessful();
+
+        $this->assertSame('x', Storage::get('arxeio/φ.12/Απόφαση.PDF'), 'copied to the path the row says, so the app finds it on Linux');
+    }
+
+    public function test_attachments_in_the_trash_get_their_file_from_trash(): void
+    {
+        $this->onServer('trash/Φ.12/old.pdf', 'trashed');     // trashed before R4b: the row still says arxeio/…
+        $this->onServer('arxeio/Φ.12/old.pdf', 'newer upload with the same name');
+        $old = $this->row('arxeio/Φ.12/old.pdf', 1);
+        DB::table('attachments')->where('id', $old->id)->update(['deleted_at' => now()]);
+        $this->row('arxeio/Φ.12/old.pdf', 2);
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--apply' => true])
+            ->expectsOutputToContain('Copied:      2')->assertSuccessful();
+
+        $this->assertSame('trashed', Storage::get('trash/Φ.12/old.pdf'));
+        $this->assertSame('newer upload with the same name', Storage::get('arxeio/Φ.12/old.pdf'));
+        $this->assertSame('trash/Φ.12/old.pdf', Attachment::withTrashed()->find($old->id)->storedFilePath());
+    }
+
+    public function test_list_shows_the_names(): void
+    {
+        $this->row('arxeio/Φ.12/χαμένο.pdf');
+        $this->onServer('arxeio/Φ.12/ξεχασμένο.pdf');
+
+        $this->artisan('attachments:import', ['source' => $this->server, '--list' => true])
+            ->expectsOutputToContain('arxeio/Φ.12/χαμένο.pdf')->expectsOutputToContain('arxeio/Φ.12/ξεχασμένο.pdf')->assertSuccessful();
+    }
+
+    public function test_a_wrong_folder_is_refused(): void
+    {
+        $this->artisan('attachments:import', ['source' => $this->server.'/arxeio', '--apply' => true])
+            ->expectsOutputToContain('has no arxeio folder')->assertFailed();
+        $this->artisan('attachments:import', ['source' => $this->server.'/nothing'])
+            ->expectsOutputToContain('is not a folder')->assertFailed();
+        Storage::makeDirectory('arxeio');
+        $this->artisan('attachments:import', ['source' => Storage::path(''), '--apply' => true])
+            ->expectsOutputToContain("the app's own storage")->assertFailed();
+    }
+
+    public function test_load_brief_glossary_prints_counts_only(): void
+    {
+        $this->artisan('folders:glossary', ['--brief' => true])
+            ->expectsOutputToContain('Written differently in your list (the same folder, it keeps its code):')
+            ->doesntExpectOutputToContain('Φ.1.1')
+            ->assertSuccessful();
+    }
+}

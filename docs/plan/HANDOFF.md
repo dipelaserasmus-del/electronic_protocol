@@ -15,6 +15,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   the deployment** (in OWNER-TODO's deployment steps). Sub-folders Φ.43.x are only named (ask the owner). Import fixes:
   cells trimmed by characters (trim() cut Π = CE A0), codes matched normalised on both sides (`matchKey`), existing
   folders keep their code. `FileNames::available` (was Trash::free). Owner's try-it **38** = apply on the real copy.
+- **D10 (owner, 2026-11-24): `real load` = the whole move.** The owner puts the server's `storage/app` (as it is) in
+  `local-data/server-files/` (only read); load: dump → adopt/migrate → `rm storage/app/arxeio,trash` → `attachments:import
+  local-data/server-files --apply` (`App\Services\Attachments\ServerFiles`: by the rows incl. trashed,
+  `Attachment::fileCandidates`, case/NFC-insensitive lookup on the server copy, never overwrites, orphans only counted)
+  → fill-metadata → `folders:glossary --apply --brief`. No `server-files/` → the old behaviour (files used as they are).
+  Deployment: the same `attachments:import` from the old XAMPP `storage\app`.
 - **D09 (owner, 2026-11-23): glossary `aliases`.** A glossary folder may list `aliases`: the same folder written
   with another code in the database (`Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`). `FolderGlossary::records`
   updates that folder (it keeps its code); the list's own code wins when both exist. New owner decisions of this kind go
@@ -243,6 +249,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 09:30 | D10 | — | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
 | 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
 | 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
