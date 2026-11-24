@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 15:00 (R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 16:00 (R4d rename attachments; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
 Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
@@ -199,6 +199,8 @@ Open *Εισερχόμενα*.
   `πότε:μήνας`, `πότε:πέρσι`; `χρήστης:` + part of a name = registered by that user (e.g.
   `πότε:7μέρες χρήστης:Συγγραφέας`). On *Σύνθετη αναζήτηση*: the buttons under the dates (*Σήμερα … Πέρσι*) and
   *Καταχωρίστηκε από*.
+- [ ] **65.** In a protocol's *Συνημμένα*, the ✎ next to a file's name: type a new name (the `.pdf` stays) and press
+  *Enter*; *Escape* leaves it. The file opens / downloads under the new name, and `συνημμένο:` finds it.
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
