@@ -95,73 +95,7 @@ final class PdfStamper
             $objects[$num] = [$reader->generation($num), PdfParser::dict($page)];
         }
 
-        return $this->append($pdf, $reader, $objects, $next);
-    }
-
-    /** the file with the objects and a new cross-reference section after it */
-    private function append(string $pdf, PdfReader $reader, array $objects, int $size): string
-    {
-        $out = $pdf;
-        if (! str_ends_with($out, "\n")) {
-            $out .= "\n";
-        }
-        $out .= self::MARK . "\n";
-        $offsets = [];
-        ksort($objects);
-        foreach ($objects as $num => [$gen, $body]) {
-            $offsets[$num] = [strlen($out), $gen];
-            $out .= "$num $gen obj\n$body\nendobj\n";
-        }
-        $trailer = ['Size' => $size, 'Root' => $reader->trailer['Root'], 'Prev' => $reader->startxref];
-        foreach (['Info', 'ID'] as $key) {
-            if (isset($reader->trailer[$key])) {
-                $trailer[$key] = $reader->trailer[$key];
-            }
-        }
-        $xrefAt = strlen($out);
-        if ($reader->xrefStream) {
-            // a cross-reference stream (the file uses them): its own number is the last
-            $xrefNum = $size;
-            $trailer['Size'] = $size + 1;
-            $offsets[$xrefNum] = [$xrefAt, 0];
-            ksort($offsets);
-            $index = [];
-            $rows = '';
-            foreach (self::runs(array_keys($offsets)) as [$start, $count]) {
-                array_push($index, $start, $count);
-                for ($n = $start; $n < $start + $count; $n++) {
-                    $rows .= chr(1) . pack('N', $offsets[$n][0]) . pack('n', $offsets[$n][1]);
-                }
-            }
-            $dict = ['Type' => new PdfName('XRef'), 'W' => [1, 4, 2], 'Index' => $index] + $trailer;
-            $out .= "$xrefNum 0 obj\n" . self::stream($dict, $rows) . "\nendobj\n";
-        } else {
-            $out .= "xref\n";
-            foreach (self::runs(array_keys($offsets)) as [$start, $count]) {
-                $out .= "$start $count\n";
-                for ($n = $start; $n < $start + $count; $n++) {
-                    $out .= sprintf("%010d %05d n \n", $offsets[$n][0], $offsets[$n][1]);
-                }
-            }
-            $out .= 'trailer' . "\n" . PdfParser::dict($trailer) . "\n";
-        }
-        return $out . "startxref\n$xrefAt\n%%EOF\n";
-    }
-
-    /** consecutive numbers grouped: [[start, count], …] */
-    private static function runs(array $numbers): array
-    {
-        sort($numbers);
-        $runs = [];
-        foreach ($numbers as $n) {
-            $last = count($runs) - 1;
-            if ($last >= 0 && $runs[$last][0] + $runs[$last][1] === $n) {
-                $runs[$last][1]++;
-            } else {
-                $runs[] = [$n, 1];
-            }
-        }
-        return $runs;
+        return (new IncrementalUpdate())->append($pdf, $reader, $objects, $next, self::MARK);
     }
 
     private static function stream(array $dict, string $data): string

@@ -12,12 +12,20 @@ final class PdfBuilder
     /**
      * @param list<array{rotate?: int, box?: list<float>, crop?: list<float>, text?: string}> $pages
      */
-    public static function make(array $pages = [[]], bool $xrefStream = false): string
+    public static function make(array $pages = [[]], bool $xrefStream = false, ?array $oldStamp = null): string
     {
         $objects = [];   // number => body (null: placed in the object stream)
         $objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
         $objects[3] = '<< /Font << /F1 4 0 R >> >>';   // shared resources, inherited from the page tree
         $objects[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+        // R4g: like the old tool's output: Producer UniDoc, one image of W × H pixels drawn W × H points at the end
+        // of every page, with an ExtGState; $oldStamp = [W, H, drawn W, drawn H, which pages (null: all)]
+        if ($oldStamp) {
+            $objects[90] = '<< /Producer (UniDoc v2.0.0 \\(AGPLv3 Open Source License\\) - http://unidoc.io) >>';
+            $objects[91] = '<< /Type /XObject /Subtype /Image /Width ' . $oldStamp[0] . ' /Height ' . $oldStamp[1]
+                . " /ColorSpace /DeviceGray /BitsPerComponent 8 /Length 4 >>\nstream\n\0\0\0\0\nendstream";
+            $objects[92] = '<< /ca 1 /CA 1 >>';
+        }
         $kids = [];
         $n = 5;
         $inStream = [];
@@ -30,6 +38,11 @@ final class PdfBuilder
             $objects[$c1] = self::stream("BT /F1 24 Tf 72 700 Td ($text) Tj ET");
             $objects[$c2] = self::stream('0 0 1 rg 72 600 200 50 re f');
             $dict = '<< /Type /Page /Parent 2 0 R /Contents [' . "$c1 0 R $c2 0 R]";
+            if ($oldStamp && ($oldStamp[4] === null || in_array($i, $oldStamp[4], true))) {
+                $objects[$c1] = self::stream("q BT /F1 24 Tf 72 700 Td ($text) Tj ET 0 0 1 rg 72 600 200 50 re f Q q /GS0 gs 1.000000 0.000000 0.000000 1.000000 365.303937 796.889764 cm "
+                    . sprintf('%.6F 0.000000 0.000000 %.6F 0.000000 0.000000 cm /Img1 Do Q', $oldStamp[2], $oldStamp[3]));
+                $dict = '<< /Type /Page /Parent 2 0 R /Contents ' . "$c1 0 R /Resources << /Font << /F1 4 0 R >> /XObject << /Img1 91 0 R >> /ExtGState << /GS0 92 0 R >> >>";
+            }
             if (isset($p['box'])) {
                 $dict .= ' /MediaBox [' . implode(' ', $p['box']) . ']';
             }
@@ -39,7 +52,7 @@ final class PdfBuilder
             if (isset($p['rotate'])) {
                 $dict .= ' /Rotate ' . $p['rotate'];
             }
-            if ($i === 1) {
+            if ($i === 1 && ! str_contains($dict, '/Resources')) {
                 $dict .= ' /Resources 3 0 R';   // by reference, the second page
             }
             $objects[$pageNum] = $dict . ' >>';
@@ -93,7 +106,7 @@ final class PdfBuilder
             }
             $data = gzcompress($rows);
             $at = strlen($pdf);
-            $pdf .= "$xrefNum 0 obj\n<< /Type /XRef /Size $size /W [1 4 2] /Root 1 0 R /Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 7 >> /Length " . strlen($data) . " >>\nstream\n$data\nendstream\nendobj\n";
+            $pdf .= "$xrefNum 0 obj\n<< /Type /XRef /Size $size /W [1 4 2] /Root 1 0 R" . ($oldStamp ? ' /Info 90 0 R' : '') . " /Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 7 >> /Length " . strlen($data) . " >>\nstream\n$data\nendstream\nendobj\n";
             return $pdf . "startxref\n$at\n%%EOF\n";
         }
         $at = strlen($pdf);
@@ -101,7 +114,7 @@ final class PdfBuilder
         for ($i = 1; $i < $size; $i++) {
             $pdf .= isset($entries[$i]) ? sprintf("%010d 00000 n \n", $entries[$i][1]) : "0000000000 65535 f \n";
         }
-        return $pdf . "trailer\n<< /Size $size /Root 1 0 R >>\nstartxref\n$at\n%%EOF\n";
+        return $pdf . "trailer\n<< /Size $size /Root 1 0 R" . ($oldStamp ? ' /Info 90 0 R' : '') . " >>\nstartxref\n$at\n%%EOF\n";
     }
 
     private static function stream(string $data): string
