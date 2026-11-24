@@ -380,7 +380,29 @@
                                 <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id"
                                                   :stamp-in-file="$putStamp && $a->stamp_in_file" />
                             @endif
-                            @if ($a->savedPath)
+                            @if ($a->savedPath && $access->canSave)
+                                {{-- R4d: ✎ renames (the name shown; the file keeps its path; the extension stays) --}}
+                                @php
+                                    $ext = \App\Services\Protocols\ProtocolWriter::extensionOf($a);
+                                    $base = $ext !== '' && str_ends_with(mb_strtolower((string) $a->name), '.'.mb_strtolower($ext)) ? mb_substr($a->name, 0, -mb_strlen($ext) - 1) : (string) $a->name;
+                                @endphp
+                                <div class="me-auto d-flex align-items-center gap-1 flex-grow-1 attachment-name" x-data="{ editing: false, base: @js($base) }">
+                                    <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break" x-show="! editing">{{ $a->name }}</a>
+                                    <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" x-show="! editing" data-action="rename"
+                                            x-on:click="editing = true; base = @js($base); $nextTick(() => { $refs.input.focus(); $refs.input.select() })"
+                                            title="Μετονομασία" aria-label="Μετονομασία του «{{ $a->name }}»"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                                    <div class="input-group input-group-sm flex-grow-1" x-show="editing" x-cloak style="max-width: 32rem">
+                                        <input type="text" class="form-control rename-input" x-ref="input" x-model="base" maxlength="200"
+                                               aria-label="Νέο όνομα του «{{ $a->name }}»"
+                                               x-on:keydown.enter.prevent="editing = false; $wire.renameAttachment({{ $a->id }}, base)"
+                                               x-on:keydown.escape.prevent.stop="editing = false">
+                                        @if ($ext !== '')<span class="input-group-text">.{{ $ext }}</span>@endif
+                                        <button type="button" class="btn btn-primary" data-action="rename-save"
+                                                x-on:click="editing = false; $wire.renameAttachment({{ $a->id }}, base)">Αποθήκευση</button>
+                                        <button type="button" class="btn btn-outline-secondary" x-on:click="editing = false">Άκυρο</button>
+                                    </div>
+                                </div>
+                            @elseif ($a->savedPath)
                                 <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break me-auto">{{ $a->name }}</a>
                             @else
                                 <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
