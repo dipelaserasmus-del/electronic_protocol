@@ -144,8 +144,8 @@ tasks = [
   { id = "R3h", title = "Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill", phase = "R", batch = 9.6, size = "S", deps = ["R1b"], status = "done", pr = 105 },
   { id = "R3i", title = "Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons", phase = "R", batch = 9.6, size = "M", deps = ["R3f"], status = "done", pr = 106 },
   { id = "R4d", title = "Rename an attachment (shown name only; extension fixed)", phase = "R", batch = 9.6, size = "S", deps = ["R1c"], status = "done", pr = 107 },
-  { id = "R4c", title = "Preview in the app: PDF, images, text; docx / xlsx converted in the browser", phase = "R", batch = 9.6, size = "M", deps = ["R4a"], status = "todo" },
-  { id = "R4e", title = "Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "todo" },
+  { id = "R4c", title = "Preview in the app: PDF, images, text; docx / xlsx converted in the browser", phase = "R", batch = 9.6, size = "M", deps = ["R4a"], status = "done", pr = 108 },
+  { id = "R4e", title = "Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "done", pr = 109 },
   { id = "R4f", title = "Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice", phase = "R", batch = 9.6, size = "M", deps = ["R4c", "R4e"], status = "todo" },
   { id = "R4g", title = "Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe)", phase = "R", batch = 9.6, size = "S", deps = ["R4f"], status = "todo" },
   # Owner (2026-11-24): a deleted protocol goes to the trash; restore with the original number if free, else a new one (original kept in the notes)
