@@ -97,10 +97,17 @@ class SearchPage extends Component
     #[Url(as: 's')]
     public bool $searched = false;
 
+    /**
+     * R3i review: the year in the field is only the one filled in on opening (no year in the address, not changed
+     * since); a protocol date typed in «Οπουδήποτε» replaces only such a year
+     */
+    public bool $yearPrefilled = false;
+
     public function mount(): void
     {
         if (! request()->query->has('year')) {
             $this->year = (string) self::currentYear();
+            $this->yearPrefilled = true;
         }
         $this->text = array_intersect_key(array_map(fn ($v) => is_scalar($v) ? (string) $v : '', $this->text), SearchCriteria::TEXT_FIELDS);
         $this->empty = array_values(array_intersect(array_map('strval', $this->empty), array_keys(SearchCriteria::EMPTY_FIELDS)));
@@ -117,6 +124,11 @@ class SearchPage extends Component
         $this->resetPage();
     }
 
+    public function updatedYear(): void
+    {
+        $this->yearPrefilled = false;   // the user's own year counts
+    }
+
     /** R3i: a quick date button fills «Ημ/νία από / έως» (the dates decide the year, so the year is cleared) and searches */
     public function quickDate(string $key): void
     {
@@ -125,7 +137,7 @@ class SearchPage extends Component
             return;
         }
         [$from, $to] = $relative[1];
-        [$this->from, $this->to, $this->year] = [$from->format(DateInput::FORMAT), $to->format(DateInput::FORMAT), ''];
+        [$this->from, $this->to, $this->year, $this->yearPrefilled] = [$from->format(DateInput::FORMAT), $to->format(DateInput::FORMAT), '', false];
         $this->search();
     }
 
@@ -243,7 +255,7 @@ class SearchPage extends Component
         $typedDates = array_diff_key($typed->dates, $c->dates);   // a date filled in on the form wins
         $c->dates += $typedDates;
         $c->relative = array_intersect_key($typed->relative, $typedDates);
-        if (isset($typedDates['protocoldate']) && ! $parser->yearGiven) {
+        if (isset($typedDates['protocoldate']) && ! $parser->yearGiven && $this->yearPrefilled) {
             $c->year = null;   // R3i: a typed protocol date (πότε:πέρσι, ημ:20/12/2025..) decides the year, not the prefilled one
         }
         $c->folder = $c->folder !== '' ? $c->folder : $typed->folder;

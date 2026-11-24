@@ -98,6 +98,24 @@ class SearchWhenAndWhoTest extends FeatureTestCase
             ->assertSee('ημ:πέρσι');
         // … unless a year is typed too
         $page()->set('words', 'πότε:πέρσι έτος:2026')->call('search')->assertDontSee('Περσινό');
+        // … or put in the year field by the user (review of R3i)
+        $page()->set('year', '2026')->set('words', 'πότε:πέρσι')->call('search')->assertDontSee('Περσινό');
+    }
+
+    /**
+     * review of R3i: «Σύνθετη αναζήτηση» from the results keeps an explicit year next to a relative date
+     * (πότε:πέρσι έτος:2026 finds nothing on both pages)
+     */
+    public function test_an_explicit_year_survives_the_way_to_the_advanced_page(): void
+    {
+        $params = SearchPage::paramsFor((new \App\Services\Search\QueryParser())->parse('πότε:πέρσι έτος:2026'));
+        $this->assertSame(['2026', 'ημ:πέρσι'], [$params['year'], $params['w']]);
+        $this->actingAs($this->admin())->get('/find?' . http_build_query($params))->assertDontSee('Περσινό');
+        $this->results('πότε:πέρσι έτος:2026')->assertDontSee('Περσινό');
+
+        // without έτος: the advanced page gets an empty year: last year's protocols
+        $params = SearchPage::paramsFor((new \App\Services\Search\QueryParser())->parse('πότε:πέρσι'));
+        $this->actingAs($this->admin())->get('/find?' . http_build_query($params))->assertSee('Περσινό');
     }
 
     /** the results page's «Σύνθετη αναζήτηση» keeps a relative date relative and the registrar */
