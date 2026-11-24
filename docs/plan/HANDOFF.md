@@ -2,8 +2,41 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 15:00 (after Batch 9, Batch 9.5, R3h, R3i, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; Batch 9.6 under way, next: R4d; times are Greek time)
-- **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R4h → R5p → N05 → R6e (BACKLOG «Batch 9.6»; R4h added 2026-11-24 13:30: deleted protocols to the trash). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
+## Current state — 2026-11-24 16:00 (after Batch 9, Batch 9.5, Batch 9.6, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; next: Batch 10 when the owner says so; times are Greek time)
+- **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
+  R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md)). **Open with the owner:**
+  R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
+  The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
+  Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **No new dependencies without the owner (2026-11-24):** `npm install` of new packages was refused by the session's
+  auto-mode check (R4c). Prefer libraries already in composer.json / package.json; ask the owner before adding one.
+- **R4c:** `App\Services\Attachments\Preview` (kind: pdf/image from `/download`, text/word/sheet converted by
+  PhpWord / PhpSpreadsheet at `/preview/{id}`, `/previewEmailAttachment/{uid}/{key}`; CSP `sandbox; default-src 'none'`;
+  PhpWord output escaping on; sheets 500×50, formulas = saved values). `<x-preview-button>` + `partials/preview-modal`
+  (one per page) + `resources/modern/preview.js` (groups, ‹ ›, arrows). `ATTACHMENT_PREVIEW_MAX_KB` (10 MB).
+- **R4e:** `App\Services\Stamp\{StampTemplate (setting stampTemplate, JSON; emblem storage/app/stamp/emblem.png),
+  StampRenderer (GD, PRINT_DPI 600), Pdf\{PdfReader, PdfParser, PdfStamper, IncrementalUpdate}}`: PDFs stamped by an
+  incremental update after `%EP-STAMP` (classic + stream xref, ObjStm, PNG predictors, /Rotate, CropBox, first page
+  only); markpdf (1 px = 1 pt, all pages) only as fallback with an A4-wide canvas + `-w`. Word: first-section header
+  (FIRST), absolute position in pt. `/stamp` (StampDesigner: admin, assigner, writer). `stamp:import <dir> [--preview]`.
+  `configs.value` TEXT. Tests build PDFs with `tests/Support/PdfBuilder`.
+- **R4f:** files stored unstamped; `App\Services\Stamp\StampedCopy::pathFor` serves `storage/app/stamped/<id>-<key>.<ext>`
+  (key: template hash, number, year, date, path, sha256) unless the user preference `stamped` = no or `?original=1`;
+  `attachments.stamp_in_file` (all pre-R4f pdf/docx/odt) never stamped again. `<x-stamp-toggle>` (form + preview
+  modal). «Χωρίς σφραγίδα» removed.
+- **R4g:** `Pdf\OldStampRemover` (UniDoc producer + `q /GSn gs … cm W 0 0 H 0 0 cm /ImgN Do Q` tail on every page, one
+  image W×H px); `stamp:old [--list] [--apply]` (originals in storage/app/stamp-originals/). Word stays.
+- **R4h:** `App\Services\Protocols\ProtocolTrash` + `trashed_protocols` (data: protocol row, assignments, attachment
+  ids). `ProtocolWriter::delete` → trash. Restore: same id, original number if free else `next(yearInUse)` under the
+  numbering lock + note. `mayRestore`: admin all; writer/assigner own (`user_id`). TrashPage tabs (`tab`, `q`);
+  daily purge (`PurgeTrashDaily`, `attachments:purge-trash`) purges protocols first. FolderMerge updates snapshots.
+- **R5p:** `.inbox-envelope-{airmail|paper|plain}` (setting `inboxEnvelope`), strip `.inbox-envelope-n/-from/-date`;
+  `.inbox-sep` gone.
+- **N05:** `user_notes` + `NotesController` (GET/POST `/notes`, version, 409 + `force`); `resources/modern/notes.js`
+  (escape-first markdown, http/https/mailto only; `toggle` handler changes state only on a real change);
+  `partials/notepad` in layouts.modern; `body.has-notepad` keeps a 2.25 rem strip ≥ lg.
+- **R6e:** `App\Services\Logs\LogReader` (whitelist `laravel(-date)?.log`, per-day byte-range index of laravel.log
+  cached by inode+size, 8 MB/day cap), `App\Livewire\LogViewer` at `/logs` (admin). `LOG_DAILY_DAYS`.
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
   in tags.js), never as plain strings, and look at the codes the **protocols** carry, not only the list's
@@ -266,6 +299,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 16:00 | R4c–R6e | #108–#115 | Batch 9.6 (stacked): preview, stamp designer + PDF stamper, stamp on view, old stamps, protocol trash, envelopes, notepad, log viewer; batch summary |
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
 | 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |

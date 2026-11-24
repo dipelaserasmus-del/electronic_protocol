@@ -1,23 +1,24 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 15:00 (R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 16:00 (Batch 9.6 done: preview, stamp, protocol trash, envelopes, notepad, logs; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
-Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
+Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
+previewing files, the stamp (editable, put when files are shown, your official stamp ready locally), a trash for
+deleted protocols, envelopes in the inbox, a notepad and the log viewer.
 
-**No hurry.** Below is everything to try, batch by batch. Take the time you need; whatever you report I fix first.
-When you are ready, start a **new conversation** and send:
+**Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
+preview of Word / Excel files.
+
+**No hurry.** Try the new steps 63–73 below at your own pace. When you are ready, start a **new conversation** and
+send your answers and anything you found, or:
 
 ```
-run batch 9.6
+run batch 10
 ```
 
-Batch 9.6 is your requests of 2026-11-23: direct links to a protocol, *σήμερα / χθες / εβδομάδα* in search, renaming
-and previewing attachments, the stamp (editable, printed with or without it), envelopes in the inbox, a notepad and a
-log viewer. During it I will ask you to choose one of 2–3 envelope designs (screenshots).
-
-Then `run batch 10` (A01–A06, X01–X02, Z01–Z03), the last one: integrity checks, a log of who changed what, removing
-the old code, and a final security review. After it, I write the deployment guide.
+Batch 10 (A01–A06, X01–X02, Z01–Z03) is the last one: integrity checks, a log of who changed what, removing the old
+code, and a final security review. After it, I write the deployment guide.
 
 ## Try it, batch by batch (optional)
 Before you start: *Update: get latest version from GitHub*, then *Demo: start*. Open http://localhost:8080 and log in
@@ -199,6 +200,26 @@ Open *Εισερχόμενα*.
   `πότε:μήνας`, `πότε:πέρσι`; `χρήστης:` + part of a name = registered by that user (e.g.
   `πότε:7μέρες χρήστης:Συγγραφέας`). On *Σύνθετη αναζήτηση*: the buttons under the dates (*Σήμερα … Πέρσι*) and
   *Καταχωρίστηκε από*.
+- [ ] **66.** In a protocol's *Συνημμένα*, the 👁 next to a file: it opens in a large window; ‹ › (or ← →) go to the
+  protocol's other files; PDF, pictures, text, Word and Excel / LibreOffice files are shown, others offer *Λήψη*. In
+  *Εισερχόμενα* the same for an e-mail's attachments.
+- [ ] **67.** *Διαχείριση → Σφραγίδα αρχείων* (also as Συγγραφέας / Αναθέτων): change lines, colour, width, the
+  emblem, the corner; the preview follows. On your real copy you can load your official stamp:
+  `./dev.sh real artisan stamp:import local-data/stamp --preview` (look at `local-data/stamp/preview.png`), then without
+  `--preview`; fine-tune it on the page.
+- [ ] **68.** Turn on *Ρυθμίσεις → Σφραγίδα στα συνημμένα*, add a PDF to a protocol, open it with 👁 or download it: it
+  has the stamp, top right of the first page. Turn *Με σφραγίδα* off (in *Συνημμένα* or in the preview window): the
+  file as you uploaded it. Older files say *η σφραγίδα είναι μέσα στο αρχείο*.
+- [ ] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
+- [ ] **70.** With *Έλεγχοι καταχώρισης* off, *Διαγραφή* on a test protocol: it goes to *Κάδος → Πρωτόκολλα* and its
+  number is free. *Επαναφορά*: back with its number (or a new one, with a note in *Παρατηρήσεις*, if the number was
+  given meanwhile). As Συγγραφέας you see only your own deleted protocols.
+- [ ] **71.** *Εισερχόμενα*: each e-mail in an envelope. Try the three looks in *Ρυθμίσεις → E-mail → Εμφάνιση των
+  e-mail* and tell me A, B or C (question 5).
+- [ ] **72.** *Σημειώσεις* on the right edge of any page: write `# Σήμερα`, `- [ ] κάτι`, `**έντονα**`; *Προβολή*
+  shows them formatted, a to-do ticks with a click; it saves by itself and stays private to you.
+- [ ] **73.** *Διαχείριση → Αρχεία καταγραφής*: the application's log a day at a time, levels, search, a click shows
+  the details.
 
 ### Why a server file has no attachment (D11, 2026-11-24)
 - [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
@@ -222,6 +243,11 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
+5. **Envelopes in the inbox (R5p):** A (air mail), B (paper with a stamp) or C (plain)? Screenshots in
+   [R5p](docs/reports/R5p.md); try them live in *Ρυθμίσεις → E-mail*. I keep the one you choose.
+6. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
+   has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
+   as it is (my suggestion), or ask for the browser libraries.
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
@@ -241,6 +267,9 @@ Open *Εισερχόμενα*.
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
    - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07, after the files
      are copied: it moves them);
+   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e), and if you want the old files to
+     follow the new stamp: `php artisan stamp:old`, then `--apply` (R4g; it keeps the files as they were);
+   - write the log one file per day: `LOG_CHANNEL=daily` (and `LOG_DAILY_DAYS`, default 14) in `.env` (R6e);
    - if you applied the Apache rules below in the meantime, remove them before the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
