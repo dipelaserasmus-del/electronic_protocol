@@ -1,19 +1,23 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 09:30 (D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 13:30 (D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
 
 ## ▶ Your next message
-Batch 9 is done ([summary](docs/reports/BATCH-9.md)): users, folders, settings, backups and printing are rebuilt.
+Batches 9 and 9.5 are done ([summary of 9](docs/reports/BATCH-9.md)), and your real copy now loads with its files.
 
-**No hurry.** Below is everything to try, batch by batch. Take the time you need. Batch 10 waits until you say so,
-and whatever you report I fix first. When you are ready, start a **new conversation** and send:
+**No hurry.** Below is everything to try, batch by batch. Take the time you need; whatever you report I fix first.
+When you are ready, start a **new conversation** and send:
 
 ```
-run batch 10
+run batch 9.6
 ```
 
-Batch 10 (A01–A06, X01–X02, Z01–Z03) is the last one: integrity checks, a log of who changed what, removing the old
-code, and a final security review. After it, I write the deployment guide.
+Batch 9.6 is your requests of 2026-11-23: direct links to a protocol, *σήμερα / χθες / εβδομάδα* in search, renaming
+and previewing attachments, the stamp (editable, printed with or without it), envelopes in the inbox, a notepad and a
+log viewer. During it I will ask you to choose one of 2–3 envelope designs (screenshots).
+
+Then `run batch 10` (A01–A06, X01–X02, Z01–Z03), the last one: integrity checks, a log of who changed what, removing
+the old code, and a final security review. After it, I write the deployment guide.
 
 ## Try it, batch by batch (optional)
 Before you start: *Update: get latest version from GitHub*, then *Demo: start*. Open http://localhost:8080 and log in
@@ -187,32 +191,17 @@ Open *Εισερχόμενα*.
 - [ ] **60.** *Λίστα*: the header has *Νέο* and *Ανανέωση* only; search from the box at the top (its sliders button
   opens *Σύνθετη αναζήτηση*).
 
-### A fresh copy with its files (D10, 2026-11-24)
-- [ ] **61.** On the server, export the database with phpMyAdmin and, **at the same time**, copy its whole
-  `storage/app` folder. Put the export in `local-data/db/` and the folder's content (`arxeio/`, `trash/` …) in
-  **`local-data/server-files/`** (new; nothing is ever written there). Then *Update: get latest version from GitHub*
-  and *Run Task… → Real data: load newest backup + files (local-data/db, local-data/server-files)*.
-  It loads the database, **rebuilds** `local-data/storage/app` from `server-files/` (each attachment's file where its row
-  says), measures the files and applies the folder glossary and Φ.43 → Φ.46 by itself (so 38 is done too). Send me the
-  lines starting *Server files*, *Copied*, *Not on the server*, *no attachment points to*, *Folders:*, *Merge* and
-  *Loaded* (counts only). Details: [docs/LOCAL-REAL-DATA.md](docs/LOCAL-REAL-DATA.md).
-
-### Your folder list (D07, 2026-11-19)
-- [ ] **38.** *(Since D10, Real data: load does this by itself: try-it 61 covers it.)* On your **real copy**: *Update: get latest version from GitHub*, *Real data: start*, then in the VS Code
-  terminal:
+### Why a server file has no attachment (D11, 2026-11-24)
+- [ ] **62.** Optional, on your machine only (it prints file names: do not send them):
   ```
-  ./dev.sh real artisan folders:glossary
+  ./dev.sh real artisan attachments:import local-data/server-files --list
   ```
-  It only **shows** what would change: how many folders get the full description, which are new, which of yours are
-  not in the list (kept as they are, e.g. Φ.37–Φ.42), and how many protocols and files move from Φ.43 to Φ.46.
-  Nothing is changed yet. If it looks right:
-  ```
-  ./dev.sh real artisan folders:glossary --apply
-  ```
-  Then *Φάκελοι και διατήρηση*: search a word (e.g. *αναρρωτικές* → Φ.12.1); Φ.43 is gone and its protocols are under
-  Φ.46 with their files. Since D09 (your answer, 2026-11-23) `Φ29Α`, `Φ32.β` and `Φ33.β` show as *the same folder*,
-  not under *New* / *Not in the glossary*. Send me the two lines starting *Folders:* and *Merge*, plus any line about *Sub-folders of
-  Φ.43* (counts and codes only).
+  Files that are not attachments (`dummy`, backups, `protocol.sqlite`, the copy tool's `.hist/`) are now listed apart.
+  Next to every other file without a row it says what the database has: *a row has this name at …* (the same file in
+  another folder, e.g. `Φ43/` and `Φ.43/`), *protocol N/2026 is not in the database* (saved after the export), or
+  *protocol N/2026 (folder …) has no attachment with this name*. Tell me, in words and without names, if one kind needs
+  more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
+  that are not in the trash and have no file** (*Not on the server* in the same list).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -227,7 +216,7 @@ Open *Εισερχόμενα*.
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
-   - back up the database and the files;
+   - back up the database, the files and the server's `.env`;
    - check the attachment file names on the server (`php tools\check-attachment-names.php …`, F08);
    - load the database: `migrate:adopt-legacy`, then `migrate`. This also converts to utf8mb4, long subjects, the
      assignments table, real dates and the trash columns;
@@ -236,11 +225,14 @@ Open *Εισερχόμενα*.
    - measure the attachments (`php artisan attachments:fill-metadata`, D03);
    - check the user list for unknown administrators, and that everyone who works with the protocol is *Ενεργός*
      (inactive users cannot log in, R6a);
-   - press *Διαχείριση → Backup → Νέο αντίγραφο* once and check the file opens;
+   - press *Διαχείριση → Backup → Νέο αντίγραφο* once and check the file opens (it needs `mysqldump`, which the Docker
+     stack has);
    - choose how many days the trash keeps deleted attachments (30 if left empty; the old trash gets these days from
      the deployment day);
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
-   - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07).
+   - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07, after the files
+     are copied: it moves them);
+   - if you applied the Apache rules below in the meantime, remove them before the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
    - anyone who can reach it can create an administrator account (S00);
@@ -256,6 +248,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Your fresh real copy with its files (2026-11-24, D10): it loads complete; the folder glossary and Φ.43 → Φ.46 are
+  applied (38 and 61 done). The few files without a row are explained by D11 (e.g. a protocol saved after the export).
 - *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the
   attachment has no protocol number of the sender; when it has one, type that number over it (2026-11-20).
 - Same folder, other code (2026-11-23, [D09](docs/reports/D09.md)): `Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`.

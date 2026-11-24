@@ -7,11 +7,11 @@
 
 | | |
 |---|---|
-| Tasks done | **87 / 109** `████████████████████████░░░░░░` 80% |
-| Effort done (PERT) | **38.7 / 49.0 h** `████████████████████████░░░░░░` 79% |
-| Remaining effort, one agent in sequence | **10.3 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **88 / 110** `████████████████████████░░░░░░` 80% |
+| Effort done (PERT) | **39.2 / 49.3 h** `████████████████████████░░░░░░` 80% |
+| Remaining effort, one agent in sequence | **10.1 h ± 0.5** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
-| In progress | D10 |
+| In progress | D11 |
 | Next task | **R3h** — Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
@@ -33,7 +33,7 @@
 | 7.5 | ✅R1h ✅R3d ✅R1i | 3/3 | `██████████` |
 | 8 | ✅R5c ✅R5d ✅R5b | 3/3 | `██████████` |
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
-| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 🔄D10 ✅R5l | 30/31 | `██████████` |
+| 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 🔄D11 ✅R5l | 31/32 | `██████████` |
 | 9.6 | ⬜R3h ⬜R3i ⬜R4d ⬜R4c ⬜R4e ⬜R4f ⬜R4g ⬜R4h ⬜R5p ⬜N05 ⬜R6e | 0/11 | `░░░░░░░░░░` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
@@ -88,6 +88,7 @@ flowchart LR
     D08["D08<br/>Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use"]
     D09["D09<br/>Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β)"]
     D10["D10<br/>Real data: load copies the server's files by the database (local-data/server-files → storage/app, attachments:import) and applies the folder glossary"]
+    D11["D11<br/>attachments:import: server files that are not attachments counted apart; --list says why each other file has no row"]
   end
   subgraph R["4 Module rebuilds"]
     R5a["R5a<br/>Email service, EML cache, charsets"]
@@ -281,6 +282,7 @@ flowchart LR
   D09 --> D10
   L01 --> D10
   D03 --> D10
+  D10 --> D11
   R5k --> R5l
   R1b --> R3h
   R3f --> R3i
@@ -319,8 +321,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,R5l done
-  class D10 inprogress
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,R5l done
+  class D11 inprogress
   class R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class R4c,R4f,R4g critical
@@ -434,31 +436,32 @@ gantt
   R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers :done, r5o, 2026-11-13 21:48, 33m
   R2l List  remove the «Αναζήτηση» button (the search field has its own) :done, r2l, 2026-11-13 22:21, 19m
   D09 Folder glossary  aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) :done, d09, 2026-11-13 22:40, 19m
-  D10 Real data  load copies the server's files by the database (local-data/server-files → storage/app, attachments import) and applies the folder glossary :active, d10, 2026-11-13 22:59, 33m
-  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 23:32, 19m
+  D10 Real data  load copies the server's files by the database (local-data/server-files → storage/app, attachments import) and applies the folder glossary :done, d10, 2026-11-13 22:59, 33m
+  D11 attachments import  server files that are not attachments counted apart; --list says why each other file has no row :active, d11, 2026-11-13 23:32, 19m
+  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 23:51, 19m
   section Batch 9.6
-  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :r3h, 2026-11-13 23:51, 19m
-  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :r3i, 2026-11-14 00:10, 33m
-  R4d Rename an attachment (shown name only; extension fixed) :r4d, 2026-11-14 00:43, 19m
-  R4c Preview in the app  PDF, images, text; docx / xlsx converted in the browser :crit, r4c, 2026-11-14 01:02, 33m
-  R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :r4e, 2026-11-14 01:35, 33m
-  R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :crit, r4f, 2026-11-14 02:08, 33m
-  R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :crit, r4g, 2026-11-14 02:41, 19m
-  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :r4h, 2026-11-14 03:00, 33m
-  R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :r5p, 2026-11-14 03:33, 19m
-  N05 Notepad per user on every page  sections, to-dos, markdown, autosave :n05, 2026-11-14 03:52, 33m
-  R6e Log viewer for administrators (Console-like  levels, search, pages by day) :r6e, 2026-11-14 04:25, 33m
+  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :r3h, 2026-11-14 00:10, 19m
+  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :r3i, 2026-11-14 00:29, 33m
+  R4d Rename an attachment (shown name only; extension fixed) :r4d, 2026-11-14 01:02, 19m
+  R4c Preview in the app  PDF, images, text; docx / xlsx converted in the browser :crit, r4c, 2026-11-14 01:21, 33m
+  R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :r4e, 2026-11-14 01:54, 33m
+  R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :crit, r4f, 2026-11-14 02:27, 33m
+  R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :crit, r4g, 2026-11-14 03:00, 19m
+  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :r4h, 2026-11-14 03:19, 33m
+  R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :r5p, 2026-11-14 03:52, 19m
+  N05 Notepad per user on every page  sections, to-dos, markdown, autosave :n05, 2026-11-14 04:11, 33m
+  R6e Log viewer for administrators (Console-like  levels, search, pages by day) :r6e, 2026-11-14 04:44, 33m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 04:58, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 05:31, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 05:50, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 06:09, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 06:42, 19m
-  X01 Audit log — recording :x01, 2026-11-14 07:01, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 07:34, 33m
-  Z01 Remove legacy code :z01, 2026-11-14 08:07, 33m
-  Z02 Auth hardening, security headers :z02, 2026-11-14 08:40, 19m
-  Z03 Final security review :z03, 2026-11-14 08:59, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 05:17, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 05:50, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 06:09, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 06:28, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 07:01, 19m
+  X01 Audit log — recording :x01, 2026-11-14 07:20, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 07:53, 33m
+  Z01 Remove legacy code :z01, 2026-11-14 08:26, 33m
+  Z02 Auth hardening, security headers :z02, 2026-11-14 08:59, 19m
+  Z03 Final security review :z03, 2026-11-14 09:18, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -477,7 +480,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **A02** | Missing-number reminder | B08 | 0.5 | 0.1 | 2.0 | 2.5 | 9.1 | 9.6 | 7.1 | #9 |
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 10.2 | 10.5 | 8.8 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
-| ✅ | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 9.6 | 9.9 | 8.8 | #16 |
+| ✅ | **L01** | Owner's VS Code + local stack with real data | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 9.3 | 9.6 | 8.4 | #16 |
 | ✅ | **L02** | Two computers: macOS guide, RPM VS Code, switching | L01 | 0.3 | 0.1 | 1.2 | 1.5 | 10.2 | 10.5 | 9.0 | #21 |
 | ✅ | **F05** | Playwright evidence tooling | F02, F03 | 0.5 | 0.1 | 1.4 | 2.0 | 2.0 | 2.5 | 0.5 | #17 |
 | ✅ | **F06** | nginx finds a recreated app container (no 502) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 10.2 | 10.5 | 9.6 | #23 |
@@ -490,7 +493,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **N02** 🔴 | Laravel structure modernization | N01 | 0.5 | 0.1 | 2.0 | 2.5 | 2.0 | 2.5 | -0.0 | #28 |
 | ✅ | **N03** 🔴 | Vite + Bootstrap 5 + Livewire, top nav layout | N02, F05 | 0.5 | 0.1 | 2.5 | 3.1 | 2.5 | 3.1 | -0.0 | #31 |
 | ✅ | **N04** 🔴 | Shared UI components (pills, date input…) | N03 | 0.5 | 0.1 | 3.1 | 3.6 | 3.1 | 3.6 | -0.0 | #33 |
-| ✅ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 8.3 | 8.7 | 7.5 | #34 |
+| ✅ | **D05** | Tables → utf8mb4 | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 8.0 | 8.3 | 7.1 | #34 |
 | ✅ | **D01** | Subject/summary → TEXT | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 4.2 | 4.5 | 2.7 | #35 |
 | ✅ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 4.6 | 5.7 | 2.6 | #36 |
 | ✅ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 10.2 | 10.5 | 9.3 | #37 |
@@ -506,7 +509,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1e** | Form feedback: drop (Firefox), related tags, notices | R1c, R4b | 0.3 | 0.1 | 4.7 | 5.0 | 8.8 | 9.1 | 4.0 | #48 |
 | ✅ | **R2b** | List feedback: user filter, detailed view, file names | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 | #49 |
 | ✅ | **R2c** | Missing numbers as rows in the list | R2b, A02 | 0.5 | 0.1 | 4.7 | 5.3 | 9.6 | 10.2 | 4.9 | #50 |
-| ✅ | **D06** | Folder description → TEXT | D05 | 0.3 | 0.1 | 1.2 | 1.5 | 8.7 | 9.0 | 7.5 | #51 |
+| ✅ | **D06** | Folder description → TEXT | D05 | 0.3 | 0.1 | 1.2 | 1.5 | 8.3 | 8.7 | 7.1 | #51 |
 | ✅ | **R1f** | Form: checked tags (related, keywords), folder filter | R1e, D06 | 0.5 | 0.1 | 5.0 | 5.6 | 9.1 | 9.6 | 4.0 | #53 |
 | ✅ | **R1g** | Form layout: number in the centre, rarely used sections lower | R1f | 0.3 | 0.1 | 5.6 | 5.9 | 9.6 | 9.9 | 4.0 | #54 |
 | ✅ | **R2d** | Missing-number rows: new look | R2c | 0.3 | 0.1 | 5.3 | 5.6 | 10.2 | 10.5 | 4.9 | #52 |
@@ -520,7 +523,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 8.5 | 9.1 | 4.3 | #63 |
 | ✅ | **R5b** | winmail.dat (TNEF) | R5a | 1.1 | 0.2 | 3.1 | 4.2 | 8.0 | 9.1 | 4.9 | #64 |
 | ✅ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 8.5 | 9.1 | 4.9 | #65 |
-| ✅ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 8.2 | 8.8 | 4.6 | #66 |
+| ✅ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 8.1 | 8.7 | 4.5 | #66 |
 | ✅ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 8.8 | 9.1 | 4.6 | #67 |
 | ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.5 | 9.1 | 4.9 | #68 |
 | ✅ | **R7** | Printing & exports | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 8.5 | 9.1 | 4.3 | #69 |
@@ -531,8 +534,8 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.2 | 6.6 | 1.7 | #74 |
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 8.9 | 9.2 | 4.7 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 10.2 | 10.5 | 5.5 | #76 |
-| ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 9.0 | 9.3 | 4.8 | #77 |
-| ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 9.3 | 9.6 | 4.0 | #87 |
+| ✅ | **D07** | Folder glossary: the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) | R6b, D06 | 0.3 | 0.1 | 4.2 | 4.5 | 8.7 | 9.0 | 4.5 | #77 |
+| ✅ | **D08** | Folder codes without the dot (Φ12 = Φ.12): search and merge find every spelling the protocols use | D07, R3c | 0.3 | 0.1 | 5.3 | 5.6 | 9.0 | 9.3 | 3.7 | #87 |
 | ✅ | **R1j** 🔴 | Protocol form: one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link | R1b, R3d | 0.3 | 0.1 | 5.6 | 5.9 | 5.6 | 5.9 | -0.0 | #78 |
 | ✅ | **R3e** 🔴 | Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px | R1j, R3d | 0.3 | 0.1 | 5.9 | 6.2 | 5.9 | 6.2 | -0.0 | #79 |
 | ✅ | **R2i** | List: rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all | R2h, R3e | 0.3 | 0.1 | 6.2 | 6.6 | 9.2 | 9.5 | 3.0 | #80 |
@@ -552,8 +555,9 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5n** 🔴 | Inbox: while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) | R5m | 0.5 | 0.1 | 9.1 | 9.6 | 9.1 | 9.6 | 0.0 | #96 |
 | ✅ | **R5o** 🔴 | Inbox: no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers | R5n | 0.5 | 0.1 | 9.6 | 10.2 | 9.6 | 10.2 | 0.0 | #97 |
 | ✅ | **R2l** | List: remove the «Αναζήτηση» button (the search field has its own) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 10.2 | 10.5 | 3.0 | #100 |
-| ✅ | **D09** | Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) | D07, D08 | 0.3 | 0.1 | 5.6 | 5.9 | 9.6 | 9.9 | 4.0 | #98 |
-| 🔄 | **D10** | Real data: load copies the server's files by the database (local-data/server-files → storage/app, attachments:import) and applies the folder glossary | D09, L01, D03 | 0.5 | 0.1 | 5.9 | 6.5 | 9.9 | 10.5 | 4.0 |  |
+| ✅ | **D09** | Folder glossary: aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) | D07, D08 | 0.3 | 0.1 | 5.6 | 5.9 | 9.3 | 9.6 | 3.7 | #98 |
+| ✅ | **D10** | Real data: load copies the server's files by the database (local-data/server-files → storage/app, attachments:import) and applies the folder glossary | D09, L01, D03 | 0.5 | 0.1 | 5.9 | 6.5 | 9.6 | 10.2 | 3.7 | #102 |
+| 🔄 | **D11** | attachments:import: server files that are not attachments counted apart; --list says why each other file has no row | D10 | 0.3 | 0.1 | 6.5 | 6.8 | 10.2 | 10.5 | 3.7 |  |
 | ✅ | **R5l** 🔴 | Inbox: a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 8.2 | 8.5 | 0.0 | #93 |
 | ⬜ | **R3h** | Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.2 | 10.5 | 6.0 |  |
 | ⬜ | **R3i** | Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons | R3f | 0.5 | 0.1 | 5.0 | 5.6 | 9.9 | 10.5 | 4.9 |  |

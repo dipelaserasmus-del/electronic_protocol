@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-23 14:28 (after Batch 9, Batch 9.5, D07, D08, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; next: R3h (Batch 9.6); times are Greek time)
+## Current state — 2026-11-24 13:30 (after Batch 9, Batch 9.5, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; next: R3h (Batch 9.6); times are Greek time)
 - **Batch 9.6 planned (2026-11-23 14:37, owner's requests; before Batch 10):** R3h → R3i → R4d → R4c → R4e → R4f → R4g → R4h → R5p → N05 → R6e (BACKLOG «Batch 9.6»; R4h added 2026-11-24 13:30: deleted protocols to the trash). Stamp: the owner's official stamp is `local-data/official stamp.jpg` (names the organisation: **never commit it or anything drawn from it**; tests use an invented stamp). Stamp editing: Διαχειριστής, Αναθέτων, Συγγραφέας (not Αναγνώστης); position top right of the first page (owner, 2026-11-24 08:50).
 - **D08 (owner, 2026-11-20): folder codes — the dot after Φ is optional and never counts** (the old app wrote both
   `Φ.2` and `Φ12`). Always compare codes with `App\Support\FolderCode` (key/same/startsWith; browser twin `folderKey`
@@ -20,7 +20,12 @@ Read this first when (re)starting work. Update it at the end of every task.
   local-data/server-files --apply` (`App\Services\Attachments\ServerFiles`: by the rows incl. trashed,
   `Attachment::fileCandidates`, case/NFC-insensitive lookup on the server copy, never overwrites, orphans only counted)
   → fill-metadata → `folders:glossary --apply --brief`. No `server-files/` → the old behaviour (files used as they are).
-  Deployment: the same `attachments:import` from the old XAMPP `storage\app`.
+  Deployment: the same `attachments:import` from the old XAMPP `storage\app`. **D11:** unmatched files that are not
+  attachments (`ServerFiles::notAttachment`: outside arxeio/ + trash/, hidden segments, `dummy`, Thumbs.db/desktop.ini,
+  arxeio/backups/, arxeio/protocol.sqlite*) are counted apart; files in arxeio/emails/ and directly in arxeio/ can be
+  attachments (protocols without a folder). `--list` explains each other orphan (`explain`: same basename in a row,
+  protocol `<num>-<YYYYMMDD>_` not in the DB = newer than the export, or the protocol has other files). Owner's first
+  real load with files (2026-11-24): complete; 38 and 61 done.
 - **D09 (owner, 2026-11-23): glossary `aliases`.** A glossary folder may list `aliases`: the same folder written
   with another code in the database (`Φ32.β` = `Φ.32β`, `Φ29Α` = `Φ.29`, `Φ33.β` = `Φ.33.1`). `FolderGlossary::records`
   updates that folder (it keeps its code); the list's own code wins when both exist. New owner decisions of this kind go
@@ -249,7 +254,8 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-24 09:30 | D10 | — | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
+| 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
+| 2026-11-24 13:30 | D11 | — | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |
 | 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
 | 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
