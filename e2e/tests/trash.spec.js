@@ -41,8 +41,13 @@ test('to the trash from the form, back from the trash page (R4b)', async ({ page
   expect((await (await page.request.get(await link.getAttribute('href'))).body()).toString()).toContain('%PDF-1.4 R4b');
 });
 
-test('the trash is for administrators only (R4b)', async ({ page }) => {
+test('the files in the trash are for administrators only (R4b, R4h)', async ({ page }) => {
+  // R4h: writers open the trash for the protocols they registered, never its files
   await login(page, 'writer');
-  const response = await page.goto('/trash');
-  expect(response.status()).toBe(403);
+  expect((await page.goto('/trash')).status()).toBe(200);
+  await expect(page.locator('#trash-tab-files')).toHaveCount(0);
+  await expect(page.locator('.trash-row')).toHaveCount(0);
+  await page.context().clearCookies();
+  await login(page, 'reader');
+  expect((await page.goto('/trash')).status()).toBe(403);
 });

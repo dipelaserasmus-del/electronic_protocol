@@ -15,6 +15,11 @@
             <i class="bi bi-search display-5 text-secondary" aria-hidden="true"></i>
             <h1 class="h4 mt-3">Δεν υπάρχει</h1>
             <p class="mb-4">Δεν βρέθηκε το πρωτόκολλο <strong>{{ $shown }}</strong> ή δεν έχετε πρόσβαση σε αυτό.</p>
+            @if ($trashed ?? null)
+                {{-- R4h: administrators only --}}
+                <x-notice type="warning" class="text-start" id="protocol-in-trash">Στον κάδο: διαγράφηκε {{ $trashed->deleted_at?->format('d/m/Y H:i') }}.
+                    <a href="{{ url('/trash?tab=protocols&q='.$trashed->protocolnum) }}">Άνοιγμα στον κάδο</a></x-notice>
+            @endif
             <x-pill-actions class="pill-actions-center">
                 <x-pill variant="primary" :href="$valid ? url('/search?q=' . rawurlencode('αρ:' . (int) $num . '/' . $year)) : url('/find')" data-action="search">
                     <i class="bi bi-search me-1" aria-hidden="true"></i>Αναζήτηση</x-pill>

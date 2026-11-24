@@ -148,7 +148,12 @@
                                 @if ($state['type'] === 'registered')
                                     <x-notice type="{{ $state['warnings'] ? 'warning' : 'success' }}" class="mb-0 inbox-done">
                                         Καταχωρίστηκε με αριθμό <strong>{{ $state['label'] }}</strong>
-                                        <a href="{{ url('/home/'.$state['protocol_id']) }}" target="_blank" class="ms-1">Άνοιγμα πρωτοκόλλου ↗</a>
+                                        @if (\App\Models\TrashedProtocol::where('protocol_id', $state['protocol_id'])->exists())
+                                            {{-- R4h: deleted since: it is in the trash --}}
+                                            <span class="badge text-bg-secondary ms-1 inbox-in-trash">το πρωτόκολλο είναι στον κάδο</span>
+                                        @else
+                                            <a href="{{ url('/home/'.$state['protocol_id']) }}" target="_blank" class="ms-1">Άνοιγμα πρωτοκόλλου ↗</a>
+                                        @endif
                                         @if ($state['messages'] || $state['warnings'])
                                             <ul class="mb-0 ps-3">
                                                 @foreach ($state['messages'] as $line)<li>{{ $line }}</li>@endforeach
