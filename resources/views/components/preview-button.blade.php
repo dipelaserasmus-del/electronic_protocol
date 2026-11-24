@@ -5,7 +5,7 @@
     PDFs and images are shown from "download" (the same safe response); text, Word and spreadsheets from "preview"
     (converted on the server, sandboxed). Other types: a message and the download.
 --}}
-@props(['name' => null, 'download', 'preview', 'group' => null])
+@props(['name' => null, 'download', 'preview', 'group' => null, 'stampInFile' => false])
 @php
     $kind = \App\Services\Attachments\Preview::kind($name);
     $src = match (true) {
@@ -16,5 +16,5 @@
 @endphp
 <button type="button" {{ $attributes->class(['btn btn-sm btn-link p-0 text-body-secondary preview-button']) }}
         data-preview-kind="{{ $kind ?? 'none' }}" data-preview-src="{{ $src }}" data-preview-download="{{ $download }}"
-        data-preview-name="{{ $name }}" @if ($group) data-preview-group="{{ $group }}" @endif
+        data-preview-name="{{ $name }}" @if ($group) data-preview-group="{{ $group }}" @endif @if ($stampInFile) data-preview-stamp="in-file" @endif
         title="Προεπισκόπηση" aria-label="Προεπισκόπηση του «{{ $name }}»"><i class="bi bi-eye" aria-hidden="true"></i></button>

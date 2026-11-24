@@ -45,7 +45,7 @@ class ProtocolForm extends Component
         'sxetiko' => 'Σχετικοί αριθμοί', 'out_to' => 'Απευθύνεται σε', 'out_date' => 'Ημ/νία εξερχομένου',
         'out_perilipsi' => 'Περίληψη εξερχομένου', 'keywords' => 'Λέξεις κλειδιά', 'paratiriseis' => 'Παρατηρήσεις',
         'keep' => 'Διατήρηση', 'reply_to_email' => 'Αποστολή απόδειξης στο email', 'handle' => 'Διεκπεραίωση',
-        'inform' => 'Ενημέρωση', 'uploads' => 'Νέα συνημμένα', 'ada' => 'ΑΔΑ', 'noStamp' => 'Χωρίς σφραγίδα'];
+        'inform' => 'Ενημέρωση', 'uploads' => 'Νέα συνημμένα', 'ada' => 'ΑΔΑ'];
 
     /** Locked: the browser can't point the form at another protocol (it would show it without the access check) */
     #[Locked]
@@ -63,7 +63,6 @@ class ProtocolForm extends Component
     public bool $replacePlaceholder = false;
     /** R1g: the user changed the number or year (or came from a missing-number row): only then "✔ Ελεύθερος" is said. */
     public bool $numberTouched = false;
-    public bool $noStamp = false;
 
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> new files, saved with the protocol */
     public $uploads = [];
@@ -191,7 +190,6 @@ class ProtocolForm extends Component
         $input = $this->form + [
             'diekperaiosi' => array_merge(array_map(fn ($id) => "d$id", $this->handle), array_map(fn ($id) => "e$id", $this->inform)),
             'replace_placeholder' => $this->replacePlaceholder,
-            'explicityNoStamp' => $this->noStamp,
             'protocolnum_proposed' => '',   // any number typed in the new form is the user's choice (B03)
         ];
         // R1c: an empty subject takes the attachment's name (shown greyed in the field before saving)

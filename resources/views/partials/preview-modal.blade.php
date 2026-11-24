@@ -7,12 +7,16 @@
                 <span class="small text-body-secondary text-nowrap" id="preview-count"></span>
                 <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-preview-step="1" title="Επόμενο αρχείο (→)" aria-label="Επόμενο αρχείο">›</button>
                 <h2 class="modal-title h6 text-truncate mb-0 flex-grow-1 ms-2" id="preview-title"></h2>
+                <x-stamp-toggle id="preview-stamp" class="me-2 text-nowrap" />
                 <a class="btn btn-sm btn-outline-primary rounded-pill text-nowrap" id="preview-download" href="#" download>
                     <i class="bi bi-download me-1" aria-hidden="true"></i>Λήψη</a>
                 <button type="button" class="btn-close ms-1" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>
             </div>
             <div class="small px-3 py-1 bg-warning-subtle border-bottom" id="preview-note" hidden>
                 Κατά προσέγγιση εμφάνιση: η μορφή (γραμματοσειρές, διάταξη) μπορεί να διαφέρει. Για το ακριβές αρχείο πατήστε <em>Λήψη</em>.
+            </div>
+            <div class="small px-3 py-1 bg-info-subtle border-bottom" id="preview-stamp-note" hidden>
+                <i class="bi bi-patch-check" aria-hidden="true"></i> Η σφραγίδα είναι μέσα στο αρχείο: αποθηκεύτηκε έτσι, πριν από την αλλαγή του τρόπου σφράγισης.
             </div>
             <div class="modal-body p-0 preview-body" id="preview-body"></div>
         </div>

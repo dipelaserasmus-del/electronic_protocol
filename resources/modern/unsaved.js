@@ -47,7 +47,7 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
                 const attr = [...el.attributes].find((a) => a.name.startsWith('wire:model') && a.value.startsWith('form.'));
                 if (attr) form[attr.value.slice(5)] = el.value;
             });
-            return clone({ form, handle: w.handle, inform: w.inform, uploads: (w.uploads ?? []).length, adas: w.uploadAdas, newAda: w.newAda, noStamp: w.noStamp });
+            return clone({ form, handle: w.handle, inform: w.inform, uploads: (w.uploads ?? []).length, adas: w.uploadAdas, newAda: w.newAda });
         },
 
         /** list of [label, before, now] */
@@ -91,7 +91,6 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
             if (JSON.stringify(now.adas) !== JSON.stringify(this.start.adas) || (now.newAda ?? '') !== (this.start.newAda ?? '')) {
                 out.push([labels.ada ?? 'ΑΔΑ', '—', text([...(now.adas ?? []), now.newAda].filter(Boolean).join(', '))]);
             }
-            if (now.noStamp !== this.start.noStamp) out.push([labels.noStamp ?? 'Χωρίς σφραγίδα', now.noStamp ? 'όχι' : 'ναι', now.noStamp ? 'ναι' : 'όχι']);
             return out;
         },
 

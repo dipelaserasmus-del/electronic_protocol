@@ -3,16 +3,19 @@
 // PDFs: the browser's viewer; images: <img>; text, Word, spreadsheets: the page converted on the server, in a frame with
 // an empty sandbox (no scripts, no forms, no navigation, its own origin); other types: a message and the download.
 import { Modal } from 'bootstrap';
+import { savePreference } from './preferences';
 
 const read = (button) => ({
     kind: button.dataset.previewKind,
     src: button.dataset.previewSrc,
     download: button.dataset.previewDownload,
     name: button.dataset.previewName || 'αρχείο',
+    stampInFile: button.dataset.previewStamp === 'in-file',   // R4f
 });
 
 let items = [];
 let index = 0;
+let stampVersion = 0;
 
 const $ = (id) => document.getElementById(id);
 
@@ -48,18 +51,21 @@ function show() {
     document.querySelectorAll('[data-preview-step]').forEach((b) => { b.hidden = items.length < 2; });
     $('preview-download').href = item.download;
     $('preview-note').hidden = !['word', 'sheet'].includes(item.kind);
+    $('preview-stamp-note').hidden = !item.stampInFile;
     body.dataset.kind = item.kind;
 
     let content;
+    // R4f: a fresh copy after «Με σφραγίδα» changes (the address is the same)
+    const src = item.src && item.kind === 'pdf' ? `${item.src}${item.src.includes('?') ? '&' : '?'}v=${stampVersion}` : item.src;
     if (!item.src) {
         content = message('Η προεπισκόπηση δεν υποστηρίζεται για αυτό το είδος αρχείου.', item.download);
     } else if (item.kind === 'image') {
         content = document.createElement('img');
         content.className = 'preview-image';
         content.alt = item.name;
-        content.src = item.src;
+        content.src = src;
     } else {
-        content = frame(item.src, item.name, item.kind !== 'pdf');   // Chrome does not show a PDF in a sandboxed frame
+        content = frame(src, item.name, item.kind !== 'pdf');   // Chrome does not show a PDF in a sandboxed frame
     }
     body.replaceChildren(content);
 }
@@ -93,4 +99,19 @@ document.addEventListener('keydown', (e) => {
 // closed: stop whatever was loading or playing
 document.addEventListener('hidden.bs.modal', (e) => {
     if (e.target.id === 'preview-modal') $('preview-body').replaceChildren();
+});
+
+// R4f: «Με σφραγίδα» (<x-stamp-toggle>): saved with the account; every switch follows; an open PDF is shown again
+document.addEventListener('change', async (e) => {
+    const toggle = e.target.closest?.('[data-stamp-toggle]');
+    if (!toggle) return;
+    const on = toggle.checked;
+    document.querySelectorAll('[data-stamp-toggle]').forEach((t) => { t.checked = on; });
+    if (!(await savePreference(toggle.dataset.url, 'stamped', on ? 'yes' : 'no'))) {
+        document.querySelectorAll('[data-stamp-toggle]').forEach((t) => { t.checked = !on; });
+        window.appToast?.('Η επιλογή δεν αποθηκεύτηκε. Δοκιμάστε ξανά.', 'danger');
+        return;
+    }
+    stampVersion++;
+    if ($('preview-modal')?.classList.contains('show') && items[index]?.kind === 'pdf') show();
 });
