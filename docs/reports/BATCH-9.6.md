@@ -50,5 +50,6 @@ only after all CI jobs were green and the automated review had been checked.
 
   All fixed, with tests.
 
-Tests: PHPUnit 668, browser 118 (locally, all passing), browser tests: see CI (new: direct links, search when/who, rename, preview, stamp
-designer, stamp on view, protocol trash, envelopes, notepad, logs).
+Tests: PHPUnit 668 and browser 118, all passing on the combined branch locally and in CI on each PR (new browser
+tests: direct links, search when/who, rename, preview, stamp designer, stamp on view, protocol trash, envelopes,
+notepad, logs).

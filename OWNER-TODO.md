@@ -1,11 +1,12 @@
 # Your to-do list
 
-Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 16:00 (Batch 9.6 done: preview, stamp, protocol trash, envelopes, notepad, logs; R3i search by when / who; R3h direct links; D11 files that are not attachments, why a file has no row; 38 and 61 done; D10 real load with the files; D09 same folder, other code; R2l list; F09 CI; R5o inbox form and colours; R5n inbox from cache; R5m inbox loading; L03 test mailbox; after Batch 9; R2e, R6d, R2f, R2g, R2h, R5e; D07 your folder list; R1j; D08 folder codes). Times are Greek time.
+Kept up to date by Claude at the end of every batch. Most important first. Last update: 2026-11-24 18:40 (Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
 previewing files, the stamp (editable, put when files are shown, your official stamp ready locally), a trash for
-deleted protocols, envelopes in the inbox, a notepad and the log viewer.
+deleted protocols, envelopes in the inbox, a notepad and the log viewer. Batch 9.5 (your notes after Batch 9) now has
+its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 
 **Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
 preview of Word / Excel files.
@@ -94,7 +95,7 @@ Open *Εισερχόμενα*.
   the field.
 - [ ] **30.** *Εκτύπωση πρωτοκόλλου*: choose one month (dates) and press *Εκτύπωση*. Compare with an old printout.
 
-### Batch 9.5: your notes after Batch 9
+### Batch 9.5: your notes after Batch 9 ([summary](docs/reports/BATCH-9.5.md))
 - [ ] **31.** *Λίστα*: the pager is above the list as well as below it. Try *Επόμενη ›* and *‹ Προηγούμενη*, and choose
   a page from *Σελίδα [ ▾ ] από …*: both pagers go to that page. Reload: you stay on it. (On a phone: the buttons and
   the page list only.)
@@ -192,7 +193,7 @@ Open *Εισερχόμενα*.
 - [ ] **60.** *Λίστα*: the header has *Νέο* and *Ανανέωση* only; search from the box at the top (its sliders button
   opens *Σύνθετη αναζήτηση*).
 
-### Batch 9.6: your requests of 2026-11-23
+### Batch 9.6: your requests of 2026-11-23 and 2026-11-24 ([summary](docs/reports/BATCH-9.6.md))
 - [ ] **63.** Open a protocol and press *Σύνδεσμος* (right, next to *Απόδειξη*): it says *Αντιγράφηκε*. Paste the link
   in a new tab (e.g. `http://localhost:8080/protocol/1`): the protocol opens. `…/protocol/1/2025` opens no. 1 of 2025;
   a number that does not exist says *Δεν υπάρχει* (the same as for a protocol you may not see).

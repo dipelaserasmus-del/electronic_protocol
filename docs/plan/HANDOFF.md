@@ -2,9 +2,9 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 16:00 (after Batch 9, Batch 9.5, Batch 9.6, D07, D08, D09, D10, D11, R1j, R3e, R2i, R3f, R1k, R2j, R5f, R5g, R3g, R2k, R5h, R5i, R5j, R5k, R5l, L03, R5m, R5n, R5o, F09 and R2l; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-24 18:40 (after Batches 1–9, 9.5 and 9.6; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
-  R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md)). **Open with the owner:**
+  R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
@@ -305,12 +305,13 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-24 18:40 | docs | — | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries |
 | 2026-11-24 16:00 | R4d | #107 | rename an attachment (✎; shown name only, extension fixed, characters cleaned; same rule as ✕) |
 | 2026-11-24 16:00 | R4c–R6e | #108–#115 | Batch 9.6 (stacked): preview, stamp designer + PDF stamper, stamp on view, old stamps, protocol trash, envelopes, notepad, log viewer; batch summary |
 | 2026-11-24 15:00 | R3i | #106 | search: `πότε:` σήμερα / χθες / εβδομάδα / Nμέρες / μήνας / φέτος / πέρσι (every date word, written back as typed); `χρήστης:` + «Καταχωρίστηκε από»; quick date buttons |
 | 2026-11-24 14:30 | R3h | #105 | direct links `/protocol/N[/YYYY]` → form; one «Δεν υπάρχει» page (missing / forbidden / malformed); «Σύνδεσμος» pill copies the link |
 | 2026-11-24 09:30 | D10 | #102 | `real load` copies the server's files by the database from `local-data/server-files` (`attachments:import`) and applies the folder glossary; VS Code task renamed |
-| 2026-11-24 13:30 | D11 | — | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |
+| 2026-11-24 13:30 | D11 | #103 | `attachments:import`: server files that are not attachments counted apart; `--list` says why each other file has no row; OWNER-TODO: next is Batch 9.6, deployment steps completed, 38/61 done |
 | 2026-11-23 14:28 | R2l | #100 | list: «Αναζήτηση» pill removed; F09 report: the macOS 15-min cancellations are GitHub's runner queue limit |
 | 2026-11-23 14:15 | D09 | #98 | glossary `aliases` (Φ32.β = Φ.32β, Φ29Α = Φ.29, Φ33.β = Φ.33.1): the existing folder is updated and keeps its code; clearer preview line |
 | 2026-11-23 13:55 | F09 | #99 | Docker build: apt retries / 30 s time-outs; CI job time limits (Ubuntu security server outage hung the image builds) |
