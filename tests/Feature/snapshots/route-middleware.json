@@ -167,6 +167,10 @@
         "auth",
         "web"
     ],
+    "GET stamp": [
+        "auth",
+        "web"
+    ],
     "GET trash": [
         "auth",
         "web"

@@ -266,3 +266,9 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .preview-message { padding: 3rem 1rem; }
 .preview-button { line-height: 1; }
 @include media-breakpoint-down(lg) { .preview-dialog .modal-content { height: 100%; } }
+
+// R4e: the stamp designer's A4 page
+.stamp-page { position: relative; background: #fff; border: 1px solid var(--bs-border-color); box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden; }
+.stamp-page .stamp-on-page { position: absolute; z-index: 1; }
+.stamp-page-lines { position: absolute; inset: 22% 12% 12% 12%;
+    background: repeating-linear-gradient(to bottom, var(--bs-secondary-bg) 0 4px, transparent 4px 14px); }

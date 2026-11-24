@@ -37,10 +37,14 @@ class ModernLayoutTest extends FeatureTestCase
         $groups = fn ($user) => array_map(fn ($links) => array_column($links, 'label'), Navigation::manage($user));
         $this->assertSame([
             'Εκτύπωση' => ['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων'],
-            'Φάκελοι' => ['Φάκελοι και διατήρηση'],
+            'Φάκελοι' => ['Φάκελοι και διατήρηση', 'Σφραγίδα αρχείων'],   // R4e
             'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος'],
         ], $groups($admin));
         $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
+        // R4e: the stamp for administrators, assigners and writers, not readers
+        $this->assertContains('Σφραγίδα αρχείων', $groups($this->writer())['Φάκελοι']);
+        $this->assertContains('Σφραγίδα αρχείων', $groups($this->assigner())['Φάκελοι']);
+        $this->assertSame(['Φάκελοι και διατήρηση'], $groups($this->reader())['Φάκελοι']);
         foreach (Navigation::manage($admin) as $links) {
             foreach ($links as $link) {
                 $this->assertNotEmpty($link['icon'], "icon for {$link['label']}");

@@ -3,54 +3,46 @@
 namespace App\Services\Protocols;
 
 use App\Models\Protocol;
-use Carbon\Carbon;
+use App\Services\Stamp\Pdf\PdfException;
+use App\Services\Stamp\Pdf\PdfStamper;
+use App\Services\Stamp\StampRenderer;
+use App\Services\Stamp\StampTemplate;
 use Illuminate\Support\Facades\Storage;
-use Yasapurnama\DocumentWatermark\WatermarkFactory;
 
 /**
- * The "Αρ.Πρ." stamp put on stored attachments (setting putStamp), moved here from ProtocolController (R1a).
+ * The stamp put on stored attachments (setting putStamp), moved here from ProtocolController (R1a).
  *
- * Before, the stamp image and the files being stamped were written to the web server's working folder under fixed
- * names (arPr.png, toStamp.pdf, stamped.pdf): two users saving at the same moment overwrote each other's files, and
- * the stamp image could be downloaded from the public folder. Now each save uses its own temporary files.
+ * R4e: drawn from the editable template (StampTemplate, Ρυθμίσεις → Σφραγίδα) at 600 dpi and placed at its real size.
+ * PDFs: App\Services\Stamp\Pdf\PdfStamper (an incremental update: first page or every page, the corner of the page as
+ * shown). A PDF it cannot read falls back to the old tool (markpdf), with the stamp drawn on a canvas as wide as an A4
+ * page so that it still has its size (that tool can only stamp every page). Encrypted PDFs are left as they are.
+ * docx / odt: the image in the first section's header, sized in points.
+ * Each save uses its own temporary files (before R1a two users saving at once overwrote each other's).
  */
 final class Stamp
 {
-    /** Extensions the watermark library can stamp; other files are stored as they are. */
+    /** Extensions that get a stamp; other files are stored as they are. */
     public const STAMPABLE = ['pdf', 'docx', 'odt'];
 
-    private ?string $image = null;
+    private ?\GdImage $image = null;
+
+    private ?StampTemplate $template = null;
+
+    /** @var list<string> temporary files */
+    private array $temp = [];
 
     /** Draw the stamp for this protocol. Returns false (no stamping) when it can't be drawn. */
-    public function prepare(Protocol $protocol): bool
+    public function prepare(Protocol $protocol, ?StampTemplate $template = null): bool
     {
         $this->cleanup();
-        $date = $protocol->dateOf('protocoldate')?->format('d-m-Y') ?? Carbon::now()->format('d-m-Y');
-        $txt = \App\Models\Config::getConfigValueOf('ipiresiasName') . "\nΑρ.Πρ: {$protocol->protocolnum} / $date";
-        $font = config('stamp.font');
-        $size = config('stamp.font_size');
         try {
-            $box = imagettfbbox($size, 0, $font, $txt);
-            $w = abs($box[4] - $box[0]) + 10;
-            $h = abs($box[5] - $box[1]) + 10;
-            $img = imagecreate($w, $h);
-            $text = imagecolorallocate($img, config('stamp.txtR'), config('stamp.txtG'), config('stamp.txtB'));
-            $border = imagecolorallocate($img, config('stamp.brdR'), config('stamp.brdG'), config('stamp.brdB'));
-            $bg = imagecolorallocate($img, config('stamp.bgR'), config('stamp.bgG'), config('stamp.bgB'));
-            if (config('stamp.transparent')) {
-                imagecolortransparent($img, $bg);
-            }
-            imagefilledrectangle($img, 0, 0, $w, $h, $bg);
-            imagerectangle($img, 0, 0, $w - 1, $h - 1, $border);
-            imagettftext($img, $size, 0, 5, 5 + $size, $text, $font, $txt);
-            $path = $this->tempPath('png');
-            imagepng($img, $path);
-            imagedestroy($img);
-            $this->image = $path;
+            $this->template = $template ?? StampTemplate::current();
+            $this->image = (new StampRenderer())->render($this->template, StampTemplate::valuesFor($protocol), StampRenderer::PRINT_DPI);
         } catch (\Throwable $e) {
+            report($e);
+            $this->image = null;
             return false;
         }
-
         return true;
     }
 
@@ -60,54 +52,121 @@ final class Stamp
     }
 
     /**
-     * Stamp a stored file (default disk) in place. A file type the library can't handle, or any failure, leaves the
-     * stored file exactly as it was.
+     * Stamp a stored file (default disk) in place. A file type that takes no stamp, or any failure, leaves the stored
+     * file exactly as it was.
      */
     public function apply(string $savedPath): void
     {
         $ext = strtolower(pathinfo($savedPath, PATHINFO_EXTENSION));
-        if (! $this->ready() || ! in_array($ext, self::STAMPABLE, true)) {
+        if (! $this->ready() || ! in_array($ext, self::STAMPABLE, true) || ! Storage::exists($savedPath)) {
             return;
         }
-        $in = $this->tempPath($ext);
-        $out = $this->tempPath($ext);
         try {
-            copy(Storage::path($savedPath), $in);
-            $w = WatermarkFactory::load($in)->outputFile($out)->setImage($this->image)->opacity(config('stamp.opacity'));
-            $w = config('stamp.section') == 'header' ? $w->sectionHeader() : $w->sectionFooter();
-            $w = config('stamp.align') == 'left'
-                ? $w->alignLeft(config('stamp.x'), config('stamp.y'))
-                : $w->alignRight(config('stamp.x'), config('stamp.y'));
-            if (config('stamp.onlyFirstPage')) {
-                $w = $w->onlyFirstPage();
-            }
-            $w->generate();
-            if (is_file($out) && filesize($out) > 0) {
-                Storage::put($savedPath, file_get_contents($out));
+            $stamped = $ext === 'pdf' ? $this->pdf(Storage::get($savedPath)) : $this->word(Storage::path($savedPath), $ext);
+            if ($stamped !== null && $stamped !== '') {
+                Storage::put($savedPath, $stamped);
             }
         } catch (\Throwable $e) {
             report($e);
         } finally {
-            @unlink($in);
-            @unlink($out);
+            $this->removeTemp();
         }
+    }
+
+    /** the stamped PDF, or null to keep it as it is */
+    public function pdf(string $pdf): ?string
+    {
+        [$w, $h] = StampRenderer::sizeMm($this->image, StampRenderer::PRINT_DPI);
+        $t = $this->template;
+        try {
+            return (new PdfStamper())->stamp($pdf, $this->image, [$w, $h], $t->corner, [$t->x, $t->y], $t->firstPageOnly);
+        } catch (PdfException $e) {
+            if ($e->getMessage() === 'encrypted') {
+                return null;
+            }
+            return $this->markpdf($pdf, $w, $h);
+        }
+    }
+
+    /** the old tool: the stamp on an A4-wide transparent canvas, scaled by the tool to the page's width */
+    private function markpdf(string $pdf, float $w, float $h): ?string
+    {
+        $t = $this->template;
+        $dpmm = StampRenderer::PRINT_DPI / 25.4;
+        $canvas = StampRenderer::canvas((int) round(210 * $dpmm), imagesy($this->image));
+        $x = str_contains($t->corner, 'right') ? (int) round((210 - $t->x - $w) * $dpmm) : (int) round($t->x * $dpmm);
+        imagecopy($canvas, $this->image, max(0, $x), 0, 0, 0, imagesx($this->image), imagesy($this->image));
+        $png = $this->tempPath('png');
+        imagepng($canvas, $png);
+        [$in, $out] = [$this->tempPath('pdf'), $this->tempPath('pdf')];
+        file_put_contents($in, $pdf);
+        $y = round($t->y * 72 / 25.4, 2);
+        $bin = realpath(base_path('vendor/yasapurnama/document-watermark/bin/markpdf_linux-amd64'));
+        if (! $bin) {
+            return null;
+        }
+        $cmd = [$bin, $in, $png, $out, '-w', '-y', (str_contains($t->corner, 'bottom') ? '-' : '') . $y, '-o', '1'];
+        exec(implode(' ', array_map('escapeshellarg', $cmd)) . ' 2>&1', $output, $code);
+        return $code === 0 && is_file($out) && filesize($out) > 0 ? file_get_contents($out) : null;
+    }
+
+    /** docx / odt: the stamp in the header of the first section (every page, or the first page only) */
+    private function word(string $path, string $ext): ?string
+    {
+        $t = $this->template;
+        $png = $this->tempPath('png');
+        imagepng($this->image, $png);
+        [$w, $h] = StampRenderer::sizeMm($this->image, StampRenderer::PRINT_DPI);
+        $pt = 72 / 25.4;
+        $out = $this->tempPath($ext);
+        $doc = \PhpOffice\PhpWord\IOFactory::load($path, $ext === 'odt' ? 'ODText' : 'Word2007');
+        $section = $doc->getSections()[0] ?? null;
+        if ($section === null) {
+            return null;
+        }
+        $type = $t->firstPageOnly ? \PhpOffice\PhpWord\Element\Footer::FIRST : \PhpOffice\PhpWord\Element\Footer::AUTO;
+        $container = str_contains($t->corner, 'top') ? $section->addHeader($type) : $section->addFooter($type);
+        // placed from the page's own size (twips → points), the stamp's distance from the corner kept
+        $style = $section->getStyle();
+        [$pageW, $pageH] = [($style->getPageSizeW() ?: 11906) / 20, ($style->getPageSizeH() ?: 16838) / 20];
+        $left = str_contains($t->corner, 'right') ? $pageW - ($t->x + $w) * $pt : $t->x * $pt;
+        $top = str_contains($t->corner, 'top') ? $t->y * $pt : $pageH - ($t->y + $h) * $pt;
+        $container->addImage($png, [
+            'width' => round($w * $pt, 2), 'height' => round($h * $pt, 2),
+            'wrappingStyle' => \PhpOffice\PhpWord\Style\Image::WRAPPING_STYLE_INFRONT,
+            'positioning' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
+            'posHorizontal' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
+            'posVertical' => \PhpOffice\PhpWord\Style\Image::POSITION_ABSOLUTE,
+            'posHorizontalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
+            'posVerticalRel' => \PhpOffice\PhpWord\Style\Image::POSITION_RELATIVE_TO_PAGE,
+            'marginLeft' => round($left, 2), 'marginTop' => round($top, 2),
+        ]);
+        $doc->save($out, $ext === 'odt' ? 'ODText' : 'Word2007');
+        return is_file($out) ? file_get_contents($out) : null;
     }
 
     public function cleanup(): void
     {
-        if ($this->image !== null) {
-            @unlink($this->image);
-            $this->image = null;
-        }
+        $this->image = null;
+        $this->template = null;
+        $this->removeTemp();
     }
 
     public function __destruct()
     {
-        $this->cleanup();
+        $this->removeTemp();
+    }
+
+    private function removeTemp(): void
+    {
+        foreach ($this->temp as $f) {
+            @unlink($f);
+        }
+        $this->temp = [];
     }
 
     private function tempPath(string $ext): string
     {
-        return sys_get_temp_dir() . '/ep-stamp-' . bin2hex(random_bytes(8)) . '.' . $ext;
+        return $this->temp[] = sys_get_temp_dir() . '/ep-stamp-' . bin2hex(random_bytes(8)) . '.' . $ext;
     }
 }
