@@ -70,7 +70,11 @@ class TrashPage extends Component
         $message = $r['newNumber']
             ? "Το πρωτόκολλο επανήλθε με νέο αριθμό $now: ο αρχικός {$r['original']} έχει δοθεί σε άλλο πρωτόκολλο."
             : "Το πρωτόκολλο $now επανήλθε με τον αριθμό του.";
-        $this->dispatch('toast', message: $message, type: $r['newNumber'] ? 'warning' : 'success',
+        if ($r['failed'] > 0) {   // review of R4h: said, and they stay in the files' trash for another full period
+            $message .= " {$r['failed']} " . ($r['failed'] === 1 ? 'αρχείο δεν επανήλθε' : 'αρχεία δεν επανήλθαν')
+                . ': είναι στον Κάδο → Συνημμένα, για επαναφορά από διαχειριστή.';
+        }
+        $this->dispatch('toast', message: $message, type: $r['newNumber'] || $r['failed'] ? 'warning' : 'success',
             url: url('/home/'.$p->id), label: "Άνοιγμα πρωτοκόλλου $now");
     }
 
@@ -122,6 +126,9 @@ class TrashPage extends Component
     public function render(Trash $trash, ProtocolTrash $protocols)
     {
         $user = auth()->user();
+        if (! $this->admin()) {
+            $this->tab = 'protocols';   // review of R4h: on every request (the property can be set from the browser)
+        }
         $visible = ProtocolTrash::visibleTo($user);
         if (($q = trim($this->search)) !== '') {
             $visible->where(fn ($w) => ctype_digit($q) ? $w->where('protocolnum', (int) $q) : $w->where('thema', 'like', \App\Services\Search\ProtocolSearch::like($q)));

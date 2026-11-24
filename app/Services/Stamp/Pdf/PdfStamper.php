@@ -71,8 +71,6 @@ final class PdfStamper
             [$ax, $ay] = $map($u + $sw, $v);
             [$cx, $cy] = $map($u, $v + $sh);
             $matrix = array_map([PdfParser::class, 'number'], [$ax - $ex, $ay - $ey, $cx - $ex, $cy - $ey, $ex, $ey]);
-            $drawNum = $next++;
-            $objects[$drawNum] = [0, self::stream([], "Q q " . implode(' ', $matrix) . ' cm /' . self::NAME . ' Do Q')];
 
             // the page: its drawing wrapped, our image among its resources
             $contents = $reader->resolve($page['Contents'] ?? null);
@@ -86,12 +84,17 @@ final class PdfStamper
             $resources = is_array($resources) ? $resources : [];
             $xobjects = $reader->resolve($resources['XObject'] ?? []);
             $xobjects = is_array($xobjects) ? $xobjects : [];
-            unset($resources[PdfParser::EMPTY_DICT], $xobjects[PdfParser::EMPTY_DICT]);
-            $xobjects[self::NAME] = new PdfRef($imageNum);
+            // a name the page does not use yet (a page stamped before keeps its own stamp: review of R4e)
+            $name = self::NAME;
+            for ($i = 1; array_key_exists($name, $xobjects); $i++) {
+                $name = self::NAME . $i;
+            }
+            $xobjects[$name] = new PdfRef($imageNum);
             $resources['XObject'] = $xobjects;
             $page['Resources'] = $resources;
+            $drawNum = $next++;
+            $objects[$drawNum] = [0, self::stream([], "Q q " . implode(' ', $matrix) . " cm /$name Do Q")];
             $page['Contents'] = [new PdfRef($saveNum), ...$contents, new PdfRef($drawNum)];
-            unset($page[PdfParser::EMPTY_DICT]);
             $objects[$num] = [$reader->generation($num), PdfParser::dict($page)];
         }
 
