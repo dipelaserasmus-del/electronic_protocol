@@ -234,13 +234,14 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 }
 
 // R2f: a protocol whose date is out of order with its numbers, or after today (a warning, not an error)
-.protocol-row.date-flagged > td {
+// R2n (owner, 2026-11-25): a protocol without a folder is flagged the same way
+.protocol-row.date-flagged > td, .protocol-row.folder-flagged > td {
   --bs-table-bg-state: var(--bs-warning-bg-subtle);
 }
-.protocol-row.date-flagged > td:first-child {
+.protocol-row.date-flagged > td:first-child, .protocol-row.folder-flagged > td:first-child {
   box-shadow: inset 4px 0 0 var(--bs-warning);
 }
-.date-flag {
+.date-flag, .folder-flag {
   z-index: 2;   // above the row's link (.stretched-link-row::after), so hovering it shows the explanation
   cursor: help;
 }

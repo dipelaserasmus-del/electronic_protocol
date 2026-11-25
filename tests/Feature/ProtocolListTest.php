@@ -18,6 +18,29 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringContainsString('id="app-search-advanced"', $html);   // the top bar's advanced search stays
     }
 
+    /** R2n (owner, 2026-11-25): a protocol without a folder is flagged in the list, as a date out of order is */
+    public function test_a_protocol_without_a_folder_is_flagged(): void
+    {
+        $writer = $this->writer();
+        Protocol::factory()->number(1)->create(['fakelos' => 'Φ.1', 'thema' => 'Με φάκελο', 'user_id' => $writer->id]);
+        Protocol::factory()->number(2)->create(['fakelos' => null, 'thema' => 'Χωρίς φάκελο Α', 'user_id' => $writer->id]);
+        Protocol::factory()->number(3)->create(['fakelos' => '  ', 'thema' => 'Χωρίς φάκελο Β', 'user_id' => $writer->id]);
+
+        $html = Livewire::actingAs($writer)->test(ProtocolList::class)->html();
+        $row = function (int $num) use ($html) {
+            preg_match('~<tr wire:key="p-\d+" class="protocol-row[^"]*"[^>]*>(?:(?!</tr>).)*?>'.$num.'/\d{4}</a>.*?</tr>~s', $html, $m);
+            return $m[0] ?? '';
+        };
+        $this->assertStringContainsString('folder-flagged', $row(2));
+        $this->assertStringContainsString('folder-flagged', $row(3), 'blank counts as none');
+        $this->assertStringNotContainsString('folder-flagged', $row(1));
+        $this->assertSame(2, substr_count($html, 'folder-flagged'), 'only those two');
+        // the warning in the Φάκελος column, with what to do; and next to the date on narrow screens
+        $this->assertMatchesRegularExpression('~class="folder-flag position-relative text-warning-emphasis[^"]*"[^>]*data-bs-title="Χωρίς φάκελο: το πρωτόκολλο δεν έχει φάκελο\. Ανοίξτε το και επιλέξτε τον φάκελό του\."~', $row(2));
+        $this->assertStringContainsString('folder-flag position-relative d-md-none', $row(2));
+        $this->assertStringNotContainsString('folder-flag', $row(1));
+    }
+
     /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων»; no Νέο / Ανανέωση on the page: ↻ next to «Λίστα»; ↑ back to the top */
     public function test_the_list_header_names_the_screen_and_refresh_is_in_the_top_bar(): void
     {

@@ -522,3 +522,28 @@ test('the top bar always in view; list title, ↻ next to Λίστα, ↑ back t
   await up.click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
+
+// R2n (owner, 2026-11-25): a protocol without a folder is flagged in the list, as a date out of order is
+test('a protocol without a folder is flagged in the list (R2n)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const stamp = Date.now();
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R2n χωρίς φάκελο ${stamp}` });   // «— Χωρίς φάκελο» (on hold)
+  await saveProtocol(page);
+  await page.goto('/home/list');
+  const row = page.locator('.protocol-row', { hasText: `R2n χωρίς φάκελο ${stamp}` });
+  await expect(row).toHaveClass(/folder-flagged/);
+  const flag = row.locator('td.col-folder .folder-flag, td:nth-child(2) .folder-flag').first();
+  await expect(flag).toBeVisible();
+  await expect(flag).toContainText('Χωρίς');
+  await flag.hover();
+  const tip = page.locator('.tooltip.date-flag-tooltip');
+  await expect(tip).toContainText('δεν έχει φάκελο');
+  await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('.tooltip.date-flag-tooltip')).opacity) >= 0.85);
+  await expect(page).toHaveURL(/\/home\/list/);   // hovering did not open the protocol
+  const box = await row.boundingBox();
+  await evidence(page, 'r2n-no-folder', { clip: { x: 0, y: Math.max(0, box.y - 60), width: 1440, height: box.height + 120 } });
+  // a protocol with a folder: no flag
+  await expect(page.locator('.protocol-row', { has: page.locator('td:nth-child(2) span[title]') }).first()).not.toHaveClass(/folder-flagged/);
+});
