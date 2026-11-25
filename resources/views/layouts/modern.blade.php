@@ -13,6 +13,9 @@
     $notification = session('notification');
     // R3d: the user's page width (full window, or narrow and centred), saved with the account
     $narrow = $user && \App\Support\UserPreferences::get($user, 'width') === 'narrow';
+    // R3j (owner, 2026-11-25): the narrow page's own width (− / +), in rem; none = the default
+    $narrowWidth = $user ? \App\Support\UserPreferences::get($user, 'narrowWidth') : null;
+    [$widthMin, $widthMax, $widthStep] = \App\Support\UserPreferences::RANGES['narrowWidth'];
 @endphp
 <!DOCTYPE html>
 <html lang="el">
@@ -25,7 +28,7 @@
     @vite(['resources/modern/app.scss', 'resources/modern/app.js'])
     @livewireStyles
 </head>
-<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif @auth has-notepad @endauth">
+<body class="bg-body-tertiary @if ($narrow) layout-narrow @endif @auth has-notepad @endauth"@if ($narrowWidth) style="--narrow-width: {{ (int) $narrowWidth }}rem"@endif>
 {{-- R3e (owner, 2026-11-20): the menu stays open from 768px up (it folded under 992px); see app.scss --}}
 <nav class="navbar navbar-expand-md navbar-dark bg-primary app-topbar sticky-top shadow-sm"
      @if ($topbarColor) style="background-color: {{ $topbarColor }} !important" @endif
@@ -120,6 +123,14 @@
                                     <button type="button" class="dropdown-item d-flex align-items-center" data-preference="width" data-value="narrow" data-url="{{ url('/preferences') }}"
                                             aria-pressed="{{ $narrow ? 'true' : 'false' }}"><i class="bi bi-arrows-angle-contract me-2" aria-hidden="true"></i>Στενό, στο κέντρο
                                         <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
+                                    {{-- R3j (owner, 2026-11-25): the narrow page narrower / wider, or back to the default; saved with the account --}}
+                                    <div class="width-steps d-flex align-items-center gap-1 px-3 pb-1" role="group" aria-label="Πλάτος της στενής σελίδας"
+                                         data-width-steps data-url="{{ url('/preferences') }}" data-min="{{ $widthMin }}" data-max="{{ $widthMax }}" data-step="{{ $widthStep }}">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-width-step="-1" title="Στενότερη" aria-label="Στενότερη σελίδα"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+                                        <span class="width-steps-value small text-body-secondary text-center flex-grow-1" aria-live="polite"></span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-width-step="1" title="Φαρδύτερη" aria-label="Φαρδύτερη σελίδα"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-width-step="0" title="Επαναφορά στο αρχικό πλάτος" aria-label="Επαναφορά στο αρχικό πλάτος"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+                                    </div>
                                     {{-- R3e (owner, 2026-11-20): the user's home page (login, the brand link, Λίστα) --}}
                                     <h6 class="dropdown-header">Αρχική σελίδα</h6>
                                     @php $home = \App\Support\Navigation::homeChoice($user); @endphp

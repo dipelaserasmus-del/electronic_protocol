@@ -173,6 +173,12 @@ organisation's official stamp (the owner's image is in git-ignored `local-data/`
 | N05 | **Notepad per user**: tab on the right edge of every page, closed by default; side panel with the user's one note (`user_notes`, text): sections (headings, foldable), to-dos (`- [ ]`, ticked with a click in view mode), basic markdown (bold, italic, lists, links; HTML escaped, unsafe links blocked); small toolbar; autosave ~1 s after typing with «Αποθηκεύτηκε HH:MM»; a second tab with an older copy is warned, not silently overwritten; open/closed per browser. Private to the user (administrators too) | UI/BE | P2 | M | N04 |
 | R6e | **Log viewer** (administrators, Διαχείριση): Livewire page like macOS Console: rows (time, coloured level, message), click → stack trace with highlighting; level filters, search with highlighted matches, pages by day (‹ date ›, calendar) and within a day, auto-refresh toggle. Reads big files from the end in chunks; only whitelisted files in `storage/logs` (no path traversal); output escaped. Needs `LOG_CHANNEL=daily` (+ days kept): in the deployment guide, not on the server now; an old single `laravel.log` is split by each line's date | UI/SEC | P2 | M | R6c |
 
+### Batch 9.7 — owner's requests after Batch 9.6 (2026-11-25)
+
+| ID | Task | Cat | Pri | Size | Depends |
+|----|------|-----|-----|------|---------|
+| R3j | **Narrow page width**: under *Στενό, στο κέντρο*, − / + (5 rem steps, 40–160 rem) and ↺ (back to the default); applied at once, the menu stays open; saved per user (`narrowWidth`) | UI | P2 | S | R3d |
+
 ## Phase 5 — Finish
 
 | ID | Task | Cat | Pri | Size | Depends |
@@ -206,6 +212,7 @@ organisation's official stamp (the owner's image is in git-ignored `local-data/`
 9. **Batch 9:** R6a → R6b → R1d → R6c → R7
    - **Batch 9.5** (owner's notes, 2026-11-19): R2e (list pager above the list too; previous / next; any page from a list) → R6d (settings explained, numbering settings together, settings without effect hidden) → R2f (dates out of order or in the future flagged in the list and the form) → R2g (the list pager on every paged screen) → R2h (row actions under ⋮) → R5e (inbox: date field; suggestions from file names) → R1j (form: floating save, copy/receipt at the far right, Λίστα in the top bar a link) → R3e (each user's home page; the top bar stays open from 768px) → R2i (list: alternating colours, fixed columns, short rows with ▾) → R3f (search: whole words / numbers) → R1k (unsaved changes: red dot, question before leaving) → R2j (assignment pills ✎ / 👁) → R5f (inbox badge with the number of e-mails) → R5g (inbox pagers) → R3g (Διαχείριση in the user menu) → R2k (list rows two lines, Από / Προς tooltip) → R5h (inbox: scrolling to an e-mail stays) → R5i (long recipient lists folded) → R5j (inbox: files above the buttons, e-mail tinted, Θέμα) → R5k (inbox: progress while registering) → R5l (inbox: done e-mails fold); added during the batch: D07 (your folder list, Φ.43 → Φ.46) → D08 (codes without the dot) → L03 (test mailbox) → R5m (inbox loading) → R5n (inbox from the cache) → R5o (inbox form and colours) → F09 (CI / Docker build time-outs) → R2l (no «Αναζήτηση» button) → D09 (same folder, other code) → D10 (real load with the files) → D11 (files that are not attachments); summary [BATCH-9.5](../reports/BATCH-9.5.md)
    - **Batch 9.6** (owner's requests, 2026-11-23; before Batch 10): R3h (direct links /protocol/N[/YYYY]) → R3i (search: σήμερα / χθες / εβδομάδα / N μέρες, χρήστης:) → R4d (rename attachments) → R4c (preview in the app) → R4e (stamp designer, official stamp) → R4f (stamp when viewing / printing, with or without) → R4g (old stamped files, investigation) → R4h (deleted protocols to the trash, restore with the original or a new number) → R5p (envelopes in the inbox) → N05 (notepad per user) → R6e (log viewer); summary [BATCH-9.6](../reports/BATCH-9.6.md)
+   - **Batch 9.7** (owner's requests after Batch 9.6, 2026-11-25): R3j (− / + / ↺ for the narrow page's width)
 10. **Batch 10:** A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03
 
 X01 can be moved earlier at any time (it is generic and doesn't depend on module rebuilds).
