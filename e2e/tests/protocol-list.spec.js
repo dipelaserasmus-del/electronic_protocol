@@ -576,3 +576,28 @@ test('an ΑΔΑ without a file in the list: a pill and its code (R2p)', async ({
   const box = await row.boundingBox();
   await evidence(page, 'r2p-list-ada', { clip: { x: 0, y: box.y - 10, width: 1440, height: box.height + 20 } });
 });
+
+// R2r (owner, 2026-11-25): the e-mail's own file after the attachments, shown by its date and time
+test('the e-mail file comes after the attachments, by its date and time (R2r)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const stamp = Date.now();
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R2r e-mail ${stamp}`, fakelos: 'first' });
+  await page.setInputFiles('#f-uploads', [
+    { name: 'email_20261112_103626.eml', mimeType: 'message/rfc822', buffer: Buffer.from('From: a@example.org\r\nSubject: x\r\n\r\nx\r\n') },
+    { name: 'Άδεια.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 R2r\n') },
+  ]);
+  await expect(page.locator('.upload-row')).toHaveCount(2);
+  await saveProtocol(page);
+  await page.goto('/home/list');
+  const row = page.locator('.protocol-row', { hasText: `R2r e-mail ${stamp}` });
+  await row.locator('.row-toggle').click();   // opened: every file
+  const names = row.locator('.attachment-name');
+  await expect(names).toHaveCount(2);
+  await expect(names.nth(0)).toContainText('Άδεια.pdf');
+  await expect(names.nth(1)).toContainText('12/11/2026 · 10:36:26');
+  await expect(names.nth(1).locator('.badge')).toHaveText('EML');
+  const box = await row.boundingBox();
+  await evidence(page, 'r2r-email-last', { clip: { x: 0, y: box.y - 10, width: 1440, height: box.height + 20 } });
+});

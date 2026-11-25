@@ -198,13 +198,15 @@
                             {{-- R2b: the file's name, shortened (whole in the detailed view and on hover); R2k: the first one and
                                  "+N" on one line until the row is opened --}}
                             <div class="attachment-list">
-                            @foreach ($p->attachments as $a)
-                                <div class="d-flex align-items-center gap-1 attachment-name">
+                            {{-- R2r (owner, 2026-11-25): the e-mail's own file last (setting emailFileFirst), shown by its date and time --}}
+                            @foreach (\App\Support\EmailFile::ordered($p->attachments) as $a)
+                                @php $shown = \App\Support\EmailFile::label($a->name); @endphp
+                                <div class="d-flex align-items-center gap-1 attachment-name @if (\App\Support\EmailFile::is($a->name)) attachment-email @endif">
                                     @if ($a->savedPath)
                                         <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-decoration-none position-relative z-2 d-inline-flex align-items-center gap-1"
                                            title="{{ $a->name }}"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
-                                            <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($a->name) }}</span>
-                                            <span x-show="detailed || open" x-cloak class="text-break">{{ $a->name }}</span></a>
+                                            <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($shown) }}</span>
+                                            <span x-show="detailed || open" x-cloak class="text-break">{{ $shown }}</span></a>
                                     @endif
                                     @if ($a->ada && ! $a->savedPath)
                                         {{-- R2p (owner, 2026-11-25): only an ΑΔΑ: a pill «ΑΔΑ», then its code as the link (as a file's name), as R1m --}}
