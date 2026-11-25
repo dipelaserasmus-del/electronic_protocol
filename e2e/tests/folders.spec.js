@@ -1,7 +1,7 @@
 // R6b: "Φάκελοι και διατήρηση" (/keep): administrators add a folder with automatic assignments and import a pasted
 // list; every role sees the folders.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
 
 test('add a folder with automatic assignment, then import a list (R6b)', async ({ page }) => {
   const n = String(Date.now()).slice(-6);
@@ -87,4 +87,49 @@ test('folders sort by code or count; a code opens its protocols (R6g)', async ({
   await expect(page.locator('#search-count')).toContainText('Βρέθηκ');
   await expect(page.locator('#search-results')).toContainText(code);
   await evidence(page, 'r6g-folder-search', { clip: { x: 0, y: 0, width: 1440, height: 620 } });
+});
+
+// R6i (owner, 2026-11-25): a folder's automatic assignment applied to the protocols already in it, as the administrator
+// chooses each time (not completed / all / the year in use); no e-mails
+test('a folder\'s automatic assignment applied to its existing protocols (R6i)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const n = String(Date.now()).slice(-6);
+  const code = `Φ.R6i.${n}`;
+  await login(page, 'admin');
+  // a folder without rules, and a protocol in it
+  await page.goto('/keep');
+  await page.locator('#folder-new').click();
+  await page.locator('#f-fakelos').fill(code);
+  await page.locator('#folder-save').click();
+  await expect(page.locator('#app-toasts .toast').last()).toContainText('προστέθηκε');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R6i υπάρχον πρωτόκολλο ${n}`, fakelos: code });
+  await saveProtocol(page);
+  const protocolUrl = page.url();
+
+  // then a rule: the existing protocol is not assigned by it…
+  await page.goto(`/keep?q=${encodeURIComponent(code)}`);
+  const row = page.locator(`.folder-row[data-code="${code}"]`);
+  await row.getByRole('button', { name: 'Επεξεργασία' }).click();
+  await page.locator('#folder-rules').getByLabel('Συγγραφέας Δοκιμών').first().check();
+  await page.locator('#folder-save').click();
+  await expect(page.locator('#app-toasts .toast').last()).toContainText('ενημερώθηκε');
+
+  // …until applied to it: the question, with how many each choice changes
+  await row.getByRole('button', { name: 'Επεξεργασία' }).click();
+  await expect(page.locator('#folder-apply-open')).toContainText('Εφαρμογή και στο 1 υπάρχον πρωτόκολλο του φακέλου');
+  await page.locator('#folder-apply-open').click();
+  const box = page.locator('#folder-apply');
+  await expect(box).toContainText('Σε ποια υπάρχοντα πρωτόκολλα');
+  await expect(box.locator('label[for="apply-open"]')).toContainText('(1 πρωτόκολλο αλλάζει)');
+  await expect(box.locator('#apply-open')).toBeChecked();
+  await box.scrollIntoViewIfNeeded();
+  await evidence(page, 'r6i-apply-choice', { clip: await page.locator('#folder-form').boundingBox() });
+  await page.locator('#folder-apply-run').click();
+  await expect(page.locator('#app-toasts .toast').last()).toContainText('εφαρμόστηκε σε 1 πρωτόκολλο (χωρίς e-mail)');
+
+  // the protocol is now hers
+  await page.goto(protocolUrl);
+  const handlers = await page.locator('#f-handle option').evaluateAll((os) => os.filter((o) => o.selected).map((o) => o.textContent.trim()));
+  expect(handlers).toContain('Συγγραφέας Δοκιμών');
 });

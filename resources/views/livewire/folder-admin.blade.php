@@ -43,6 +43,34 @@
                             </div>
                         @endforeach
                     </div>
+                    {{-- R6i (owner, 2026-11-25): the saved rules also to the protocols already in this folder; which ones is
+                         asked each time; no e-mails --}}
+                    @if ($editing && $savedRules && $editedCount)
+                        <div class="border rounded-3 p-2 mt-2 bg-body-tertiary" id="folder-apply">
+                            @if (! $applyOpen)
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" wire:click="openApply" id="folder-apply-open">
+                                    <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>Εφαρμογή και {{ $editedCount === 1 ? 'στο 1 υπάρχον πρωτόκολλο' : 'στα '.$editedCount.' υπάρχοντα πρωτόκολλα' }} του φακέλου…</button>
+                                <span class="small text-body-secondary ms-1">Η αυτόματη ανάθεση ισχύει μόνο για όσα αποθηκεύονται από εδώ και πέρα.</span>
+                            @else
+                                <div class="small fw-semibold mb-1">Σε ποια υπάρχοντα πρωτόκολλα του {{ $editingFolder?->fakelos }} να εφαρμοστεί η αυτόματη ανάθεση;</div>
+                                @foreach (\App\Services\Folders\FolderCatalog::EXISTING_SCOPES as $scope => $label)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="apply-scope" id="apply-{{ $scope }}" value="{{ $scope }}" wire:model.live="applyScope">
+                                        <label class="form-check-label small" for="apply-{{ $scope }}">{{ $label }}
+                                            <span class="text-body-secondary">({{ $existingCounts[$scope] ?? 0 }} {{ ($existingCounts[$scope] ?? 0) === 1 ? 'πρωτόκολλο αλλάζει' : 'πρωτόκολλα αλλάζουν' }})</span></label>
+                                    </div>
+                                @endforeach
+                                <p class="small text-body-secondary mb-2 mt-1">Με τους κανόνες που είναι <strong>αποθηκευμένοι</strong> (αποθηκεύστε πρώτα μια αλλαγή τους).
+                                    Όσες αναθέσεις υπάρχουν μένουν· οι χρήστες <strong>δεν</strong> παίρνουν e-mail. «Όσα δεν έχουν διεκπεραιωθεί»: χωρίς ημερομηνία
+                                    «Διεκπεραιώθηκε», δηλαδή όσα θα φανούν στη λίστα «προς Διεκπεραίωση».</p>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-primary rounded-pill" wire:click="applyToExisting" id="folder-apply-run"
+                                            @disabled(! ($existingCounts[$applyScope] ?? 0))>Εφαρμογή σε {{ $existingCounts[$applyScope] ?? 0 }}</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" wire:click="closeApply">Άκυρο</button>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </fieldset>
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary rounded-pill" id="folder-save">Αποθήκευση</button>

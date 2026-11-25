@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 11:43 (R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 13:00 (R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -272,6 +272,9 @@ Open *Εισερχόμενα*.
   folder's code: its protocols, as the top bar's search shows them.
 - [ ] **86.** On your real copy, *Φάκελοι και διατήρηση* → *Επεξεργασία* on Φ12 (the folder you tried): choose a user
   for Διεκπεραίωση and *Αποθήκευση*: it saves; the code stays «Φ12».
+- [ ] **87.** *Φάκελοι και διατήρηση* → *Επεξεργασία* on Φ12 (it has your rule for Διεκπεραίωση) → *Εφαρμογή και στα 606
+  υπάρχοντα πρωτόκολλα…*: choose *Όσα δεν έχουν διεκπεραιωθεί*, *Όλα* or *Του ενεργού έτους* (each says how many change)
+  → *Εφαρμογή*. No e-mails are sent; the user sees them in *προς Διεκπεραίωση*.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -324,6 +327,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- A folder's automatic assignment applies to protocols saved from then on; for the ones already in it, *Εφαρμογή και
+  στα υπάρχοντα…* asks which each time and sends no e-mail (2026-11-25, R6i). Only the administrator changes folders.
 - *Ρυθμίσεις* as GitHub's settings (R6f): approved from the screenshots (2026-11-25 11:35).
 - Inbox (2026-11-25, R5s): every e-mail needs a *Φάκελος*, with or without attachments; the setting *Ο Φάκελος
   χρειάζεται για κάθε e-mail* is gone. The protocol form keeps *— Χωρίς φάκελο* for protocols on hold.

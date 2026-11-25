@@ -7,6 +7,7 @@ use App\Models\Keepvalue;
 use App\Models\Protocol;
 use App\Models\User;
 use App\Support\FolderCode;
+use App\Support\FolderRules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -73,6 +74,86 @@ final class FolderCatalog
 
             return $folder;
         });
+    }
+
+    /**
+     * R6i (owner, 2026-11-25): the folder's automatic assignments applied to the protocols already in it, which the
+     * administrator chooses each time: 'open' (not completed: no «Διεκπεραιώθηκε» date), 'all', 'year' (the year in
+     * use). Merged as on save (FolderRules::merge: assignments already there stay; διεκπεραίωση takes the place of
+     * ενημέρωση for the same user); inactive users are skipped. No e-mails (owner: «No e-mail»).
+     */
+    public const EXISTING_SCOPES = ['open' => 'Όσα δεν έχουν διεκπεραιωθεί', 'all' => 'Όλα', 'year' => 'Του ενεργού έτους'];
+
+    /** @return array<string, int> per scope: how many of the folder's protocols would gain an assignment */
+    public function existingCounts(Keepvalue $folder): array
+    {
+        $rules = FolderRules::for($folder->fakelos);
+        $counts = array_fill_keys(array_keys(self::EXISTING_SCOPES), 0);
+        if ($rules === []) {
+            return $counts;
+        }
+        $year = $this->yearInUse();
+        $this->folderProtocols($folder)->chunkById(500, function ($protocols) use ($rules, $year, &$counts) {
+            foreach ($protocols as $p) {
+                [, $added] = FolderRules::merge($this->assignmentsOf($p), $rules);
+                if ($added === []) {
+                    continue;
+                }
+                $counts['all']++;
+                $counts['open'] += $p->getRawOriginal('diekp_date') === null ? 1 : 0;
+                $counts['year'] += (int) $p->etos === $year ? 1 : 0;
+            }
+        });
+        return $counts;
+    }
+
+    /** @return int the protocols that gained an assignment */
+    public function applyRulesToExisting(Keepvalue $folder, string $scope): int
+    {
+        if (! isset(self::EXISTING_SCOPES[$scope]) || ($rules = FolderRules::for($folder->fakelos)) === []) {
+            return 0;
+        }
+        $query = $this->folderProtocols($folder);
+        if ($scope === 'open') {
+            $query->whereNull('diekp_date');   // as the list's «προς Διεκπεραίωση»
+        } elseif ($scope === 'year') {
+            $query->where('etos', $this->yearInUse());
+        }
+        $changed = 0;
+        $query->chunkById(200, function ($protocols) use ($rules, &$changed) {
+            foreach ($protocols as $p) {
+                // review of R6i: the protocol locked and its assignments read again just before merging, so a change
+                // made meanwhile by someone else (ProtocolWriter::assign locks the same row) is kept, never undone
+                $added = DB::transaction(function () use ($p, $rules) {
+                    DB::table('protocols')->where('id', $p->id)->lockForUpdate()->value('id');
+                    $now = \App\Models\ProtocolAssignment::where('protocol_id', $p->id)->get()
+                        ->map(fn ($a) => ['user_id' => (int) $a->user_id, 'type' => $a->type])->values()->all();
+                    [$merged, $added] = FolderRules::merge($now, $rules);
+                    if ($added !== []) {
+                        \App\Support\Assignments::replace($p, $merged);   // the table only: no e-mail
+                    }
+                    return $added;
+                });
+                $changed += $added !== [] ? 1 : 0;
+            }
+        });
+        return $changed;
+    }
+
+    private function folderProtocols(Keepvalue $folder): \Illuminate\Database\Eloquent\Builder
+    {
+        return Protocol::query()->where('fakelos', $folder->fakelos)->with('assignments')->orderBy('id');
+    }
+
+    /** @return list<array{user_id: int, type: string}> */
+    private function assignmentsOf(Protocol $p): array
+    {
+        return $p->assignments->map(fn ($a) => ['user_id' => (int) $a->user_id, 'type' => $a->type])->values()->all();
+    }
+
+    private function yearInUse(): int
+    {
+        return (int) (\App\Models\Config::getConfigValueOf('yearInUse') ?: now()->year);
     }
 
     /** @throws ValidationException (key: delete) */
