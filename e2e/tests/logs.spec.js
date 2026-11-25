@@ -58,7 +58,10 @@ test('the log viewer has a Σήμερα button (R6j)', async ({ page }) => {
   await page.locator('#log-today').click();
   await expect(page.locator('#log-day')).toHaveValue(today);
   await expect(page.locator('#log-today')).toBeDisabled();
-  await expect(page.locator('#log-prev')).toBeEnabled();   // review of R6j: back to an earlier day with entries
+  // review of R6j: ‹ back to an earlier day with entries, when there is one (the day's min = the oldest day with entries)
+  const oldest = await page.locator('#log-day').getAttribute('min');
+  if (oldest && oldest < today) await expect(page.locator('#log-prev')).toBeEnabled();
+  else await expect(page.locator('#log-prev')).toBeDisabled();
   const bar = await page.locator('#log-day').locator('..').boundingBox();
   await evidence(page, 'r6j-today', { clip: { x: Math.max(0, bar.x - 20), y: Math.max(0, bar.y - 10), width: bar.width + 40, height: bar.height + 20 } });
 });
