@@ -21,6 +21,10 @@ name as a date and time, and make its place an option in the settings, set by th
 
 ![The e-mail after the PDF, by its date and time](img/R2r/r2r-email-last.png)
 
+## Review (Codex), fixed with a test
+The list read the setting from the database once per row: up to 1000 extra queries a page. It is now read once for
+the page. Test: the list with 22 protocols reads it at most once (it read it 22 times before).
+
 ## How verified
 - PHPUnit `ProtocolListTest::test_the_email_file_comes_last_shown_by_its_date`:
   - an EML and a PDF: the PDF first, the e-mail «12/11/2026 · 10:36:26» last, its name on hover;

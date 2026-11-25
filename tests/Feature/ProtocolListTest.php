@@ -81,6 +81,14 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertSame('12/11/2026 · 10:36:26', \App\Support\EmailFile::label('email_20261112_103626.eml'));
         $this->assertSame('email_kati.eml', \App\Support\EmailFile::label('email_kati.eml'), 'another name as it is');
         $this->assertSame('files', \App\Support\SettingsCatalog::sectionOf('emailFileFirst'));
+
+        // review of R2r: the setting is read once for the whole list, not once per row
+        Protocol::factory()->count(20)->sequence(fn ($seq) => ['protocolnum' => 100 + $seq->index])->create(['user_id' => $writer->id]);
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        Livewire::actingAs($writer)->test(ProtocolList::class)->html();
+        $reads = collect(\Illuminate\Support\Facades\DB::getQueryLog())->filter(fn ($q) => in_array('emailFileFirst', $q['bindings'], true))->count();
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+        $this->assertLessThanOrEqual(1, $reads, "read $reads times");
     }
 
     /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων»; no Νέο / Ανανέωση on the page: ↻ next to «Λίστα»; ↑ back to the top */

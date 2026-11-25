@@ -199,7 +199,7 @@
                                  "+N" on one line until the row is opened --}}
                             <div class="attachment-list">
                             {{-- R2r (owner, 2026-11-25): the e-mail's own file last (setting emailFileFirst), shown by its date and time --}}
-                            @foreach (\App\Support\EmailFile::ordered($p->attachments) as $a)
+                            @foreach (\App\Support\EmailFile::ordered($p->attachments, $emailFileFirst) as $a)
                                 @php $shown = \App\Support\EmailFile::label($a->name); @endphp
                                 <div class="d-flex align-items-center gap-1 attachment-name @if (\App\Support\EmailFile::is($a->name)) attachment-email @endif">
                                     @if ($a->savedPath)

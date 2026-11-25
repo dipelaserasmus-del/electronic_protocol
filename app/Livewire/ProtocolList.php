@@ -248,6 +248,7 @@ class ProtocolList extends Component
         return view('livewire.protocol-list', [
             'protocols' => $protocols,
             // R2f: dates out of order with the numbers, or after today (a warning beside the date)
+            'emailFileFirst' => \App\Support\EmailFile::firstSetting(),   // R2r: read once for the page
             'dateFlags' => app(\App\Services\DateOrder::class)->flags($protocols->getCollection()->pluck('etos')),
             'gapRows' => $this->gapRows($gaps),
             'gapCount' => array_sum(array_map('count', $gaps)),
