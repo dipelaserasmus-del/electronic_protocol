@@ -619,3 +619,27 @@ test('review of R1k: who may only assign (no Αποθήκευση) leaves with l
     await setSetting(page, 'allowWriterUpdateProtocol', previous);
   }
 });
+
+// R1l (owner, 2026-11-25): a refused «Αποθήκευση» brings the field with the error into view (it may be far above the
+// floating button), with the cursor in it
+test('a refused save shows the field with the error (R1l)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 600 });
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R1l φάκελος ${Date.now()}`, fakelos: 'first' });
+  await page.setInputFiles('#f-uploads', { name: 'R1l.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 R1l\n') });
+  await saveProtocol(page);
+
+  // a protocol with a file cannot lose its folder: «— Χωρίς φάκελο», then save from the bottom of the page
+  await page.locator('#f-fakelos').click();
+  await page.locator('#folder-list li[role=option]').first().click();   // «— Χωρίς φάκελο»
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  const folder = page.locator('#f-fakelos');
+  await expect(folder).not.toBeInViewport();
+  await page.locator('#form-save').click();
+  await expect(folder).toHaveClass(/is-invalid/);
+  await expect(folder).toBeInViewport();
+  await expect(folder).toBeFocused();
+  await expect(page.locator('#f-fakelos ~ .invalid-feedback')).toContainText('Φάκελος');
+  await evidence(page, 'r1l-folder-error', { clip: { x: 0, y: 0, width: 1440, height: 600 } });
+});

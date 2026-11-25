@@ -251,3 +251,20 @@ document.addEventListener('click', (e) => {
         window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'instant' });
     }
 });
+
+// R1l (owner, 2026-11-25): the protocol form's «Αποθήκευση» refused (e.g. no Φάκελος for a protocol with files): the
+// first field marked wrong is brought into view with the cursor in it, as in the inbox (R5r); without one in view, the
+// first error message on the page
+function showFormError() {
+    const visible = (el) => el.offsetParent !== null;
+    const field = [...document.querySelectorAll('main .is-invalid')].find(visible);
+    const target = field ?? [...document.querySelectorAll('main .invalid-feedback, main .alert-danger, main .text-danger')].find(visible);
+    if (!target) return;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'instant' });
+    const focusable = target.matches('input, textarea, select') ? target : target.querySelector?.('input, textarea, select');
+    focusable?.focus({ preventScroll: true });
+}
+document.addEventListener('livewire:init', () => {
+    window.Livewire.on('form-refused', () => requestAnimationFrame(() => requestAnimationFrame(showFormError)));   // after the page is updated
+});
