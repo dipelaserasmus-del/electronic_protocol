@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 13:24 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n and R4l; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 13:26 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l and R2o; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R2o (owner, 2026-11-25):** protocol-list: `.folder-flag` text «Χωρίς φάκελο» (no text-nowrap: it wraps in the narrow column).
 - **R4l (owner, 2026-11-25):** session notification `link` => [text, path]: layouts/modern puts `<a class="alert-link">` at «:link» when the path passes `ProtocolForm::sameSite()` (the message itself stays escaped). Used by `deleteProtocol()`.
 - **R1n (owner, 2026-11-25):** unsaved.js: `redirecting` (the save's commit answered with a redirect) silences beforeunload; the commit hook acts only on commits calling save / assignOnly; the input listener re-arms only on `isTrusted` events. Reproduced in the browser test by holding the save and firing a page-made input meanwhile.
 - **R1m (owner, 2026-11-25):** protocol form attachment row: `$adaOnly` (no savedPath, an ada) → `badge text-bg-info` «ΑΔΑ» + `.attachment-ada` (link to diavgeiaUrl or text) with `me-auto`; the right-side ΑΔΑ badge only for files.
@@ -371,6 +372,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 13:26 | R2o | #136 | list: the no-folder flag says «Χωρίς φάκελο» |
 | 2026-11-25 13:24 | R4l | #135 | deleted protocol: «Το πρωτόκολλο N/YYYY μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash |
 | 2026-11-25 13:21 | R1n | #134 | fix: saving a new protocol no longer asks «leave page?» (the guard only listens to the save's own answer) |
 | 2026-11-25 13:09 | R1m | #133 | form: an ΑΔΑ-only attachment shows an ΑΔΑ pill and its code on the left |

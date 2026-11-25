@@ -126,9 +126,9 @@
                             @else
                                 {{-- R2n: no folder: a warning with its explanation (above the row's link, as R2f's) --}}
                                 @php $folderText = 'Χωρίς φάκελο: το πρωτόκολλο δεν έχει φάκελο. Ανοίξτε το και επιλέξτε τον φάκελό του.'; @endphp
-                                <span class="folder-flag position-relative text-warning-emphasis fw-semibold text-nowrap" tabindex="0" role="img" aria-label="{{ $folderText }}"
+                                <span class="folder-flag position-relative text-warning-emphasis fw-semibold" tabindex="0" role="img" aria-label="{{ $folderText }}"
                                       data-bs-title="{{ $folderText }}"
-                                      x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Χωρίς</span>
+                                      x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Χωρίς φάκελο</span>{{-- R2o (owner, 2026-11-25): in full --}}
                             @endif
                         </td>
                         <td>

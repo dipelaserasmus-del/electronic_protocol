@@ -38,6 +38,7 @@ class ProtocolListTest extends FeatureTestCase
         // the warning in the Φάκελος column, with what to do; and next to the date on narrow screens
         $this->assertMatchesRegularExpression('~class="folder-flag position-relative text-warning-emphasis[^"]*"[^>]*data-bs-title="Χωρίς φάκελο: το πρωτόκολλο δεν έχει φάκελο\. Ανοίξτε το και επιλέξτε τον φάκελό του\."~', $row(2));
         $this->assertStringContainsString('folder-flag position-relative d-md-none', $row(2));
+        $this->assertStringContainsString('</i> Χωρίς φάκελο</span>', $row(2), 'R2o: in full');
         $this->assertStringNotContainsString('folder-flag', $row(1));
     }
 
