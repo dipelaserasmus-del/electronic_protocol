@@ -10,15 +10,15 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 /**
- * R4e: the stamp designer (/stamp). Διαχειριστής, Αναθέτων and Συγγραφέας edit the stamp (owner, 2026-11-24; not
- * Αναγνώστης): emblem, lines, colour, width, position; the preview follows every change (drawn as it will be, at a
- * lower resolution) and shows where it goes on an A4 page. Saved as the setting "stampTemplate" (StampTemplate).
+ * R4e: the stamp designer (/stamp). Only Διαχειριστής edits the stamp (R4i, owner, 2026-11-25; R4e had Αναθέτων and
+ * Συγγραφέας too): emblem, lines, colour, width, position; the preview follows every change (drawn as it will be, at
+ * a lower resolution) and shows where it goes on an A4 page. Saved as the setting "stampTemplate" (StampTemplate).
  */
 class StampDesigner extends Component
 {
     use WithFileUploads;
 
-    public const ROLES = ['Διαχειριστής', 'Αναθέτων', 'Συγγραφέας'];
+    public const ROLES = ['Διαχειριστής'];   // R4i (owner, 2026-11-25): administrators only
 
     /** StampTemplate::toArray() being edited */
     public array $tpl = [];

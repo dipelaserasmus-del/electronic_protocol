@@ -65,6 +65,24 @@ test('stamp on view: stamped download by default, the original with «Με σφ�
     expect(await body()).toContain(MARK);
     await page.reload();
     await expect(page.locator('#form-stamp-input')).toBeChecked();   // kept with the account
+
+    // R4i (owner, 2026-11-25): with the setting off the switch is still there, and the user's own choice holds
+    const form = page.url();
+    await setSetting(page, 'putStamp', 0);
+    await page.goto(form);
+    await expect(page.locator('#form-stamp-input')).toBeVisible();
+    await expect(page.locator('#form-stamp-input')).toBeChecked();
+    expect(await body()).toContain(MARK);
+    await page.locator('.attachment-row').first().scrollIntoViewIfNeeded();
+    await evidence(page, 'r4i-switch-setting-off', { clip: await page.locator('#attachments-title').evaluate((el) => {
+      const r = el.closest('section, .card').getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: Math.min(r.height, 260) };
+    }) });
+    await page.locator('.attachment-row .preview-button').first().click();
+    await expect(page.locator('#preview-stamp-input')).toBeChecked();
+    await expect(page.locator('#preview-modal')).toHaveCSS('opacity', '1');
+    const head = await page.locator('#preview-modal .modal-content').boundingBox();
+    await evidence(page, 'r4i-preview-setting-off', { clip: { x: head.x, y: head.y, width: head.width, height: Math.min(head.height, 420) } });
   } finally {
     await stamped(page, 'yes');
     await setSetting(page, 'putStamp', previous);

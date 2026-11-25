@@ -7,7 +7,7 @@ const { login, evidence } = require('./helpers');
 const livewire = (page) => page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST');
 
 test('the stamp designer: edit, live preview, save (R4e)', async ({ page }) => {
-  await login(page, 'writer');   // writers may edit the stamp too (owner, 2026-11-24)
+  await login(page, 'admin');   // administrators only (R4i, owner, 2026-11-25)
   await page.goto('/stamp');
   const preview = page.locator('#stamp-preview');
   const before = await preview.getAttribute('src');
@@ -48,10 +48,15 @@ test('the stamp designer: edit, live preview, save (R4e)', async ({ page }) => {
   await expect(page.locator('[data-line-text]').nth(2)).toHaveValue('ΔΟΚΙΜΟΥΠΟΛΗ {ημερομηνία}');
   await expect(page.locator('#st-width')).toHaveValue('55');
 
-  // readers cannot open it
-  await page.context().clearCookies();
-  await login(page, 'reader');
-  expect((await page.goto('/stamp')).status()).toBe(403);
+  // the others cannot open it, nor see it in the menu (R4i)
+  for (const who of ['writer', 'reader']) {
+    await page.context().clearCookies();
+    await login(page, who);
+    expect((await page.goto('/stamp')).status()).toBe(403);
+    await page.goto('/home/list');
+    await page.locator('#nav-user').click();
+    await expect(page.locator('.user-menu a[href$="/stamp"]')).toHaveCount(0);
+  }
 
   // back to the default for the other tests
   await page.context().clearCookies();

@@ -83,7 +83,7 @@ final class Navigation
             ];
         }
         $groups['Φάκελοι'] = [['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')]];
-        if (\App\Livewire\StampDesigner::allowed($user)) {   // R4e: not readers
+        if (\App\Livewire\StampDesigner::allowed($user)) {   // R4e; administrators only (R4i)
             $groups['Φάκελοι'][] = ['label' => 'Σφραγίδα αρχείων', 'icon' => 'patch-check', 'url' => url('/stamp')];
         }
         if ($role !== self::ADMIN && \App\Services\Protocols\ProtocolTrash::mayOpen($user)) {   // R4h: their own deleted protocols

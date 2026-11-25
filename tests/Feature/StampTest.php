@@ -205,20 +205,24 @@ class StampTest extends FeatureTestCase
 
     // ---- the designer ----
 
-    public function test_the_designer_is_for_administrators_assigners_and_writers(): void
+    /** R4i (owner, 2026-11-25): administrators only (R4e had assigners and writers too) */
+    public function test_the_designer_is_for_administrators_only(): void
     {
-        foreach ([$this->admin(), $this->assigner(), $this->writer()] as $user) {
-            $this->actingAs($user)->get('/stamp')->assertOk()->assertSee('Σφραγίδα αρχείων')->assertSee('id="stamp-preview"', false);
+        $admin = $this->admin();
+        $this->actingAs($admin)->get('/stamp')->assertOk()->assertSee('Σφραγίδα αρχείων')->assertSee('id="stamp-preview"', false);
+        $this->assertStringContainsString('href="'.url('/stamp').'"', $this->actingAs($admin)->get('/about')->getContent());
+        foreach ([$this->assigner(), $this->writer(), $this->reader()] as $user) {
+            $this->actingAs($user)->get('/stamp')->assertForbidden();
+            Livewire::actingAs($user)->test(StampDesigner::class)->assertForbidden();
+            $this->assertStringNotContainsString('href="'.url('/stamp').'"', $this->actingAs($user)->get('/about')->getContent(), 'not in the menu');
         }
-        $this->actingAs($this->reader())->get('/stamp')->assertForbidden();
-        Livewire::actingAs($this->reader())->test(StampDesigner::class)->assertForbidden();
         auth()->logout();
         $this->get('/stamp')->assertRedirect('/login');
     }
 
     public function test_the_designer_edits_previews_and_saves(): void
     {
-        $page = Livewire::actingAs($this->writer())->test(StampDesigner::class)
+        $page = Livewire::actingAs($this->admin())->test(StampDesigner::class)
             ->call('addLine')->set('tpl.lines.2.text', 'ΑΓ. ΔΟΚΙΜΟΣ {ημερομηνία}')->set('tpl.lines.2.dots', true)
             ->call('moveLine', 2, -1)
             ->set('tpl.width', '70')->set('tpl.color', '#112233')->set('tpl.corner', 'bottom-left')->set('tpl.firstPageOnly', false);

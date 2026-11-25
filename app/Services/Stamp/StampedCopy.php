@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Storage;
  * R4f: the stamp is put when a file is viewed, downloaded or printed, not when it is saved. The stored file stays as it
  * came; the stamped copy is made on first use and kept in storage/app/stamped/<id>-<key>.<ext>, where the key changes
  * with what the stamp shows (the template, the protocol's number and date) and with the file itself, so a stale copy
- * is never served. Each user chooses «Με σφραγίδα» (default) or the original (preference "stamped").
+ * is never served. Each user chooses «Με σφραγίδα» or the original (preference "stamped"); R4i (owner, 2026-11-25):
+ * every user may, whatever the setting "putStamp", which is only the choice of users who have not chosen.
  * Files saved before R4f carry the old stamp inside them (attachments.stamp_in_file): never stamped again.
  */
 final class StampedCopy
@@ -23,18 +24,19 @@ final class StampedCopy
 
     public const PREFERENCE = 'stamped';
 
-    /** this attachment is stamped when shown (setting on, a type that takes a stamp, no stamp inside it already) */
+    /** this attachment can be stamped when shown (a protocol's file of a type that takes a stamp, none inside it already) */
     public static function applies(Attachment $a): bool
     {
         $ext = strtolower(pathinfo((string) ($a->savedPath ?: $a->name), PATHINFO_EXTENSION));
-        return (bool) Config::getConfigValueOf('putStamp') && ! $a->stamp_in_file && $a->protocol_id
+        return ! $a->stamp_in_file && $a->protocol_id
             && in_array($ext, Stamp::STAMPABLE, true);
     }
 
-    /** the user wants files with the stamp (default) */
+    /** the user wants files with the stamp: their own choice, otherwise the setting "putStamp" (R4i) */
     public static function wanted(?User $user): bool
     {
-        return UserPreferences::get($user, self::PREFERENCE) !== 'no';
+        $own = $user?->preferences[self::PREFERENCE] ?? null;
+        return UserPreferences::valid(self::PREFERENCE, $own) ? $own === 'yes' : (bool) Config::getConfigValueOf('putStamp');
     }
 
     /**

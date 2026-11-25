@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **101 / 111** `███████████████████████████░░░` 91% |
-| Effort done (PERT) | **45.0 / 49.6 h** `███████████████████████████░░░` 91% |
+| Tasks done | **102 / 112** `███████████████████████████░░░` 91% |
+| Effort done (PERT) | **45.4 / 50.0 h** `███████████████████████████░░░` 91% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅R3j | 1/1 | `██████████` |
+| 9.7 | ✅R3j ✅R4i | 2/2 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -155,6 +155,7 @@ flowchart LR
     R5p["R5p<br/>Inbox: each e-mail in an envelope (2–3 versions, owner chooses)"]
     R6e["R6e<br/>Log viewer for administrators (Console-like: levels, search, pages by day)"]
     R3j["R3j<br/>Narrow page: − / + / ↺ for its width, saved per user"]
+    R4i["R4i<br/>Stamp: designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default)"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -299,6 +300,7 @@ flowchart LR
   N04 --> N05
   R6c --> R6e
   R3d --> R3j
+  R4f --> R4i
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -324,7 +326,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -455,17 +457,18 @@ gantt
   R6e Log viewer for administrators (Console-like  levels, search, pages by day) :done, r6e, 2026-11-14 04:44, 33m
   section Batch 9.7
   R3j Narrow page  − / + / ↺ for its width, saved per user :done, r3j, 2026-11-14 05:17, 19m
+  R4i Stamp  designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) :done, r4i, 2026-11-14 05:36, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 05:36, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 06:09, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 06:28, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 06:47, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 07:20, 19m
-  X01 Audit log — recording :x01, 2026-11-14 07:39, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 08:12, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 08:45, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 09:18, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 09:37, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 05:55, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 06:28, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 06:47, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 07:06, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 07:39, 19m
+  X01 Audit log — recording :x01, 2026-11-14 07:58, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 08:31, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 09:04, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 09:37, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 09:56, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -575,6 +578,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **N05** | Notepad per user on every page: sections, to-dos, markdown, autosave | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 9.9 | 10.5 | 6.3 | #114 |
 | ✅ | **R6e** | Log viewer for administrators (Console-like: levels, search, pages by day) | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.9 | 10.5 | 5.8 | #115 |
 | ✅ | **R3j** | Narrow page: − / + / ↺ for its width, saved per user | R3d | 0.3 | 0.1 | 5.6 | 5.9 | 10.2 | 10.5 | 4.6 | #117 |
+| ✅ | **R4i** | Stamp: designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.2 | 10.5 | 4.9 | #118 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.4 | 9.9 | 5.2 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.2 | 10.5 | 5.5 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.2 | 10.5 | 5.5 |  |
