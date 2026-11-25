@@ -205,6 +205,36 @@ class ModernLayoutTest extends FeatureTestCase
         $this->actingAs($a)->postJson('/preferences', ['key' => 'home', 'value' => '/admin'])->assertStatus(422);
     }
 
+    /** R3j: the narrow page's own width (− / + / ↺), saved per user (owner, 2026-11-25) */
+    public function test_narrow_width_steps_are_saved_per_user(): void
+    {
+        [$a, $b] = [$this->writer(), $this->writer()];
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'width', 'value' => 'narrow'])->assertOk();
+        $html = $this->actingAs($a)->get('/about')->assertOk()->getContent();
+        $this->assertStringNotContainsString('--narrow-width', $html);   // the default until − / + is used
+        $this->assertMatchesRegularExpression('~data-value="narrow".*?Στενό, στο κέντρο.*?data-width-steps[^>]*data-min="40" data-max="160" data-step="5".*?data-width-step="-1".*?data-width-step="1".*?data-width-step="0".*?Αρχική σελίδα~s', $html);
+
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'narrowWidth', 'value' => 85])->assertOk()->assertJson(['saved' => true, 'value' => 85]);
+        $this->actingAs($a)->get('/about')->assertSee('style="--narrow-width: 85rem"', false);
+        $this->actingAs($b)->get('/about')->assertDontSee('--narrow-width', false);   // another user keeps the default
+
+        // only whole steps inside the limits; nothing else is kept
+        foreach ([35, 165, 87, 85.5, '85', '85rem; color: red', true] as $bad) {
+            $this->actingAs($a)->postJson('/preferences', ['key' => 'narrowWidth', 'value' => $bad])->assertStatus(422);
+        }
+        $this->assertSame(85, $a->fresh()->preferences['narrowWidth']);
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'narrowWidth', 'value' => 40])->assertOk();
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'narrowWidth', 'value' => 160])->assertOk();
+
+        // ↺: back to the default; the other choices stay
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'narrowWidth', 'value' => null])->assertOk()->assertJson(['saved' => true, 'value' => null]);
+        $this->assertSame(['width' => 'narrow'], $a->fresh()->preferences);
+        $this->actingAs($a)->get('/about')->assertDontSee('--narrow-width', false);
+        // null clears only a numeric choice
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'width', 'value' => null])->assertStatus(422);
+        $this->assertSame(['width' => 'narrow'], $a->fresh()->preferences);
+    }
+
     /** R3d: page width, saved per user (owner, 2026-11-18) */
     public function test_page_width_is_saved_per_user(): void
     {

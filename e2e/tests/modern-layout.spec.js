@@ -81,6 +81,62 @@ test('top bar: one row on 1920 and 1440 screens, icons, the institution under th
   await evidence(page, 'top-bar-manage-menu', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
 });
 
+test('narrow page: − / + / ↺ set its width, saved for the user (R3j)', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1000 });
+  await login(page, 'writer');
+  await page.goto('/home/list');
+  const bar = page.locator('nav.app-topbar');
+  const steps = bar.locator('[data-width-steps]');
+  const mainWidth = async () => (await page.locator('main').boundingBox()).width;
+  const save = () => page.waitForResponse((r) => r.url().includes('/preferences') && r.request().postData().includes('narrowWidth'));
+
+  await bar.locator('#nav-user').click();
+  await expect(steps).toBeHidden();   // only for the narrow page
+  await bar.locator('[data-preference="width"][data-value="narrow"]').click();
+  await expect(page.locator('body')).toHaveClass(/layout-narrow/);
+  if (!(await steps.isVisible())) await bar.locator('#nav-user').click();
+  await expect(steps).toBeVisible();
+  const start = await mainWidth();   // the default: half of 1920
+  expect(Math.abs(start - 960)).toBeLessThan(5);
+  await expect(steps.locator('.width-steps-value')).toHaveText('50%');
+  await expect(steps.locator('[data-width-step="0"]')).toBeDisabled();   // already the default
+
+  // + twice: 10rem wider at once, the menu stays open; one save, of the last width
+  let saved = save();
+  await steps.locator('[data-width-step="1"]').click();
+  await steps.locator('[data-width-step="1"]').click();
+  await expect(steps).toBeVisible();
+  expect((await saved).request().postDataJSON()).toEqual({ key: 'narrowWidth', value: 70 });
+  expect(Math.abs((await mainWidth()) - 1120)).toBeLessThan(5);
+  await expect(steps.locator('.width-steps-value')).toHaveText('58%');
+  await evidence(page, 'r3j-wider', { clip: { x: 0, y: 0, width: 1920, height: 560 } });
+
+  // −: narrower than the default
+  saved = save();
+  for (let i = 0; i < 4; i++) await steps.locator('[data-width-step="-1"]').click();
+  expect((await saved).request().postDataJSON().value).toBe(50);
+  expect(Math.abs((await mainWidth()) - 800)).toBeLessThan(5);
+  const box = await page.locator('main').boundingBox();
+  expect(Math.abs(box.x - (1920 - box.x - box.width))).toBeLessThan(30);   // still centred
+  await evidence(page, 'r3j-narrower', { clip: { x: 0, y: 0, width: 1920, height: 560 } });
+
+  await page.reload();   // kept with the account
+  expect(Math.abs((await mainWidth()) - 800)).toBeLessThan(5);
+
+  // ↺: back to the default, also after a reload
+  await bar.locator('#nav-user').click();
+  saved = save();
+  await steps.locator('[data-width-step="0"]').click();
+  expect((await saved).request().postDataJSON().value).toBeNull();
+  expect(Math.abs((await mainWidth()) - 960)).toBeLessThan(5);
+  await page.reload();
+  expect(Math.abs((await mainWidth()) - 960)).toBeLessThan(5);
+
+  await bar.locator('#nav-user').click();
+  await bar.locator('[data-preference="width"][data-value="full"]').click();   // as the other tests expect
+  await expect(page.locator('body')).not.toHaveClass(/layout-narrow/);
+});
+
 test('page width: narrow and centred or the whole window, saved for the user (R3d)', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
   await login(page, 'writer');

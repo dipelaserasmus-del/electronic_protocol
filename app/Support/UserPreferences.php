@@ -10,6 +10,7 @@ use App\Models\User;
  * - width: 'full' (the whole window, default) or 'narrow' (about half of a wide screen, centred, as older apps)
  * - form (R1i): the protocol page's sections: one or two columns, where each section is, which are collapsed
  * - home (R3e): the user's home page: 'all', 'd' (προς Διεκπεραίωση) or 'e' (προς Ενημέρωση); none = the role's
+ * - narrowWidth (R3j): the narrow page's width in rem, set with − / + (none = the default, about half the screen)
  */
 final class UserPreferences
 {
@@ -17,6 +18,9 @@ final class UserPreferences
 
     /** allowed values per key */
     public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e'], 'stamped' => ['yes', 'no']];   // R4f: files with the stamp or the original
+
+    /** R3j (owner, 2026-11-25): numeric choices: [min, max, step]; null clears the choice (back to the default) */
+    public const RANGES = ['narrowWidth' => [40, 160, 5]];
 
     /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */
     public const HOMES = [
@@ -33,6 +37,10 @@ final class UserPreferences
 
     public static function valid(string $key, mixed $value): bool
     {
+        if (isset(self::RANGES[$key])) {
+            [$min, $max, $step] = self::RANGES[$key];
+            return is_int($value) && $value >= $min && $value <= $max && ($value - $min) % $step === 0;
+        }
         return isset(self::VALUES[$key]) && in_array($value, self::VALUES[$key], true);
     }
 
@@ -102,6 +110,12 @@ final class UserPreferences
     /** Saves one choice; false (nothing saved) for an unknown key or value. */
     public static function set(User $user, string $key, mixed $value): bool
     {
+        if ($value === null && isset(self::RANGES[$key])) {   // R3j: «Επαναφορά»
+            $prefs = $user->preferences ?? [];
+            unset($prefs[$key]);
+            $user->forceFill(['preferences' => $prefs])->save();
+            return true;
+        }
         if (! self::valid($key, $value)) {
             return false;
         }

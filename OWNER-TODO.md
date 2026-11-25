@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-24 19:58 (Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:05 (R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
 preview of Word / Excel files.
 
-**No hurry.** Try the new steps 63–73 below at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–74 below (74: − / + for the narrow page, your request of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -235,6 +235,11 @@ Open *Εισερχόμενα*.
   *protocol N/2026 (folder …) has no attachment with this name*. Tell me, in words and without names, if one kind needs
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
+
+### Your request of 2026-11-25 (R3j)
+- [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
+  wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
+  **↺** brings back the usual width.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

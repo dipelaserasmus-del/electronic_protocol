@@ -2,12 +2,17 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-24 19:58 (after Batches 1–9, 9.5 and 9.6; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 09:05 (after Batches 1–9, 9.5, 9.6 and R3j; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R3j (owner, 2026-11-25):** `UserPreferences::RANGES` (numeric choices `[min, max, step]`; `narrowWidth` 40–160
+  rem, step 5; `set(key, null)` removes a ranged choice = ↺). Layout: `body style="--narrow-width: Nrem"`;
+  `.layout-narrow main { max-width: var(--narrow-width, max(60rem, 50vw)) }`. Menu row `[data-width-steps]`
+  (preferences.js: steps from the width on screen, label = % of the window, one save 400 ms after the last click,
+  `stopPropagation` keeps the menu open).
 - **No new dependencies without the owner (2026-11-24):** `npm install` of new packages was refused by the session's
   auto-mode check (R4c). Prefer libraries already in composer.json / package.json; ask the owner before adding one.
 - **R4c:** `App\Services\Attachments\Preview` (kind: pdf/image from `/download`, text/word/sheet converted by
@@ -305,6 +310,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 09:05 | R3j | #117 | narrow page: − / + / ↺ for its width (5 rem steps, 40–160 rem), applied at once, saved per user (`narrowWidth`) |
 | 2026-11-24 19:58 | docs | #116 | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |
 | 2026-11-24 19:58 | R6e | #115 | log viewer `/logs` (admin): a day at a time, levels, search, details; big logs read in parts; `LOG_DAILY_DAYS` |
 | 2026-11-24 19:58 | N05 | #114 | private notepad per user (`user_notes`, markdown with to-dos, autosave, version check: two tabs never overwrite) |
