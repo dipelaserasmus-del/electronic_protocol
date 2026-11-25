@@ -110,6 +110,28 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame('Με αρχείο, αλλαγμένο', $p->fresh()->thema);
     }
 
+    /** R1m (owner, 2026-11-25): an attachment that is only an ΑΔΑ: the pill says ΑΔΑ, the code is the link on the left */
+    public function test_an_ada_only_attachment_shows_its_code_on_the_left(): void
+    {
+        $this->setting('diavgeiaUrl', 'https://diavgeia.gov.gr/doc/');
+        $p = Protocol::factory()->number(42)->create(['fakelos' => 'Φ.1']);
+        Attachment::factory()->create(['protocol_id' => $p->id, 'name' => null, 'savedPath' => null, 'ada' => '9ΒΥΞ46ΝΚΠΔ-ΤΤΤ']);
+        Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'απόφαση.pdf', 'ada' => 'ΩΡΖ46ΝΚΠΔ-ΑΑΑ']);
+        $html = Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])->html();
+        preg_match_all('~<div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row".*?(?=<div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row"|</section>)~s', $html, $rows);
+        $ada = collect($rows[0])->first(fn ($r) => str_contains($r, '9ΒΥΞ46ΝΚΠΔ-ΤΤΤ'));
+        $file = collect($rows[0])->first(fn ($r) => str_contains($r, 'απόφαση.pdf'));
+
+        $this->assertMatchesRegularExpression('~<span class="badge text-bg-info">ΑΔΑ</span>.*?<a href="'.preg_quote('https://diavgeia.gov.gr/doc/'.rawurlencode('9ΒΥΞ46ΝΚΠΔ-ΤΤΤ'), '~').'" target="_blank" class="text-break me-auto attachment-ada"[^>]*>9ΒΥΞ46ΝΚΠΔ-ΤΤΤ</a>~s', $ada);
+        $this->assertStringNotContainsString('Μόνο ΑΔΑ', $ada);
+        $this->assertStringNotContainsString('ΑΡΧΕΙΟ', $ada);
+        $this->assertStringNotContainsString('ΑΔΑ 9ΒΥΞ46ΝΚΠΔ-ΤΤΤ', $ada, 'not twice (the badge on the right is gone)');
+        // a file with an ΑΔΑ: as before (its type, its name, the ΑΔΑ badge on the right)
+        $this->assertStringContainsString('>PDF</span>', $file);
+        $this->assertStringContainsString('ΑΔΑ ΩΡΖ46ΝΚΠΔ-ΑΑΑ</a>', $file);
+        $this->assertStringNotContainsString('attachment-ada', $file);
+    }
+
     public function test_a_collapsed_section_with_an_error_opens(): void
     {
         $this->setting('protocolValidate', 1);
