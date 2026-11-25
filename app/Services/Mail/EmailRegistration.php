@@ -81,8 +81,10 @@ final class EmailRegistration
     }
 
     /**
-     * The folder: needed for the attachments' place in the archive (old inbox: a message in the browser only), or always
-     * with the setting alwaysShowFakelosInViewEmails. Public so the page can say it before anything else (R5d).
+     * The folder: R5s (owner, 2026-11-25): every e-mail registered from the inbox needs one, with or without attachments
+     * (before: only with ticked attachments, or with the setting alwaysShowFakelosInViewEmails, now gone; an e-mail
+     * without attachments could be registered with no folder). The protocol form keeps «— Χωρίς φάκελο» for protocols
+     * on hold. Public so the page can say it before anything else (R5d).
      *
      * @throws ValidationException
      */
@@ -91,12 +93,9 @@ final class EmailRegistration
         if (trim((string) ($input['fakelos'] ?? '')) !== '') {
             return;
         }
-        if ($keys !== []) {
-            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε email με συνημμένα αρχεία επιλέξτε Φάκελο (ή αφαιρέστε το ✓ από τα συνημμένα).']);
-        }
-        if (Config::getConfigValueOf('alwaysShowFakelosInViewEmails')) {
-            throw ValidationException::withMessages(['fakelos' => 'Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.']);
-        }
+        throw ValidationException::withMessages(['fakelos' => $keys !== []
+            ? 'Για να καταχωρίσετε email με συνημμένα αρχεία επιλέξτε Φάκελο.'
+            : 'Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.']);
     }
 
     /** The e-mail itself, stored with the protocol: as received (.eml), or as a page (.html) when saveEmailAs is empty. */

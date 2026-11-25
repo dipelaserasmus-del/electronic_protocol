@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:50 (R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 10:23 (R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **One thing only you can decide** (see *Questions*, 5): optionally, the preview of Word / Excel files. (The envelope
 look is now each user's own choice, R5q.)
 
-**No hurry.** Try the new steps 63–79 below (74–79: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–80 below (74–80: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -236,7 +236,7 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r)
+### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r, R5s)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
@@ -255,6 +255,9 @@ Open *Εισερχόμενα*.
 - [ ] **79.** *Εισερχόμενα*, an e-mail with a PDF: leave *Φάκελος* empty, scroll down to the files and press
   *Καταχώριση*. The page goes up to *Φάκελος* (the cursor in it, the reason under it), and above the buttons it says
   *Δεν καταχωρίστηκε.* with *Μετάβαση στο πεδίο*. No «Καταχωρίζεται…» flashes before it.
+- [ ] **80.** *Εισερχόμενα*: an e-mail **without** attachments (or remove every ✓): *Καταχώριση* without *Φάκελος* is
+  refused (*Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.*). The inbox's folder list no longer has *— Χωρίς φάκελο*.
+  Protocol 11334/2026 (saved before, without a folder) you can open and give it a folder.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -307,6 +310,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- Inbox (2026-11-25, R5s): every e-mail needs a *Φάκελος*, with or without attachments; the setting *Ο Φάκελος
+  χρειάζεται για κάθε e-mail* is gone. The protocol form keeps *— Χωρίς φάκελο* for protocols on hold.
 - The inbox's look (2026-11-25, R5q): each user chooses in their menu (Καμία, air mail, paper, plain); *Ρυθμίσεις →
   Εμφάνιση των e-mail (αρχική επιλογή)* is for users who have not chosen. Question 5 of Batch 9.6 is closed.
 - Your fresh real copy with its files (2026-11-24, D10): it loads complete; the folder glossary and Φ.43 → Φ.46 are
