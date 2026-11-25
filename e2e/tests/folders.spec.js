@@ -47,3 +47,44 @@ test('readers see the folders without the buttons (R6b)', async ({ page }) => {
   await expect(page.locator('#folder-new')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Επεξεργασία' })).toHaveCount(0);
 });
+
+// R6g (owner, 2026-11-25): Κωδικός and Πρωτ. sort the table; a folder's code shows the protocols of that folder at once
+test('folders sort by code or count; a code opens its protocols (R6g)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  await page.goto('/keep');
+  const codes = () => page.locator('#folders-table .folder-row').evaluateAll((rows) => rows.map((r) => r.dataset.code));
+  const counts = () => page.locator('#folders-table .folder-row td:nth-last-child(2)').evaluateAll((tds) => tds.map((td) => Number(td.textContent.trim() || 0)));
+
+  // Πρωτ.: the most used first, then the other way
+  await page.locator('#folders-table [data-sort="count"]').click();
+  await expect(page.locator('#folders-table [data-sort="count"]')).toHaveText('Πρωτ. ▼');
+  await expect(page).toHaveURL(/sort=count/);
+  let n = await counts();
+  expect(n.length).toBeGreaterThan(2);
+  expect([...n].sort((a, b) => b - a)).toEqual(n);
+  await evidence(page, 'r6g-by-count', { clip: { x: 0, y: 0, width: 1440, height: 560 } });
+  await page.locator('#folders-table [data-sort="count"]').click();
+  await expect(page.locator('#folders-table [data-sort="count"]')).toHaveText('Πρωτ. ▲');
+  n = await counts();
+  expect([...n].sort((a, b) => a - b)).toEqual(n);
+
+  // Κωδικός: the folders' order, and reversed
+  await page.locator('#folders-table [data-sort="code"]').click();
+  await expect(page.locator('#folders-table [data-sort="code"]')).toHaveText('Κωδικός ▲');
+  const asc = await codes();
+  await page.locator('#folders-table [data-sort="code"]').click();
+  await expect(page.locator('#folders-table [data-sort="code"]')).toHaveText('Κωδικός ▼');
+  expect(await codes()).toEqual([...asc].reverse());
+
+  // the most used folder's code: its protocols, at once
+  await page.locator('#folders-table [data-sort="count"]').click();
+  await expect(page.locator('#folders-table [data-sort="count"]')).toHaveText('Πρωτ. ▼');
+  const first = page.locator('#folders-table .folder-row').first();
+  const code = await first.getAttribute('data-code');
+  await first.locator('.folder-search-link').click();
+  await expect(page).toHaveURL(/\/search\?q=/);   // the top bar's search: only the results
+  await expect(page.locator('#search-count')).toContainText('Βρέθηκ');
+  await expect(page.locator('#search-results')).toContainText(code);
+  await evidence(page, 'r6g-folder-search', { clip: { x: 0, y: 0, width: 1440, height: 620 } });
+});

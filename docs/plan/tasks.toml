@@ -165,6 +165,7 @@ tasks = [
   { id = "R2n", title = "List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date", phase = "R", batch = 9.7, size = "S", deps = ["R2f"], status = "done", pr = 126 },
   { id = "R5u", title = "User menu: «Εμφάνιση των e-mail» only on the inbox page", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 127 },
   { id = "R6f", title = "Ρυθμίσεις as GitHub's settings: a menu of sections under headings, one section at a time, saved on its own", phase = "R", batch = 9.7, size = "M", deps = ["R6d"], status = "done", pr = 128 },
+  { id = "R6g", title = "Φάκελοι και διατήρηση: sort by Κωδικός / Πρωτ.; a folder's code shows its protocols", phase = "R", batch = 9.7, size = "S", deps = ["R6b"], status = "done", pr = 129 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

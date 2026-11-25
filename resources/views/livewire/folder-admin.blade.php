@@ -111,12 +111,24 @@
         <table class="table table-sm align-middle mb-0 table-sticky" id="folders-table">
             <thead class="table-light">
                 <tr>
-                    <th scope="col">Κωδικός</th>
+                    @php
+                        // R6g (owner, 2026-11-25): Κωδικός and Πρωτ. sort the table (▲ / ▼), as the protocol list
+                        [$sortNow, $dirNow] = [$sort, $dir];
+                        // the top bar's search «φάκελος:…» (in quotes when the code has a space)
+                        $folderSearch = fn (string $code) => url('/search?q='.urlencode('φάκελος:'.(preg_match('/\s/u', $code) ? '"'.$code.'"' : $code)));
+                        $sortHead = function (string $column, string $label) use ($sortNow, $dirNow) {
+                            $active = $sortNow === $column;
+                            $arrow = $active ? ($dirNow === 'asc' ? ' ▲' : ' ▼') : '';
+                            return '<button type="button" class="btn btn-link btn-sm p-0 text-reset fw-semibold text-decoration-none text-nowrap" data-sort="'.$column.'" wire:click="sortBy(\''.$column.'\')"'
+                                .($active ? ' aria-sort="'.($dirNow === 'asc' ? 'ascending' : 'descending').'"' : '').'>'.e($label).$arrow.'</button>';
+                        };
+                    @endphp
+                    <th scope="col">{!! $sortHead('code', 'Κωδικός') !!}</th>
                     <th scope="col">Περιγραφή</th>
                     <th scope="col">Διατήρηση</th>
                     <th scope="col" class="d-none d-lg-table-cell">Παρατηρήσεις</th>
                     <th scope="col" class="d-none d-md-table-cell">Αυτόματη ανάθεση</th>
-                    <th scope="col" class="d-none d-md-table-cell text-end">Πρωτ.</th>
+                    <th scope="col" class="d-none d-md-table-cell text-end">{!! $sortHead('count', 'Πρωτ.') !!}</th>
                     @if ($isAdmin)<th scope="col" class="text-end"><span class="visually-hidden">Ενέργειες</span></th>@endif
                 </tr>
             </thead>
@@ -124,7 +136,9 @@
                 @forelse ($folders as $f)
                     @php $n = $counts[mb_strtolower($f->fakelos)] ?? 0; @endphp
                     <tr wire:key="f-{{ $f->id }}" class="folder-row @if ($editing === $f->id) table-active @endif" data-code="{{ $f->fakelos }}">
-                        <td class="text-nowrap fw-semibold">{{ $f->fakelos }}</td>
+                        {{-- R6g: the code (and the count) shows the protocols of this folder (the top bar's search: the results only) --}}
+                        <td class="text-nowrap fw-semibold"><a href="{{ $folderSearch($f->fakelos) }}" class="text-decoration-none folder-search-link"
+                               title="Τα πρωτόκολλα του φακέλου {{ $f->fakelos }}">{{ $f->fakelos }}</a></td>
                         <td class="text-break small" style="white-space: pre-line">{{ $f->describe }}</td>
                         <td class="small text-nowrap">{{ $f->keepLabel() }}</td>
                         <td class="d-none d-lg-table-cell text-break small text-body-secondary" style="white-space: pre-line">{{ $f->remarks }}</td>
@@ -135,7 +149,7 @@
                             @endforeach
                         </td>
                         <td class="d-none d-md-table-cell text-end small">
-                            @if ($n)<a href="{{ url('/find?folder='.urlencode($f->fakelos)) }}">{{ $n }}</a>@endif
+                            @if ($n)<a href="{{ $folderSearch($f->fakelos) }}">{{ $n }}</a>@else<span class="text-body-secondary">0</span>@endif
                         </td>
                         @if ($isAdmin)
                             <td class="text-end text-nowrap">

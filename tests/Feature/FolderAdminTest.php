@@ -33,6 +33,44 @@ class FolderAdminTest extends FeatureTestCase
         $this->assertNotNull($f->fresh());
     }
 
+    /** R6g (owner, 2026-11-25): Κωδικός and Πρωτ. sort the table; each code opens a search for its protocols */
+    public function test_the_table_sorts_by_code_or_count_and_each_code_searches_its_protocols(): void
+    {
+        Keepvalue::query()->delete();
+        foreach (['Φ.9002', 'Φ.9010', 'Φ.9001'] as $code) {
+            Keepvalue::create(['fakelos' => $code, 'keep' => 5]);
+        }
+        foreach ([['Φ.9001', 1], ['Φ.9010', 3]] as [$code, $n]) {
+            for ($i = 0; $i < $n; $i++) {
+                Protocol::factory()->number(100 + $i + ($code === 'Φ.9010' ? 10 : 0))->create(['fakelos' => $code]);
+            }
+        }
+        $order = fn ($page) => array_values(array_map(fn ($m) => $m, (preg_match_all('~class="folder-row[^"]*" data-code="([^"]+)"~', $page->html(), $m) ? $m[1] : [])));
+
+        $page = Livewire::actingAs($this->writer())->test(FolderAdmin::class);
+        $this->assertSame(['Φ.9001', 'Φ.9002', 'Φ.9010'], $order($page), 'by code (numbers as numbers), as before');
+        $page->assertSeeHtml('data-sort="code" wire:click="sortBy(\'code\')" aria-sort="ascending">Κωδικός ▲</button>');
+        $page->call('sortBy', 'code')->assertSet('dir', 'desc');
+        $this->assertSame(['Φ.9010', 'Φ.9002', 'Φ.9001'], $order($page));
+        $page->call('sortBy', 'count')->assertSet('sort', 'count')->assertSet('dir', 'desc');   // the most used first
+        $this->assertSame(['Φ.9010', 'Φ.9001', 'Φ.9002'], $order($page));
+        $page->assertSeeHtml('aria-sort="descending">Πρωτ. ▼</button>');
+        $page->call('sortBy', 'count')->assertSet('dir', 'asc');
+        $this->assertSame(['Φ.9002', 'Φ.9001', 'Φ.9010'], $order($page));
+        $page->call('sortBy', 'nonsense')->assertSet('sort', 'count');
+        // kept in the address
+        $this->actingAs($this->writer())->get('/keep?sort=count&dir=desc')->assertOk()->assertSeeInOrder(['Φ.9010', 'Φ.9001', 'Φ.9002']);
+
+        // every code is a link to the search for its folder (also an unused one: it shows that none is there)
+        $html = $page->html();
+        foreach (['Φ.9001', 'Φ.9002', 'Φ.9010'] as $code) {
+            $this->assertStringContainsString('<a href="'.e(url('/search?q='.urlencode('φάκελος:'.$code))).'" class="text-decoration-none folder-search-link"', $html);
+        }
+        // the link shows the results at once: that folder's protocols only
+        $results = Livewire::actingAs($this->writer())->withQueryParams(['q' => 'φάκελος:Φ.9010'])->test(\App\Livewire\SearchResults::class);
+        $results->assertSee('110/')->assertDontSee('>100/');
+    }
+
     public function test_old_write_routes_are_gone(): void
     {
         $f = Keepvalue::create(['fakelos' => 'Φ.951']);
