@@ -136,6 +136,31 @@ class FolderAdminTest extends FeatureTestCase
         $this->assertSame(0, FolderAssignment::where('keepvalue_id', $free->id)->count());
     }
 
+    /**
+     * R6h (owner, 2026-11-25): a folder stored as «Φ12» (as the old application wrote codes) is saved unchanged; the form's
+     * tidying of the code (Φ12 → Φ.12) is not a rename (D08: the same folder), so a folder in use can be edited
+     */
+    public function test_a_folder_written_without_the_dot_is_saved_when_in_use(): void
+    {
+        $folder = Keepvalue::create(['fakelos' => 'Φ12', 'keep_alt' => 'Κατά κρίση', 'remarks' => 'Άδειες']);
+        Protocol::factory()->count(2)->create(['fakelos' => 'Φ12']);
+        $admin = $this->admin();
+        $handler = $this->writer();
+
+        $this->page($admin)->call('edit', $folder->id)->assertSet('form.fakelos', 'Φ12')
+            ->set('form.d', [(string) $handler->id])->call('save')->assertHasNoErrors();
+        $this->assertSame('Φ12', $folder->fresh()->fakelos, 'its code stays as written: the protocols keep finding it');
+        $this->assertSame([$handler->id], FolderAssignment::where('keepvalue_id', $folder->id)->where('type', 'd')->pluck('user_id')->map(fn ($id) => (int) $id)->all());
+        // the same with the dot or other spellings typed in: the same folder, not a rename
+        foreach (['Φ.12', 'φ12', ' Φ 12 '] as $typed) {
+            $this->page($admin)->call('edit', $folder->id)->set('form.fakelos', $typed)->call('save')->assertHasNoErrors();
+            $this->assertSame('Φ12', $folder->fresh()->fakelos);
+        }
+        // a really different code is still refused for a folder in use
+        $this->page($admin)->call('edit', $folder->id)->set('form.fakelos', 'Φ.121')->call('save')->assertHasErrors('form.fakelos');
+        $this->assertSame('Φ12', $folder->fresh()->fakelos);
+    }
+
     public function test_search_by_code_or_word(): void
     {
         Keepvalue::create(['fakelos' => 'Φ.993.2', 'describe' => 'Μετακινήσεις ζωολογικού κήπου']);

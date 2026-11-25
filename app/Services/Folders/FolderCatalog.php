@@ -6,6 +6,7 @@ use App\Models\FolderAssignment;
 use App\Models\Keepvalue;
 use App\Models\Protocol;
 use App\Models\User;
+use App\Support\FolderCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -35,8 +36,15 @@ final class FolderCatalog
     {
         $creating = $folder === null || ! $folder->exists;
         $clean = $this->clean($data);
+        // R6h (owner, 2026-11-25): the stored code in another spelling (Φ12 stored, the form tidies it to Φ.12; D08: the
+        // same folder) is no new code: it stays as stored and is not checked as one (the old application's codes need
+        // not match today's pattern, and another folder may be spelled the other way), so a folder in use can be edited
+        $sameCode = ! $creating && FolderCode::key($clean['fakelos']) === FolderCode::key((string) $folder->fakelos);
+        if ($sameCode) {
+            $clean['fakelos'] = $folder->fakelos;
+        }
         Validator::make($clean, [
-            'fakelos' => ['required', 'string', 'max:255', 'regex:'.self::CODE_PATTERN,
+            'fakelos' => $sameCode ? ['required'] : ['required', 'string', 'max:255', 'regex:'.self::CODE_PATTERN,
                 Rule::unique('keepvalues', 'fakelos')->ignore($creating ? null : $folder->id)],
             'keep' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'keep_alt' => ['nullable', 'string', 'max:255'],
