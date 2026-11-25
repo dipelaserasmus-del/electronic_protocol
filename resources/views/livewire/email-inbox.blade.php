@@ -260,9 +260,8 @@
                                                 <div class="col-12 col-sm-8 col-md-4">
                                                     <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημ/νία εισερχ.</label>
                                                     {{-- R5e (owner, 2026-11-19): the app's date field: "9" → 09/this month, ◀ ▶, Σήμερα, calendar --}}
-                                                    <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :value="$f['in_date'] ?? ''" :help="false"
+                                                    <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :error="$err($uid, 'in_date')" :value="$f['in_date'] ?? ''" :help="false"
                                                                   wire:model="forms.{{ $uid }}.in_date" />
-                                                    @if ($err($uid, 'in_date'))<div class="text-danger small">{{ $err($uid, 'in_date') }}</div>@endif
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="f-{{ $uid }}-in_arxi_ekdosis" class="form-label small fw-semibold mb-1">Αρχή έκδοσης</label>
@@ -312,9 +311,8 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="f-{{ $uid }}-out_date" class="form-label small fw-semibold mb-1">Ημ/νία εξερχομένου</label>
-                                                            <x-date-input name="out_date" :id="'f-'.$uid.'-out_date'" :value="$f['out_date'] ?? ''" :help="false"
+                                                            <x-date-input name="out_date" :id="'f-'.$uid.'-out_date'" :error="$err($uid, 'out_date')" :value="$f['out_date'] ?? ''" :help="false"
                                                                           wire:model="forms.{{ $uid }}.out_date" />
-                                                            @if ($err($uid, 'out_date'))<div class="text-danger small">{{ $err($uid, 'out_date') }}</div>@endif
                                                         </div>
                                                         <div class="col-12">
                                                             <label for="f-{{ $uid }}-out_perilipsi" class="form-label small fw-semibold mb-1">Περίληψη</label>
@@ -326,9 +324,8 @@
                                                         @if ($canDone)
                                                             <div class="col-md-6">
                                                                 <label for="f-{{ $uid }}-diekp_date" class="form-label small fw-semibold mb-1">Διεκπεραιώθηκε την</label>
-                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :value="$f['diekp_date'] ?? ''" :help="false"
+                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :error="$err($uid, 'diekp_date')" :value="$f['diekp_date'] ?? ''" :help="false"
                                                                               wire:model="forms.{{ $uid }}.diekp_date" />
-                                                                @if ($err($uid, 'diekp_date'))<div class="text-danger small">{{ $err($uid, 'diekp_date') }}</div>@endif
                                                             </div>
                                                         @endif
                                                     </div>
@@ -430,9 +427,11 @@
                                 {{-- R5j (owner, 2026-11-20): the files right above the buttons: opened and printed almost every time --}}
                                 <div class="mt-3">@include('livewire.partials.inbox-attachments')</div>
 
-                                {{-- R5k (owner, 2026-11-20): this e-mail is being registered (any of its buttons): say so until it is done --}}
+                                {{-- R5k (owner, 2026-11-20): this e-mail is being registered (any of its buttons): say so until it is done.
+                                     R5r (owner, 2026-11-25): only after half a second, so a quick refusal (e.g. no Φάκελος) does not
+                                     look like a save under way --}}
                                 @php $mine = "register({$uid}, false), register({$uid}, true), register({$uid}, false, true), register({$uid}, true, true)"; @endphp
-                                <div class="alert alert-info py-2 mt-2 mb-0 align-items-center gap-2 inbox-saving" role="status" wire:loading.flex wire:target="{{ $mine }}">
+                                <div class="alert alert-info py-2 mt-2 mb-0 align-items-center gap-2 inbox-saving" role="status" style="display: none" wire:loading.flex.delay.longer wire:target="{{ $mine }}">{{-- hidden until loading: Livewire's own CSS knows only some spellings --}}
                                     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                                     Καταχωρίζεται… αποθηκεύονται και τα συνημμένα. Μην κλείσετε τη σελίδα.
                                 </div>
@@ -447,16 +446,24 @@
                                             <span class="spinner-border spinner-border-sm me-1" wire:loading wire:target="{{ $anyway }}" aria-hidden="true"></span>Ναι, καταχώριση</button>
                                     </x-notice>
                                 @endif
+                                {{-- R5r (owner, 2026-11-25): refused: why, right above the buttons (the field may be far above) --}}
+                                @php $why = collect(\App\Livewire\EmailInbox::FIELDS)->push('form')->reject(fn ($k) => $k === 'similar')->map(fn ($k) => $err($uid, $k))->filter()->first(); @endphp
+                                @if ($why)
+                                    <x-notice type="error" class="mt-2 mb-0 inbox-register-error">
+                                        <strong>Δεν καταχωρίστηκε.</strong> {{ $why }}
+                                        <button type="button" class="btn btn-sm btn-link p-0 ms-1 align-baseline" data-goto-invalid="{{ $uid }}">Μετάβαση στο πεδίο</button>
+                                    </x-notice>
+                                @endif
                                 <x-pill-actions class="mt-2 inbox-actions">
                                     @unless ($receiptOnly)
                                         <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register">
-                                            <span class="spinner-border spinner-border-sm" wire:loading wire:target="register({{ $uid }}, false)" aria-hidden="true"></span>
-                                            <i class="bi bi-journal-plus" aria-hidden="true" wire:loading.remove wire:target="register({{ $uid }}, false)"></i> Καταχώριση
+                                            <span class="spinner-border spinner-border-sm" wire:loading.delay.longer wire:target="register({{ $uid }}, false)" aria-hidden="true"></span>
+                                            <i class="bi bi-journal-plus" aria-hidden="true" wire:loading.remove.delay.longer wire:target="register({{ $uid }}, false)"></i> Καταχώριση
                                         </x-pill>
                                     @endunless
                                     <x-pill :variant="$receiptOnly ? 'primary' : 'secondary'" wire:click="register({{ $uid }}, true)" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register-receipt">
-                                        <span class="spinner-border spinner-border-sm" wire:loading wire:target="register({{ $uid }}, true)" aria-hidden="true"></span>
-                                        <i class="bi bi-envelope-check" aria-hidden="true" wire:loading.remove wire:target="register({{ $uid }}, true)"></i> Καταχώριση και απόδειξη
+                                        <span class="spinner-border spinner-border-sm" wire:loading.delay.longer wire:target="register({{ $uid }}, true)" aria-hidden="true"></span>
+                                        <i class="bi bi-envelope-check" aria-hidden="true" wire:loading.remove.delay.longer wire:target="register({{ $uid }}, true)"></i> Καταχώριση και απόδειξη
                                     </x-pill>
                                     <x-pill wire:click="markRead({{ $uid }})" wire:loading.attr="disabled" wire:target="register,markRead" data-action="mark-read" title="Το email φεύγει από τα εισερχόμενα χωρίς πρωτόκολλο">
                                         <i class="bi bi-envelope-open" aria-hidden="true"></i> Αναγνωσμένο

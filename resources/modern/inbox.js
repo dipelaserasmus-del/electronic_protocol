@@ -183,3 +183,25 @@ const register = () => {
 document.addEventListener('livewire:init', catchUnreachable);
 if (window.Alpine) register();
 else document.addEventListener('alpine:init', register);
+
+// R5r (owner, 2026-11-25): «Καταχώριση» refused (e.g. no Φάκελος): bring the reason into view, since the field can be
+// far above the button. The first field marked wrong gets the cursor; a hidden one (a folded section) or an error
+// without a field: the message above the buttons. «Μετάβαση στο πεδίο» there does the same.
+function showRefusal(uid) {
+    const message = document.getElementById(`msg-${uid}`);
+    if (!message) return;
+    const field = [...message.querySelectorAll('.inbox-form .is-invalid')].find((el) => el.offsetParent !== null);
+    const target = field ?? message.querySelector('.inbox-register-error') ?? message.querySelector('.inbox-form-error');
+    if (!target) return;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ block: 'center', behavior: smooth ? 'smooth' : 'instant' });
+    const focusable = target.matches('input, textarea, select') ? target : target.querySelector('input, textarea, select, button');
+    focusable?.focus({ preventScroll: true });
+}
+document.addEventListener('livewire:init', () => {
+    window.Livewire.on('inbox-register-refused', ({ uid }) => requestAnimationFrame(() => showRefusal(uid)));   // after the page is updated
+});
+document.addEventListener('click', (e) => {
+    const go = e.target.closest?.('[data-goto-invalid]');
+    if (go) showRefusal(go.dataset.gotoInvalid);
+});

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:43 (R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:50 (R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **One thing only you can decide** (see *Questions*, 5): optionally, the preview of Word / Excel files. (The envelope
 look is now each user's own choice, R5q.)
 
-**No hurry.** Try the new steps 63–78 below (74–78: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–79 below (74–79: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -236,7 +236,7 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j)
+### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
@@ -252,6 +252,9 @@ Open *Εισερχόμενα*.
 - [ ] **78.** A protocol with a file that has no preview (e.g. a `.zip` or an old `.doc`): its 👁 is grey and does
   nothing (the mouse over it says why); ‹ › in the preview window skip it. PDF, Word (docx), Excel (xlsx), txt and
   pictures keep their 👁.
+- [ ] **79.** *Εισερχόμενα*, an e-mail with a PDF: leave *Φάκελος* empty, scroll down to the files and press
+  *Καταχώριση*. The page goes up to *Φάκελος* (the cursor in it, the reason under it), and above the buttons it says
+  *Δεν καταχωρίστηκε.* with *Μετάβαση στο πεδίο*. No «Καταχωρίζεται…» flashes before it.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

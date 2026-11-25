@@ -48,7 +48,7 @@ use Livewire\Component;
 class EmailInbox extends Component
 {
     /** The fields each e-mail's form shows (errors about anything else go above the form) */
-    private const FIELDS = ['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis',
+    public const FIELDS = ['fakelos', 'thema', 'in_num', 'in_date', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis',
         'in_perilipsi', 'out_to', 'out_date', 'out_perilipsi', 'diekp_date', 'keywords', 'keep', 'handle', 'diekp_eos', 'reply_to_email'];
 
     #[Url(as: 'page', except: 1)]
@@ -223,6 +223,16 @@ class EmailInbox extends Component
      *        it registered (was a YES/NO dialog)
      */
     public function register(int $uid, bool $receipt = false, bool $confirmed = false): void
+    {
+        $this->registerChecked($uid, $receipt, $confirmed);
+        // R5r (owner, 2026-11-25): refused (a field to fill, the same document registered before, …): the browser brings
+        // the reason into view, since the field can be far above the button (resources/modern/inbox.js)
+        if (collect($this->getErrorBag()->keys())->contains(fn ($k) => str_starts_with($k, "forms.$uid."))) {
+            $this->dispatch('inbox-register-refused', uid: $uid);
+        }
+    }
+
+    private function registerChecked(int $uid, bool $receipt, bool $confirmed): void
     {
         $this->allowed();
         if (! in_array($uid, $this->uids, true) || isset($this->done[$uid]) || $this->doneByOther($uid)) {

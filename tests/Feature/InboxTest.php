@@ -270,6 +270,28 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /** R5r (owner, 2026-11-25): refused: the reason right above the buttons, and the browser is told to show it */
+    public function test_a_refused_registration_says_why_above_the_buttons(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        $page->call('register', 1, false)->assertHasErrors('forms.1.fakelos')->assertDispatched('inbox-register-refused', uid: 1);
+        $html = $page->html();
+        $form = substr($html, strpos($html, 'id="msg-1"'), strpos($html, 'id="mail-1"') - strpos($html, 'id="msg-1"'));
+        $this->assertMatchesRegularExpression('~inbox-register-error.*?Δεν καταχωρίστηκε\.</strong>\s*Για να καταχωρίσετε email με συνημμένα.*?data-goto-invalid="1".*?</div>.*?data-action="register"~s', $form);
+        $this->assertStringContainsString('invalid-feedback', $form, 'and at the field, as before');
+        $this->assertStringNotContainsString('inbox-register-error', substr($html, strpos($html, 'id="msg-2"')), 'only that e-mail');
+        // the notice «Καταχωρίζεται…» and the spinners wait half a second (a quick refusal does not flash them)
+        $this->assertMatchesRegularExpression('~inbox-saving" role="status" style="display: none" wire:loading\.flex\.delay\.longer~', $form);
+        $this->assertStringNotContainsString('spinner-border-sm" wire:loading wire:target="register(1', $form);
+
+        // fixed and registered: no message, no event
+        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)
+            ->assertHasNoErrors()->assertNotDispatched('inbox-register-refused');
+        $this->assertStringNotContainsString('inbox-register-error', $page->html());
+    }
+
     /** The move after registering fails: the protocol is registered, the page says not to register it again. */
     public function test_failed_move_after_registering_is_a_warning(): void
     {
@@ -520,6 +542,12 @@ class InboxTest extends FeatureTestCase
         $html = $page->html();
         $this->assertStringContainsString('id="f-2-diekp_date"', $html);
         $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $html);   // open, with its error
+        // review of R5r: the date field itself is marked, with its message (the error is the e-mail's, forms.2.diekp_date),
+        // so «Μετάβαση στο πεδίο» finds it
+        $this->assertMatchesRegularExpression('~class="form-control text-center\s+is-invalid\s*" id="f-2-diekp_date"~', $html);
+        $this->assertMatchesRegularExpression('~id="f-2-diekp_date".*?<div class="invalid-feedback">(?!Μη έγκυρη)[^<]+</div>~s', $html);
+        $this->assertDoesNotMatchRegularExpression('~is-invalid\s*" id="f-2-(in_date|out_date)"~', $html, 'only the date that is wrong');
+        $this->assertSame(2, substr_count($html, $page->errors()->first('forms.2.diekp_date')), 'at the field and above the buttons (R5r), no more');
         $this->assertSame(0, \App\Models\Protocol::count());
 
         $page->set('forms.2.diekp_date', '21/11/2026')->call('register', 2, false)->assertHasNoErrors();

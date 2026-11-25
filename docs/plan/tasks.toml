@@ -158,6 +158,7 @@ tasks = [
   { id = "R5q", title = "Inbox look per user (user menu), with «Καμία» (the thin line); the setting only the default", phase = "R", batch = 9.7, size = "S", deps = ["R5p"], status = "done", pr = 119 },
   { id = "R2m", title = "List: «Λίστα Πρωτοκόλλων», no Νέο / Ανανέωση on the page (↻ next to Λίστα), ↑ back to the top; top bar always in view (test)", phase = "R", batch = 9.7, size = "S", deps = ["R2l"], status = "done", pr = 120 },
   { id = "R4j", title = "A type without preview: grey 👁, not clickable, left out of ‹ ›", phase = "R", batch = 9.7, size = "S", deps = ["R4c"], status = "done", pr = 121 },
+  { id = "R5r", title = "Inbox: a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal", phase = "R", batch = 9.7, size = "S", deps = ["R5k"], status = "done", pr = 122 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
