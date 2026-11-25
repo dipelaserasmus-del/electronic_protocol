@@ -23,6 +23,23 @@ class FolderAdmin extends Component
     #[Url(as: 'q', except: '')]
     public string $search = '';
 
+    /** R6g (owner, 2026-11-25): the table sorted by Κωδικός ('code', the folders' own order) or Πρωτ. ('count') */
+    #[Url(as: 'sort', except: 'code')]
+    public string $sort = 'code';
+
+    #[Url(as: 'dir', except: 'asc')]
+    public string $dir = 'asc';
+
+    /** a header pressed: that column ascending; pressed again: descending (a count starts from the most used) */
+    public function sortBy(string $column): void
+    {
+        if (! in_array($column, ['code', 'count'], true)) {
+            return;
+        }
+        $this->dir = $this->sort === $column ? ($this->dir === 'asc' ? 'desc' : 'asc') : ($column === 'count' ? 'desc' : 'asc');
+        $this->sort = $column;
+    }
+
     public ?int $editing = null;
 
     public bool $formOpen = false;
@@ -168,6 +185,14 @@ class FolderAdmin extends Component
                 || str_contains(TagList::fold($f->describe.' '.$f->remarks.' '.$f->keep_alt), $folded))->values();
         }
         $counts = $catalog->protocolCounts();
+        // R6g: by Πρωτ. (ties by code), or by code (the folders' own order, or reversed)
+        $desc = $this->dir === 'desc';
+        if ($this->sort === 'count') {
+            $order = $folders->values()->map(fn ($f, $i) => [$counts[mb_strtolower($f->fakelos)] ?? 0, $i, $f]);
+            $folders = $order->sort(fn ($a, $b) => ($desc ? $b[0] <=> $a[0] : $a[0] <=> $b[0]) ?: $a[1] <=> $b[1])->pluck(2)->values();
+        } elseif ($desc) {
+            $folders = $folders->reverse()->values();
+        }
         $users = User::orderBy('name')->get(['id', 'name', 'active']);
 
         return view('livewire.folder-admin', [
