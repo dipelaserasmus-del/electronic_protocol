@@ -58,15 +58,30 @@ class LogViewer extends Component
         }
     }
 
-    /** the previous (-1) / next (+1) day that has entries */
+    /** R6j (owner, 2026-11-25): today (an empty day says so) */
+    public function today(): void
+    {
+        [$this->day, $this->page, $this->open] = [now()->format('Y-m-d'), 1, []];
+    }
+
+    /**
+     * the previous (-1) / next (+1) day that has entries, from any day (review of R6j: also from a day without entries,
+     * e.g. an empty today: ‹ goes to the newest day with entries)
+     */
     public function step(int $by, LogReader $reader): void
     {
-        $days = $reader->days();   // newest first
-        $at = array_search($this->day, $days, true);
-        $target = $at === false ? ($days[0] ?? null) : ($days[$at - $by] ?? null);
+        $target = self::neighbour($reader->days(), $this->day, $by);
         if ($target !== null) {
             [$this->day, $this->page, $this->open] = [$target, 1, []];
         }
+    }
+
+    /** @param list<string> $days Y-m-d, newest first */
+    public static function neighbour(array $days, string $day, int $by): ?string
+    {
+        $earlier = array_values(array_filter($days, fn ($d) => $d < $day));
+        $later = array_values(array_filter($days, fn ($d) => $d > $day));
+        return $by < 0 ? ($earlier[0] ?? null) : ($later ? end($later) : null);
     }
 
     public function toggle(string $id): void

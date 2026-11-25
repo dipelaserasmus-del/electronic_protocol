@@ -174,6 +174,7 @@ tasks = [
   { id = "R4l", title = "Deleted protocol: the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash", phase = "R", batch = 9.7, size = "S", deps = ["R4h"], status = "done", pr = 135 },
   { id = "R2o", title = "List: the no-folder flag says «Χωρίς φάκελο» in full", phase = "R", batch = 9.7, size = "S", deps = ["R2n"], status = "done", pr = 136 },
   { id = "R2p", title = "List: an attachment that is only an ΑΔΑ shows a pill «ΑΔΑ» and its code as the link", phase = "R", batch = 9.7, size = "S", deps = ["R1m"], status = "done", pr = 137 },
+  { id = "R6j", title = "Log viewer: a «Σήμερα» button next to the day", phase = "R", batch = 9.7, size = "S", deps = ["R6e"], status = "done", pr = 138 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

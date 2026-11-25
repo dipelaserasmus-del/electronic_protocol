@@ -47,3 +47,21 @@ test('the log viewer: days, levels, search, details (R6e)', async ({ page }) => 
   await page.goto('/logs');
   await expect(page).not.toHaveURL(/\/logs$/);
 });
+
+// R6j (owner, 2026-11-25): «Σήμερα» next to the day (the browser's calendar has none)
+test('the log viewer has a Σήμερα button (R6j)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/logs');
+  const today = await page.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
+  await page.locator('#log-day').fill('2020-01-01');
+  await expect(page.locator('#log-today')).toBeEnabled();
+  await page.locator('#log-today').click();
+  await expect(page.locator('#log-day')).toHaveValue(today);
+  await expect(page.locator('#log-today')).toBeDisabled();
+  // review of R6j: ‹ back to an earlier day with entries, when there is one (the day's min = the oldest day with entries)
+  const oldest = await page.locator('#log-day').getAttribute('min');
+  if (oldest && oldest < today) await expect(page.locator('#log-prev')).toBeEnabled();
+  else await expect(page.locator('#log-prev')).toBeDisabled();
+  const bar = await page.locator('#log-day').locator('..').boundingBox();
+  await evidence(page, 'r6j-today', { clip: { x: Math.max(0, bar.x - 20), y: Math.max(0, bar.y - 10), width: bar.width + 40, height: bar.height + 20 } });
+});

@@ -8,12 +8,15 @@
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <h1 class="h4 mb-0 me-auto">Αρχεία καταγραφής</h1>
         <div class="input-group w-auto" role="group" aria-label="Ημέρα">
-            <button type="button" class="btn btn-outline-secondary" wire:click="step(-1)" @disabled($at === false || $at === count($days) - 1)
+            <button type="button" class="btn btn-outline-secondary" wire:click="step(-1)" @disabled(\App\Livewire\LogViewer::neighbour($days, $day, -1) === null)
                     title="Προηγούμενη ημέρα με καταγραφές" aria-label="Προηγούμενη ημέρα" id="log-prev">‹</button>
             <input type="date" class="form-control" wire:model.live="day" aria-label="Ημέρα" id="log-day"
-                   @if ($days) min="{{ end($days) }}" max="{{ $days[0] }}" @endif>
-            <button type="button" class="btn btn-outline-secondary" wire:click="step(1)" @disabled($at === false || $at === 0)
+                   @if ($days) min="{{ end($days) }}" max="{{ max($days[0], now()->format('Y-m-d')) }}" @endif>
+            <button type="button" class="btn btn-outline-secondary" wire:click="step(1)" @disabled(\App\Livewire\LogViewer::neighbour($days, $day, 1) === null)
                     title="Επόμενη ημέρα με καταγραφές" aria-label="Επόμενη ημέρα" id="log-next">›</button>
+            {{-- R6j (owner, 2026-11-25): back to today (the browser's own calendar has no such button) --}}
+            <button type="button" class="btn btn-outline-secondary" wire:click="today" @disabled($day === now()->format('Y-m-d'))
+                    title="Η σημερινή ημέρα" id="log-today">Σήμερα</button>
         </div>
         <div class="form-check form-switch mb-0">
             <input class="form-check-input" type="checkbox" role="switch" id="log-live" wire:model.live="live">
