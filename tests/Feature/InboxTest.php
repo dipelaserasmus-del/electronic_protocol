@@ -564,11 +564,14 @@ class InboxTest extends FeatureTestCase
         // a choice made with the inbox open draws it again
         Livewire::actingAs($a->fresh())->test(EmailInbox::class)->dispatch('envelope-changed')->assertSee('inbox-envelope-plain', false);
 
-        // the menu: the four looks for users with the inbox, the chosen one pressed; readers have no inbox, no choice
-        $menu = $this->actingAs($a->fresh())->get('/about')->getContent();
+        // the menu: the four looks, the chosen one pressed; R5u (owner, 2026-11-25): only on the inbox's page
+        $menu = $this->actingAs($a->fresh())->get('/inbox')->getContent();
         $this->assertMatchesRegularExpression('~Αρχική σελίδα.*?Εμφάνιση των e-mail.*?data-value="none".*?Καμία.*?data-value="airmail".*?data-value="paper".*?data-value="plain"~s', $menu);
         $this->assertMatchesRegularExpression('~data-preference="envelope" data-value="plain"[^>]*aria-pressed="true"~', $menu);
         $this->assertStringNotContainsString('Εμφάνιση των e-mail', $this->actingAs($this->reader())->get('/about')->getContent());
+        foreach (['/about', '/home/list', '/home'] as $page) {
+            $this->assertStringNotContainsString('Εμφάνιση των e-mail', $this->actingAs($a->fresh())->get($page)->getContent(), "not on $page");
+        }
     }
 
     /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */

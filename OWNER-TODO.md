@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 11:06 (R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 11:10 (R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -236,14 +236,14 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n)
+### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n, R5u)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
 - [ ] **75.** Log in as `writer`: *Σφραγίδα αρχείων* is no longer in the menu (only administrators). Open a protocol
   with a PDF: *Με σφραγίδα* is in *Συνημμένα* and in the 👁 window, whatever *Ρυθμίσεις → Σφραγίδα στα συνημμένα
   (αρχική επιλογή)* says; that setting only decides it for users who have not chosen yet.
-- [ ] **76.** *Εισερχόμενα* open; your name → *Εμφάνιση των e-mail*: choose *Καμία (μόνο μια γραμμή)*: the envelopes go
+- [ ] **76.** *Εισερχόμενα* open; your name → *Εμφάνιση των e-mail* (only in the inbox's menu, R5u): choose *Καμία (μόνο μια γραμμή)*: the envelopes go
   and a thin line with «↓ 2 από N ↓» separates the e-mails, at once. Try the other three; log in as another user: they
   keep their own (or the one in *Ρυθμίσεις*, if they have not chosen).
 - [ ] **77.** *Λίστα*: the title is *Λίστα Πρωτοκόλλων* (with the filter, e.g. *· προς Διεκπεραίωση*); no *Νέο* and

@@ -67,6 +67,15 @@ test('each user chooses the envelope in the user menu, also «Καμία» (R5q)
     const box = await sep.boundingBox();
     await evidence(page, 'r5q-none', { clip: { x: box.x - 12, y: Math.max(0, box.y - 190), width: box.width + 24, height: 400 } });
 
+    // R5u (owner, 2026-11-25): the choice is only in the inbox's menu
+    await page.goto('/home/list');
+    await page.locator('#nav-user').click();
+    await expect(page.locator('.user-menu')).toBeVisible();
+    await expect(page.locator('.user-menu')).not.toContainText('Εμφάνιση των e-mail');
+    await evidence(page, 'r5u-list-menu', { clip: await page.locator('.user-menu').boundingBox() });
+    await page.keyboard.press('Escape');
+    await openInbox(page);
+
     await page.reload();   // kept with the account
     await expect(page.locator('.inbox-sep').first()).toBeVisible();
     await choose('paper');

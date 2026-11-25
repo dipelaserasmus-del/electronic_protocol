@@ -163,6 +163,7 @@ tasks = [
   { id = "R4k", title = "Stamp: the number and date lines on opaque white (nothing under the stamp hides them)", phase = "R", batch = 9.7, size = "S", deps = ["R4e"], status = "done", pr = 124 },
   { id = "R5t", title = "Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch", phase = "R", batch = 9.7, size = "S", deps = ["R4f", "R4i"], status = "done", pr = 125 },
   { id = "R2n", title = "List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date", phase = "R", batch = 9.7, size = "S", deps = ["R2f"], status = "done", pr = 126 },
+  { id = "R5u", title = "User menu: «Εμφάνιση των e-mail» only on the inbox page", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 127 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
