@@ -112,3 +112,24 @@ test('a drop without dragenter still attaches the files (R1e)', async ({ page })
   await expect(page.locator('#attachments .upload-row')).toContainText('χωρίς-dragenter.pdf');
   await expect(page.locator('.drop-overlay')).toBeHidden();
 });
+
+// R1m (owner, 2026-11-25): an attachment that is only an ΑΔΑ: the pill says ΑΔΑ, the code is on the left (no «Μόνο ΑΔΑ»)
+test('an ΑΔΑ without a file: an ΑΔΑ pill and the code on the left (R1m)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home');
+  const code = `9R1M${String(Date.now()).slice(-6)}-ΑΒΓ`;
+  await fillProtocol(page, { thema: `R1m ΑΔΑ ${code}`, fakelos: 'first' });
+  await page.locator('#f-ada').fill(code);
+  await saveProtocol(page);
+  const row = page.locator('#attachments .attachment-row', { hasText: code });
+  await expect(row.locator('.file-badge .badge')).toHaveText('ΑΔΑ');
+  await expect(row.locator('.attachment-ada')).toHaveText(code);
+  await expect(row).not.toContainText('Μόνο ΑΔΑ');
+  await expect(row.locator('.badge', { hasText: code })).toHaveCount(0);   // not again on the right
+  const badge = await row.locator('.file-badge').boundingBox();
+  const link = await row.locator('.attachment-ada').boundingBox();
+  expect(link.x - (badge.x + badge.width)).toBeLessThan(40);   // right after the pill, on the left
+  await row.scrollIntoViewIfNeeded();
+  const box = await row.boundingBox();
+  await evidence(page, 'r1m-ada-row', { clip: { x: box.x, y: box.y - 4, width: box.width, height: box.height + 8 } });
+});

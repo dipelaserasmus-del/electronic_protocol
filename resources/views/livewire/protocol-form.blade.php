@@ -374,7 +374,13 @@
                     @endif
                     @forelse ($attachments as $a)
                         <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 attachment-row" wire:key="att-{{ $a->id }}">
-                            <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
+                            {{-- R1m (owner, 2026-11-25): only an ΑΔΑ (no file): the pill says ΑΔΑ and the code itself, on the left, is the link --}}
+                            @php $adaOnly = ! $a->savedPath && $a->ada; @endphp
+                            @if ($adaOnly)
+                                <span class="file-badge d-inline-flex align-items-center text-nowrap"><span class="badge text-bg-info">ΑΔΑ</span></span>
+                            @else
+                                <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
+                            @endif
                             @if ($a->savedPath)
                                 {{-- R4c: 👁 opens it here; ‹ › go through this protocol's files --}}
                                 <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id"
@@ -404,15 +410,18 @@
                                 </div>
                             @elseif ($a->savedPath)
                                 <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break me-auto">{{ $a->name }}</a>
+                            @elseif ($adaOnly)
+                                @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="text-break me-auto attachment-ada" title="Στη Διαύγεια">{{ $a->ada }}</a>
+                                @else<span class="text-break me-auto attachment-ada">{{ $a->ada }}</span>@endif
                             @else
-                                <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
+                                <span class="me-auto text-body-secondary">{{ $a->name }}</span>
                             @endif
                             @if ($a->stamp_in_file && $a->savedPath)
                                 {{-- R4f: saved before R4f with the stamp inside: shown as it is, never stamped twice --}}
                                 <span class="small text-body-secondary stamp-in-file" title="Αποθηκεύτηκε με τη σφραγίδα μέσα στο αρχείο: ανοίγει όπως είναι, με ή χωρίς «Με σφραγίδα».">
                                     <i class="bi bi-patch-check" aria-hidden="true"></i> η σφραγίδα είναι μέσα στο αρχείο</span>
                             @endif
-                            @if ($a->ada)
+                            @if ($a->ada && ! $adaOnly)
                                 @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light">ΑΔΑ {{ $a->ada }}</a>
                                 @else<span class="badge text-bg-light">ΑΔΑ {{ $a->ada }}</span>@endif
                             @endif
