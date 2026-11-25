@@ -643,3 +643,29 @@ test('a refused save shows the field with the error (R1l)', async ({ page }) => 
   await expect(page.locator('#f-fakelos ~ .invalid-feedback')).toContainText('Φάκελος');
   await evidence(page, 'r1l-folder-error', { clip: { x: 0, y: 0, width: 1440, height: 600 } });
 });
+// R1n (owner's report, 2026-11-25): a new protocol: type Θέμα and press Αποθήκευση at once (the field is sent on blur,
+// just before the save): the browser asked «leave page?» on the way to the saved protocol. It must not.
+test('saving right after typing goes to the saved protocol without «leave page?» (R1n)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home');   // as reported: no folder
+  const dialogs = [];
+  page.on('dialog', async (d) => { dialogs.push(d.type()); await d.accept(); });
+  // a slow save (the owner's copy): meanwhile the page answers other requests and fires events of its own (an «input»
+  // from a field the page updates); none of them may wake the question
+  let release;
+  const held = new Promise((r) => { release = r; });
+  await page.route('**/update', async (route) => {
+    if ((route.request().postData() ?? '').includes('"method":"save"')) await held;
+    await route.continue();
+  });
+  await page.locator('#f-thema').fill(`R1n ${Date.now()} ΕΚΚΡΕΜΟΤΗΤΑ`);   // still in the field: sent on blur, with the click
+  const arrived = page.waitForURL(/\/home\/\d+/);
+  await page.locator('#form-save').click();
+  await page.waitForTimeout(300);
+  await page.locator('#f-paratiriseis').evaluate((el) => el.dispatchEvent(new Event('input', { bubbles: true })));
+  await page.locator('#f-sxetiko, #f-keywords').first().evaluate((el) => el.dispatchEvent(new Event('input', { bubbles: true }))).catch(() => {});
+  release();
+  await arrived;
+  await expect(page.locator('#f-thema')).toHaveValue(/^R1n \d+ ΕΚΚΡΕΜΟΤΗΤΑ$/);
+  expect(dialogs).toEqual([]);
+});

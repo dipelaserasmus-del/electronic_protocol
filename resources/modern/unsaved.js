@@ -9,6 +9,7 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
         progress: null,   // upload in progress (0–100) or null; the save buttons wait for it (review of R1c)
         start: null,
         leaving: false,   // a save or a confirmed leave is under way: no question
+        redirecting: false,   // R1n: the save answered «go there»: no question whatever else happens meanwhile
         target: null,
 
         init() {
@@ -22,17 +23,25 @@ function unsavedChanges({ labels = {}, users = {}, enabled = true } = {}) {
             this.$el.addEventListener('tag-pending', again);
             // the browser's own question when the tab is closed or reloaded
             window.addEventListener('beforeunload', (e) => {
-                if (this.leaving || !this.changes().length) return;
+                if (this.leaving || this.redirecting || !this.changes().length) return;
                 e.preventDefault();
                 e.returnValue = '';
             });
             // links that leave the page (top bar, Προηγούμενο / Επόμενο …): our question, with the changes
             document.addEventListener('click', (e) => this.click(e), true);
             this.$el.addEventListener('submit', () => { this.leaving = true; });
-            this.$el.addEventListener('input', () => { this.leaving = false; }, true);   // a save that stayed (errors)
-            window.Livewire?.hook?.('commit', ({ succeed, fail }) => {
+            // a save that stayed (errors), then the user types again: ask again when leaving. R1n (owner's report,
+            // 2026-11-25): only what the user types (the page's own events, e.g. a field it updates, are not typing)
+            this.$el.addEventListener('input', (e) => { if (e.isTrusted) this.leaving = false; }, true);
+            // R1n: only the save's own answer decides; other requests (a field sent on blur, answered after the save
+            // had started) used to wake the question on the way to the saved protocol
+            window.Livewire?.hook?.('commit', ({ commit, succeed, fail }) => {
+                if (!(commit?.calls ?? []).some((c) => ['save', 'assignOnly'].includes(c.method))) return;
                 fail(() => { this.leaving = false; });
-                succeed(({ effects }) => { if (!effects?.redirect) this.leaving = false; });
+                succeed(({ effects }) => {
+                    if (effects?.redirect) this.redirecting = true;
+                    else this.leaving = false;
+                });
             });
         },
 

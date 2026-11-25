@@ -170,6 +170,7 @@ tasks = [
   { id = "R6i", title = "A folder's automatic assignment applied to its existing protocols (chosen each time: open / all / this year; no e-mails)", phase = "R", batch = 9.7, size = "S", deps = ["R1d", "R6b"], status = "done", pr = 131 },
   { id = "R1l", title = "Protocol form: a refused Αποθήκευση brings the field with the error into view (focused)", phase = "R", batch = 9.7, size = "S", deps = ["R1j"], status = "done", pr = 132 },
   { id = "R1m", title = "Form: an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ»)", phase = "R", batch = 9.7, size = "S", deps = ["R1c"], status = "done", pr = 133 },
+  { id = "R1n", title = "Fix: saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save)", phase = "R", batch = 9.7, size = "S", deps = ["R1k"], status = "done", pr = 134 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
