@@ -2,12 +2,18 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 09:43 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m and R4j; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 09:50 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j and R5r; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R5r (owner, 2026-11-25):** `EmailInbox::register()` wraps `registerChecked()` and dispatches
+  `inbox-register-refused` (uid) when that e-mail has errors; inbox.js scrolls to the first visible `.is-invalid`
+  (else `.inbox-register-error`) and focuses it. `.inbox-register-error` above the buttons = first error except
+  `similar`. The «Καταχωρίζεται…» notice: `style="display: none" wire:loading.flex.delay.longer` — Livewire's own CSS
+  hides only the attribute spellings it lists (`wire:loading.flex.delay.longer` is not one), so the inline style is
+  needed. Spinners `wire:loading.delay.longer`.
 - **R4j (owner, 2026-11-25):** `<x-preview-button>` with `Preview::kind() === null` renders
   `<span class="preview-none" data-preview-none>` (grey 👁, title, no data-preview-*), so it is neither clickable nor in
   the group's ‹ ›. Form and inbox alike.
@@ -326,6 +332,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 09:50 | R5r | #122 | inbox: a refused Καταχώριση scrolls to the field (focused) and says why above the buttons; busy signs after 0.5 s |
 | 2026-11-25 09:43 | R4j | #121 | a type without preview: grey 👁, not clickable, left out of ‹ › |
 | 2026-11-25 09:36 | R2m | #120 | list: «Λίστα Πρωτοκόλλων», no Νέο / Ανανέωση on the page (↻ next to Λίστα), ↑ back to the top; the top bar in view on every page (test) |
 | 2026-11-25 09:29 | R5q | #119 | inbox look per user (user menu), «Καμία» = the thin line; the setting only the default; list keyed by the look (live switch) |

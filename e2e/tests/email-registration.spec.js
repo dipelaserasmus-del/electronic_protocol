@@ -91,10 +91,36 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
   const { message } = await open(page, 'Διαβιβαστικό εγγράφων μαθητή');   // synthetic e-mail with a PDF
   const uid = await message.getAttribute('data-uid');
 
-  await message.locator('[data-action="register"]').click();
+  // R5r (owner, 2026-11-25): only the button in view (Φάκελος far above it), as when one scrolls down to the files
+  // (a low window, so the form does not fit in it)
+  await page.setViewportSize({ width: 1440, height: 500 });
+  const button = message.locator('[data-action="register"]');
+  await button.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+  const folder = message.locator(`#f-${uid}-fakelos`);
+  await expect(folder).not.toBeInViewport();
+  await button.click();
   const error = message.locator(`#f-${uid}-fakelos ~ .invalid-feedback`);
   await expect(error).toContainText('επιλέξτε Φάκελο');
   await expect(message.locator('form.inbox-form')).toBeVisible();     // nothing registered, the e-mail stays
+  // the reason is brought into view, the cursor in Φάκελος; and said right above the buttons
+  await expect(folder).toBeInViewport();
+  await expect(folder).toBeFocused();
+  const why = message.locator('.inbox-register-error');
+  await expect(why).toContainText('Δεν καταχωρίστηκε.');
+  await expect(why).toContainText('επιλέξτε Φάκελο');
+  await expect(message.locator('.inbox-saving')).toBeHidden();       // not «Καταχωρίζεται…»
+  await page.keyboard.press('Escape');
+  const box = await message.locator('form.inbox-form').boundingBox();
+  await evidence(page, 'r5r-refused-field', { clip: { x: box.x, y: Math.max(0, box.y - 10), width: box.width, height: 260 } });
+  // «Μετάβαση στο πεδίο» from the message above the buttons
+  await button.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+  await expect(why).toBeInViewport();
+  const w = await why.boundingBox();
+  await evidence(page, 'r5r-refused-buttons', { clip: { x: w.x - 10, y: w.y - 10, width: w.width + 20, height: w.height + 70 } });
+  await why.locator('[data-goto-invalid]').click();
+  await expect(folder).toBeInViewport();
+  await expect(folder).toBeFocused();
+  await page.setViewportSize({ width: 1440, height: 900 });
   await message.scrollIntoViewIfNeeded();
   await evidence(page, 'r5c-folder-needed', { clip: await message.boundingBox() });
 
