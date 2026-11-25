@@ -11,6 +11,7 @@ const read = (button) => ({
     download: button.dataset.previewDownload,
     name: button.dataset.previewName || 'αρχείο',
     stampInFile: button.dataset.previewStamp === 'in-file',   // R4f
+    stampable: button.dataset.previewStampable === '1',       // R5t: «Με σφραγίδα» only where a stamp can be put
 });
 
 let items = [];
@@ -52,6 +53,7 @@ function show() {
     $('preview-download').href = item.download;
     $('preview-note').hidden = !['word', 'sheet'].includes(item.kind);
     $('preview-stamp-note').hidden = !item.stampInFile;
+    if ($('preview-stamp')) $('preview-stamp').hidden = !item.stampable;
     body.dataset.kind = item.kind;
 
     let content;

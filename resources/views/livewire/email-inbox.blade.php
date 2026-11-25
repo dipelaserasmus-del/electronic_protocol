@@ -175,6 +175,29 @@
                                             </ul>
                                         @endif
                                     </x-notice>
+                                    {{-- R5t (owner, 2026-11-25): registered: now the files have a number, so they are previewed and printed
+                                         here, with the stamp if wanted (before registering there is no number to stamp) --}}
+                                    @php
+                                        $savedFiles = \App\Models\TrashedProtocol::where('protocol_id', $state['protocol_id'])->exists() ? collect()
+                                            : \App\Models\Attachment::where('protocol_id', $state['protocol_id'])->whereNotNull('savedPath')->orderBy('id')->get();
+                                    @endphp
+                                    @if ($savedFiles->isNotEmpty())
+                                        <div class="mt-2 inbox-saved-files">
+                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                                <span class="small fw-semibold">Τα αρχεία του πρωτοκόλλου {{ $state['label'] }}</span>
+                                                <span class="ms-auto" wire:ignore><x-stamp-toggle :id="'saved-stamp-'.$uid" /></span>
+                                            </div>
+                                            @foreach ($savedFiles as $a)
+                                                <div class="d-flex flex-wrap align-items-center gap-2 py-1 border-bottom inbox-saved-file" wire:key="saved-{{ $uid }}-{{ $a->id }}">
+                                                    <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
+                                                    <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)"
+                                                                      :group="'saved-'.$state['protocol_id']" :stamp-in-file="(bool) $a->stamp_in_file"
+                                                                      :stampable="\App\Services\Stamp\StampedCopy::applies($a)" />
+                                                    <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break small">{{ $a->name }}</a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @else
                                     <x-notice type="info" class="mb-0 inbox-done">Μεταφέρθηκε στα αναγνωσμένα, χωρίς πρωτόκολλο.
                                         @foreach ($state['messages'] ?? [] as $line)<div>{{ $line }}</div>@endforeach

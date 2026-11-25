@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **108 / 118** `███████████████████████████░░░` 92% |
-| Effort done (PERT) | **47.3 / 51.9 h** `███████████████████████████░░░` 91% |
+| Tasks done | **109 / 119** `███████████████████████████░░░` 92% |
+| Effort done (PERT) | **47.6 / 52.2 h** `███████████████████████████░░░` 91% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k | 8/8 | `██████████` |
+| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t | 9/9 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -162,6 +162,7 @@ flowchart LR
     R5r["R5r<br/>Inbox: a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal"]
     R5s["R5s<br/>Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed"]
     R4k["R4k<br/>Stamp: the number and date lines on opaque white (nothing under the stamp hides them)"]
+    R5t["R5t<br/>Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -313,6 +314,8 @@ flowchart LR
   R5k --> R5r
   R5c --> R5s
   R4e --> R4k
+  R4f --> R5t
+  R4i --> R5t
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -338,7 +341,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -476,17 +479,18 @@ gantt
   R5r Inbox  a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal :done, r5r, 2026-11-14 06:52, 19m
   R5s Inbox  a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed :done, r5s, 2026-11-14 07:11, 19m
   R4k Stamp  the number and date lines on opaque white (nothing under the stamp hides them) :done, r4k, 2026-11-14 07:30, 19m
+  R5t Inbox  no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch :done, r5t, 2026-11-14 07:49, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 07:49, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 08:22, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 08:41, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 09:00, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 09:33, 19m
-  X01 Audit log — recording :x01, 2026-11-14 09:52, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 10:25, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 10:58, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 11:31, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 11:50, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 08:08, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 08:41, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 09:00, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 09:19, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 09:52, 19m
+  X01 Audit log — recording :x01, 2026-11-14 10:11, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 10:44, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 11:17, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 11:50, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 12:09, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -501,7 +505,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **S00** | Close open admin registration | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 10.5 | 10.8 | 9.1 | #5 |
 | ✅ | **B03** | Keep manually typed number | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 10.3 | 10.8 | 8.8 | #6 |
 | ✅ | **B08** | Atomic numbering (concurrency) | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 8.8 | 9.4 | 7.4 | #7 |
-| ✅ | **S02** | Central access-control policy | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 7.4 | 8.0 | 6.0 | #8 |
+| ✅ | **S02** | Central access-control policy | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 7.1 | 7.6 | 5.7 | #8 |
 | ✅ | **A02** | Missing-number reminder | B08 | 0.5 | 0.1 | 2.0 | 2.5 | 9.4 | 9.9 | 7.4 | #9 |
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 10.5 | 10.8 | 9.1 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
@@ -523,14 +527,14 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 4.6 | 5.7 | 2.6 | #36 |
 | ✅ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 10.5 | 10.8 | 9.6 | #37 |
 | ✅ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 | #38 |
-| ✅ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 8.0 | 8.3 | 7.1 | #39 |
+| ✅ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 7.6 | 8.0 | 6.8 | #39 |
 | ✅ | **D04** | Integer dates → DATE columns | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 10.3 | 10.8 | 9.4 | #40 |
 | ✅ | **R1a** | Protocol service (sanitation, copy date…) | D01, D02 | 0.5 | 0.1 | 1.7 | 2.3 | 4.5 | 5.0 | 2.7 | #42 |
 | ✅ | **R1b** | Protocol form screen | R1a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 5.0 | 5.6 | 1.4 | #43 |
 | ✅ | **R1c** | Attachments panel, drag & drop | R1b, D03 | 0.5 | 0.1 | 4.2 | 4.7 | 8.5 | 9.1 | 4.3 | #44 |
 | ✅ | **R2** | Protocol list rebuild | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 5.4 | 5.9 | 1.7 | #45 |
-| ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 8.0 | 8.3 | 6.0 | #46 |
-| ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 8.3 | 8.8 | 6.0 | #47 |
+| ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 7.6 | 8.0 | 5.7 | #46 |
+| ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 8.0 | 8.5 | 5.7 | #47 |
 | ✅ | **R1e** | Form feedback: drop (Firefox), related tags, notices | R1c, R4b | 0.3 | 0.1 | 4.7 | 5.0 | 9.1 | 9.4 | 4.4 | #48 |
 | ✅ | **R2b** | List feedback: user filter, detailed view, file names | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.4 | 9.9 | 5.2 | #49 |
 | ✅ | **R2c** | Missing numbers as rows in the list | R2b, A02 | 0.5 | 0.1 | 4.7 | 5.3 | 9.9 | 10.5 | 5.2 | #50 |
@@ -550,7 +554,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 8.8 | 9.4 | 5.2 | #65 |
 | ✅ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 8.4 | 9.0 | 4.8 | #66 |
 | ✅ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 9.1 | 9.4 | 4.9 | #67 |
-| ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.8 | 9.4 | 5.2 | #68 |
+| ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.5 | 9.1 | 4.9 | #68 |
 | ✅ | **R7** | Printing & exports | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 8.8 | 9.4 | 4.7 | #69 |
 | ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 10.5 | 10.8 | 9.9 | #99 |
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.7 | #71 |
@@ -587,22 +591,23 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R3h** | Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.5 | 10.8 | 6.3 | #105 |
 | ✅ | **R3i** | Search: πότε: σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης: (who registered); quick buttons | R3f | 0.5 | 0.1 | 5.0 | 5.6 | 10.3 | 10.8 | 5.2 | #106 |
 | ✅ | **R4d** | Rename an attachment (shown name only; extension fixed) | R1c | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 | #107 |
-| ✅ | **R4c** | Preview in the app: PDF, images, text; docx / xlsx converted in the browser | R4a | 0.5 | 0.1 | 2.3 | 2.8 | 9.4 | 9.9 | 7.1 | #108 |
-| ✅ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.4 | 9.9 | 5.2 | #109 |
-| ✅ | **R4f** | Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice | R4c, R4e | 0.5 | 0.1 | 4.7 | 5.3 | 9.9 | 10.5 | 5.2 | #110 |
+| ✅ | **R4c** | Preview in the app: PDF, images, text; docx / xlsx converted in the browser | R4a | 0.5 | 0.1 | 2.3 | 2.8 | 9.1 | 9.6 | 6.8 | #108 |
+| ✅ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.1 | 9.6 | 4.9 | #109 |
+| ✅ | **R4f** | Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice | R4c, R4e | 0.5 | 0.1 | 4.7 | 5.3 | 9.6 | 10.2 | 4.9 | #110 |
 | ✅ | **R4g** | Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.5 | 10.8 | 5.2 | #111 |
 | ✅ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 10.3 | 10.8 | 7.4 | #112 |
 | ✅ | **R5p** 🔴 | Inbox: each e-mail in an envelope (2–3 versions, owner chooses) | R5o | 0.3 | 0.1 | 10.2 | 10.5 | 10.2 | 10.5 | 0.0 | #113 |
 | ✅ | **N05** | Notepad per user on every page: sections, to-dos, markdown, autosave | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 10.3 | 10.8 | 6.6 | #114 |
 | ✅ | **R6e** | Log viewer for administrators (Console-like: levels, search, pages by day) | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 10.3 | 10.8 | 6.1 | #115 |
 | ✅ | **R3j** | Narrow page: − / + / ↺ for its width, saved per user | R3d | 0.3 | 0.1 | 5.6 | 5.9 | 10.5 | 10.8 | 4.9 | #117 |
-| ✅ | **R4i** | Stamp: designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.5 | 10.8 | 5.2 | #118 |
+| ✅ | **R4i** | Stamp: designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.2 | 10.5 | 4.9 | #118 |
 | ✅ | **R5q** 🔴 | Inbox look per user (user menu), with «Καμία» (the thin line); the setting only the default | R5p | 0.3 | 0.1 | 10.5 | 10.8 | 10.5 | 10.8 | 0.0 | #119 |
 | ✅ | **R2m** | List: «Λίστα Πρωτοκόλλων», no Νέο / Ανανέωση on the page (↻ next to Λίστα), ↑ back to the top; top bar always in view (test) | R2l | 0.3 | 0.1 | 7.5 | 7.9 | 10.5 | 10.8 | 3.0 | #120 |
 | ✅ | **R4j** | A type without preview: grey 👁, not clickable, left out of ‹ › | R4c | 0.3 | 0.1 | 2.8 | 3.2 | 10.5 | 10.8 | 7.7 | #121 |
 | ✅ | **R5r** | Inbox: a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal | R5k | 0.3 | 0.1 | 8.2 | 8.5 | 10.5 | 10.8 | 2.3 | #122 |
 | ✅ | **R5s** | Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed | R5c | 0.3 | 0.1 | 4.2 | 4.5 | 10.5 | 10.8 | 6.3 | #123 |
 | ✅ | **R4k** | Stamp: the number and date lines on opaque white (nothing under the stamp hides them) | R4e | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 | #124 |
+| ✅ | **R5t** | Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch | R4f, R4i | 0.3 | 0.1 | 5.6 | 5.9 | 10.5 | 10.8 | 4.9 | #125 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.7 | 10.3 | 5.5 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 |  |

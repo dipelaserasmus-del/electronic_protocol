@@ -270,6 +270,37 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /**
+     * R5t (owner, 2026-11-25): an e-mail's attachments have no number before registering: the preview window has no
+     * «Με σφραγίδα» for them; once registered, the protocol's files are listed with 👁 and the switch
+     */
+    public function test_files_are_stamped_only_after_registering(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $before = $page->html();
+        $this->assertStringContainsString('data-preview-kind="pdf"', $before, 'e-mail 1 has a PDF');
+        $this->assertStringNotContainsString('data-preview-stampable', $before);
+        $this->assertStringNotContainsString('inbox-saved-files', $before);
+
+        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)->assertHasNoErrors();
+        $p = \App\Models\Protocol::sole();
+        $html = $page->html();
+        $saved = substr($html, strpos($html, 'inbox-saved-files'));
+        $saved = substr($saved, 0, strpos($saved, 'inbox-done-actions'));
+        $pdf = \App\Models\Attachment::where('protocol_id', $p->id)->where('name', 'like', '%.pdf')->sole();
+        $this->assertStringContainsString("Τα αρχεία του πρωτοκόλλου {$p->protocolnum}/{$p->etos}", $saved);
+        $this->assertStringContainsString('id="saved-stamp-1-input" data-stamp-toggle', $saved);
+        $this->assertMatchesRegularExpression('~data-preview-kind="pdf" data-preview-src="'.preg_quote(url('/download/'.$pdf->id), '~').'".*?data-preview-group="saved-'.$p->id.'".*?data-preview-stampable="1"~s', $saved);
+        $this->assertSame(\App\Models\Attachment::where('protocol_id', $p->id)->count(), substr_count($saved, 'inbox-saved-file"'), 'every file, the e-mail itself too');
+        // the window's switch: in the page, hidden or shown by preview.js per file
+        $this->assertStringContainsString('id="preview-stamp"', $this->actingAs($this->writer())->get('/inbox')->getContent());
+
+        // in the trash since: no files to show
+        app(\App\Services\Protocols\ProtocolTrash::class)->trash($this->admin(), $p);
+        $this->assertStringNotContainsString('inbox-saved-files', $page->call('envelopeChanged')->html());
+    }
+
     /** R5s (owner, 2026-11-25): every e-mail needs a folder, with or without attachments (before: only with ticked files) */
     public function test_every_email_needs_a_folder(): void
     {

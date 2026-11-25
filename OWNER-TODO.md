@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 10:42 (R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 10:49 (R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **One thing only you can decide** (see *Questions*, 5): optionally, the preview of Word / Excel files. (The envelope
 look is now each user's own choice, R5q.)
 
-**No hurry.** Try the new steps 63–81 below (74–81: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–82 below (74–82: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -236,7 +236,7 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k)
+### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
@@ -261,6 +261,9 @@ Open *Εισερχόμενα*.
 - [ ] **81.** Open (👁, *Με σφραγίδα*) a PDF whose top right corner has text or a logo: the number and date lines of
   the stamp are on white and always readable; the other lines (e.g. the office's name) let what is under them show.
   *Σφραγίδα αρχείων* shows it on its sample page too.
+- [ ] **82.** *Εισερχόμενα*, an e-mail with a PDF: its 👁 opens the window **without** *Με σφραγίδα* (no number yet).
+  Register it: under *Καταχωρίστηκε με αριθμό …* the protocol's files are listed, each with 👁, and *Με σφραγίδα*: the
+  PDF opens (and prints) with the stamp.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
