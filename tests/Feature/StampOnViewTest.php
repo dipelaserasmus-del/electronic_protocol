@@ -123,6 +123,28 @@ class StampOnViewTest extends FeatureTestCase
         $this->assertSame([], $this->copies());
     }
 
+    /**
+     * Review of R4k: a copy stamped before the drawing changed (white under the number) is not served again: the
+     * renderer's revision is part of the copy's key, so it is made again with the new drawing
+     */
+    public function test_copies_made_by_an_older_drawing_are_made_again(): void
+    {
+        $admin = $this->admin();
+        $p = Protocol::factory()->number(8)->create();
+        $a = $this->attachment(['name' => 'παλιό-αντίγραφο.pdf'], $p);
+        $stored = $a->storedFilePath();
+        // the copy as R4f / R4j named it: the key without the renderer's revision
+        $file = $a->sha256 ?: (Storage::size($stored).':'.Storage::lastModified($stored));
+        $values = json_encode(StampTemplate::valuesFor($p), JSON_UNESCAPED_UNICODE);
+        $oldKey = substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file])), 0, 16);
+        Storage::put(StampedCopy::DIR.'/'.$a->id.'-'.$oldKey.'.pdf', 'OLD DRAWING');
+
+        $served = $this->actingAs($admin)->get('/download/'.$a->id)->streamedContent();
+        $this->assertNotSame('OLD DRAWING', $served);
+        $this->assertStringContainsString(PdfStamper::MARK, $served);
+        $this->assertSame([], array_filter($this->copies(), fn ($f) => str_contains($f, $oldKey)), 'the old copy is removed');
+    }
+
     /** R4i (owner, 2026-11-25): every user may have the stamp; the setting is only the choice of those who have not chosen */
     public function test_the_setting_is_only_the_default_choice(): void
     {

@@ -138,12 +138,15 @@ class StampTest extends FeatureTestCase
         };
         $plain = fn (array $lines) => StampTemplate::fromArray(['width' => 50, 'color' => '#204080', 'border' => false, 'lines' => $lines]);
 
+        $this->assertFalse(StampRenderer::opaque('{υπηρεσία}'), 'the office is not the number');
+        $this->assertFalse(StampRenderer::opaque('{άγνωστο}'));
         // a line without number or date: no white at all, the paper shows through
         $img = $r->render($plain([['text' => 'ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ ΔΟΚΙΜΩΝ', 'size' => 8]]), $values, 300);
         $this->assertSame(0, $count($img));
         $this->assertTrue($transparent($img, 2, 2));
 
-        foreach (['Αρ.Πρ.: {αριθμός}', '{ημερομηνία}', 'Έτος {έτος}'] as $text) {
+        // review of R4k: the fields as fill() reads them (any case, accents, spaces), not only as written in the help
+        foreach (['Αρ.Πρ.: {αριθμός}', '{ημερομηνία}', 'Έτος {έτος}', 'Αρ. {ΑΡΙΘΜΟΣ}', '{ετος}', '{ ημερομηνία }'] as $text) {
             foreach ([false, true] as $dots) {
                 $img = $r->render($plain([['text' => $text, 'size' => 8, 'dots' => $dots, 'align' => 'left']]), $values, 300);
                 $w = imagesx($img);

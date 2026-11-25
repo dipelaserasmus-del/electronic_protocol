@@ -21,6 +21,14 @@ background should be opaque white rather than transparent.
 
 ![Over the page's text: the number's and the date's lines on white](img/R4k/r4k-number-on-white.png)
 
+## Review (Codex), fixed with tests
+- A line written with the fields in another form (`{ΑΡΙΘΜΟΣ}`, `{ετος}`, `{ ημερομηνία }`) shows the number and date
+  (the stamp reads them in any case, with or without accents), but did not get the white. The white now goes by the
+  same reading. Test: the renderer test with those spellings.
+- Copies already stamped (a file opened before) were kept and served again without the white: nothing in their key
+  had changed. The way the stamp is drawn is now part of the key, so those copies are made again on their next
+  opening. Test: `StampOnViewTest::test_copies_made_by_an_older_drawing_are_made_again`.
+
 ## How verified
 - PHPUnit `StampTest::test_the_number_and_date_lines_are_on_opaque_white`, at 300 dpi:
   - a line without number or date has no white at all (transparent);
@@ -29,7 +37,7 @@ background should be opaque white rather than transparent.
   - in a stamp with both kinds, the office's line stays transparent and the number's is white.
 
   `test_the_drawing_has_its_size_in_mm_and_its_colour`: the only opaque colours are now the ink, white and the
-  letters' soft edges between them. Both tests failed before the change. Full suite: 680 tests, green.
+  letters' soft edges between them. Both tests failed before the change. Full suite: 681 tests, green.
 - Browser (`stamp.spec.js`): the designer's sample page, enlarged for the picture above.
 
 ## Owner actions

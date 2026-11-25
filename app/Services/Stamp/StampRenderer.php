@@ -81,8 +81,15 @@ final class StampRenderer
      */
     public static function opaque(string $text): bool
     {
-        return (bool) preg_match('/\{(αριθμός|ημερομηνία|έτος)\}/u', $text);
+        // review of R4k: the fields as StampTemplate::fill() reads them, not only as written in the help
+        return array_intersect(StampTemplate::fieldsIn($text), ['number', 'date', 'year']) !== [];
     }
+
+    /**
+     * The drawing's revision: part of the stamped copies' key (StampedCopy), so copies drawn before a change of the
+     * drawing are made again. 2 = R4k (the number and date on white).
+     */
+    public const REVISION = 2;
 
     /** PNG bytes (the editor's preview) */
     public function png(StampTemplate $t, array $values, int $dpi = self::PREVIEW_DPI): string

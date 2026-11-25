@@ -101,8 +101,9 @@ final class StampedCopy
     {
         $p = $a->protocol;
         $file = $a->sha256 ?: (Storage::size($stored) . ':' . Storage::lastModified($stored));
-        // the values the stamp shows (number, date, year, the office's name: review of R4f), the template, the file
+        // the values the stamp shows (number, date, year, the office's name: review of R4f), the template, the file, and
+        // how the stamp is drawn (review of R4k: copies drawn before the white under the number are made again)
         $values = json_encode(StampTemplate::valuesFor($p), JSON_UNESCAPED_UNICODE);
-        return substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file])), 0, 16);
+        return substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file, 'r'.StampRenderer::REVISION])), 0, 16);
     }
 }
