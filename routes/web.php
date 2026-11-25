@@ -93,7 +93,7 @@ Route::middleware('auth')->group(function () {
 
     // R6c: Livewire pages; saving, creating and deleting are their actions (no more GET links that change things)
     Route::get('/settings', [ConfigController::class, 'index']);
-    Route::get('/stamp', [\App\Http\Controllers\StampController::class, 'show']);   // R4e: the stamp designer (not readers)
+    Route::get('/stamp', [\App\Http\Controllers\StampController::class, 'show']);   // R4e: the stamp designer (administrators, R4i)
     Route::get('/backups', [ConfigController::class, 'backups']);
     Route::get('/logs', [ConfigController::class, 'logs']);   // R6e: log viewer (administrators)
     Route::get('/downloadBackup/{name}', [ConfigController::class, 'downloadBackup']);

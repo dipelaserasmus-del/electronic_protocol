@@ -120,10 +120,25 @@ class StampOnViewTest extends FeatureTestCase
         }
         $this->assertSame($this->pdf, $this->actingAs($admin)->get('/download/' . $old->id)->streamedContent(), 'stamped before R4f: as stored');
 
-        $this->setting('putStamp', 0);
-        $new = $this->attachment(['name' => 'νέο.pdf'], $p);
-        $this->assertSame($this->pdf, $this->actingAs($admin)->get('/download/' . $new->id)->streamedContent(), 'the setting is off');
         $this->assertSame([], $this->copies());
+    }
+
+    /** R4i (owner, 2026-11-25): every user may have the stamp; the setting is only the choice of those who have not chosen */
+    public function test_the_setting_is_only_the_default_choice(): void
+    {
+        $p = Protocol::factory()->number(7)->create();
+        $a = $this->attachment(['name' => 'νέο.pdf'], $p);
+        [$undecided, $wants, $refuses] = [$this->writer(), $this->reader(), $this->admin()];
+        UserPreferences::set($wants, 'stamped', 'yes');
+        UserPreferences::set($refuses, 'stamped', 'no');
+        $stamped = fn ($u) => str_contains($this->actingAs($u->fresh())->get('/download/' . $a->id)->streamedContent(), PdfStamper::MARK);
+
+        $this->setting('putStamp', 0);
+        $this->assertTrue(StampedCopy::applies($a), 'stampable whatever the setting');
+        $this->assertSame([false, true, false], [$stamped($undecided), $stamped($wants), $stamped($refuses)]);
+        $this->setting('putStamp', 1);
+        $this->assertSame([true, true, false], [$stamped($undecided), $stamped($wants), $stamped($refuses)]);
+        $this->assertSame($this->pdf, $this->actingAs($wants->fresh())->get('/download/' . $a->id . '?original=1')->streamedContent());
     }
 
     public function test_the_form_offers_the_switch_and_marks_files_stamped_before(): void
@@ -140,10 +155,13 @@ class StampOnViewTest extends FeatureTestCase
         // the preview window has it too
         $this->assertStringContainsString('id="preview-stamp-input"', $this->actingAs($this->reader())->get('/home/' . $p->id)->getContent());
 
+        // R4i: the setting off: the switch is still there, off for a user who has not chosen; the note stays
         $this->setting('putStamp', 0);
         $html = Livewire::actingAs($this->reader())->test(ProtocolForm::class, ['protocol' => $p])->html();
-        $this->assertStringNotContainsString('data-stamp-toggle', $html);
-        $this->assertStringNotContainsString('η σφραγίδα είναι μέσα στο αρχείο', $html);
+        $this->assertStringContainsString('data-stamp-toggle', $html);
+        $this->assertDoesNotMatchRegularExpression('/data-stamp-toggle[^>]*checked/', $html);
+        $this->assertSame(1, substr_count($html, 'η σφραγίδα είναι μέσα στο αρχείο'));
+        $this->assertStringContainsString('id="preview-stamp-input"', $this->actingAs($this->reader())->get('/home/' . $p->id)->getContent());
     }
 
     /** files saved before R4f: the migration marks the PDFs, docx and odt */

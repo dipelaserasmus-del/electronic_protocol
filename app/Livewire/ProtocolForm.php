@@ -480,7 +480,6 @@ class ProtocolForm extends Component
             'canComplete' => $protocol->exists && ! $access->canSave && $access->doneDate && $user->can('complete', $protocol),
             'isReader' => $isReader,
             'canEmailReceipt' => $protocol->exists && ! $isReader,
-            'putStamp' => (bool) Config::getConfigValueOf('putStamp'),
             'diavgeiaUrl' => Config::getConfigValueOf('diavgeiaUrl'),
             'suggestedSubject' => trim((string) $this->form['thema']) === '' ? $this->suggestedSubject() : null,
         ]);

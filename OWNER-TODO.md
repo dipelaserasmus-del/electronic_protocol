@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:05 (R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:21 (R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
 preview of Word / Excel files.
 
-**No hurry.** Try the new steps 63–74 below (74: − / + for the narrow page, your request of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–75 below (74–75: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -206,11 +206,11 @@ Open *Εισερχόμενα*.
 - [ ] **66.** In a protocol's *Συνημμένα*, the 👁 next to a file: it opens in a large window; ‹ › (or ← →) go to the
   protocol's other files; PDF, pictures, text, Word and Excel / LibreOffice files are shown, others offer *Λήψη*. In
   *Εισερχόμενα* the same for an e-mail's attachments.
-- [ ] **67.** *Διαχείριση → Σφραγίδα αρχείων* (also as Συγγραφέας / Αναθέτων): change lines, colour, width, the
+- [ ] **67.** *Διαχείριση → Σφραγίδα αρχείων* (administrators only, R4i): change lines, colour, width, the
   emblem, the corner; the preview follows. On your real copy you can load your official stamp:
   `./dev.sh real artisan stamp:import local-data/stamp --preview` (look at `local-data/stamp/preview.png`), then without
   `--preview`; fine-tune it on the page.
-- [ ] **68.** Turn on *Ρυθμίσεις → Σφραγίδα στα συνημμένα*, add a PDF to a protocol, open it with 👁 or download it: it
+- [ ] **68.** Add a PDF to a protocol; in *Συνημμένα* turn *Με σφραγίδα* on and open it with 👁 or download it: it
   has the stamp, top right of the first page. Turn *Με σφραγίδα* off (in *Συνημμένα* or in the preview window): the
   file as you uploaded it. Older files say *η σφραγίδα είναι μέσα στο αρχείο*.
 - [ ] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
@@ -236,10 +236,13 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your request of 2026-11-25 (R3j)
+### Your requests of 2026-11-25 (R3j, R4i)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
+- [ ] **75.** Log in as `writer`: *Σφραγίδα αρχείων* is no longer in the menu (only administrators). Open a protocol
+  with a PDF: *Με σφραγίδα* is in *Συνημμένα* and in the 👁 window, whatever *Ρυθμίσεις → Σφραγίδα στα συνημμένα
+  (αρχική επιλογή)* says; that setting only decides it for users who have not chosen yet.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

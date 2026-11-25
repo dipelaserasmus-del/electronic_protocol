@@ -41,9 +41,9 @@ class ModernLayoutTest extends FeatureTestCase
             'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Αρχεία καταγραφής'],
         ], $groups($admin));
         $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
-        // R4e: the stamp for administrators, assigners and writers, not readers
-        $this->assertContains('Σφραγίδα αρχείων', $groups($this->writer())['Φάκελοι']);
-        $this->assertContains('Σφραγίδα αρχείων', $groups($this->assigner())['Φάκελοι']);
+        // R4i (owner, 2026-11-25): the stamp for administrators only
+        $this->assertSame(['Φάκελοι και διατήρηση', 'Κάδος'], $groups($this->writer())['Φάκελοι']);
+        $this->assertSame(['Φάκελοι και διατήρηση', 'Κάδος'], $groups($this->assigner())['Φάκελοι']);
         $this->assertSame(['Φάκελοι και διατήρηση'], $groups($this->reader())['Φάκελοι']);
         foreach (Navigation::manage($admin) as $links) {
             foreach ($links as $link) {

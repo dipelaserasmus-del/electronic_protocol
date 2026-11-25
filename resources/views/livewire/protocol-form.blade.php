@@ -378,7 +378,7 @@
                             @if ($a->savedPath)
                                 {{-- R4c: 👁 opens it here; ‹ › go through this protocol's files --}}
                                 <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id"
-                                                  :stamp-in-file="$putStamp && $a->stamp_in_file" />
+                                                  :stamp-in-file="(bool) $a->stamp_in_file" />
                             @endif
                             @if ($a->savedPath && $access->canSave)
                                 {{-- R4d: ✎ renames (the name shown; the file keeps its path; the extension stays) --}}
@@ -407,7 +407,7 @@
                             @else
                                 <span class="me-auto text-body-secondary">{{ $a->name ?: 'Μόνο ΑΔΑ' }}</span>
                             @endif
-                            @if ($putStamp && $a->stamp_in_file && $a->savedPath)
+                            @if ($a->stamp_in_file && $a->savedPath)
                                 {{-- R4f: saved before R4f with the stamp inside: shown as it is, never stamped twice --}}
                                 <span class="small text-body-secondary stamp-in-file" title="Αποθηκεύτηκε με τη σφραγίδα μέσα στο αρχείο: ανοίγει όπως είναι, με ή χωρίς «Με σφραγίδα».">
                                     <i class="bi bi-patch-check" aria-hidden="true"></i> η σφραγίδα είναι μέσα στο αρχείο</span>
