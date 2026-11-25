@@ -160,6 +160,7 @@ tasks = [
   { id = "R4j", title = "A type without preview: grey 👁, not clickable, left out of ‹ ›", phase = "R", batch = 9.7, size = "S", deps = ["R4c"], status = "done", pr = 121 },
   { id = "R5r", title = "Inbox: a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal", phase = "R", batch = 9.7, size = "S", deps = ["R5k"], status = "done", pr = 122 },
   { id = "R5s", title = "Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed", phase = "R", batch = 9.7, size = "S", deps = ["R5c"], status = "done", pr = 123 },
+  { id = "R4k", title = "Stamp: the number and date lines on opaque white (nothing under the stamp hides them)", phase = "R", batch = 9.7, size = "S", deps = ["R4e"], status = "done", pr = 124 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

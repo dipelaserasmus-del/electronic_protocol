@@ -39,6 +39,12 @@ test('the stamp designer: edit, live preview, save (R4e)', async ({ page }) => {
   expect(await preview.getAttribute('src')).not.toBe(before);
   await expect(page.locator('#stamp-on-page')).toBeVisible();
   await evidence(page, 'r4e-designer', { fullPage: true });
+  // R4k (owner, 2026-11-25): over the page's text, the number's line is on white, the others let the text show
+  await page.locator('.stamp-page').evaluate((el) => { el.style.zoom = '4'; });   // only for the picture: 4× the page
+  await page.locator('#stamp-on-page').scrollIntoViewIfNeeded();
+  const onPage = await page.locator('#stamp-on-page').boundingBox();
+  await evidence(page, 'r4k-number-on-white', { clip: { x: onPage.x - 60, y: Math.max(0, onPage.y - 30), width: onPage.width + 90, height: onPage.height + 60 } });
+  await page.locator('.stamp-page').evaluate((el) => { el.style.zoom = ''; });
 
   done = livewire(page);
   await page.locator('#stamp-save').click();

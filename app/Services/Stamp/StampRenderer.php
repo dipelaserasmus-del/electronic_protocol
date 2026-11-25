@@ -37,13 +37,13 @@ final class StampRenderer
         $inner = max(4, $width - 2 * $pad);
         [$r, $g, $b] = $t->rgb();
 
-        /** @var list<array{0: \GdImage, 1: string}> $blocks image, alignment */
+        /** @var list<array{0: \GdImage, 1: string, 2: bool}> $blocks image, alignment, on opaque white */
         $blocks = [];
         if ($t->emblem && ($emblem = $this->emblem($t, $mm, $inner))) {
-            $blocks[] = [$emblem, 'center'];
+            $blocks[] = [$emblem, 'center', false];
         }
         foreach ($t->lines as $line) {
-            $blocks[] = [$this->line($line, $values, $dpi, $inner, [$r, $g, $b]), $line['dots'] ? 'left' : $line['align']];
+            $blocks[] = [$this->line($line, $values, $dpi, $inner, [$r, $g, $b]), $line['dots'] ? 'left' : $line['align'], self::opaque($line['text'])];
         }
 
         $gap = (int) round($t->gap * $mm);
@@ -51,9 +51,16 @@ final class StampRenderer
         $height = max($height, 2 * $pad + 1);
         $img = self::canvas($width, $height);
         $y = $pad;
-        foreach ($blocks as [$block, $align]) {
+        $white = imagecolorallocatealpha($img, 255, 255, 255, 0);
+        $margin = (int) round(0.35 * $mm);
+        foreach ($blocks as [$block, $align, $opaque]) {
             $w = imagesx($block);
             $x = $pad + match ($align) { 'right' => $inner - $w, 'center' => intdiv($inner - $w, 2), default => 0 };
+            if ($opaque) {
+                // R4k: the number and the date on white, so nothing printed under the stamp hides them
+                imagefilledrectangle($img, max(0, $x - $margin), max(0, $y - $margin), min($width - 1, $x + $w - 1 + $margin),
+                    min($height - 1, $y + imagesy($block) - 1 + $margin), $white);
+            }
             imagecopy($img, $block, $x, $y, 0, 0, $w, imagesy($block));
             $y += imagesy($block) + $gap;
         }
@@ -66,6 +73,15 @@ final class StampRenderer
             }
         }
         return $img;
+    }
+
+    /**
+     * R4k (owner, 2026-11-25): a line that shows the protocol's number, date or year is drawn on opaque white (text or
+     * pictures under the stamp must never hide them); the other lines stay transparent
+     */
+    public static function opaque(string $text): bool
+    {
+        return (bool) preg_match('/\{(αριθμός|ημερομηνία|έτος)\}/u', $text);
     }
 
     /** PNG bytes (the editor's preview) */

@@ -89,7 +89,7 @@ class StampTest extends FeatureTestCase
         $this->assertGreaterThan(5, $h);
         $this->assertEqualsWithDelta($w, StampRenderer::sizeMm($r->render($this->template(), [], 200), 200)[0], 0.15, 'the same at any resolution');
 
-        // the ink is the template's colour, the rest transparent
+        // the ink is the template's colour, the rest transparent, except the white under the number (R4k)
         $colours = [];
         for ($y = 0; $y < imagesy($img); $y += 3) {
             for ($x = 0; $x < imagesx($img); $x += 3) {
@@ -99,7 +99,15 @@ class StampTest extends FeatureTestCase
                 }
             }
         }
-        $this->assertSame(['#204080'], array_keys($colours));
+        // opaque: the ink, white, and (the letters' soft edges over the white) blends of the two, nothing else
+        $this->assertArrayHasKey('#204080', $colours);
+        $this->assertArrayHasKey('#ffffff', $colours);
+        foreach (array_keys($colours) as $hex) {
+            [$cr, $cg, $cb] = sscanf($hex, '#%02x%02x%02x');
+            $t = ($cr - 0x20) / (0xff - 0x20);   // 0 = ink, 1 = white
+            $this->assertEqualsWithDelta(0x40 + $t * (0xff - 0x40), $cg, 3, "$hex is between the ink and white");
+            $this->assertEqualsWithDelta(0x80 + $t * (0xff - 0x80), $cb, 3, "$hex is between the ink and white");
+        }
 
         // an emblem makes it taller, in the same colour
         Storage::put(StampTemplate::EMBLEM, $this->emblem());
@@ -107,6 +115,60 @@ class StampTest extends FeatureTestCase
         $this->assertEqualsWithDelta($h + 10 + 0.4, StampRenderer::sizeMm($withEmblem, 600)[1], 0.3);
         $c = imagecolorat($withEmblem, intdiv(imagesx($withEmblem), 2), 60);
         $this->assertSame(['#204080', 0], [sprintf('#%06x', $c & 0xFFFFFF), ($c >> 24) & 0x7F]);
+    }
+
+    /**
+     * R4k (owner, 2026-11-25): text or pictures under the stamp must never hide the number and the date: their lines are
+     * drawn on opaque white; the other lines stay transparent (what is under them shows through)
+     */
+    public function test_the_number_and_date_lines_are_on_opaque_white(): void
+    {
+        $r = new StampRenderer();
+        $values = ['number' => '1234', 'date' => '25/11/2026', 'year' => '2026', 'office' => 'ΣΧΟΛΕΙΟ'];
+        $opaqueWhite = fn ($img, $x, $y) => (imagecolorat($img, $x, $y) & 0x7FFFFFFF) === 0xFFFFFF;
+        $transparent = fn ($img, $x, $y) => ((imagecolorat($img, $x, $y) >> 24) & 0x7F) === 127;
+        $count = function ($img) use ($opaqueWhite) {
+            $n = 0;
+            for ($y = 0; $y < imagesy($img); $y++) {
+                for ($x = 0; $x < imagesx($img); $x++) {
+                    $n += $opaqueWhite($img, $x, $y) ? 1 : 0;
+                }
+            }
+            return $n;
+        };
+        $plain = fn (array $lines) => StampTemplate::fromArray(['width' => 50, 'color' => '#204080', 'border' => false, 'lines' => $lines]);
+
+        // a line without number or date: no white at all, the paper shows through
+        $img = $r->render($plain([['text' => 'ΔΗΜΟΤΙΚΟ ΣΧΟΛΕΙΟ ΔΟΚΙΜΩΝ', 'size' => 8]]), $values, 300);
+        $this->assertSame(0, $count($img));
+        $this->assertTrue($transparent($img, 2, 2));
+
+        foreach (['Αρ.Πρ.: {αριθμός}', '{ημερομηνία}', 'Έτος {έτος}'] as $text) {
+            foreach ([false, true] as $dots) {
+                $img = $r->render($plain([['text' => $text, 'size' => 8, 'dots' => $dots, 'align' => 'left']]), $values, 300);
+                $w = imagesx($img);
+                $h = imagesy($img);
+                // around and between the letters: white, top to bottom of the line, from its start
+                $pad = (int) round(0.5 * 300 / 25.4);   // the stamp's own margin (no border)
+                $this->assertTrue($opaqueWhite($img, intdiv($w, 20), $pad), "$text: top of the line");
+                $this->assertTrue($opaqueWhite($img, intdiv($w, 20), $h - 1 - $pad), "$text: bottom of the line");
+                $opaque = 0;
+                for ($yy = 0; $yy < $h; $yy++) {
+                    for ($xx = 0; $xx < $w; $xx++) {
+                        $opaque += ((imagecolorat($img, $xx, $yy) >> 24) & 0x7F) === 0 ? 1 : 0;
+                    }
+                }
+                $this->assertGreaterThan(0.6 * $opaque, $count($img), "$text: a solid white area under the letters, not their edges");
+                if ($dots) {
+                    $this->assertTrue($opaqueWhite($img, $w - 3, intdiv($h, 2)) || ((imagecolorat($img, $w - 3, intdiv($h, 2)) >> 24) & 0x7F) === 0, "$text: the whole width with the dots");
+                }
+            }
+        }
+
+        // in a stamp with both: only the number's line is white; the office's line above it stays transparent
+        $img = $r->render($plain([['text' => '{υπηρεσία}', 'size' => 8], ['text' => 'Αρ.Πρ.: {αριθμός} / {ημερομηνία}', 'size' => 8, 'align' => 'left']]), $values, 300);
+        $this->assertTrue($transparent($img, imagesx($img) - 2, 2), 'the office line');
+        $this->assertTrue($opaqueWhite($img, 3, imagesy($img) - 1 - (int) round(0.5 * 300 / 25.4)), 'the number line');
     }
 
     // ---- the PDF stamper ----
