@@ -278,6 +278,7 @@ class InboxTest extends FeatureTestCase
     {
         $this->setting('protocolValidate', 1);
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $other = Livewire::actingAs($this->writer())->test(EmailInbox::class);   // another writer, the same e-mails on screen
         $before = $page->html();
         $this->assertStringContainsString('data-preview-kind="pdf"', $before, 'e-mail 1 has a PDF');
         $this->assertStringNotContainsString('data-preview-stampable', $before);
@@ -295,6 +296,14 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(\App\Models\Attachment::where('protocol_id', $p->id)->count(), substr_count($saved, 'inbox-saved-file"'), 'every file, the e-mail itself too');
         // the window's switch: in the page, hidden or shown by preview.js per file
         $this->assertStringContainsString('id="preview-stamp"', $this->actingAs($this->writer())->get('/inbox')->getContent());
+
+        // review of R5t: another user told «already registered» sees its files only if they may see the protocol
+        $this->setting('limitProtocolAccessList', 1);
+        $other->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false);
+        $this->assertStringContainsString('είχε ήδη καταχωριστεί', $other->html());
+        $this->assertStringNotContainsString('inbox-saved-files', $other->html(), 'not the creator nor assigned: no file names');
+        $this->setting('limitProtocolAccessList', 0);
+        $this->assertStringContainsString('inbox-saved-files', $other->call('envelopeChanged')->html(), 'without the limit: as the list shows it');
 
         // in the trash since: no files to show
         app(\App\Services\Protocols\ProtocolTrash::class)->trash($this->admin(), $p);

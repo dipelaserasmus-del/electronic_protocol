@@ -24,6 +24,13 @@ protocol number yet. Preview the attachments **after** registering, and offer th
 
 ![The PDF's window after registering, with the switch](img/R5t/r5t-preview-with-stamp.png)
 
+## Review (Codex), fixed with a test
+With *Περιορισμός λίστας* on, another user told «already registered» saw the list of that protocol's files (names,
+sizes) without being allowed to see the protocol. The files themselves stayed protected; their names did not. The
+list is now shown only to users who may see the protocol, as the protocol list decides. Test: the second writer in
+`test_files_are_stamped_only_after_registering` sees no list with the limit on, and sees it with the limit off. It
+failed before.
+
 ## How verified
 - PHPUnit `InboxTest::test_files_are_stamped_only_after_registering`:
   - before registering: no «stampable» file and no list;

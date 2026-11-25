@@ -178,8 +178,12 @@
                                     {{-- R5t (owner, 2026-11-25): registered: now the files have a number, so they are previewed and printed
                                          here, with the stamp if wanted (before registering there is no number to stamp) --}}
                                     @php
-                                        $savedFiles = \App\Models\TrashedProtocol::where('protocol_id', $state['protocol_id'])->exists() ? collect()
-                                            : \App\Models\Attachment::where('protocol_id', $state['protocol_id'])->whereNotNull('savedPath')->orderBy('id')->get();
+                                        // review of R5t: only for whoever may see the protocol (with «Περιορισμός λίστας», another user told
+                                        // «already registered» may not: no file names for them); none once it is in the trash
+                                        $savedProtocol = \App\Models\Protocol::find($state['protocol_id']);
+                                        $savedFiles = $savedProtocol && auth()->user()->can('view', $savedProtocol)
+                                            ? \App\Models\Attachment::where('protocol_id', $savedProtocol->id)->whereNotNull('savedPath')->orderBy('id')->get()
+                                            : collect();
                                     @endphp
                                     @if ($savedFiles->isNotEmpty())
                                         <div class="mt-2 inbox-saved-files">
