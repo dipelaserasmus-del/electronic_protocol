@@ -116,6 +116,15 @@ test('settings: a menu of sections, one section at a time, saved on its own (R6f
   await page.locator('#settings-save').click();
   await expect(page.locator('#app-toasts .toast', { hasText: 'Αποθηκεύτηκαν' }).last()).toBeVisible();
 
+  // review of R6f: a link to a setting opens its section once; the address then follows the section shown
+  await page.goto('/settings?setting=mysqldumpPath');
+  await expect(page.locator('#set-backup h2')).toHaveText('Αντίγραφα ασφαλείας');
+  await nav.locator('[data-section="office"]').click();
+  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία');
+  await expect(page).not.toHaveURL(/setting=/);
+  await page.reload();
+  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία');
+
   // narrow screens: the menu above the section
   await page.setViewportSize({ width: 600, height: 900 });
   await page.goto('/settings?section=trash');

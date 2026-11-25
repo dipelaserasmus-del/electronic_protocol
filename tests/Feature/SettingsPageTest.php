@@ -94,6 +94,14 @@ class SettingsPageTest extends FeatureTestCase
         $page->set('values.showRowsInPage', 'abc')->call('save')->assertHasErrors('values.showRowsInPage')->assertSee('settings-errors');
         $page->call('show', 'office')->assertHasNoErrors()->assertSet('values.showRowsInPage', '35');
         $page->call('show', 'nonsense')->assertSet('section', 'office');
+
+        // review of R6f: ?setting= picks the section once and leaves the address (so a reload opens the section shown);
+        // a section already in the address wins
+        $deep = Livewire::actingAs($admin)->withQueryParams(['setting' => 'mysqldumpPath'])->test(SettingsPage::class)
+            ->assertSet('section', 'backup')->assertSet('setting', '');
+        $deep->call('show', 'office')->assertSet('section', 'office')->assertSet('setting', '');
+        Livewire::actingAs($admin)->withQueryParams(['section' => 'display', 'setting' => 'mysqldumpPath'])->test(SettingsPage::class)
+            ->assertSet('section', 'display');
     }
 
     public function test_wrong_values_are_refused_at_their_field_and_nothing_is_saved(): void
