@@ -97,8 +97,11 @@
                     @php
                         $tone = \App\Livewire\ProtocolList::deadlineTone($p);
                     @endphp
-                    @php $dateFlag = $dateFlags[$p->id] ?? null; @endphp
-                    <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif" data-id="{{ $p->id }}"
+                    @php
+                        $dateFlag = $dateFlags[$p->id] ?? null;
+                        $noFolder = trim((string) $p->fakelos) === '';   // R2n (owner, 2026-11-25): flagged, as a wrong date
+                    @endphp
+                    <tr wire:key="p-{{ $p->id }}" class="protocol-row @if ($dateFlag) date-flagged @endif @if ($noFolder) folder-flagged @endif" data-id="{{ $p->id }}"
                         x-data="{ open: false }" :class="{ 'row-open': open || detailed }">
                         <td class="text-nowrap">
                             <a href="{{ url('/home/'.$p->id) }}" class="fw-bold text-decoration-none stretched-link-row">{{ $p->protocolnum }}/{{ $p->etos }}</a>
@@ -110,10 +113,23 @@
                                           data-bs-title="{{ $dateText }}" data-kinds="{{ implode(' ', $dateFlag['kinds']) }}"
                                           x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i></span>
                                 @endif
+                                @if ($noFolder)
+                                    {{-- R2n: narrow screens have no Φάκελος column: the warning here instead --}}
+                                    <span class="folder-flag position-relative d-md-none" tabindex="0" role="img" aria-label="Χωρίς φάκελο"
+                                          data-bs-title="Χωρίς φάκελο: το πρωτόκολλο δεν έχει φάκελο. Ανοίξτε το και επιλέξτε τον φάκελό του."
+                                          x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-folder-x text-warning" aria-hidden="true"></i></span>
+                                @endif
                             </div>
                         </td>
                         <td class="d-none d-md-table-cell small">
-                            @if ($p->fakelos)<span title="{{ $folders[$p->fakelos] ?? '' }}">{{ $p->fakelos }}</span>@endif
+                            @if ($p->fakelos)<span title="{{ $folders[$p->fakelos] ?? '' }}">{{ $p->fakelos }}</span>
+                            @else
+                                {{-- R2n: no folder: a warning with its explanation (above the row's link, as R2f's) --}}
+                                @php $folderText = 'Χωρίς φάκελο: το πρωτόκολλο δεν έχει φάκελο. Ανοίξτε το και επιλέξτε τον φάκελό του.'; @endphp
+                                <span class="folder-flag position-relative text-warning-emphasis fw-semibold text-nowrap" tabindex="0" role="img" aria-label="{{ $folderText }}"
+                                      data-bs-title="{{ $folderText }}"
+                                      x-data x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'right', customClass: 'date-flag-tooltip' })"><i class="bi bi-exclamation-triangle-fill text-warning" aria-hidden="true"></i> Χωρίς</span>
+                            @endif
                         </td>
                         <td>
                             <div class="text-break row-clamp">{{ $p->thema }}</div>

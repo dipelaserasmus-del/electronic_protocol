@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **109 / 119** `███████████████████████████░░░` 92% |
-| Effort done (PERT) | **47.6 / 52.2 h** `███████████████████████████░░░` 91% |
+| Tasks done | **110 / 120** `████████████████████████████░░` 92% |
+| Effort done (PERT) | **48.0 / 52.6 h** `███████████████████████████░░░` 91% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t | 9/9 | `██████████` |
+| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n | 10/10 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -163,6 +163,7 @@ flowchart LR
     R5s["R5s<br/>Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed"]
     R4k["R4k<br/>Stamp: the number and date lines on opaque white (nothing under the stamp hides them)"]
     R5t["R5t<br/>Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch"]
+    R2n["R2n<br/>List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -316,6 +317,7 @@ flowchart LR
   R4e --> R4k
   R4f --> R5t
   R4i --> R5t
+  R2f --> R2n
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -341,7 +343,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -480,17 +482,18 @@ gantt
   R5s Inbox  a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed :done, r5s, 2026-11-14 07:11, 19m
   R4k Stamp  the number and date lines on opaque white (nothing under the stamp hides them) :done, r4k, 2026-11-14 07:30, 19m
   R5t Inbox  no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch :done, r5t, 2026-11-14 07:49, 19m
+  R2n List  a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date :done, r2n, 2026-11-14 08:08, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 08:08, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 08:41, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 09:00, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 09:19, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 09:52, 19m
-  X01 Audit log — recording :x01, 2026-11-14 10:11, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 10:44, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 11:17, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 11:50, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 12:09, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 08:27, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 09:00, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 09:19, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 09:38, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 10:11, 19m
+  X01 Audit log — recording :x01, 2026-11-14 10:30, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 11:03, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 11:36, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 12:09, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 12:28, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -559,7 +562,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 10.5 | 10.8 | 9.9 | #99 |
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.7 | #71 |
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 10.3 | 10.8 | 6.1 | #72 |
-| ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 10.3 | 10.8 | 5.8 | #73 |
+| ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 9.9 | 10.5 | 5.5 | #73 |
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.2 | 6.6 | 1.7 | #74 |
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 8.9 | 9.2 | 4.7 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 | #76 |
@@ -608,6 +611,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5s** | Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed | R5c | 0.3 | 0.1 | 4.2 | 4.5 | 10.5 | 10.8 | 6.3 | #123 |
 | ✅ | **R4k** | Stamp: the number and date lines on opaque white (nothing under the stamp hides them) | R4e | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 | #124 |
 | ✅ | **R5t** | Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch | R4f, R4i | 0.3 | 0.1 | 5.6 | 5.9 | 10.5 | 10.8 | 4.9 | #125 |
+| ✅ | **R2n** | List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date | R2f | 0.3 | 0.1 | 5.0 | 5.4 | 10.5 | 10.8 | 5.5 | #126 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.7 | 10.3 | 5.5 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.5 | 10.8 | 5.8 |  |
