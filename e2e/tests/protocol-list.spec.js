@@ -554,3 +554,21 @@ test('a protocol without a folder is flagged in the list (R2n)', async ({ page }
   // a protocol with a folder: no flag
   await expect(page.locator('.protocol-row', { has: page.locator('td:nth-child(2) span[title]') }).first()).not.toHaveClass(/folder-flagged/);
 });
+
+// R2p (owner, 2026-11-25): an attachment that is only an ΑΔΑ: a pill «ΑΔΑ», then its code (the link), as R1m in the form
+test('an ΑΔΑ without a file in the list: a pill and its code (R2p)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const code = `9R2P${String(Date.now()).slice(-6)}-ΑΒΓ`;
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `R2p ΑΔΑ ${code}`, fakelos: 'first' });
+  await page.locator('#f-ada').fill(code);
+  await saveProtocol(page);
+  await page.goto('/home/list');
+  const row = page.locator('.protocol-row', { hasText: `R2p ΑΔΑ ${code}` });
+  const cell = row.locator('.attachment-name', { hasText: code });
+  await expect(cell.locator('.badge')).toHaveText('ΑΔΑ');
+  await expect(cell.locator('.attachment-ada')).toHaveText(code);
+  const box = await row.boundingBox();
+  await evidence(page, 'r2p-list-ada', { clip: { x: 0, y: box.y - 10, width: 1440, height: box.height + 20 } });
+});
