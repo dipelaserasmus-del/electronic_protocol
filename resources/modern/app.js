@@ -234,3 +234,20 @@ function measureTopbar() {
 }
 window.addEventListener('load', measureTopbar);
 window.addEventListener('resize', measureTopbar);
+
+// R2m (owner, 2026-11-25): ↻ next to «Λίστα» refreshes the list (ProtocolList listens for «list-refresh»); the round ↑ at
+// the bottom right goes back to the top of the page
+document.addEventListener('click', (e) => {
+    const refresh = e.target.closest?.('[data-list-refresh]');
+    if (refresh) {
+        window.Livewire?.dispatch('list-refresh');
+        refresh.classList.remove('spinning');
+        void refresh.offsetWidth;   // restart the turn
+        refresh.classList.add('spinning');
+        return;
+    }
+    if (e.target.closest?.('[data-scroll-top]')) {
+        const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'instant' });
+    }
+});

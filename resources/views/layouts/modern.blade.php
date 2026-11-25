@@ -78,6 +78,14 @@
                                     @endforeach
                                 </ul>
                             </li>
+                            {{-- R2m (owner, 2026-11-25): on the list's pages, ↻ right after «Λίστα» refreshes the list (its own
+                                 «Ανανέωση» button is gone; the top bar is always in view) --}}
+                            @if (($item['home'] ?? false) && View::hasSection('listRefresh'))
+                                <li class="nav-item">
+                                    <button type="button" class="nav-link list-refresh" data-list-refresh title="Ανανέωση της λίστας" aria-label="Ανανέωση της λίστας">
+                                        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+                                </li>
+                            @endif
                         @else
                             <li class="nav-item">
                                 <a class="nav-link @if (url()->current() === $item['url']) active @endif"
