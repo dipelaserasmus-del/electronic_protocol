@@ -17,7 +17,7 @@ class SettingsPageTest extends FeatureTestCase
 {
     public function test_only_administrators_open_the_pages(): void
     {
-        $this->actingAs($this->admin())->get('/settings')->assertOk()->assertSee('Υπηρεσία και αρίθμηση')->assertSee('Συντήρηση');
+        $this->actingAs($this->admin())->get('/settings')->assertOk()->assertSee('Λίστες και αναζήτηση')->assertSee('Συντήρηση');
         $this->actingAs($this->admin())->get('/arxeio')->assertOk()->assertSee('Εκκαθάριση αρχείου');
         $this->actingAs($this->admin())->get('/backups')->assertOk()->assertSee('Αντίγραφα ασφαλείας');
         foreach ([$this->assigner(), $this->writer(), $this->reader()] as $u) {
@@ -41,14 +41,23 @@ class SettingsPageTest extends FeatureTestCase
 
     public function test_every_setting_shown_is_saved_and_only_known_keys(): void
     {
+        // R6f: every setting is in exactly one section, and each section shows its own settings only
         $page = Livewire::actingAs($this->admin())->test(SettingsPage::class);
-        foreach (array_keys(SettingsCatalog::all()) as $key) {
-            $page->assertSee('id="s-'.$key.'"', false);
+        $placed = array_merge(...array_map(fn ($sec) => $sec[4], array_values(SettingsCatalog::SECTIONS)));
+        $this->assertEqualsCanonicalizing(array_keys(SettingsCatalog::all()), $placed);
+        $this->assertSame(count($placed), count(array_unique($placed)));
+        foreach (SettingsCatalog::SECTIONS as $id => [, $title, , , $keys]) {
+            $page->call('show', $id)->assertSet('section', $id)->assertSee($title);
+            foreach (array_keys(SettingsCatalog::all()) as $key) {
+                in_array($key, $keys, true) ? $page->assertSee('id="s-'.$key.'"', false) : $page->assertDontSee('id="s-'.$key.'"', false);
+            }
         }
-        $page->set('values.ipiresiasName', '  Γυμνάσιο Δοκιμών  ')->set('values.limitProtocolAccessList', '1')
-            ->set('values.allowWriterUpdateProtocol', '1')->set('values.titleColor', '#1f4e79')
+
+        $page->call('show', 'office')->set('values.ipiresiasName', '  Γυμνάσιο Δοκιμών  ')->set('values.titleColor', '#1f4e79')
             ->set('values.madeUpKey', 'x')
             ->call('save')->assertHasNoErrors()->assertDispatched('toast', type: 'success');
+        $page->call('show', 'rights')->set('values.limitProtocolAccessList', '1')->set('values.allowWriterUpdateProtocol', '1')
+            ->call('save')->assertHasNoErrors();
 
         $this->assertSame('Γυμνάσιο Δοκιμών', Config::getConfigValueOf('ipiresiasName'));
         $this->assertSame('1', Config::getConfigValueOf('limitProtocolAccessList'));
@@ -60,28 +69,54 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertSame('0', Config::getConfigValueOf('limitProtocolAccessList'));
     }
 
+    /** R6f (owner, 2026-11-25): one section at a time, saved on its own; ?section= and ?setting= open one */
+    public function test_each_section_is_shown_and_saved_on_its_own(): void
+    {
+        $admin = $this->admin();
+        $this->setting('showRowsInPage', '20');
+        // the menu: every section under its heading, in order; the first one open
+        $html = $this->actingAs($admin)->get('/settings')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('~settings-nav-item\s+active\s*"\s+aria-current="page"\s*>\s*<i class="bi bi-building"~', $html);
+        $this->assertMatchesRegularExpression('~Υπηρεσία.*?Λίστες και αναζήτηση.*?settings-nav-heading">Πρωτόκολλο</div>.*?Αρίθμηση.*?Καταχώριση.*?Δικαιώματα.*?settings-nav-heading">Αρχεία</div>.*?Συνημμένα.*?Κάδος.*?Εκτυπώσεις και Excel.*?settings-nav-heading">E-mail</div>.*?Λογαριασμός εισερχομένων.*?Εισερχόμενα.*?Καταχώριση e-mail.*?Ειδοποιήσεις.*?settings-nav-heading">Συντήρηση</div>.*?Αντίγραφα ασφαλείας~s', $html);
+        $this->assertSame(count(SettingsCatalog::SECTIONS), substr_count($html, 'class="settings-nav-item'));
+        // by address
+        $this->actingAs($admin)->get('/settings?section=trash')->assertSee('id="s-trashRetentionDays"', false)->assertDontSee('id="s-ipiresiasName"', false);
+        $this->actingAs($admin)->get('/settings?setting=mysqldumpPath')->assertSee('id="s-mysqldumpPath"', false);
+        $this->actingAs($admin)->get('/settings?section=nonsense')->assertOk()->assertSee('id="s-ipiresiasName"', false);
+
+        // saving a section saves only it: a wrong value typed elsewhere (not shown) is neither checked nor stored
+        $page = Livewire::actingAs($admin)->test(SettingsPage::class)->call('show', 'display')
+            ->set('values.showRowsInPage', '35')->set('values.yearInUse', '26')
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame('35', (string) Config::getConfigValueOf('showRowsInPage'));
+        $this->assertNotSame('26', (string) Config::getConfigValueOf('yearInUse'));
+        // and a wrong value in it is refused there; leaving the section drops what was typed and its errors
+        $page->set('values.showRowsInPage', 'abc')->call('save')->assertHasErrors('values.showRowsInPage')->assertSee('settings-errors');
+        $page->call('show', 'office')->assertHasNoErrors()->assertSet('values.showRowsInPage', '35');
+        $page->call('show', 'nonsense')->assertSet('section', 'office');
+    }
+
     public function test_wrong_values_are_refused_at_their_field_and_nothing_is_saved(): void
     {
         $before = Config::getConfigValueOf('ipiresiasName');
-        Livewire::actingAs($this->admin())->test(SettingsPage::class)
-            ->set('values.ipiresiasName', 'Νέο όνομα')
-            ->set('values.titleColor', 'red; background:url(x)')
-            ->set('values.yearInUse', '26')
-            ->set('values.allowWriterUpdateProtocol', '5')
-            ->set('values.mysqldumpPath', '/bin/sh')
-            ->set('values.diavgeiaUrl', 'javascript:alert(1)')
-            ->set('values.showRowsInPage', '')
-            ->call('save')
-            ->assertHasErrors(['values.titleColor', 'values.yearInUse', 'values.allowWriterUpdateProtocol', 'values.mysqldumpPath',
-                'values.diavgeiaUrl', 'values.showRowsInPage'])
-            ->assertSee('settings-errors');
+        $page = Livewire::actingAs($this->admin())->test(SettingsPage::class);
+        // a wrong value stops its whole section (the name is not saved with a wrong colour)
+        $page->call('show', 'office')->set('values.ipiresiasName', 'Νέο όνομα')->set('values.titleColor', 'red; background:url(x)')
+            ->call('save')->assertHasErrors(['values.titleColor'])->assertSee('settings-errors');
         $this->assertSame($before, Config::getConfigValueOf('ipiresiasName'));
+        // R6f: each of the others in its own section
+        foreach ([['numbering', 'yearInUse', '26'], ['rights', 'allowWriterUpdateProtocol', '5'], ['backup', 'mysqldumpPath', '/bin/sh'],
+            ['files', 'diavgeiaUrl', 'javascript:alert(1)'], ['display', 'showRowsInPage', '']] as [$section, $key, $bad]) {
+            $stored = (string) Config::getConfigValueOf($key);
+            $page->call('show', $section)->set("values.$key", $bad)->call('save')->assertHasErrors("values.$key")->assertSee('settings-errors');
+            $this->assertSame($stored, (string) Config::getConfigValueOf($key), $key);
+        }
     }
 
     public function test_mysqldump_path_accepts_windows_and_linux_paths(): void
     {
         foreach (['', 'c:\xampp\mysql\bin\mysqldump.exe', '/usr/bin/mariadb-dump'] as $path) {
-            Livewire::actingAs($this->admin())->test(SettingsPage::class)->set('values.mysqldumpPath', $path)->call('save')->assertHasNoErrors();
+            Livewire::actingAs($this->admin())->test(SettingsPage::class)->call('show', 'backup')->set('values.mysqldumpPath', $path)->call('save')->assertHasNoErrors();
         }
     }
 
@@ -112,8 +147,14 @@ class SettingsPageTest extends FeatureTestCase
             $this->assertNotEmpty($def['help'] ?? null, "$key: help");
             $this->assertGreaterThan(mb_strlen($def['help']), mb_strlen($def['more'] ?? ''), "$key: a fuller explanation");
         }
-        $html = Livewire::actingAs($this->admin())->test(SettingsPage::class)->html();
-        $this->assertSame(count(SettingsCatalog::all()), substr_count($html, 'class="btn btn-link p-0 ms-1 lh-1 align-baseline text-body-secondary setting-more"'));
+        // R6f: every section's settings have their ⓘ
+        $page = Livewire::actingAs($this->admin())->test(SettingsPage::class);
+        $count = 0;
+        foreach (array_keys(SettingsCatalog::SECTIONS) as $id) {
+            $count += substr_count($page->call('show', $id)->html(), 'class="btn btn-link p-0 ms-1 lh-1 align-baseline text-body-secondary setting-more"');
+        }
+        $this->assertSame(count(SettingsCatalog::all()), $count);
+        $html = $page->call('show', 'numbering')->html();
         $this->assertStringContainsString('data-bs-content="'.e(SettingsCatalog::all()['gapCheckMonths']['more']).'"', $html);
 
         $box = substr($html, strpos($html, 'id="box-numbering"'));
