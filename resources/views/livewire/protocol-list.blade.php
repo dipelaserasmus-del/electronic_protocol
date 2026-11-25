@@ -206,7 +206,13 @@
                                             <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($a->name) }}</span>
                                             <span x-show="detailed || open" x-cloak class="text-break">{{ $a->name }}</span></a>
                                     @endif
-                                    @if ($a->ada)
+                                    @if ($a->ada && ! $a->savedPath)
+                                        {{-- R2p (owner, 2026-11-25): only an ΑΔΑ: a pill «ΑΔΑ», then its code as the link (as a file's name), as R1m --}}
+                                        <span class="file-badge d-inline-flex align-items-center text-nowrap"><span class="badge text-bg-info">ΑΔΑ</span></span>
+                                        @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="text-decoration-none position-relative z-2 text-break attachment-ada"
+                                                             title="Στη Διαύγεια">{{ $a->ada }}</a>
+                                        @else<span class="text-break attachment-ada">{{ $a->ada }}</span>@endif
+                                    @elseif ($a->ada)
                                         @if ($diavgeiaUrl)<a href="{{ $diavgeiaUrl . rawurlencode($a->ada) }}" target="_blank" class="badge text-bg-light position-relative z-2" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed || open" x-cloak> {{ $a->ada }}</span></a>
                                         @else<span class="badge text-bg-light" title="{{ $a->ada }}">ΑΔΑ<span x-show="detailed || open" x-cloak> {{ $a->ada }}</span></span>@endif
                                     @endif

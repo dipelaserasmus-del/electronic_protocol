@@ -42,6 +42,19 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringNotContainsString('folder-flag', $row(1));
     }
 
+    /** R2p (owner, 2026-11-25): an attachment that is only an ΑΔΑ: a pill «ΑΔΑ», then its code as the link */
+    public function test_an_ada_only_attachment_is_a_pill_and_its_code(): void
+    {
+        $this->setting('diavgeiaUrl', 'https://diavgeia.gov.gr/doc/');
+        $writer = $this->writer();
+        $p = Protocol::factory()->number(1)->create(['fakelos' => 'Φ.1', 'user_id' => $writer->id]);
+        \App\Models\Attachment::factory()->create(['protocol_id' => $p->id, 'name' => null, 'savedPath' => null, 'ada' => '9ΒΥΞ46ΝΚΠΔ-ΤΤΤ']);
+        $html = Livewire::actingAs($writer)->test(ProtocolList::class)->html();
+        $link = 'https://diavgeia.gov.gr/doc/'.rawurlencode('9ΒΥΞ46ΝΚΠΔ-ΤΤΤ');
+        $this->assertMatchesRegularExpression('~<span class="badge text-bg-info">ΑΔΑ</span></span>(?:\s|<!--.*?-->)*<a href="'.preg_quote($link, '~').'" target="_blank" class="[^"]*attachment-ada"[^>]*>9ΒΥΞ46ΝΚΠΔ-ΤΤΤ</a>~', $html);
+        $this->assertStringNotContainsString('class="badge text-bg-light position-relative z-2" title="9ΒΥΞ46ΝΚΠΔ-ΤΤΤ"', $html, 'not the old small badge');
+    }
+
     /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων»; no Νέο / Ανανέωση on the page: ↻ next to «Λίστα»; ↑ back to the top */
     public function test_the_list_header_names_the_screen_and_refresh_is_in_the_top_bar(): void
     {
