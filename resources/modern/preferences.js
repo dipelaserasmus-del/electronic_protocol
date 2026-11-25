@@ -24,6 +24,8 @@ const apply = {
     },
     // R3e: the links to the home page (brand, Λίστα) lead to the new one at once
     home: (value, btn) => document.querySelectorAll('[data-home-link]').forEach(a => { a.href = btn.dataset.home; }),
+    // R5q: an open inbox is drawn again with the chosen look
+    envelope: () => window.Livewire?.dispatch('envelope-changed'),
 };
 
 document.addEventListener('click', async e => {

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:21 (R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:29 (R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -8,10 +8,10 @@ previewing files, the stamp (editable, put when files are shown, your official s
 deleted protocols, envelopes in the inbox, a notepad and the log viewer. Batch 9.5 (your notes after Batch 9) now has
 its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 
-**Two things only you can decide** (see *Questions*, 5 and 6): the envelope look (A, B or C) and, optionally, the
-preview of Word / Excel files.
+**One thing only you can decide** (see *Questions*, 5): optionally, the preview of Word / Excel files. (The envelope
+look is now each user's own choice, R5q.)
 
-**No hurry.** Try the new steps 63–75 below (74–75: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–76 below (74–76: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -217,8 +217,8 @@ Open *Εισερχόμενα*.
 - [ ] **70.** With *Έλεγχοι καταχώρισης* off, *Διαγραφή* on a test protocol: it goes to *Κάδος → Πρωτόκολλα* and its
   number is free. *Επαναφορά*: back with its number (or a new one, with a note in *Παρατηρήσεις*, if the number was
   given meanwhile). As Συγγραφέας you see only your own deleted protocols.
-- [ ] **71.** *Εισερχόμενα*: each e-mail in an envelope. Try the three looks in *Ρυθμίσεις → E-mail → Εμφάνιση των
-  e-mail* and tell me A, B or C (question 5).
+- [ ] **71.** *Εισερχόμενα*: each e-mail in an envelope. Each user chooses the look: your name → *Εμφάνιση των e-mail*
+  (step 76).
 - [ ] **72.** *Σημειώσεις* on the right edge of any page: write `# Σήμερα`, `- [ ] κάτι`, `**έντονα**`; *Προβολή*
   shows them formatted, a to-do ticks with a click; it saves by itself and stays private to you.
 - [ ] **73.** *Διαχείριση → Αρχεία καταγραφής*: the application's log a day at a time, levels, search, a click shows
@@ -236,13 +236,16 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i)
+### Your requests of 2026-11-25 (R3j, R4i, R5q)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
 - [ ] **75.** Log in as `writer`: *Σφραγίδα αρχείων* is no longer in the menu (only administrators). Open a protocol
   with a PDF: *Με σφραγίδα* is in *Συνημμένα* and in the 👁 window, whatever *Ρυθμίσεις → Σφραγίδα στα συνημμένα
   (αρχική επιλογή)* says; that setting only decides it for users who have not chosen yet.
+- [ ] **76.** *Εισερχόμενα* open; your name → *Εμφάνιση των e-mail*: choose *Καμία (μόνο μια γραμμή)*: the envelopes go
+  and a thin line with «↓ 2 από N ↓» separates the e-mails, at once. Try the other three; log in as another user: they
+  keep their own (or the one in *Ρυθμίσεις*, if they have not chosen).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -254,9 +257,7 @@ Open *Εισερχόμενα*.
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
 4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
    πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
-5. **Envelopes in the inbox (R5p):** A (air mail), B (paper with a stamp) or C (plain)? Screenshots in
-   [R5p](docs/reports/R5p.md); try them live in *Ρυθμίσεις → E-mail*. I keep the one you choose.
-6. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
+5. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
    has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
    as it is (my suggestion), or ask for the browser libraries.
 
@@ -297,6 +298,8 @@ Open *Εισερχόμενα*.
    role and what you clicked, and send me that (no data).
 
 ## Already decided (no action)
+- The inbox's look (2026-11-25, R5q): each user chooses in their menu (Καμία, air mail, paper, plain); *Ρυθμίσεις →
+  Εμφάνιση των e-mail (αρχική επιλογή)* is for users who have not chosen. Question 5 of Batch 9.6 is closed.
 - Your fresh real copy with its files (2026-11-24, D10): it loads complete; the folder glossary and Φ.43 → Φ.46 are
   applied (38 and 61 done). The few files without a row are explained by D11 (e.g. a protocol saved after the export).
 - *Εισερχόμενα*: *Αριθ. εισερχ.* starts with the e-mail's time (e.g. 14:01:36), on purpose: it stands in when the

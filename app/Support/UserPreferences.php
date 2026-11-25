@@ -10,6 +10,8 @@ use App\Models\User;
  * - width: 'full' (the whole window, default) or 'narrow' (about half of a wide screen, centred, as older apps)
  * - form (R1i): the protocol page's sections: one or two columns, where each section is, which are collapsed
  * - home (R3e): the user's home page: 'all', 'd' (προς Διεκπεραίωση) or 'e' (προς Ενημέρωση); none = the role's
+ * - envelope (R5q): the inbox's look: 'none' (a thin line between e-mails), 'airmail', 'paper', 'plain'; none set =
+ *   the setting inboxEnvelope (envelope())
  * - narrowWidth (R3j): the narrow page's width in rem, set with − / + (none = the default, about half the screen)
  */
 final class UserPreferences
@@ -17,10 +19,33 @@ final class UserPreferences
     public const DEFAULTS = ['width' => 'full', 'stamped' => 'yes'];
 
     /** allowed values per key */
-    public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e'], 'stamped' => ['yes', 'no']];   // R4f: files with the stamp or the original
+    public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e'], 'stamped' => ['yes', 'no'],   // R4f: files with the stamp or the original
+        'envelope' => ['none', 'airmail', 'paper', 'plain']];   // R5q
 
     /** R3j (owner, 2026-11-25): numeric choices: [min, max, step]; null clears the choice (back to the default) */
     public const RANGES = ['narrowWidth' => [40, 160, 5]];
+
+    /** choices that null removes (the default comes back): R3j's numbers, and R5q's look (the setting inboxEnvelope) */
+    public const CLEARABLE = ['envelope'];
+
+    /** R5q (owner, 2026-11-25): the inbox's looks (key => [label, icon]); «Καμία» = R5o's thin line between e-mails */
+    public const ENVELOPES = [
+        'none' => ['Καμία (μόνο μια γραμμή)', 'dash-lg'],
+        'airmail' => ['Αεροπορικός φάκελος', 'envelope-paper'],
+        'paper' => ['Χάρτινος φάκελος', 'envelope'],
+        'plain' => ['Λιτός φάκελος', 'envelope-open'],
+    ];
+
+    /** R5q: the user's look of the inbox: their own choice, otherwise the setting inboxEnvelope (air mail if unset) */
+    public static function envelope(?User $user): string
+    {
+        $own = $user?->preferences['envelope'] ?? null;
+        if (self::valid('envelope', $own)) {
+            return $own;
+        }
+        $setting = (string) \App\Models\Config::getConfigValueOf('inboxEnvelope');
+        return self::valid('envelope', $setting) ? $setting : 'airmail';
+    }
 
     /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */
     public const HOMES = [
@@ -110,7 +135,7 @@ final class UserPreferences
     /** Saves one choice; false (nothing saved) for an unknown key or value. */
     public static function set(User $user, string $key, mixed $value): bool
     {
-        if ($value === null && isset(self::RANGES[$key])) {   // R3j: «Επαναφορά»
+        if ($value === null && (isset(self::RANGES[$key]) || in_array($key, self::CLEARABLE, true))) {   // R3j: «Επαναφορά»; R5q: back to the setting
             $prefs = $user->preferences ?? [];
             unset($prefs[$key]);
             $user->forceFill(['preferences' => $prefs])->save();

@@ -164,7 +164,14 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-message:focus { outline: none; }   // R5h: focused when reached from the list (for the keyboard)
 .inbox-message:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
 // R5o (owner, 2026-11-23, option B): between two e-mails a thin line with «↓ N από M ↓» in the middle
-// R5p (owner, 2026-11-23): each e-mail in an envelope (setting inboxEnvelope), the address strip on top, a gap between
+// R5q (owner, 2026-11-25): «Καμία»: R5o's thin line with «↓ N από M ↓» between two e-mails, no envelope
+.inbox-sep { display: flex; align-items: center; gap: .75rem; margin: 1.5rem .25rem; color: var(--bs-secondary-color); font-size: .8rem; }
+.inbox-sep::before, .inbox-sep::after { content: ""; flex: 1; height: 1px; background: var(--bs-border-color); }
+.inbox-sep-label { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.inbox-sep-label .bi { font-size: .75rem; }
+.inbox-noenvelope > .inbox-message { margin: 0; }
+.inbox-noenvelope:last-of-type { margin-bottom: 1rem; }
+// R5p (owner, 2026-11-23): each e-mail in an envelope (the user's look, R5q), the address strip on top, a gap between
 .inbox-envelope { position: relative; margin-bottom: 2.25rem; border-radius: .6rem; }
 .inbox-envelope > .inbox-message { margin: 0; }
 .inbox-envelope-address { display: flex; align-items: baseline; gap: .75rem; padding: .45rem .9rem; font-size: .85rem; }

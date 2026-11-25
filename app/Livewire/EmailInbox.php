@@ -23,6 +23,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -530,6 +531,12 @@ class EmailInbox extends Component
         return Keepvalue::retentionOf($folder);
     }
 
+    /** R5q: the user chose another look in their menu: draw the page again (from the cache, not the mail server) */
+    #[On('envelope-changed')]
+    public function envelopeChanged(): void
+    {
+    }
+
     public function render(Inbox $inbox)
     {
         $messages = [];
@@ -567,8 +574,8 @@ class EmailInbox extends Component
             'extra' => $extra,
             'account' => (string) Config::getConfigValueOf('defaultImapEmail'),
             'newestFirst' => (bool) Config::getConfigValueOf('emailFetchOrderDesc'),
-            // R5p: the envelope's look (airmail by default)
-            'envelope' => in_array($look = (string) Config::getConfigValueOf('inboxEnvelope'), ['airmail', 'paper', 'plain'], true) ? $look : 'airmail',
+            // R5p: the envelope's look; R5q (owner, 2026-11-25): each user's own, the setting the default; «none» = a line
+            'envelope' => \App\Support\UserPreferences::envelope($user),
             'lastPage' => max(1, (int) ceil($this->total / max(1, $this->perPage))),
             // R5g: for the list pager above and below the e-mails
             'paginator' => new \Illuminate\Pagination\LengthAwarePaginator(array_fill(0, count($this->uids), null), $this->total, max(1, $this->perPage), $this->page),

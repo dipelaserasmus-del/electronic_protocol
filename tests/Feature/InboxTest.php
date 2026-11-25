@@ -448,6 +448,42 @@ class InboxTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('~<span class="inbox-envelope-date text-nowrap">\d{2}/\d{2}/\d{4} \d{2}:\d{2}</span>~', $html);
     }
 
+    /** R5q (owner, 2026-11-25): each user's own look, from the user menu; «none» = R5o's thin line; the setting is the default */
+    public function test_each_user_chooses_the_look_and_none_is_the_line(): void
+    {
+        $this->setting('emailNumFetch', 2);
+        $this->setting('inboxEnvelope', 'paper');
+        [$a, $b] = [$this->writer(), $this->writer()];
+        $look = fn ($u) => Livewire::actingAs($u->fresh())->test(EmailInbox::class)->html();
+
+        $this->assertSame(2, substr_count($look($a), 'class="inbox-envelope inbox-envelope-paper"'), 'not chosen: the setting');
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'envelope', 'value' => 'none'])->assertOk();
+        $html = $look($a);
+        $this->assertStringNotContainsString('inbox-envelope-', $html);
+        $this->assertSame(1, substr_count($html, 'class="inbox-sep"'), 'between the two e-mails only');
+        $this->assertMatchesRegularExpression('~<span class="inbox-sep-label">.*?2 από 8.*?</span>~s', $html);
+        $this->assertSame(2, substr_count($html, 'class="inbox-noenvelope"'));
+        $this->assertSame(2, substr_count($look($b), 'class="inbox-envelope inbox-envelope-paper"'), 'another user keeps the default');
+
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'envelope', 'value' => 'plain'])->assertOk();
+        $this->assertSame(2, substr_count($look($a), 'class="inbox-envelope inbox-envelope-plain"'));
+        $this->actingAs($a)->postJson('/preferences', ['key' => 'envelope', 'value' => 'lace'])->assertStatus(422);
+        $this->actingAs($b)->postJson('/preferences', ['key' => 'envelope', 'value' => 'airmail'])->assertOk();
+        $this->actingAs($b)->postJson('/preferences', ['key' => 'envelope', 'value' => null])->assertOk();   // back to the setting
+        $this->assertArrayNotHasKey('envelope', $b->fresh()->preferences ?? []);
+        $this->setting('inboxEnvelope', 'none');   // «Καμία» as the default too
+        $this->assertSame(1, substr_count($look($b), 'class="inbox-sep"'));
+
+        // a choice made with the inbox open draws it again
+        Livewire::actingAs($a->fresh())->test(EmailInbox::class)->dispatch('envelope-changed')->assertSee('inbox-envelope-plain', false);
+
+        // the menu: the four looks for users with the inbox, the chosen one pressed; readers have no inbox, no choice
+        $menu = $this->actingAs($a->fresh())->get('/about')->getContent();
+        $this->assertMatchesRegularExpression('~Αρχική σελίδα.*?Εμφάνιση των e-mail.*?data-value="none".*?Καμία.*?data-value="airmail".*?data-value="paper".*?data-value="plain"~s', $menu);
+        $this->assertMatchesRegularExpression('~data-preference="envelope" data-value="plain"[^>]*aria-pressed="true"~', $menu);
+        $this->assertStringNotContainsString('Εμφάνιση των e-mail', $this->actingAs($this->reader())->get('/about')->getContent());
+    }
+
     /** R5o: an outgoing document from the inbox: its Εξερχόμενο fields are saved; a missing one opens the section */
     public function test_outgoing_fields_are_registered_and_an_error_opens_their_section(): void
     {
