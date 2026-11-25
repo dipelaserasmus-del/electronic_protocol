@@ -188,7 +188,7 @@ organisation's official stamp (the owner's image is in git-ignored `local-data/`
 | R5t | **Stamp after registering**: an e-mail's attachments have no number yet, so their preview has no «Με σφραγίδα»; once registered, the protocol's saved files are listed under the result with 👁 and the switch (preview / print stamped). The window shows the switch only for files that can be stamped | UI | P2 | S | R4f, R4i |
 | R2n | **No folder = flagged** in the list: ⚠ «Χωρίς» in the Φάκελος column (on narrow screens next to the date) with what to do, the row tinted as R2f's dates | UI | P2 | S | R2f |
 | R5u | **Inbox look only where it shows**: «Εμφάνιση των e-mail» in the user menu only on the inbox page (`@section('envelopeChoice')`) | UI | P3 | S | R5q |
-| R6f | **Ρυθμίσεις regrouped as GitHub's settings** (owner, 2026-11-25: «the settings screen is becoming bloated»): a menu of 13 small sections under the headings Πρωτόκολλο, Αρχεία, E-mail, Συντήρηση; one section at a time (title, what it is for, its settings, its own Αποθήκευση); `?section=` / `?setting=` in the address. **The owner sees the screenshots before it is merged** | UI | P2 | M | R6d |
+| R6f | **Ρυθμίσεις regrouped as GitHub's settings** (owner, 2026-11-25: «the settings screen is becoming bloated»): a menu of 13 small sections under the headings Πρωτόκολλο, Αρχεία, E-mail, Συντήρηση; one section at a time (title, what it is for, its settings, its own Αποθήκευση); `?section=` / `?setting=` in the address. approved by the owner from the screenshots | UI | P2 | M | R6d |
 
 ## Phase 5 — Finish
 

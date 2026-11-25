@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 🟡 Built and tested; **waiting for your approval before it is merged** |
+| Status | ✅ Done (approved by the owner on 2026-11-25 11:35) |
 | Branch | `task/R6f-settings-sections` |
 
 ## What was asked (owner, 2026-11-25)
@@ -69,4 +69,4 @@ Show a rendered preview first, and decide before it is merged.
   The `setSetting` helper used by many tests now goes straight to the setting's section.
 
 ## Owner actions
-Look at the screenshots above and answer *ok*, or say what to change. The pull request is not merged until then.
+None: approved from the screenshots above. To try it: *Διαχείριση → Ρυθμίσεις*.
