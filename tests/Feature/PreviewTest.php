@@ -181,10 +181,14 @@ class PreviewTest extends FeatureTestCase
         Attachment::factory()->create(['protocol_id' => $p->id, 'name' => null, 'ada' => 'ΩΡΖ']);   // only ΑΔΑ: no 👁
 
         $html = Livewire::actingAs($this->reader())->test(ProtocolForm::class, ['protocol' => $p])->html();
-        $this->assertSame(3, substr_count($html, 'data-preview-group="protocol-' . $p->id . '"'));
+        $this->assertSame(2, substr_count($html, 'data-preview-group="protocol-' . $p->id . '"'), 'the zip is not in ‹ ›');
         $this->assertStringContainsString('data-preview-kind="pdf" data-preview-src="' . url('/download/' . $pdf->id) . '"', $html);
         $this->assertStringContainsString('data-preview-kind="word" data-preview-src="' . url('/preview/' . $docx->id) . '"', $html);
-        $this->assertStringContainsString('data-preview-kind="none" data-preview-src="" data-preview-download="' . url('/download/' . $zip->id) . '"', $html);
+        // R4j (owner, 2026-11-25): no preview for this type: a grey 👁 that is not a button
+        $this->assertStringNotContainsString('data-preview-kind="none"', $html);
+        $this->assertSame(1, substr_count($html, 'data-preview-none'));
+        $this->assertMatchesRegularExpression('~<span class="preview-none" data-preview-none\s+title="Δεν υπάρχει προεπισκόπηση[^"]*" role="img"\s+aria-label="Χωρίς προεπισκόπηση: «αρχεία\.zip»">~', $html);
+        $this->assertSame(2, substr_count($html, 'data-preview-kind='), 'buttons only for the pdf and the docx');
 
         // the modal is on every page of the new layout, once
         $this->assertSame(1, substr_count($this->actingAs($this->reader())->get('/home/' . $p->id)->getContent(), 'id="preview-modal"'));

@@ -309,6 +309,8 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .preview-image { max-width: 100%; max-height: 100%; object-fit: contain; }
 .preview-message { padding: 3rem 1rem; }
 .preview-button { line-height: 1; }
+/* R4j: no preview for this type: a grey 👁, not clickable */
+.preview-none { display: inline-block; color: var(--bs-secondary-color); opacity: .35; cursor: not-allowed; }
 @include media-breakpoint-down(lg) { .preview-dialog .modal-content { height: 100%; } }
 
 // R4e: the stamp designer's A4 page
