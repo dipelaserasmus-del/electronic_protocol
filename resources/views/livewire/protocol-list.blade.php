@@ -166,21 +166,21 @@
                         {{-- R2k (owner, 2026-11-20): the sender / recipient only, one line each; the number and the dates in a
                              tooltip (they rarely fitted), and in full when the row is opened --}}
                         @php
-                            // the whole name too: the cell shortens it with …
+                            // the whole name too: the cell shortens it with …; R2q (owner, 2026-11-25): one line each (the tooltip keeps them)
                             $inMore = collect([$p->in_arxi_ekdosis, $p->in_num ? 'Αρ. εισερχομένου: '.$p->in_num : null,
-                                $p->in_date ? 'Ημ/νία: '.$p->dateOf('in_date')?->format('d/m/Y') : null])->filter()->implode(' · ');
-                            $outMore = collect([$p->out_to, $p->out_date ? 'Ημ/νία εξερχομένου: '.$p->dateOf('out_date')?->format('d/m/Y') : null])->filter()->implode(' · ');
+                                $p->in_date ? 'Ημ/νία: '.$p->dateOf('in_date')?->format('d/m/Y') : null])->filter()->implode("\n");
+                            $outMore = collect([$p->out_to, $p->out_date ? 'Ημ/νία εξερχομένου: '.$p->dateOf('out_date')?->format('d/m/Y') : null])->filter()->implode("\n");
                         @endphp
                         <td class="d-none d-lg-table-cell small from-to">
                             @if ($p->in_arxi_ekdosis || $p->in_num)
                                 <div class="from-to-line"><span @if ($inMore) class="from-to-more position-relative z-2" tabindex="0" data-bs-title="{{ $inMore }}"
-                                      x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'top' })" @endif>← {{ $p->in_arxi_ekdosis ?: '—' }}</span>
+                                      x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'top', customClass: 'from-to-tooltip' })" @endif>← {{ $p->in_arxi_ekdosis ?: '—' }}</span>
                                     @if ($p->in_num)<span class="text-body-secondary" x-show="detailed || open" x-cloak>αρ. {{ $p->in_num }}@if ($p->in_date) / {{ $p->dateOf('in_date')?->format('d/m/Y') }}@endif</span>@endif
                                 </div>
                             @endif
                             @if ($p->out_to)
                                 <div class="from-to-line"><span @if ($outMore) class="from-to-more position-relative z-2" tabindex="0" data-bs-title="{{ $outMore }}"
-                                      x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'top' })" @endif>→ {{ $p->out_to }}</span>
+                                      x-init="bootstrap.Tooltip.getOrCreateInstance($el, { placement: 'top', customClass: 'from-to-tooltip' })" @endif>→ {{ $p->out_to }}</span>
                                     @if ($p->out_date)<span class="text-body-secondary" x-show="detailed || open" x-cloak>{{ $p->dateOf('out_date')?->format('d/m/Y') }}</span>@endif</div>
                             @endif
                         </td>

@@ -336,8 +336,8 @@ class ProtocolListTest extends FeatureTestCase
         $row = substr($s = substr($html, strpos($html, 'data-id="'.$p->id.'"')), 0, strpos($s, '</tr>'));
         $row = preg_replace('~<!--\[if (END)?BLOCK\]><!\[endif\]-->~', '', $row);   // Livewire's markers
 
-        $this->assertMatchesRegularExpression('~class="from-to-more position-relative z-2" tabindex="0" data-bs-title="Δήμος Χ7 · Αρ. εισερχομένου: 4521 · Ημ/νία: 03/11/2026"[^>]*>← Δήμος Χ7</span>~', $row);
-        $this->assertMatchesRegularExpression('~data-bs-title="Σχολείο Χ7 · Ημ/νία εξερχομένου: 10/11/2026"[^>]*>→ Σχολείο Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~class="from-to-more position-relative z-2" tabindex="0" data-bs-title="Δήμος Χ7\nΑρ. εισερχομένου: 4521\nΗμ/νία: 03/11/2026"[^>]*>← Δήμος Χ7</span>~', $row);
+        $this->assertMatchesRegularExpression('~data-bs-title="Σχολείο Χ7\nΗμ/νία εξερχομένου: 10/11/2026"[^>]*>→ Σχολείο Χ7</span>~', $row);
         $this->assertMatchesRegularExpression('~x-show="detailed \|\| open" x-cloak>αρ. 4521 / 03/11/2026</span>~', $row, 'in full when the row is opened');
         $this->assertStringContainsString('class="badge rounded-pill text-bg-light border assignee-more" title="3 χρήστες">+2</span>', $row);
     }

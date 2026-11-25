@@ -448,7 +448,11 @@ test('every row two lines tall: one file and one pill with +N; Από / Προς
   const sender = row.locator('.from-to-more').first();
   await expect(row.locator('.from-to')).not.toContainText(`Φ.9/${stamp}`, { useInnerText: true });   // only in the tooltip
   await sender.hover();
-  await expect(page.locator('.tooltip')).toContainText(`Αρ. εισερχομένου: Φ.9/${stamp} · Ημ/νία: 03/11/2026`);
+  await expect(page.locator('.tooltip')).toContainText(`Αρ. εισερχομένου: Φ.9/${stamp} Ημ/νία: 03/11/2026`);
+  // R2q (owner, 2026-11-25): one line per part (the sender, the number, the date)
+  const lines = await page.locator('.tooltip.from-to-tooltip .tooltip-inner').evaluate((el) => el.innerText.split('\n').map((l) => l.trim()).filter(Boolean));
+  expect(lines.length).toBe(3);
+  expect(lines.slice(1)).toEqual([`Αρ. εισερχομένου: Φ.9/${stamp}`, 'Ημ/νία: 03/11/2026']);
   await expect(page).toHaveURL(/\/home\/list/);
   await evidence(page, 'r2k-rows-tooltip', { clip: { x: 0, y: 230, width: 1440, height: 300 } });
 
