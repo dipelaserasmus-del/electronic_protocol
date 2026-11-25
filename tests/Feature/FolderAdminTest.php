@@ -211,6 +211,21 @@ class FolderAdminTest extends FeatureTestCase
         $this->assertSame(4, app(FolderCatalog::class)->applyRulesToExisting($folder, 'year'));
         $this->assertSame([1, 2, 4, 5], Protocol::assignedTo($other->id, 'e')->pluck('protocolnum')->map(fn ($n) => (int) $n)->sort()->values()->all());
 
+        // review of R6i: an assignment added by someone else after the batch was read is kept, not undone
+        $late = $this->writer();
+        $p6 = Protocol::factory()->number(7)->create(['fakelos' => 'Φ.960', 'etos' => 2026]);
+        $done = false;
+        \Illuminate\Support\Facades\DB::listen(function ($q) use (&$done, $p6, $late) {
+            if (! $done && str_contains($q->sql, 'from `protocol_assignments`') && str_contains($q->sql, ' in (')) {
+                $done = true;   // the batch's assignments were just read: now another user assigns protocol 7
+                \App\Models\ProtocolAssignment::create(['protocol_id' => $p6->id, 'user_id' => $late->id, 'type' => 'd']);
+            }
+        });
+        app(FolderCatalog::class)->applyRulesToExisting($folder, 'all');
+        $this->assertTrue($done, 'the batch was read');
+        $this->assertTrue(Protocol::assignedTo($late->id, 'd')->whereKey($p6->id)->exists(), 'the late assignment is kept');
+        $this->assertTrue(Protocol::assignedTo($handler->id, 'd')->whereKey($p6->id)->exists(), 'and the rule added');
+
         // administrators only (owner: only the administrator changes folders and their assignments)
         foreach ([$this->assigner(), $handler, $this->reader()] as $u) {
             Livewire::actingAs($u)->test(FolderAdmin::class)->call('openApply')->assertForbidden();

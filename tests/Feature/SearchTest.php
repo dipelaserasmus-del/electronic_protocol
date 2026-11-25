@@ -258,10 +258,11 @@ class SearchTest extends FeatureTestCase
         $writer = $this->writer();
         Protocol::factory()->number(1)->create(['thema' => 'Δικό μου', 'user_id' => $writer->id]);
         Protocol::factory()->number(2)->assignedTo($writer)->create(['thema' => 'Ανατεθειμένο σε μένα']);
-        Protocol::factory()->number(3)->create(['thema' => 'Ξένο']);
+        // a subject no random user name can contain (the page lists the users: «Σόλων Ξένος» made this test fail now and then)
+        Protocol::factory()->number(3)->create(['thema' => 'ΑπόρρητοΆλλου42']);
 
         $this->assertSame(['Ανατεθειμένο σε μένα', 'Δικό μου'], $this->subjects($this->criteria(['year' => (int) date('Y')]), $writer));
-        $this->actingAs($writer)->get($this->find(['year' => date('Y')]))->assertSee('Δικό μου')->assertDontSee('Ξένο');
+        $this->actingAs($writer)->get($this->find(['year' => date('Y')]))->assertSee('Δικό μου')->assertDontSee('ΑπόρρητοΆλλου42');
     }
 
     public function test_no_criteria_asks_for_one_and_the_page_needs_login(): void

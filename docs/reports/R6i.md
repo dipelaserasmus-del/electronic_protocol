@@ -32,6 +32,17 @@ or one moved into it. The protocols already in the folder are not touched by it.
 
 ![The question, with how many each choice changes](img/R6i/r6i-apply-choice.png)
 
+## Review (Codex), fixed with a test
+The protocols' assignments were read in batches of 200 and then changed one by one. An assignment someone else made in
+between (another administrator, an assigner) could have been undone. Now each protocol is locked and its assignments
+are read again right before the rule is added, so such a change is kept. Test: in
+`test_the_rules_are_applied_to_existing_protocols_as_chosen`, an assignment added just after the batch was read stays.
+It failed before.
+
+Also fixed on the way: `SearchTest::test_limited_writers_only_find_their_own_or_assigned_protocols` failed now and then.
+It checked that «Ξένο» (another user's subject) is not on the page, but the page lists the users, and the random name
+«Σόλων Ξένος» contains it. The subject is now one no name can contain. It was not a leak.
+
 ## How verified
 - PHPUnit `FolderAdminTest::test_the_rules_are_applied_to_existing_protocols_as_chosen`, five protocols (open this
   year; completed; open last year; already hers; hers only to be informed):

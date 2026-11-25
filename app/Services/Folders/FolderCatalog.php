@@ -122,11 +122,19 @@ final class FolderCatalog
         $changed = 0;
         $query->chunkById(200, function ($protocols) use ($rules, &$changed) {
             foreach ($protocols as $p) {
-                [$merged, $added] = FolderRules::merge($this->assignmentsOf($p), $rules);
-                if ($added !== []) {
-                    \App\Support\Assignments::replace($p, $merged);   // the table only: no e-mail
-                    $changed++;
-                }
+                // review of R6i: the protocol locked and its assignments read again just before merging, so a change
+                // made meanwhile by someone else (ProtocolWriter::assign locks the same row) is kept, never undone
+                $added = DB::transaction(function () use ($p, $rules) {
+                    DB::table('protocols')->where('id', $p->id)->lockForUpdate()->value('id');
+                    $now = \App\Models\ProtocolAssignment::where('protocol_id', $p->id)->get()
+                        ->map(fn ($a) => ['user_id' => (int) $a->user_id, 'type' => $a->type])->values()->all();
+                    [$merged, $added] = FolderRules::merge($now, $rules);
+                    if ($added !== []) {
+                        \App\Support\Assignments::replace($p, $merged);   // the table only: no e-mail
+                    }
+                    return $added;
+                });
+                $changed += $added !== [] ? 1 : 0;
             }
         });
         return $changed;
