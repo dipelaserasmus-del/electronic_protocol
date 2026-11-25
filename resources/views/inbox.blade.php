@@ -2,6 +2,7 @@
 @extends('layouts.modern')
 
 @section('title', 'Εισερχόμενα')
+@section('envelopeChoice', '1'){{-- R5u: «Εμφάνιση των e-mail» in the user menu, only here --}}
 
 @section('content')
     {{-- R5m/R5n: drawn at once without the mail server (last check's e-mails); then it connects (wire:init) --}}
