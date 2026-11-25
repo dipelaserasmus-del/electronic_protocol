@@ -2,12 +2,15 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 11:40 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f and R6g; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 11:43 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g and R6h; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R6h (owner's report, 2026-11-25):** `FolderCatalog::save()`: `$sameCode` (FolderCode::key equal to the stored code)
+  → the stored code is kept and skipped by the pattern / unique checks (the legacy codes, e.g. «Φ12», need not match
+  CODE_PATTERN, and the demo has both «Φ12» and «Φ.12»). Only a really different code of a folder in use is refused.
 - **R6g (owner, 2026-11-25):** FolderAdmin `#[Url] sort` (code / count) and `dir`, `sortBy()` (count starts with the
   most used); the codes and counts link to `/search?q=φάκελος:<code>` (quoted with a space). (`/find?folder=…` alone
   only fills the advanced form; `&s=1` runs it, with the results below the form.)
@@ -357,6 +360,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 11:43 | R6h | #130 | fix: a folder written without the dot (Φ12) and in use is saved (its code stays as written) |
 | 2026-11-25 11:40 | R6g | #129 | folders page: sort by Κωδικός / Πρωτ.; a code (and its count) opens its protocols |
 | 2026-11-25 11:35 | R6f | #128 | the owner approved the screenshots: merged |
 | 2026-11-25 11:17 | R6f | #128 | Ρυθμίσεις as GitHub's settings (13 sections under 4 headings, one at a time, saved on its own); approved by the owner |
