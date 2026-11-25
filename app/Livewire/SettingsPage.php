@@ -24,12 +24,21 @@ class SettingsPage extends Component
     #[Url(as: 'section')]
     public string $section = '';
 
+    /**
+     * R6f: ?setting=<key> opens the section of that setting; review of R6f: used once and cleared, so the address then
+     * says the section shown (a reload or a shared link opens that one); a section already in the address wins
+     */
+    #[Url(as: 'setting', except: '')]
+    public string $setting = '';
+
     public function mount(): void
     {
         self::authorizeAdmin();
         $this->values = SettingsCatalog::values();
-        $wanted = SettingsCatalog::sectionOf((string) request()->query('setting', ''));
-        $this->section = $wanted ?? (isset(SettingsCatalog::SECTIONS[$this->section]) ? $this->section : array_key_first(SettingsCatalog::SECTIONS));
+        $wanted = SettingsCatalog::sectionOf($this->setting);
+        $this->section = isset(SettingsCatalog::SECTIONS[$this->section]) ? $this->section
+            : ($wanted ?? array_key_first(SettingsCatalog::SECTIONS));
+        $this->setting = '';
     }
 
     /** R6f: another section; what was typed in this one and not saved is put back as stored */

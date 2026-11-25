@@ -365,6 +365,13 @@ test('rows in alternating colours, fixed column widths, each row short until ▾
     return [shown, document.querySelector('.protocol-table [data-full-row]').colSpan];
   });
   const bar = page.locator('nav.app-topbar');
+  // R3j: the narrow page's own width may have been set (− / +): this test is about the default narrow width
+  await page.evaluate(async () => {
+    const token = document.querySelector('meta[name="csrf-token"]').content;
+    await fetch('/preferences', { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ key: 'narrowWidth', value: null }) });
+    document.body.style.removeProperty('--narrow-width');
+  });
   await bar.locator('#nav-user').click();
   await bar.locator('[data-preference="width"][data-value="narrow"]').click();
   try {
@@ -470,7 +477,7 @@ test('the top bar always in view; list title, ↻ next to Λίστα, ↑ back t
   const bar = page.locator('nav.app-topbar');
 
   // app-wide: scrolled down, the top bar is still at the top of the window
-  for (const url of ['/home/list', '/home', '/inbox', '/settings']) {   // pages long enough to scroll in the demo
+  for (const url of ['/home/list', '/home', '/inbox', '/keep']) {   // pages long enough to scroll in the demo (R6f: one settings section is short)
     await page.goto(url);
     await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
     expect(await page.evaluate(() => window.scrollY), url).toBeGreaterThan(100);
