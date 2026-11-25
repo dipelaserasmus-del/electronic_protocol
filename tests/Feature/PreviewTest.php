@@ -189,6 +189,8 @@ class PreviewTest extends FeatureTestCase
         $this->assertSame(1, substr_count($html, 'data-preview-none'));
         $this->assertMatchesRegularExpression('~<span class="preview-none" data-preview-none\s+title="Δεν υπάρχει προεπισκόπηση[^"]*" role="img"\s+aria-label="Χωρίς προεπισκόπηση: «αρχεία\.zip»">~', $html);
         $this->assertSame(2, substr_count($html, 'data-preview-kind='), 'buttons only for the pdf and the docx');
+        // R5t: both can be stamped, so the window offers «Με σφραγίδα» for them
+        $this->assertSame(2, substr_count($html, 'data-preview-stampable="1"'));
 
         // the modal is on every page of the new layout, once
         $this->assertSame(1, substr_count($this->actingAs($this->reader())->get('/home/' . $p->id)->getContent(), 'id="preview-modal"'));

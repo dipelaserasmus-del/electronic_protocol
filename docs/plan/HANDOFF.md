@@ -2,12 +2,16 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 10:42 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s and R4k; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 10:49 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k and R5t; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R5t (owner, 2026-11-25):** `<x-preview-button :stampable>` → `data-preview-stampable="1"`; preview.js hides
+  `#preview-stamp` unless the file is stampable (form: `StampedCopy::applies($a)`; inbox attachments: never). The inbox's
+  «registered» state lists the protocol's files (`.inbox-saved-files`, group `saved-<protocol id>`, `<x-stamp-toggle
+  id="saved-stamp-<uid>">` in wire:ignore); none when the protocol is in the trash.
 - **R4k (owner, 2026-11-25):** `StampRenderer::opaque($text)` = the line has {αριθμός}/{ημερομηνία}/{έτος}; such blocks
   get an opaque white rectangle (0.35 mm margin) before their text, in `render()` (so the PDF stamper, Word and the
   designer all have it). Antialiased edges over white are opaque blends. Designer page lines start near the top.
@@ -340,6 +344,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 10:49 | R5t | #125 | inbox: no stamp switch before registering; the registered protocol's files with 👁 and «Με σφραγίδα» |
 | 2026-11-25 10:42 | R4k | #124 | stamp: number / date / year lines on opaque white; other lines transparent |
 | 2026-11-25 10:23 | R5s | #123 | inbox: a folder for every e-mail (also without attachments); «Ο Φάκελος χρειάζεται για κάθε e-mail» removed; no «Χωρίς φάκελο» in the inbox picker |
 | 2026-11-25 09:50 | R5r | #122 | inbox: a refused Καταχώριση scrolls to the field (focused) and says why above the buttons; busy signs after 0.5 s |

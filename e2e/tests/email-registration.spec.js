@@ -133,6 +133,15 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
   await message.scrollIntoViewIfNeeded();
   await evidence(page, 'r5c-folder-needed', { clip: await message.boundingBox() });
 
+  // R5t (owner, 2026-11-25): before registering, the PDF's preview has no «Με σφραγίδα» (no number to stamp yet)
+  const modal = page.locator('#preview-modal');
+  await message.locator('.inbox-attachment .preview-button').first().click();
+  await expect(modal).toBeVisible();
+  await expect(page.locator('#preview-title')).toHaveText(/\.pdf$/);
+  await expect(page.locator('#preview-stamp')).toBeHidden();
+  await modal.locator('.btn-close').click();
+  await expect(modal).toBeHidden();
+
   // R5s (owner, 2026-11-25): without its files ticked it still needs a folder (before: registered with none)
   const boxes = await message.locator('.inbox-attachment input[type=checkbox]').all();
   for (const box of boxes) await box.uncheck();
@@ -146,6 +155,23 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
   await expect(options.filter({ hasText: 'Χωρίς φάκελο' })).toHaveCount(0);
   await options.first().click();
   await submit(message);
+
+  // R5t: registered: the protocol's files right here, with 👁 and «Με σφραγίδα»; the PDF's window offers the switch
+  const saved = message.locator('.inbox-saved-files');
+  await expect(saved).toContainText('Τα αρχεία του πρωτοκόλλου');
+  await expect(saved.locator('.inbox-saved-file', { hasText: '.pdf' })).toHaveCount(1);
+  await expect(saved.locator('[data-stamp-toggle]')).toBeVisible();
+  await saved.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  const area = await saved.boundingBox();
+  await evidence(page, 'r5t-saved-files', { clip: { x: area.x - 10, y: Math.max(0, area.y - 70), width: area.width + 20, height: area.height + 80 } });
+  await saved.locator('.inbox-saved-file', { hasText: '.pdf' }).locator('.preview-button').click();
+  await expect(modal).toBeVisible();
+  await expect(page.locator('#preview-stamp')).toBeVisible();
+  await expect(modal).toHaveCSS('opacity', '1');
+  const head = await modal.locator('.modal-header').boundingBox();
+  await evidence(page, 'r5t-preview-with-stamp', { clip: head });
+  await modal.locator('.btn-close').click();
+  await expect(modal).toBeHidden();
   const done = message.locator('.inbox-done');
   await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
   await expect(message.locator('form.inbox-form')).toHaveCount(0);

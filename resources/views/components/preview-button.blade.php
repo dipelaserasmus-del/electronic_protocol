@@ -4,9 +4,11 @@
     <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" group="protocol-12" />
     PDFs and images are shown from "download" (the same safe response); text, Word and spreadsheets from "preview"
     (converted on the server, sandboxed). R4j (owner, 2026-11-25): other types get a grey 👁 that is not a button (and
-    is left out of ‹ ›), with a tooltip saying why.
+    is left out of ‹ ›), with a tooltip saying why. R5t (owner, 2026-11-25): "stampable" (a saved protocol file that takes
+    the stamp, StampedCopy::applies) shows «Με σφραγίδα» in the window; an e-mail's attachments before registering do
+    not have a number yet, so the window has no such switch for them.
 --}}
-@props(['name' => null, 'download', 'preview', 'group' => null, 'stampInFile' => false])
+@props(['name' => null, 'download', 'preview', 'group' => null, 'stampInFile' => false, 'stampable' => false])
 @php
     $kind = \App\Services\Attachments\Preview::kind($name);
     $src = match (true) {
@@ -22,6 +24,6 @@
 @else
 <button type="button" {{ $attributes->class(['btn btn-sm btn-link p-0 text-body-secondary preview-button']) }}
         data-preview-kind="{{ $kind ?? 'none' }}" data-preview-src="{{ $src }}" data-preview-download="{{ $download }}"
-        data-preview-name="{{ $name }}" @if ($group) data-preview-group="{{ $group }}" @endif @if ($stampInFile) data-preview-stamp="in-file" @endif
+        data-preview-name="{{ $name }}" @if ($group) data-preview-group="{{ $group }}" @endif @if ($stampInFile) data-preview-stamp="in-file" @endif @if ($stampable) data-preview-stampable="1" @endif
         title="Προεπισκόπηση" aria-label="Προεπισκόπηση του «{{ $name }}»"><i class="bi bi-eye" aria-hidden="true"></i></button>
 @endif
