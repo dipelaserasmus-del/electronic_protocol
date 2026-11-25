@@ -38,7 +38,7 @@ test('👁 previews the protocol\'s files; ‹ › go through them (R4c)', async
   // Word: converted, sandboxed, "approximate" note
   await rows.filter({ hasText: 'Πρόσκληση ημερίδας.docx' }).locator('.preview-button').click();
   await opened('Πρόσκληση ημερίδας.docx');
-  await expect(page.locator('#preview-count')).toHaveText(/\d από 5/);
+  await expect(page.locator('#preview-count')).toHaveText(/\d από 4/);   // R4j: the .zip (no preview) is left out
   const frame = page.locator('#preview-body iframe.preview-frame');
   await expect(frame).toHaveAttribute('sandbox', '');
   await expect(page.frameLocator('#preview-body iframe').locator('body')).toContainText('Ψηφιακά εργαλεία στην τάξη');
@@ -47,11 +47,12 @@ test('👁 previews the protocol\'s files; ‹ › go through them (R4c)', async
 
   // through the files with › / the arrow keys, wrapping round
   const seen = new Set([await title.textContent()]);
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     await (i % 2 ? page.keyboard.press('ArrowRight') : page.locator('[data-preview-step="1"]').click());
     seen.add(await title.textContent());
   }
-  expect(seen.size).toBe(5);
+  expect(seen.size).toBe(4);   // R4j: the .zip is not among them
+  expect(seen.has('Αρχεία.zip')).toBe(false);
   await page.keyboard.press('ArrowRight');
   await expect(title).toHaveText('Πρόσκληση ημερίδας.docx');   // round again
 
@@ -76,11 +77,21 @@ test('👁 previews the protocol\'s files; ‹ › go through them (R4c)', async
   await opened('Λογότυπο.png');
   await expect(page.locator('#preview-body img.preview-image')).toHaveJSProperty('naturalWidth', 1);
 
-  // not supported: a message and the download
+  // R4j (owner, 2026-11-25): a type without preview is not in ‹ ›: after the picture, round to the first file again
   await page.locator('[data-preview-step="1"]').click();
-  await opened('Αρχεία.zip');
-  await expect(page.locator('#preview-body')).toContainText('δεν υποστηρίζεται');
-  await expect(page.locator('#preview-body a[download]')).toHaveAttribute('href', /\/download\/\d+$/);
-  await evidence(page, 'r4c-unsupported');
-  await expect(page.locator('#preview-download')).toHaveAttribute('href', /\/download\/\d+$/);
+  await expect(page.locator('#preview-title')).not.toHaveText('Αρχεία.zip');
+  await close();
+
+  // and its 👁 is grey, not a button: a click opens nothing
+  const zip = rows.filter({ hasText: 'Αρχεία.zip' });
+  await expect(zip.locator('.preview-button')).toHaveCount(0);
+  const grey = zip.locator('[data-preview-none]');
+  await expect(grey).toBeVisible();
+  await expect(grey).toHaveAttribute('title', /Δεν υπάρχει προεπισκόπηση/);
+  expect(Number(await grey.evaluate((el) => getComputedStyle(el).opacity))).toBeLessThan(0.5);
+  await grey.click();
+  await expect(page.locator('#preview-modal')).toBeHidden();
+  await zip.scrollIntoViewIfNeeded();
+  const box = await zip.boundingBox();
+  await evidence(page, 'r4j-no-preview', { clip: { x: box.x, y: box.y - 4, width: Math.min(box.width, 700), height: box.height + 8 } });
 });
