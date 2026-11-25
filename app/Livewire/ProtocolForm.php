@@ -319,8 +319,9 @@ class ProtocolForm extends Component
         $protocol = $this->protocol();
         $label = "{$protocol->protocolnum}/{$protocol->etos}";
         $writer->delete(Auth::user(), $protocol);
-        // R4h: to the trash (its number is free again; it can be restored from the trash)
-        session()->flash('notification', ['message' => "Το πρωτόκολλο $label μεταφέρθηκε στον κάδο. Ο αριθμός του είναι πάλι ελεύθερος· επαναφέρεται από τον Κάδο.", 'alert-type' => 'success']);
+        // R4h: to the trash. R4l (owner, 2026-11-25): only that, with «κάδο» a link to the trash's protocols
+        session()->flash('notification', ['message' => "Το πρωτόκολλο $label μεταφέρθηκε στον :link.", 'link' => ['κάδο', '/trash?tab=protocols'],
+            'alert-type' => 'success']);
         return $this->redirect(url('/home/list'));
     }
 
