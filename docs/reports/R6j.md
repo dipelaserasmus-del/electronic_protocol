@@ -16,6 +16,12 @@ On *Αρχεία καταγραφής*, the day's calendar should have a Today b
 
 ![‹ day › Σήμερα](img/R6j/r6j-today.png)
 
+## Review (Codex), fixed with a test
+After *Σήμερα* on a day without entries, both ‹ and › were greyed, so there was no way back to the newest day with
+entries except the calendar. Now ‹ and › always go to the nearest earlier / later day with entries, from any day; each
+is greyed only when there is none that way. Test: `LogViewerTest::test_today_button` (failed before) and the browser
+test (‹ enabled after *Σήμερα*).
+
 ## How verified
 - PHPUnit `LogViewerTest::test_today_button`, on 2026-11-25:
   - opens on the newest day with entries;

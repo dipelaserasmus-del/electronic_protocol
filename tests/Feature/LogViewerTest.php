@@ -119,7 +119,14 @@ class LogViewerTest extends FeatureTestCase
             ->assertSeeHtml('max="2026-11-25"');   // today can be chosen in the calendar too
         $page->call('today')->assertSet('day', '2026-11-25')->assertSet('page', 1)->assertSee('Καμία καταγραφή');
         $this->assertMatchesRegularExpression('~wire:click="today"\s+disabled~', $page->html());
+        // review of R6j: on an empty today ‹ is there (to the newest day with entries), › is not (nothing later)
+        $this->assertDoesNotMatchRegularExpression('~id="log-prev"\s+disabled|disabled[^>]*id="log-prev"~', $page->html());
+        $this->assertMatchesRegularExpression('~wire:click="step\(1\)"\s+disabled~', $page->html());
         $page->call('step', -1)->assertSet('day', '2026-11-21');   // back to the newest day with entries
+        // from any date: the nearest earlier / later day with entries
+        $page->set('day', '2026-11-22')->call('step', -1)->assertSet('day', '2026-11-21');
+        $page->set('day', '2026-11-19')->call('step', 1)->assertSet('day', '2026-11-20');
+        $page->set('day', '2026-11-19')->call('step', -1)->assertSet('day', '2026-11-19');   // nothing earlier: stays
     }
 
     /** review of R6e: an empty file, entries of the same second in order, the whole of a long message */
