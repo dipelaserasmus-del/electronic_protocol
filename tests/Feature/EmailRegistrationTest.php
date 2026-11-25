@@ -363,6 +363,7 @@ class EmailRegistrationTest extends FeatureTestCase
     private function register(User $user, array $fields = [], ?array $keys = [], bool $receipt = false): Testable
     {
         $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        $fields += ['fakelos' => 'Φ.1'];   // R5s: every e-mail needs a folder (a test about the folder gives its own)
         foreach ($fields as $field => $value) {
             $page->set('forms.'.self::UID.'.'.$field, $value);
         }

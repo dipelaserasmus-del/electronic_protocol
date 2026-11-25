@@ -260,14 +260,48 @@ class InboxTest extends FeatureTestCase
         // 01 has an attachment: without a folder it is not registered, and the page says why at the folder
         $page->call('register', 1, false)->assertHasErrors('forms.1.fakelos');
         $this->assertSame(0, \App\Models\Protocol::count());
-        $page->set('forms.1.thema', '')->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasErrors('forms.1.thema');
+        $page->set('forms.1.thema', '')->set('forms.1.fakelos', 'Φ.1')->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasErrors('forms.1.thema');
 
-        $page->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)->assertHasNoErrors();
+        $page->set('forms.1.thema', 'Ημερίδα')->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasNoErrors();
         $p = \App\Models\Protocol::sole();
         $page->assertSeeHtml("Καταχωρίστηκε με αριθμό <strong>{$p->protocolnum}/{$p->etos}</strong>")->assertSeeHtml('/home/'.$p->id);
         $this->assertSame([[1, 'INBOX.inProtocol']], $this->mailbox->moves);
-        $page->call('register', 1, false);   // pressed again: no second protocol
+        $page->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false);   // pressed again: no second protocol
         $this->assertSame(1, \App\Models\Protocol::count());
+    }
+
+    /** R5s (owner, 2026-11-25): every e-mail needs a folder, with or without attachments (before: only with ticked files) */
+    public function test_every_email_needs_a_folder(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $this->setting('alwaysShowFakelosInViewEmails', 0);   // the old setting, off: no longer matters
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+
+        // attachments unticked (registered before without a folder)
+        $page->set('forms.1.files', [])->call('register', 1, false)->assertHasErrors('forms.1.fakelos');
+        $this->assertSame('Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.', $page->errors()->first('forms.1.fakelos'));
+        // and with the receipt, and «register anyway»: the same
+        $page->set('forms.1.reply_to_email', 'sender@example.org')->call('register', 1, true)->assertHasErrors('forms.1.fakelos');
+        $page->call('register', 1, false, true)->assertHasErrors('forms.1.fakelos');
+        $this->assertSame(0, \App\Models\Protocol::count());
+        // with ticked files: said so
+        $page->set('forms.2.files', ['0' => true])->call('register', 2, false)->assertHasErrors('forms.2.fakelos');
+
+        // the service refuses it too, whoever calls it
+        try {
+            \App\Services\Mail\EmailRegistration::checkFolder(['fakelos' => ' '], []);
+            $this->fail('no folder accepted');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('fakelos', $e->errors());
+        }
+
+        // a folder: registered
+        $page->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasNoErrors();
+        $this->assertSame('Φ.1', \App\Models\Protocol::sole()->fakelos);
+
+        // the inbox's folder picker has no «— Χωρίς φάκελο»; the setting is gone from Ρυθμίσεις
+        $this->assertStringContainsString("folderPicker({ model: 'forms.2.fakelos', choices: [] })", $page->html());
+        $this->assertArrayNotHasKey('alwaysShowFakelosInViewEmails', collect(\App\Support\SettingsCatalog::groups())->flatMap(fn ($g) => $g['settings'])->all());
     }
 
     /** R5r (owner, 2026-11-25): refused: the reason right above the buttons, and the browser is told to show it */
@@ -287,7 +321,7 @@ class InboxTest extends FeatureTestCase
         $this->assertStringNotContainsString('spinner-border-sm" wire:loading wire:target="register(1', $form);
 
         // fixed and registered: no message, no event
-        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)
+        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)
             ->assertHasNoErrors()->assertNotDispatched('inbox-register-refused');
         $this->assertStringNotContainsString('inbox-register-error', $page->html());
     }
@@ -298,7 +332,7 @@ class InboxTest extends FeatureTestCase
         $this->mailbox->refuseMoves = true;
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
 
-        $page->set('forms.1.files.0', false)->call('register', 1, false)->assertHasNoErrors();
+        $page->set('forms.1.files.0', false)->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasNoErrors();
 
         $this->assertSame(1, \App\Models\Protocol::count());
         $page->assertSee('μην το καταχωρίσετε ξανά');
@@ -310,10 +344,10 @@ class InboxTest extends FeatureTestCase
     {
         \Illuminate\Support\Facades\Mail::fake();
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
-        $page->set('forms.2.reply_to_email', '')->call('register', 2, true)->assertHasErrors('forms.2.reply_to_email');
+        $page->set('forms.2.reply_to_email', '')->set('forms.2.fakelos', 'Φ.1')->call('register', 2, true)->assertHasErrors('forms.2.reply_to_email');
         $this->assertSame(0, \App\Models\Protocol::count());
 
-        $page->set('forms.2.reply_to_email', 'sender@example.org')->set('forms.2.files', [])->call('register', 2, true)->assertHasNoErrors();
+        $page->set('forms.2.reply_to_email', 'sender@example.org')->set('forms.2.files', [])->set('forms.2.fakelos', 'Φ.1')->call('register', 2, true)->assertHasNoErrors();
         $this->assertStringContainsString('απόδειξη παραλαβής σε sender@example.org', \App\Models\Protocol::sole()->paratiriseis);
     }
 
@@ -328,7 +362,7 @@ class InboxTest extends FeatureTestCase
         $writer = $this->writer();
         $page = Livewire::actingAs($writer)->test(EmailInbox::class);
         $this->setting('allowedEmailUsers', 'someone-else');
-        $page->call('register', 1, false)->assertForbidden();
+        $page->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertForbidden();
         $this->actingAs($writer)->get('/inbox')->assertRedirect();
         auth()->logout();
         $this->get('/inbox')->assertRedirect('/login');
@@ -343,7 +377,7 @@ class InboxTest extends FeatureTestCase
         $this->setting('protocolValidate', 0);
         $this->setting('allowWriterChangeDate', 1);
         foreach ([[$this->admin(), 2], [$this->writer(), 3]] as [$user, $uid]) {
-            Livewire::actingAs($user)->test(EmailInbox::class)->set("forms.$uid.files", [])->call('register', $uid, false)->assertHasNoErrors();
+            Livewire::actingAs($user)->test(EmailInbox::class)->set("forms.$uid.files", [])->set("forms.$uid.fakelos", 'Φ.1')->call('register', $uid, false)->assertHasNoErrors();
         }
         $this->assertSame(2, \App\Models\Protocol::count());
         foreach (\App\Models\Protocol::all() as $p) {
@@ -365,14 +399,14 @@ class InboxTest extends FeatureTestCase
 
         $writer = $this->writer();
         $this->actingAs($anna);   // each click as its own user (one request each in the browser)
-        $first->call('register', 2, false)->assertHasNoErrors();
+        $first->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasNoErrors();
         $this->assertSame(1, \App\Models\Protocol::count());
         $this->actingAs($writer);
         $label = $first->get('done')[2]['label'];
 
-        $second->call('register', 2, true)->assertHasNoErrors()
+        $second->set('forms.2.fakelos', 'Φ.1')->call('register', 2, true)->assertHasNoErrors()
             ->assertSee('Το email είχε ήδη καταχωριστεί (Άννα Δοκιμαστική): δεν καταχωρίστηκε ξανά.')->assertSee($label);
-        $second->call('register', 2, false, true);   // not even "register anyway"
+        $second->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false, true);   // not even "register anyway"
         $this->assertSame(1, \App\Models\Protocol::count());
 
         // marked read by one user: another's register does nothing either
@@ -380,7 +414,7 @@ class InboxTest extends FeatureTestCase
         $this->actingAs($anna);
         $first->call('markRead', 3)->assertHasNoErrors();
         $this->actingAs($writer);
-        $third->call('register', 3, false)->assertSee('Το email είχε ήδη μεταφερθεί στα αναγνωσμένα (Άννα Δοκιμαστική).');
+        $third->set('forms.3.fakelos', 'Φ.1')->call('register', 3, false)->assertSee('Το email είχε ήδη μεταφερθεί στα αναγνωσμένα (Άννα Δοκιμαστική).');
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
@@ -393,7 +427,7 @@ class InboxTest extends FeatureTestCase
         $this->setting('protocolValidate', 0);
         $this->mailbox->refuseMoves = true;
         Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])
-            ->call('register', 2, false)->assertSee('το πρωτόκολλο έχει ήδη καταχωριστεί');
+            ->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertSee('το πρωτόκολλο έχει ήδη καταχωριστεί');
         $this->assertSame(1, \App\Models\Protocol::count());
         $this->assertSame([], $this->mailbox->moves);
 
@@ -404,7 +438,7 @@ class InboxTest extends FeatureTestCase
         $this->assertSame('registered', $page->get('done')[2]['type']);
 
         // and it is still never registered again
-        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])->call('register', 2, false, true);
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false, true);
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
@@ -416,13 +450,13 @@ class InboxTest extends FeatureTestCase
         $lock = app(\App\Services\Mail\InboxClaims::class)->lock($page->get('mailboxId'), $page->get('uidValidity'), 2);
         $this->assertTrue($lock->get());   // someone else holds it
 
-        $page->call('register', 2, false)->assertHasErrors('forms.2.form')
+        $page->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasErrors('forms.2.form')
             ->assertSee('Άλλος χρήστης καταχωρίζει αυτή τη στιγμή αυτό το email.');
         $page->call('markRead', 2)->assertHasErrors('forms.2.form');
         $this->assertSame(0, \App\Models\Protocol::count());
 
         $lock->release();
-        $page->call('register', 2, false)->assertHasNoErrors();
+        $page->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasNoErrors();
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
@@ -511,12 +545,12 @@ class InboxTest extends FeatureTestCase
     {
         $this->setting('protocolValidate', 1);   // the protocol's checks: an outgoing document needs its date
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.2.files', [])
-            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->call('register', 2, false)
+            ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)
             ->assertHasErrors('forms.2.out_date');
         $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $page->html());   // open, with its error
         $this->assertSame(0, \App\Models\Protocol::count());
 
-        $page->set('forms.2.out_date', '20/11/2026')->set('forms.2.out_perilipsi', 'Διαβιβαστικό')->call('register', 2, false)
+        $page->set('forms.2.out_date', '20/11/2026')->set('forms.2.out_perilipsi', 'Διαβιβαστικό')->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)
             ->assertHasNoErrors();
         $p = \App\Models\Protocol::sole();
         // R5o (owner): in the list on the left the number, with ✓, under the e-mail's time
@@ -538,7 +572,7 @@ class InboxTest extends FeatureTestCase
         $page = Livewire::actingAs($this->admin())->test(EmailInbox::class)->set('forms.2.files', [])
             ->set('forms.2.out_to', 'Διεύθυνση Δοκιμών')->set('forms.2.out_date', '20/11/2026')
             ->set('forms.2.handle', [$handler->id])
-            ->call('register', 2, false)->assertHasErrors('forms.2.diekp_date');
+            ->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasErrors('forms.2.diekp_date');
         $html = $page->html();
         $this->assertStringContainsString('id="f-2-diekp_date"', $html);
         $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $html);   // open, with its error
@@ -550,7 +584,7 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(2, substr_count($html, $page->errors()->first('forms.2.diekp_date')), 'at the field and above the buttons (R5r), no more');
         $this->assertSame(0, \App\Models\Protocol::count());
 
-        $page->set('forms.2.diekp_date', '21/11/2026')->call('register', 2, false)->assertHasNoErrors();
+        $page->set('forms.2.diekp_date', '21/11/2026')->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasNoErrors();
         $this->assertSame('2026-11-21', \App\Models\Protocol::sole()->dateOf('diekp_date')->format('Y-m-d'));
     }
 
@@ -561,13 +595,13 @@ class InboxTest extends FeatureTestCase
         $old = \App\Models\Protocol::factory()->number(7)->create(['thema' => $page->get('forms.2.thema')]);
         $page->call('refresh')->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα')->assertSeeHtml('/home/'.$old->id);
 
-        $page->call('register', 2, false)->assertHasErrors('forms.2.similar')->assertSeeHtml('data-action="register-anyway"');
+        $page->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasErrors('forms.2.similar')->assertSeeHtml('data-action="register-anyway"');
         // R5k: the yellow button too is disabled during a save and turns while its own save runs
         $this->assertMatchesRegularExpression('~data-action="register-anyway"\s+wire:click="register\(2, false, true\)" wire:loading.attr="disabled" wire:target="register,markRead">\s*<span class="spinner-border[^"]*" wire:loading wire:target="register\(2, false, true\)"~', $page->html());
         $this->assertStringContainsString('wire:target="register(2, false), register(2, true), register(2, false, true), register(2, true, true)"', $page->html(), 'the notice of this e-mail');
         $this->assertSame(1, \App\Models\Protocol::count(), 'not registered yet');
 
-        $page->call('register', 2, false, true)->assertHasNoErrors();
+        $page->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false, true)->assertHasNoErrors();
         $this->assertSame(2, \App\Models\Protocol::count());
     }
 
@@ -583,7 +617,7 @@ class InboxTest extends FeatureTestCase
         $this->assertSame('ημερίδα, σεμινάριο', $page->get('forms.1.keywords'));
         $page->assertDontSeeHtml('data-suggest="ημερίδα"');   // chosen: no longer offered
 
-        $page->set('forms.1.files.0', false)->call('register', 1, false)->assertHasNoErrors();
+        $page->set('forms.1.files.0', false)->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasNoErrors();
         $this->assertSame('ημερίδα, σεμινάριο', \App\Models\Protocol::latest('id')->first()->keywords);
         $page->call('addTag', 'thema', 'x', 2)->assertStatus(400);   // only keywords
     }
@@ -595,7 +629,7 @@ class InboxTest extends FeatureTestCase
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
 
         $page->assertSeeHtml('placeholder="Βεβαίωση σπουδών 2026"')->assertSee('Το email δεν έχει θέμα');
-        $page->set('forms.5.files.0', false)->call('register', 5, false)->assertHasNoErrors();
+        $page->set('forms.5.files.0', false)->set('forms.5.fakelos', 'Φ.1')->call('register', 5, false)->assertHasNoErrors();
         $this->assertSame('Βεβαίωση σπουδών 2026', \App\Models\Protocol::sole()->thema);
     }
 
@@ -607,7 +641,7 @@ class InboxTest extends FeatureTestCase
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
 
         $page->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα');
-        $page->set('forms.5.files.0', false)->call('register', 5, false)->assertHasErrors('forms.5.similar');
+        $page->set('forms.5.files.0', false)->set('forms.5.fakelos', 'Φ.1')->call('register', 5, false)->assertHasErrors('forms.5.similar');
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
@@ -634,7 +668,7 @@ class InboxTest extends FeatureTestCase
         $this->assertStringContainsString('data-date-action="today"', $field);
         $this->assertStringContainsString('Ημ/νία εισερχ.', $field);
 
-        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.in_date', '9')->call('register', 6, false)->assertHasNoErrors();
+        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.in_date', '9')->set('forms.6.fakelos', 'Φ.1')->call('register', 6, false)->assertHasNoErrors();
         $this->assertSame(now()->setDay(9)->toDateString(), \App\Models\Protocol::where('thema', 'Αίτηση')->firstOrFail()->dateOf('in_date')->toDateString());
     }
 
@@ -664,7 +698,7 @@ class InboxTest extends FeatureTestCase
         $file = $this->get('/viewEmailAttachment/6/0-1')->assertOk();
         $this->assertStringContainsString("filename*=utf-8''".rawurlencode('Πίνακας μαθητών.xls'), $file->headers->get('Content-Disposition'));
         $this->assertSame('xls bytes', $file->getContent());
-        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.files.0-1', false)->call('register', 6, false)->assertHasNoErrors();
+        $page->set('forms.6.fakelos', 'Φ.1')->set('forms.6.files.0-1', false)->set('forms.6.fakelos', 'Φ.1')->call('register', 6, false)->assertHasNoErrors();
         $names = \App\Models\Attachment::orderBy('id')->pluck('name')->all();
         $this->assertSame('Αίτηση άδειας.pdf', $names[1]);
         $this->assertCount(2, $names, 'the e-mail + the ticked file (not winmail.dat)');
@@ -684,7 +718,7 @@ class InboxTest extends FeatureTestCase
         $page->assertSee('Αναφορά ανάγνωσης')->assertSee('Θέμα: Ημερίδα');
         $this->assertSame([], $page->get('forms.6.files'));
         $this->assertSame(['0' => true], $page->get('forms.7.files'), 'unreadable: winmail.dat itself, as before');
-        $page->call('register', 6, false)->assertHasNoErrors();
+        $page->set('forms.6.fakelos', 'Φ.1')->call('register', 6, false)->assertHasNoErrors();
         $this->assertStringStartsWith('Αναφορά: Ανάγνωση μηνύματος:', \App\Models\Protocol::sole()->in_perilipsi);
     }
 
@@ -695,7 +729,7 @@ class InboxTest extends FeatureTestCase
         $tnef = (new \Tests\Support\TnefBuilder(1253))->messageClass('IPM.Note')->body('Το πλήρες κείμενο του μηνύματος από το Outlook.')->bytes();
         $this->mailbox->messages = [6 => $this->winmailEml($tnef)];
 
-        Livewire::actingAs($this->writer())->test(EmailInbox::class)->call('register', 6, false)->assertHasNoErrors();
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.6.fakelos', 'Φ.1')->call('register', 6, false)->assertHasNoErrors();
 
         $page = \App\Models\Attachment::where('mimeType', 'text/html')->sole();
         $this->assertStringContainsString('Το πλήρες κείμενο του μηνύματος από το Outlook.', Storage::get($page->savedPath));
@@ -711,7 +745,7 @@ class InboxTest extends FeatureTestCase
             'Subject: =?UTF-8?B?'.base64_encode('Μεγάλη αναφορά').'?=', 'Date: Thu, 05 Mar 2026 10:15:00 +0200', 'MIME-Version: 1.0',
             'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: base64', '', chunk_split(base64_encode($text)), ''])];
 
-        Livewire::actingAs($this->writer())->test(EmailInbox::class)->call('register', 6, false)->assertHasNoErrors();
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->set('forms.6.fakelos', 'Φ.1')->call('register', 6, false)->assertHasNoErrors();
 
         $page = \App\Models\Attachment::where('mimeType', 'text/html')->sole();
         $this->assertStringContainsString('ΤΕΛΟΣ ΚΕΙΜΕΝΟΥ', Storage::get($page->savedPath));

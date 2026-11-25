@@ -199,8 +199,8 @@
                             <form class="card-body inbox-form" wire:submit="register({{ $uid }}, {{ $receiptOnly ? 'true' : 'false' }})" novalidate>
                                 @if ($err($uid, 'form'))<x-notice type="error" class="inbox-form-error">{{ $err($uid, 'form') }}</x-notice>@endif
                                 <div class="row g-2">
-                                    {{-- folder: required for e-mails with attachments (R1f picker) --}}
-                                    <div class="col-md-4 position-relative" x-data="folderPicker({ model: 'forms.{{ $uid }}.fakelos' })" x-on:click.outside="close()">
+                                    {{-- folder (R1f picker): R5s (owner, 2026-11-25) required for every e-mail, so no «— Χωρίς φάκελο» here --}}
+                                    <div class="col-md-4 position-relative" x-data="folderPicker({ model: 'forms.{{ $uid }}.fakelos', choices: [] })" x-on:click.outside="close()">
                                         <label for="f-{{ $uid }}-fakelos" class="form-label small fw-semibold mb-1">Φάκελος</label>
                                         <input id="f-{{ $uid }}-fakelos" class="form-control folder-input @if ($err($uid, 'fakelos')) is-invalid @endif" autocomplete="off" data-combobox
                                                role="combobox" aria-autocomplete="list" aria-controls="folder-list-{{ $uid }}" :aria-expanded="open"

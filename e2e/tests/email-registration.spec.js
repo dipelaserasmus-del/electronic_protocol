@@ -30,8 +30,17 @@ async function register(page, text) {
   return { message, notice: (await done.innerText()).replace(/\s+/g, ' '), before };
 }
 
-/** «Καταχώριση»; if a similar protocol exists (earlier runs on this database), «Ναι, καταχώριση» (R5d). */
+/** The first folder, if none is chosen (R5s: every e-mail needs one) */
+async function chooseFolder(message) {
+  const uid = await message.getAttribute('data-uid');
+  if (await message.locator(`#f-${uid}-fakelos`).inputValue()) return;
+  await message.locator(`#f-${uid}-fakelos`).click();
+  await message.locator(`#folder-list-${uid} li[role=option]`).first().click();
+}
+
+/** «Καταχώριση» (with a folder); if a similar protocol exists (earlier runs on this database), «Ναι, καταχώριση» (R5d). */
 async function submit(message) {
+  await chooseFolder(message);
   await message.locator('[data-action="register"]').click();
   const anyway = message.locator('[data-action="register-anyway"]');
   const done = message.locator('.inbox-done');
@@ -124,8 +133,18 @@ test('an e-mail with attachments needs a folder: said at the field, registered o
   await message.scrollIntoViewIfNeeded();
   await evidence(page, 'r5c-folder-needed', { clip: await message.boundingBox() });
 
+  // R5s (owner, 2026-11-25): without its files ticked it still needs a folder (before: registered with none)
+  const boxes = await message.locator('.inbox-attachment input[type=checkbox]').all();
+  for (const box of boxes) await box.uncheck();
+  await button.click();
+  await expect(error).toHaveText('Για να καταχωρίσετε ένα email επιλέξτε Φάκελο.');
+  await expect(message.locator('.inbox-done')).toHaveCount(0);
+  for (const box of boxes) await box.check();
   await message.locator(`#f-${uid}-fakelos`).click();
-  await message.locator(`#folder-list-${uid} li[role=option]`).nth(1).click();   // 0 is "— Χωρίς φάκελο"
+  const options = message.locator(`#folder-list-${uid} li[role=option]`);
+  await expect(options.first()).not.toContainText('Χωρίς φάκελο');   // no «— Χωρίς φάκελο» in the inbox
+  await expect(options.filter({ hasText: 'Χωρίς φάκελο' })).toHaveCount(0);
+  await options.first().click();
   await submit(message);
   const done = message.locator('.inbox-done');
   await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
@@ -174,6 +193,7 @@ test('same subject as a registered protocol: a notice, and a second click regist
   const again = await open(page, 'Μεγάλο σαρωμένο');
   await again.message.locator(`#f-${uid}-thema`).fill(subject);
   for (const box of await again.message.locator('.inbox-attachment input[type=checkbox]').all()) await box.uncheck();
+  await chooseFolder(again.message);   // R5s
   await again.message.locator('[data-action="register"]').click();
 
   const anyway = again.message.locator('[data-action="register-anyway"]');

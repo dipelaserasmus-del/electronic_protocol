@@ -305,6 +305,9 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
     if ((route.request().postData() ?? '').includes('"method":"register"')) await held;
     await route.continue();
   });
+  const uid = await message.getAttribute('data-uid');
+  await message.locator(`#f-${uid}-fakelos`).click();   // R5s: every e-mail needs a folder
+  await message.locator(`#folder-list-${uid} li[role=option]`).first().click();
   await message.locator('[data-action=register]').click();
   await expect(message.locator('.inbox-saving')).toBeVisible();
   await expect(message.locator('.inbox-saving')).toContainText('Καταχωρίζεται');

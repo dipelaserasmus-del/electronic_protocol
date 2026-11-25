@@ -140,12 +140,12 @@ class InboxLoadingTest extends FeatureTestCase
     {
         $this->setting('protocolValidate', 0);
         Livewire::actingAs($this->admin())->test(EmailInbox::class)->set('forms.1.files', [])
-            ->call('register', 1, false)->assertHasNoErrors();   // the snapshot (taken before) still lists it
+            ->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)->assertHasNoErrors();   // the snapshot (taken before) still lists it
         config(['imap.deferred_inbox' => true]);
 
         Livewire::actingAs($this->writer())->test(EmailInbox::class)
             ->assertSee('Το email είχε ήδη καταχωριστεί')->assertSee('inbox-done', false)
-            ->call('register', 1, false)
+            ->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)
             ->call('connect')->assertDontSee('inbox-message', false);   // gone from the server's list
         $this->assertSame(1, \App\Models\Protocol::count());
     }
