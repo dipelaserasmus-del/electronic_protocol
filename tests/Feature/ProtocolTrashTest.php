@@ -197,8 +197,18 @@ class ProtocolTrashTest extends FeatureTestCase
         Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])
             ->assertSeeHtml('Να μεταφερθεί στον κάδο το πρωτόκολλο 70/')
             ->call('deleteProtocol')->assertRedirect(url('/home/list'));
-        $this->assertStringContainsString('μεταφέρθηκε στον κάδο', session('notification')['message']);
         $this->assertSame(1, TrashedProtocol::count());
+        // R4l (owner, 2026-11-25): only «… μεταφέρθηκε στον κάδο.», with «κάδο» a link to the trash's protocols
+        $this->assertSame(['κάδο', '/trash?tab=protocols'], session('notification')['link']);
+        $html = $this->actingAs($this->admin())->withSession(['notification' => session('notification')])->get('/home/list')->getContent();
+        $this->assertStringContainsString('Το πρωτόκολλο 70/'.now()->year.' μεταφέρθηκε στον <a href="'.e(url('/trash?tab=protocols')).'" class="alert-link">κάδο</a>.', $html);
+        $this->assertStringNotContainsString('πάλι ελεύθερος', $html);
+        $this->assertStringNotContainsString(':link', $html);
+
+        // a link that is not a path of this site is never drawn (the marker stays as text)
+        $html = $this->actingAs($this->admin())->withSession(['notification' => ['message' => 'Δες :link', 'link' => ['εδώ', 'https://example.org/'], 'alert-type' => 'success']])
+            ->get('/home/list')->getContent();
+        $this->assertStringNotContainsString('example.org', $html);
     }
 
     /** review of R4h: the files tab on every request; a file that does not come back is said and kept */

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 13:21 (R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 13:24 (R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -279,6 +279,7 @@ Open *Εισερχόμενα*.
   to *Φάκελος* (red, the reason under it, the list open to choose one).
 - [ ] **89.** A protocol with an ΑΔΑ and no file (*ΑΔΑ (Διαύγεια, χωρίς αρχείο)*): in *Συνημμένα* the pill says *ΑΔΑ* and the code is on the left, a link to Διαύγεια; no «Μόνο ΑΔΑ».
 - [ ] **90.** *Νέο*: type a *Θέμα* and press *Αποθήκευση* at once (without leaving the field): it goes to the saved protocol, no «leave page?».
+- [ ] **91.** Delete a test protocol (*Διαγραφή*): the green notice only says *Το πρωτόκολλο N/YYYY μεταφέρθηκε στον κάδο.*, and *κάδο* opens *Κάδος → Πρωτόκολλα*.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

@@ -182,7 +182,14 @@
         <div class="alert alert-{{ $type }} alert-dismissible fade show" role="alert">
             {{-- legacy notifications carry simple HTML (<br>, <strong>, <li>): everything is escaped, then only
                  those bare tags (no attributes) are turned back into HTML --}}
-            {!! preg_replace('~&lt;(/?)(br|strong|b|i|em|ul|li)\s*/?&gt;~i', '<$1$2>', e($notification['message'])) !!}
+            @php
+                $noticeHtml = preg_replace('~&lt;(/?)(br|strong|b|i|em|ul|li)\s*/?&gt;~i', '<$1$2>', e($notification['message']));
+                // R4l: one link of this site, given apart (['κάδο', '/trash?tab=protocols']) and put where «:link» is
+                if (isset($notification['link']) && \App\Livewire\ProtocolForm::sameSite($notification['link'][1] ?? null)) {
+                    $noticeHtml = str_replace(':link', '<a href="'.e(url($notification['link'][1])).'" class="alert-link">'.e($notification['link'][0] ?? '').'</a>', $noticeHtml);
+                }
+            @endphp
+            {!! $noticeHtml !!}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Κλείσιμο"></button>
         </div>
     @endif

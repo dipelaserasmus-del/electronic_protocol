@@ -18,7 +18,10 @@ test('a deleted protocol waits in the trash and comes back (R4h)', async ({ page
     await page.getByRole('button', { name: 'Διαγραφή' }).click();
     await expect(page.locator('#app-confirm')).toContainText(`Να μεταφερθεί στον κάδο το πρωτόκολλο ${num}/${year}`);
     await Promise.all([page.waitForURL(/\/home\/list/), page.locator('#app-confirm [data-confirm-yes]').click()]);
-    await expect(page.locator('main')).toContainText(`Το πρωτόκολλο ${num}/${year} μεταφέρθηκε στον κάδο`);
+    const notice = page.locator('main > .alert');
+    await expect(notice).toHaveText(`Το πρωτόκολλο ${num}/${year} μεταφέρθηκε στον κάδο.`);   // R4l: only that
+    await expect(notice.getByRole('link', { name: 'κάδο' })).toHaveAttribute('href', /\/trash\?tab=protocols$/);
+    await evidence(page, 'r4l-trash-notice', { clip: { x: 0, y: 40, width: 1440, height: 110 } });
 
     // the link says «Στον κάδο» to an administrator
     await page.goto(`/protocol/${num}/${year}`);
