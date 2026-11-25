@@ -129,6 +129,57 @@ class LogViewerTest extends FeatureTestCase
         $page->set('day', '2026-11-19')->call('step', -1)->assertSet('day', '2026-11-19');   // nothing earlier: stays
     }
 
+    /** R6k: personal data out of log text: e-mail addresses, a failed e-mail's fields, the values in a database error */
+    public function test_personal_data_is_masked(): void
+    {
+        $mail = '[2026-11-22 09:00:00] production.WARNING: Outgoing e-mail failed {"to":"maria.p@school.gr","subject":"Άδεια Παπαδοπούλου Μαρίας","mailer":"smtp","error":"Connection refused"}';
+        $this->assertSame('[2026-11-22 09:00:00] production.WARNING: Outgoing e-mail failed {"to":"…","subject":"…","mailer":"smtp","error":"Connection refused"}',
+            \App\Services\Logs\LogMask::text($mail));
+        $sql = "[2026-11-22 10:00:00] production.ERROR: SQLSTATE[22001]: Data too long (Connection: mysql, SQL: insert into `protocols` (`thema`, `in_arxi_ekdosis`) values ('Αίτηση Νίκου Γεωργίου', 'nikos@example.org')) {\"userId\":3,\"exception\":\"[object] (Illuminate\\Database\\QueryException(code: 22001): x at /var/www/html/app/X.php:12)\"}";
+        $masked = \App\Services\Logs\LogMask::text($sql);
+        $this->assertStringContainsString("values ('…', '…'))", $masked);
+        $this->assertStringNotContainsString('Νίκου', $masked);
+        $this->assertStringContainsString('"userId":3', $masked, 'what a developer needs stays');
+        $this->assertStringContainsString('/var/www/html/app/X.php:12', $masked);
+        // review of R6k: a value on several lines (Περίληψη, Παρατηρήσεις keep their line breaks), and a brace or a
+        // quote inside a value
+        $multi = "[2026-11-22 11:00:00] production.ERROR: SQLSTATE[22001]: x (Connection: mysql, SQL: insert into `protocols` (`in_perilipsi`, `thema`) values ('Αίτηση\nΜαρία Παπαδοπούλου\nΤηλ. 6900000000', 'Θέμα {Γιάννη} O\\'Brien')) {\"userId\":4}";
+        $masked = \App\Services\Logs\LogMask::text($multi);
+        $this->assertStringNotContainsString('Παπαδοπούλου', $masked);
+        $this->assertStringNotContainsString('6900000000', $masked);
+        $this->assertStringNotContainsString('Γιάννη', $masked);
+        $this->assertStringNotContainsString('Brien', $masked);
+        $this->assertStringContainsString("values ('…', '…')) {\"userId\":4}", $masked);
+        $this->assertSame('550 mailbox ***@dipe.gr unavailable', \App\Services\Logs\LogMask::text('550 mailbox kostas.k@dipe.gr unavailable'));
+        $this->assertSame('#0 /var/www/html/app/Services/X.php(12): run()', \App\Services\Logs\LogMask::text('#0 /var/www/html/app/Services/X.php(12): run()'));
+    }
+
+    /** R6k (owner, 2026-11-25): «Εξαγωγή»: the day's entries as shown, oldest first, masked unless the switch is off */
+    public function test_export_of_the_day_masked_or_full(): void
+    {
+        file_put_contents("$this->dir/laravel-2026-11-22.log", implode("\n", [
+            '[2026-11-22 09:00:00] production.WARNING: Outgoing e-mail failed {"to":"maria.p@school.gr","subject":"Άδεια Μαρίας","error":"refused"}',
+            '[2026-11-22 09:30:00] production.INFO: Κάτι άλλο',
+            '[2026-11-22 10:00:00] production.ERROR: Λάθος για nikos@example.org',
+            '#0 /var/www/html/app/X.php(12): run()',
+        ]) . "\n");
+        Cache::flush();
+        $page = Livewire::actingAs($this->admin())->test(LogViewer::class)->set('day', '2026-11-22')
+            ->assertSet('mask', true)->assertSee('Εξαγωγή (3)')->assertSee('Απόκρυψη προσωπικών στοιχείων');
+
+        $page->call('export')->assertFileDownloaded('log-2026-11-22.txt', implode("\n", [
+            '[2026-11-22 09:00:00] production.WARNING: Outgoing e-mail failed {"to":"…","subject":"…","error":"refused"}',
+            '[2026-11-22 09:30:00] production.INFO: Κάτι άλλο',
+            '[2026-11-22 10:00:00] production.ERROR: Λάθος για ***@example.org',
+            '#0 /var/www/html/app/X.php(12): run()',
+        ]) . "\n");
+
+        // only what the page shows (here: errors), and in full with the switch off; the warning says what it may hold
+        $page->set('levels', ['error'])->set('mask', false)->assertSee('μπορεί να περιέχει προσωπικά στοιχεία')
+            ->call('export')->assertFileDownloaded('log-2026-11-22-full.txt',
+                "[2026-11-22 10:00:00] production.ERROR: Λάθος για nikos@example.org\n#0 /var/www/html/app/X.php(12): run()\n");
+    }
+
     /** review of R6e: an empty file, entries of the same second in order, the whole of a long message */
     public function test_empty_files_same_second_and_long_messages(): void
     {

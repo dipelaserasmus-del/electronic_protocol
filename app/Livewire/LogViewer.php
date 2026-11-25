@@ -112,18 +112,44 @@ class LogViewer extends Component
         return implode("\n", $out);
     }
 
-    public function render(LogReader $reader)
+    /** R6k: the export: personal data masked (on by default; off: the full text) */
+    public bool $mask = true;
+
+    /** the day's entries with the levels and the search applied (newest first) */
+    private function filtered(array $all): array
     {
-        $all = $reader->day($this->day);
-        $counts = array_count_values(array_column($all, 'level'));
         $q = trim($this->q);
         $fold = fn (string $s) => \App\Support\TagList::fold($s);
-        $entries = array_values(array_filter($all, function ($e) use ($q, $fold) {
+        return array_values(array_filter($all, function ($e) use ($q, $fold) {
             if ($this->levels && ! in_array($e['level'], $this->levels, true)) {
                 return false;
             }
             return $q === '' || str_contains($fold($e['message'] . "\n" . $e['details']), $fold($q));
         }));
+    }
+
+    /**
+     * R6k (owner, 2026-11-25): «Εξαγωγή»: the day's entries as shown (levels, search; every page), oldest first, as a
+     * text file in the log's own form; personal data masked unless the switch is off (App\Services\Logs\LogMask)
+     */
+    public function export(LogReader $reader)
+    {
+        $entries = array_reverse($this->filtered($reader->day($this->day)));   // administrators only: boot()
+        $lines = [];
+        foreach ($entries as $e) {
+            $line = "[{$this->day} {$e['time']}] {$e['channel']}." . strtoupper($e['level']) . ": {$e['message']}" . ($e['details'] !== '' ? "\n{$e['details']}" : '');
+            $lines[] = $this->mask ? \App\Services\Logs\LogMask::text($line) : $line;   // each entry on its own
+        }
+        $text = implode("\n", $lines) . ($lines ? "\n" : '');
+        $name = 'log-' . $this->day . ($this->mask ? '' : '-full') . '.txt';
+        return response()->streamDownload(fn () => print($text), $name, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
+    public function render(LogReader $reader)
+    {
+        $all = $reader->day($this->day);
+        $counts = array_count_values(array_column($all, 'level'));
+        $entries = $this->filtered($all);
         $pages = max(1, (int) ceil(count($entries) / self::PER_PAGE));
         $this->page = min(max(1, $this->page), $pages);
         $days = $reader->days();

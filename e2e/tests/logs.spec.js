@@ -65,3 +65,28 @@ test('the log viewer has a Σήμερα button (R6j)', async ({ page }) => {
   const bar = await page.locator('#log-day').locator('..').boundingBox();
   await evidence(page, 'r6j-today', { clip: { x: Math.max(0, bar.x - 20), y: Math.max(0, bar.y - 10), width: bar.width + 40, height: bar.height + 20 } });
 });
+
+// R6k (owner, 2026-11-25): «Εξαγωγή» downloads the day's entries as shown; personal data masked unless switched off
+test('the log viewer exports the day\'s entries, masked by default (R6k)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  await page.goto('/logs');
+  const run = page.locator('#log-export-run');
+  if (await run.isDisabled()) test.skip(true, 'no entries on the newest day of this copy');
+  await expect(page.locator('#log-mask')).toBeChecked();
+  await evidence(page, 'r6k-export', { clip: { x: 0, y: 50, width: 1440, height: 220 } });
+  const [download] = await Promise.all([page.waitForEvent('download'), run.click()]);
+  expect(download.suggestedFilename()).toMatch(/^log-\d{4}-\d{2}-\d{2}\.txt$/);
+  const text = require('fs').readFileSync(await download.path(), 'utf8');
+  expect(text).toMatch(/^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] \w+\.[A-Z]+: /);
+  // every e-mail address in it is masked: «***@domain»
+  for (const address of text.match(/[^\s"'<>(),;:]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) ?? []) expect(address).toMatch(/^\*\*\*@/);
+
+  // the switch off: the full text, and the warning
+  await page.locator('#log-mask').uncheck();
+  await expect(page.locator('#log-export-note')).toContainText('μπορεί να περιέχει προσωπικά στοιχεία');
+  const [full] = await Promise.all([page.waitForEvent('download'), run.click()]);
+  expect(full.suggestedFilename()).toMatch(/-full\.txt$/);
+  await evidence(page, 'r6k-export-full', { clip: { x: 0, y: 50, width: 1440, height: 220 } });
+  await page.locator('#log-mask').check();
+});

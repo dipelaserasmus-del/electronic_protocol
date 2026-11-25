@@ -36,6 +36,25 @@
                wire:model.live.debounce.400ms="q" id="log-search">
     </div>
 
+    {{-- R6k (owner, 2026-11-25): the day's entries as shown (levels, search; every page) to a text file; personal data
+         masked unless the switch is off --}}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 log-export" id="log-export">
+        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" wire:click="export" id="log-export-run" @disabled(! $found)>
+            <i class="bi bi-download me-1" aria-hidden="true"></i>Εξαγωγή ({{ $found }})</button>
+        <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="log-mask" wire:model.live="mask">
+            <label class="form-check-label small" for="log-mask">Απόκρυψη προσωπικών στοιχείων</label>
+        </div>
+        <span class="small @if ($mask) text-body-secondary @else text-danger @endif" id="log-export-note">
+            @if ($mask)
+                Οι διευθύνσεις e-mail, τα θέματα και οι τιμές μέσα στα σφάλματα της βάσης κρύβονται.
+            @else
+                <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Το αρχείο μπορεί να περιέχει προσωπικά στοιχεία (e-mail, ονόματα, θέματα
+                πρωτοκόλλων): φυλάξτε το όπως το ίδιο το πρωτόκολλο και μην το στέλνετε χωρίς λόγο.
+            @endif
+        </span>
+    </div>
+
     <div class="small text-body-secondary mb-2" id="log-summary">
         {{ $found }} από {{ $total }} καταγραφές στις {{ \Carbon\Carbon::parse($day)->format('d/m/Y') }}.
         @if ($truncated) <span class="text-warning-emphasis">Η ημέρα είναι πολύ μεγάλη: φαίνονται οι νεότερες καταγραφές της.</span> @endif
