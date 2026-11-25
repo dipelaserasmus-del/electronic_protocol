@@ -48,6 +48,15 @@ Show a rendered preview first, and decide before it is merged.
 
 ![A narrow screen: the menu above](img/R6f/r6f-narrow.png)
 
+## Review (Codex) and CI, fixed with tests
+- A link to a setting (`/settings?setting=mysqldumpPath`) kept `setting=` in the address after another section was
+  chosen, so a reload went back to that setting's section. Now `setting=` is used once and leaves the address, and a
+  `section=` in the address wins. Tests: `SettingsPageTest` (failed before) and the R6f browser test (choose
+  another section: no `setting=`, a reload stays there).
+- The full browser suite: R2m's check that the top bar stays in view scrolled `/settings`, which is now one short
+  section; it scrolls the folders page instead. R2i's narrow-page check now starts from the default narrow width (a
+  width set with − / + on the demo made it fail).
+
 ## How verified
 - PHPUnit `SettingsPageTest`:
   - every setting is in exactly one section, and each section shows only its own;
