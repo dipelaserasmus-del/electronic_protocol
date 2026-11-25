@@ -286,6 +286,9 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .protocol-table .protocol-row:not(.row-open) .assignee-more { display: inline-block; flex-shrink: 0; }
 .protocol-table .protocol-row:not(.row-open) .from-to-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .from-to-more { cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
+/* R2q: the tooltip's parts one per line (the text has line breaks: no HTML in it) */
+.from-to-tooltip { --bs-tooltip-max-width: 22rem; }
+.from-to-tooltip .tooltip-inner { white-space: pre-line; text-align: left; }
 .protocol-table .protocol-row.row-open .more-files { display: none; }
 .protocol-table .protocol-row.row-open > td { vertical-align: top; }
 .attachment-name > a { min-width: 0; max-width: 100%; }
