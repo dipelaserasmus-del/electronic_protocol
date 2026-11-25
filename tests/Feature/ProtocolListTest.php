@@ -55,6 +55,42 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertStringNotContainsString('class="badge text-bg-light position-relative z-2" title="9ΒΥΞ46ΝΚΠΔ-ΤΤΤ"', $html, 'not the old small badge');
     }
 
+    /** R2r (owner, 2026-11-25): the e-mail's own file after the attachments (unless set first), shown by its date and time */
+    public function test_the_email_file_comes_last_shown_by_its_date(): void
+    {
+        $writer = $this->writer();
+        $p = Protocol::factory()->number(1)->create(['fakelos' => 'Φ.1', 'user_id' => $writer->id]);
+        \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'email_20261112_103626.eml']);
+        \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'ΑΔΕΙΑ ΝΙΚΟΛΑΚΟΠΟΥΛΟΥ.pdf']);
+        $only = Protocol::factory()->number(2)->create(['fakelos' => 'Φ.1', 'user_id' => $writer->id]);
+        \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $only->id, 'name' => 'email_20261111_090000.eml']);
+        $names = function () use ($writer, $p) {
+            $html = preg_replace('~<!--\[if (END)?BLOCK\]><!\[endif\]-->~', '', Livewire::actingAs($writer)->test(ProtocolList::class)->html());
+            preg_match('~data-id="'.$p->id.'".*?</tr>~s', $html, $row);
+            preg_match_all('~<span x-show="detailed \|\| open" x-cloak class="text-break">([^<]+)</span>~', $row[0], $m);
+            return [$m[1], $html];
+        };
+
+        [$shown, $html] = $names();
+        $this->assertSame(['ΑΔΕΙΑ ΝΙΚΟΛΑΚΟΠΟΥΛΟΥ.pdf', '12/11/2026 · 10:36:26'], $shown, 'the e-mail last, by its date and time');
+        $this->assertStringContainsString('title="email_20261112_103626.eml"', $html, 'its name on hover');
+        $this->assertStringContainsString('11/11/2026 · 09:00:00', $html, 'the only file: shown, by its date');
+
+        $this->setting('emailFileFirst', 1);   // the administrator puts it first, for everyone
+        $this->assertSame(['12/11/2026 · 10:36:26', 'ΑΔΕΙΑ ΝΙΚΟΛΑΚΟΠΟΥΛΟΥ.pdf'], $names()[0]);
+        $this->assertSame('12/11/2026 · 10:36:26', \App\Support\EmailFile::label('email_20261112_103626.eml'));
+        $this->assertSame('email_kati.eml', \App\Support\EmailFile::label('email_kati.eml'), 'another name as it is');
+        $this->assertSame('files', \App\Support\SettingsCatalog::sectionOf('emailFileFirst'));
+
+        // review of R2r: the setting is read once for the whole list, not once per row
+        Protocol::factory()->count(20)->sequence(fn ($seq) => ['protocolnum' => 100 + $seq->index])->create(['user_id' => $writer->id]);
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        Livewire::actingAs($writer)->test(ProtocolList::class)->html();
+        $reads = collect(\Illuminate\Support\Facades\DB::getQueryLog())->filter(fn ($q) => in_array('emailFileFirst', $q['bindings'], true))->count();
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+        $this->assertLessThanOrEqual(1, $reads, "read $reads times");
+    }
+
     /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων»; no Νέο / Ανανέωση on the page: ↻ next to «Λίστα»; ↑ back to the top */
     public function test_the_list_header_names_the_screen_and_refresh_is_in_the_top_bar(): void
     {

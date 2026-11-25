@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 14:39 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k and R2q; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 14:54 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q and R2r; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R2r (owner, 2026-11-25):** `App\Support\EmailFile` (is / label / ordered: «email_YYYYMMDD_HHMMSS.eml|html»); protocol-list loops `EmailFile::ordered($p->attachments)` and shows `label()`; setting `emailFileFirst` (bool, off = last; no row needed) in the «Συνημμένα» section.
 - **R2q (owner, 2026-11-25):** protocol-list `$inMore` / `$outMore` joined with "\n"; tooltips `customClass: 'from-to-tooltip'` → `.tooltip-inner { white-space: pre-line }` (the title stays plain text).
 - **R6k (owner, 2026-11-25):** LogViewer `export()` (streamDownload `log-<day>[-full].txt`; `filtered()` shared with render; `$mask` true by default) + `App\Services\Logs\LogMask::text()` (emails → ***@domain; JSON / PHP-array values of personal keys → …; quoted values in `SQL: …` → '…'). The log can hold personal data: OutgoingMail logs `to` and `subject`; QueryException messages carry the query's values; report() adds userId.
 - **R6j (owner, 2026-11-25):** LogViewer `today()`; `#log-today` in the day's input-group (disabled on today); the date input's max = max(newest day, today).
@@ -376,6 +377,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 14:54 | R2r | #141 | list: the e-mail file after the attachments, by its date and time; setting to put it first |
 | 2026-11-25 14:39 | R2q | #140 | list: the Από / Προς tooltip one line per part |
 | 2026-11-25 14:37 | R6k | #139 | log viewer: «Εξαγωγή» of the day's entries; personal data masked by default |
 | 2026-11-25 13:31 | R6j | #138 | log viewer: «Σήμερα» next to the day |

@@ -177,6 +177,7 @@ tasks = [
   { id = "R6j", title = "Log viewer: a «Σήμερα» button next to the day", phase = "R", batch = 9.7, size = "S", deps = ["R6e"], status = "done", pr = 138 },
   { id = "R6k", title = "Log viewer: «Εξαγωγή» of the day's entries as shown; personal data masked by default", phase = "R", batch = 9.7, size = "S", deps = ["R6e"], status = "done", pr = 139 },
   { id = "R2q", title = "List: the Από / Προς tooltip one line per part (sender, number, date)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 140 },
+  { id = "R2r", title = "List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 141 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

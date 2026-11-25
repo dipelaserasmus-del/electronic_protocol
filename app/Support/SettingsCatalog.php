@@ -121,6 +121,12 @@ final class SettingsCatalog
                         .'λέει: επιλέξτε μικρότερο διάστημα ημερομηνιών.'],
             ]],
             'files' => ['title' => 'Συνημμένα', 'icon' => 'paperclip', 'settings' => [
+                // R2r (owner, 2026-11-25): the e-mail's own file (registered from the inbox) first or last in the list's files
+                'emailFileFirst' => ['label' => 'Το αρχείο του e-mail πρώτο στα συνημμένα της λίστας', 'kind' => 'bool',
+                    'help' => 'Κλειστό (αρχικά): το e-mail (EML) μετά τα συνημμένα του, με την ημερομηνία και ώρα του αντί για το όνομα αρχείου.',
+                    'more' => 'Ένα πρωτόκολλο από τα Εισερχόμενα κρατά και το ίδιο το e-mail ως αρχείο (email_ημερομηνία_ώρα.eml). Στη Λίστα '
+                        .'φαίνεται ως «12/11/2026 · 10:36:26». Κλειστό: μπαίνει μετά τα πραγματικά συνημμένα (που φαίνονται πρώτα και στη '
+                        .'σύντομη γραμμή), εκτός αν είναι το μόνο αρχείο. Ανοιχτό: πρώτο, όπως παλιά. Ισχύει για όλους τους χρήστες.'],
                 'putStamp' => ['label' => 'Σφραγίδα στα συνημμένα (αρχική επιλογή)', 'kind' => 'bool',
                     'help' => 'Η αρχική επιλογή «Με σφραγίδα» για όσους χρήστες δεν έχουν διαλέξει: κάθε χρήστης την αλλάζει στα Συνημμένα ή στην προεπισκόπηση.',
                     'more' => 'Από την R4f τα αρχεία αποθηκεύονται όπως ήρθαν· η σφραγίδα (αριθμός, ημερομηνία, ό,τι ορίζει το σχέδιό της) '
@@ -203,8 +209,8 @@ final class SettingsCatalog
             ['protocolValidate', 'allowEmptyProtocol', 'saveCycleSxetiko']],
         'rights' => ['Πρωτόκολλο', 'Δικαιώματα', 'shield-lock', 'Τι μπορούν να αλλάξουν οι Συγγραφείς και οι Αναθέτοντες, και ποια πρωτόκολλα βλέπουν στη λίστα.',
             ['allowWriterUpdateProtocol', 'allowWriterUpdateProtocolTimeInMinutes', 'allowWriterChangeDate', 'limitProtocolAccessList']],
-        'files' => ['Αρχεία', 'Συνημμένα', 'paperclip', 'Η σφραγίδα, ο χρόνος διατήρησης και η Διαύγεια.',
-            ['putStamp', 'allowUserChangeKeepSelect', 'diavgeiaUrl']],
+        'files' => ['Αρχεία', 'Συνημμένα', 'paperclip', 'Η σφραγίδα, ο χρόνος διατήρησης, η Διαύγεια και η θέση του e-mail στη λίστα.',
+            ['putStamp', 'allowUserChangeKeepSelect', 'diavgeiaUrl', 'emailFileFirst']],
         'trash' => ['Αρχεία', 'Κάδος', 'trash3', 'Πόσο μένουν στον κάδο τα διαγραμμένα συνημμένα και πρωτόκολλα.',
             ['trashRetentionDays']],
         'printing' => ['Αρχεία', 'Εκτυπώσεις και Excel', 'printer', 'Το όριο γραμμών για την εκτύπωση πρωτοκόλλου και το Excel.',
