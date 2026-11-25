@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **119 / 129** `████████████████████████████░░` 92% |
-| Effort done (PERT) | **51.1 / 55.7 h** `████████████████████████████░░` 92% |
+| Tasks done | **120 / 130** `████████████████████████████░░` 92% |
+| Effort done (PERT) | **51.4 / 56.0 h** `████████████████████████████░░` 92% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l | 19/19 | `██████████` |
+| 9.7 | ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o | 20/20 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -173,6 +173,7 @@ flowchart LR
     R1m["R1m<br/>Form: an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ»)"]
     R1n["R1n<br/>Fix: saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save)"]
     R4l["R4l<br/>Deleted protocol: the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash"]
+    R2o["R2o<br/>List: the no-folder flag says «Χωρίς φάκελο» in full"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -338,6 +339,7 @@ flowchart LR
   R1c --> R1m
   R1k --> R1n
   R4h --> R4l
+  R2n --> R2o
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -363,7 +365,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -512,17 +514,18 @@ gantt
   R1m Form  an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ») :done, r1m, 2026-11-14 10:35, 19m
   R1n Fix  saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save) :done, r1n, 2026-11-14 10:54, 19m
   R4l Deleted protocol  the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash :done, r4l, 2026-11-14 11:13, 19m
+  R2o List  the no-folder flag says «Χωρίς φάκελο» in full :done, r2o, 2026-11-14 11:32, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 11:32, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 12:05, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 12:24, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 12:43, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 13:16, 19m
-  X01 Audit log — recording :x01, 2026-11-14 13:35, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 14:08, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 14:41, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 15:14, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 15:33, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 11:51, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 12:24, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 12:43, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 13:02, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 13:35, 19m
+  X01 Audit log — recording :x01, 2026-11-14 13:54, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 14:27, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 15:00, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 15:33, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 15:52, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -591,7 +594,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 10.8 | 11.1 | 10.3 | #99 |
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.7 | #71 |
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 | #72 |
-| ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 10.3 | 10.8 | 5.8 | #73 |
+| ✅ | **R2f** | Dates out of order with the numbers, or in the future: flagged in the list (⚠ + explanation) and warned in the form | R2e, R1b | 0.5 | 0.1 | 4.5 | 5.0 | 9.9 | 10.5 | 5.5 | #73 |
 | ✅ | **R2g** | List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 6.2 | 6.6 | 1.7 | #74 |
 | ✅ | **R2h** | List: the row actions (copy, receipt) under a ⋮ menu | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 9.2 | 9.5 | 5.0 | #75 |
 | ✅ | **R5e** | Inbox: the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects | R5d, N04 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 | #76 |
@@ -640,7 +643,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5s** | Inbox: a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed | R5c | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #123 |
 | ✅ | **R4k** | Stamp: the number and date lines on opaque white (nothing under the stamp hides them) | R4e | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 | #124 |
 | ✅ | **R5t** | Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch | R4f, R4i | 0.3 | 0.1 | 5.6 | 5.9 | 10.8 | 11.1 | 5.2 | #125 |
-| ✅ | **R2n** | List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date | R2f | 0.3 | 0.1 | 5.0 | 5.4 | 10.8 | 11.1 | 5.8 | #126 |
+| ✅ | **R2n** | List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date | R2f | 0.3 | 0.1 | 5.0 | 5.4 | 10.5 | 10.8 | 5.5 | #126 |
 | ✅ | **R5u** 🔴 | User menu: «Εμφάνιση των e-mail» only on the inbox page | R5q | 0.3 | 0.1 | 10.8 | 11.1 | 10.8 | 11.1 | 0.0 | #127 |
 | ✅ | **R6f** | Ρυθμίσεις as GitHub's settings: a menu of sections under headings, one section at a time, saved on its own | R6d | 0.5 | 0.1 | 4.7 | 5.3 | 10.6 | 11.1 | 5.9 | #128 |
 | ✅ | **R6g** | Φάκελοι και διατήρηση: sort by Κωδικός / Πρωτ.; a folder's code shows its protocols | R6b | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #129 |
@@ -650,6 +653,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1m** | Form: an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ») | R1c | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 | #133 |
 | ✅ | **R1n** | Fix: saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save) | R1k | 0.3 | 0.1 | 6.2 | 6.6 | 10.8 | 11.1 | 4.6 | #134 |
 | ✅ | **R4l** | Deleted protocol: the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash | R4h | 0.3 | 0.1 | 3.4 | 3.7 | 10.8 | 11.1 | 7.4 | #135 |
+| ✅ | **R2o** | List: the no-folder flag says «Χωρίς φάκελο» in full | R2n | 0.3 | 0.1 | 5.4 | 5.7 | 10.8 | 11.1 | 5.5 | #136 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |

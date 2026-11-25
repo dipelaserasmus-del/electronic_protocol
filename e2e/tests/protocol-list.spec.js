@@ -543,7 +543,7 @@ test('a protocol without a folder is flagged in the list (R2n)', async ({ page }
   await expect(row).toHaveClass(/folder-flagged/);
   const flag = row.locator('td.col-folder .folder-flag, td:nth-child(2) .folder-flag').first();
   await expect(flag).toBeVisible();
-  await expect(flag).toContainText('Χωρίς');
+  await expect(flag).toHaveText('Χωρίς φάκελο');   // R2o: in full
   await flag.hover();
   const tip = page.locator('.tooltip.date-flag-tooltip');
   await expect(tip).toContainText('δεν έχει φάκελο');
