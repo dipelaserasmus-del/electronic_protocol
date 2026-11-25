@@ -22,9 +22,10 @@ final class SettingsCatalog
      * what it does, the default, an example, related settings). 'box' puts settings that work together in one
      * frame; the group's 'boxes' give its title and the line that says how they combine (R6d).
      *
-     * @return array<string, array{title: string, icon: string, settings: array<string, array>, boxes?: array<string, array{title: string, help: string}>}>
+     * R6f (owner, 2026-11-25): grouped as GitHub's settings: SECTIONS says which section (and heading) each setting is in;
+     * this list keeps each setting's text and rules (its own groups are only how it was written).
      */
-    public static function groups(): array
+    private static function definitions(): array
     {
         return [
             'office' => ['title' => 'Υπηρεσία και αρίθμηση', 'icon' => 'building',
@@ -185,6 +186,74 @@ final class SettingsCatalog
                         .'αν δεν βρει κανένα, το Backup δείχνει σφάλμα.'],
             ]],
         ];
+    }
+
+    /**
+     * R6f (owner, 2026-11-25): the page as GitHub's settings: a menu of small sections under headings, one section shown at
+     * a time and saved on its own. section => [heading (null: the first, untitled), title, icon, what it is for, keys].
+     */
+    public const SECTIONS = [
+        'office' => [null, 'Υπηρεσία', 'building', 'Το όνομα της υπηρεσίας και το χρώμα της πάνω μπάρας.',
+            ['ipiresiasName', 'titleColor']],
+        'display' => [null, 'Λίστες και αναζήτηση', 'layout-text-window', 'Πόσες γραμμές δείχνουν η λίστα και η αναζήτηση, και κάθε πότε ανανεώνεται η λίστα.',
+            ['showRowsInPage', 'minutesRefreshInterval', 'maxRowsInFindPage']],
+        'numbering' => ['Πρωτόκολλο', 'Αρίθμηση', 'hash', 'Το έτος των νέων πρωτοκόλλων, από ποιον αριθμό ξεκινά και πόσο πίσω ελέγχονται οι κενοί αριθμοί.',
+            ['yearInUse', 'firstProtocolNum', 'gapCheckMonths']],
+        'registration' => ['Πρωτόκολλο', 'Καταχώριση', 'journal-check', 'Τι ελέγχεται και τι επιτρέπεται όταν αποθηκεύεται ένα πρωτόκολλο.',
+            ['protocolValidate', 'allowEmptyProtocol', 'saveCycleSxetiko']],
+        'rights' => ['Πρωτόκολλο', 'Δικαιώματα', 'shield-lock', 'Τι μπορούν να αλλάξουν οι Συγγραφείς και οι Αναθέτοντες, και ποια πρωτόκολλα βλέπουν στη λίστα.',
+            ['allowWriterUpdateProtocol', 'allowWriterUpdateProtocolTimeInMinutes', 'allowWriterChangeDate', 'limitProtocolAccessList']],
+        'files' => ['Αρχεία', 'Συνημμένα', 'paperclip', 'Η σφραγίδα, ο χρόνος διατήρησης και η Διαύγεια.',
+            ['putStamp', 'allowUserChangeKeepSelect', 'diavgeiaUrl']],
+        'trash' => ['Αρχεία', 'Κάδος', 'trash3', 'Πόσο μένουν στον κάδο τα διαγραμμένα συνημμένα και πρωτόκολλα.',
+            ['trashRetentionDays']],
+        'printing' => ['Αρχεία', 'Εκτυπώσεις και Excel', 'printer', 'Το όριο γραμμών για την εκτύπωση πρωτοκόλλου και το Excel.',
+            ['maxRowsInXlsExport']],
+        'mailbox' => ['E-mail', 'Λογαριασμός εισερχομένων', 'inbox', 'Από ποιον λογαριασμό έρχονται τα εισερχόμενα, ποιοι τα καταχωρίζουν και πόσο πίσω φαίνονται.',
+            ['defaultImapEmail', 'allowedEmailUsers', 'daysToCheckEmailBack']],
+        'inbox' => ['E-mail', 'Εισερχόμενα', 'envelope', 'Πόσα e-mail ανά σελίδα, με ποια σειρά και πώς ξεχωρίζουν.',
+            ['emailNumFetch', 'emailFetchOrderDesc', 'inboxEnvelope']],
+        'emailRegistration' => ['E-mail', 'Καταχώριση e-mail', 'envelope-check', 'Η απόδειξη στον αποστολέα και πώς φυλάσσεται το ίδιο το e-mail.',
+            ['alwaysSendReceitForEmails', 'saveEmailAs']],
+        'notifications' => ['E-mail', 'Ειδοποιήσεις', 'bell', 'Τα e-mail που στέλνει η εφαρμογή στους χρήστες.',
+            ['sendEmailOnDiekperaiosiChange']],
+        'backup' => ['Συντήρηση', 'Αντίγραφα ασφαλείας', 'database', 'Το πρόγραμμα που φτιάχνει τα αντίγραφα της βάσης (Διαχείριση → Backup).',
+            ['mysqldumpPath']],
+    ];
+
+    /**
+     * The sections in their order, each with its settings (definitions in SECTIONS' order) and the boxes they use.
+     *
+     * @return array<string, array{heading: ?string, title: string, icon: string, description: string, settings: array<string, array>, boxes: array<string, array{title: string, help: string}>}>
+     */
+    public static function groups(): array
+    {
+        $defs = [];
+        $boxes = [];
+        foreach (self::definitions() as $g) {
+            $defs += $g['settings'];
+            $boxes += $g['boxes'] ?? [];
+        }
+        $sections = [];
+        foreach (self::SECTIONS as $id => [$heading, $title, $icon, $description, $keys]) {
+            $settings = array_intersect_key(array_replace(array_flip($keys), $defs), array_flip($keys));
+            $sections[$id] = ['heading' => $heading, 'title' => $title, 'icon' => $icon, 'description' => $description,
+                'settings' => $settings, 'boxes' => array_intersect_key($boxes, array_flip(array_filter(array_column($settings, 'box'))))];
+        }
+
+        return $sections;
+    }
+
+    /** R6f: the section a setting is in (null: not a setting of the page) */
+    public static function sectionOf(string $key): ?string
+    {
+        foreach (self::SECTIONS as $id => $section) {
+            if (in_array($key, $section[4], true)) {
+                return $id;
+            }
+        }
+
+        return null;
     }
 
     /** @return array<string, array> key => definition (with 'group') */

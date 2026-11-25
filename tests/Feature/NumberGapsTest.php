@@ -142,7 +142,7 @@ class NumberGapsTest extends FeatureTestCase
 
     public function test_settings_are_saved_and_validated(): void
     {
-        $page = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class);
+        $page = \Livewire\Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class)->call('show', 'numbering');   // R6f
         $page->set('values.firstProtocolNum', '1000')->set('values.gapCheckMonths', '4')
             ->set('values.gapCheckFromNumber', '7')   // R2c: the old setting is not stored (R6c: only known keys are)
             ->call('save')->assertHasNoErrors();

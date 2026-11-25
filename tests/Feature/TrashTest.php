@@ -189,7 +189,7 @@ class TrashTest extends FeatureTestCase
 
     public function test_retention_setting_is_validated(): void
     {
-        $page = Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class);
+        $page = Livewire::actingAs($this->admin())->test(\App\Livewire\SettingsPage::class)->call('show', 'trash');   // R6f: its section
         $page->set('values.trashRetentionDays', '-1')->call('save')->assertHasErrors('values.trashRetentionDays');
         $page->set('values.trashRetentionDays', '7')->call('save')->assertHasNoErrors();
         $this->assertSame(7, app(Trash::class)->retentionDays());

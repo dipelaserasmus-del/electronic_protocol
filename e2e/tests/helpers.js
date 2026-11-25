@@ -30,7 +30,7 @@ async function toasts(page) {
  * back. R6c: the settings page (Livewire) saves every setting, as a user would; switches take 0/1.
  */
 async function setSetting(page, name, value) {
-  await page.goto('/settings');
+  await page.goto(`/settings?setting=${name}`);   // R6f: the section of that setting
   const field = page.locator(`#s-${name}`);
   let previous;
   if ((await field.getAttribute('type')) === 'checkbox') {

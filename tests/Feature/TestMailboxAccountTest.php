@@ -102,14 +102,15 @@ class TestMailboxAccountTest extends FeatureTestCase
     public function test_settings_offer_the_test_account_by_its_label_and_save_it(): void
     {
         $admin = $this->admin();
-        Livewire::actingAs($admin)->test(SettingsPage::class)->assertDontSee('Δοκιμαστικός λογαριασμός');
+        Livewire::actingAs($admin)->test(SettingsPage::class)->call('show', 'mailbox')->assertSee('id="s-defaultImapEmail"', false)
+            ->assertDontSee('Δοκιμαστικός λογαριασμός');   // R6f: on the account's own section
 
         config(['imap.accounts.test' => ['label' => 'Δοκιμαστικός λογαριασμός (demo@example.org)',
             'host' => 'imap.example.org', 'username' => 'demo@example.org', 'password' => 'x']]);
         $this->assertSame('Δοκιμαστικός λογαριασμός (demo@example.org)', SettingsCatalog::imapAccounts()['test']);
         $this->assertSame('default', SettingsCatalog::imapAccounts()['default']);
 
-        Livewire::actingAs($admin)->test(SettingsPage::class)
+        Livewire::actingAs($admin)->test(SettingsPage::class)->call('show', 'mailbox')
             ->assertSee('<option value="test"', false)->assertSee('Δοκιμαστικός λογαριασμός (demo@example.org)')
             ->set('values.defaultImapEmail', 'test')->call('save')->assertHasNoErrors();
         $this->assertSame('test', Config::getConfigValueOf('defaultImapEmail'));
@@ -117,7 +118,7 @@ class TestMailboxAccountTest extends FeatureTestCase
 
     public function test_an_unknown_account_is_refused(): void
     {
-        Livewire::actingAs($this->admin())->test(SettingsPage::class)
+        Livewire::actingAs($this->admin())->test(SettingsPage::class)->call('show', 'mailbox')
             ->set('values.defaultImapEmail', 'test')->call('save')->assertHasErrors('values.defaultImapEmail');
         $this->assertNotSame('test', Config::getConfigValueOf('defaultImapEmail'));
     }

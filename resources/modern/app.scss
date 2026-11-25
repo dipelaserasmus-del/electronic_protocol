@@ -357,3 +357,18 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .log-details .lt-call { color: var(--bs-success-text-emphasis); }
 .log-entry[data-level="error"], .log-entry[data-level="critical"], .log-entry[data-level="alert"], .log-entry[data-level="emergency"] { box-shadow: inset 3px 0 0 var(--bs-danger); }
 .log-entry[data-level="warning"] { box-shadow: inset 3px 0 0 var(--bs-warning); }
+
+// R6f (owner, 2026-11-25): Ρυθμίσεις as GitHub's settings: a menu of sections (under small headings) and one section
+.settings-nav { font-size: .925rem; }
+@include media-breakpoint-up(lg) {
+    .settings-nav { position: sticky; top: calc(var(--app-topbar-height, 3.2rem) + 1rem); align-self: flex-start; }
+}
+.settings-nav-heading { padding: .5rem .75rem .25rem; font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); }
+.settings-nav-item { position: relative; display: flex; align-items: center; gap: .6rem; padding: .35rem .75rem; margin-bottom: 1px;
+    border-radius: .375rem; color: var(--bs-body-color); text-decoration: none; }
+.settings-nav-item .bi { color: var(--bs-secondary-color); width: 1rem; text-align: center; }
+.settings-nav-item:hover { background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+.settings-nav-item.active { background: var(--bs-secondary-bg); font-weight: 600; }
+.settings-nav-item.active::before { content: ""; position: absolute; left: -.5rem; top: .3rem; bottom: .3rem; width: 4px;
+    border-radius: 4px; background: var(--bs-primary); }
+.settings-section > .setting:last-of-type { margin-bottom: .5rem; }

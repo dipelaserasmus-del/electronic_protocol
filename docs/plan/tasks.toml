@@ -164,6 +164,7 @@ tasks = [
   { id = "R5t", title = "Inbox: no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch", phase = "R", batch = 9.7, size = "S", deps = ["R4f", "R4i"], status = "done", pr = 125 },
   { id = "R2n", title = "List: a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date", phase = "R", batch = 9.7, size = "S", deps = ["R2f"], status = "done", pr = 126 },
   { id = "R5u", title = "User menu: «Εμφάνιση των e-mail» only on the inbox page", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 127 },
+  { id = "R6f", title = "Ρυθμίσεις as GitHub's settings: a menu of sections under headings, one section at a time, saved on its own", phase = "R", batch = 9.7, size = "M", deps = ["R6d"], status = "done", pr = 128 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
