@@ -11,9 +11,12 @@
             <button type="button" class="btn btn-outline-secondary" wire:click="step(-1)" @disabled($at === false || $at === count($days) - 1)
                     title="Προηγούμενη ημέρα με καταγραφές" aria-label="Προηγούμενη ημέρα" id="log-prev">‹</button>
             <input type="date" class="form-control" wire:model.live="day" aria-label="Ημέρα" id="log-day"
-                   @if ($days) min="{{ end($days) }}" max="{{ $days[0] }}" @endif>
+                   @if ($days) min="{{ end($days) }}" max="{{ max($days[0], now()->format('Y-m-d')) }}" @endif>
             <button type="button" class="btn btn-outline-secondary" wire:click="step(1)" @disabled($at === false || $at === 0)
                     title="Επόμενη ημέρα με καταγραφές" aria-label="Επόμενη ημέρα" id="log-next">›</button>
+            {{-- R6j (owner, 2026-11-25): back to today (the browser's own calendar has no such button) --}}
+            <button type="button" class="btn btn-outline-secondary" wire:click="today" @disabled($day === now()->format('Y-m-d'))
+                    title="Η σημερινή ημέρα" id="log-today">Σήμερα</button>
         </div>
         <div class="form-check form-switch mb-0">
             <input class="form-check-input" type="checkbox" role="switch" id="log-live" wire:model.live="live">

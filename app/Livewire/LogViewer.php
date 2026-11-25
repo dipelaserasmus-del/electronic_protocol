@@ -58,6 +58,12 @@ class LogViewer extends Component
         }
     }
 
+    /** R6j (owner, 2026-11-25): today (an empty day says so) */
+    public function today(): void
+    {
+        [$this->day, $this->page, $this->open] = [now()->format('Y-m-d'), 1, []];
+    }
+
     /** the previous (-1) / next (+1) day that has entries */
     public function step(int $by, LogReader $reader): void
     {
