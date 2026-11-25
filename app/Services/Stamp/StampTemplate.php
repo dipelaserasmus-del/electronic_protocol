@@ -166,14 +166,28 @@ final class StampTemplate
     public static function fill(string $text, array $values): string
     {
         return preg_replace_callback('/\{([^{}]{1,20})\}/u', function ($m) use ($values) {
-            $key = \App\Support\TagList::fold(trim($m[1]));
-            foreach (self::FIELDS as $name => $field) {
-                if (\App\Support\TagList::fold($name) === $key) {
-                    return (string) ($values[$field] ?? '');
-                }
-            }
-            return $m[0];
+            $field = self::field($m[1]);
+            return $field === null ? $m[0] : (string) ($values[$field] ?? '');
         }, $text);
+    }
+
+    /** The fields a line shows ('number', 'date', …), read as fill() reads them (any case, accents, spaces) */
+    public static function fieldsIn(string $text): array
+    {
+        preg_match_all('/\{([^{}]{1,20})\}/u', $text, $m);
+        return array_values(array_unique(array_filter(array_map(self::field(...), $m[1]))));
+    }
+
+    /** a placeholder's field, or null: {ΑΡΙΘΜΟΣ}, { αριθμός } and {αριθμος} are all the number */
+    private static function field(string $placeholder): ?string
+    {
+        $key = \App\Support\TagList::fold(trim($placeholder));
+        foreach (self::FIELDS as $name => $field) {
+            if (\App\Support\TagList::fold($name) === $key) {
+                return $field;
+            }
+        }
+        return null;
     }
 
     /** Values of a protocol for the fields */
