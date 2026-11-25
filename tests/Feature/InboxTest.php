@@ -542,6 +542,12 @@ class InboxTest extends FeatureTestCase
         $html = $page->html();
         $this->assertStringContainsString('id="f-2-diekp_date"', $html);
         $this->assertMatchesRegularExpression('~id="out-2" x-show="open"\s*>~', $html);   // open, with its error
+        // review of R5r: the date field itself is marked, with its message (the error is the e-mail's, forms.2.diekp_date),
+        // so «Μετάβαση στο πεδίο» finds it
+        $this->assertMatchesRegularExpression('~class="form-control text-center\s+is-invalid\s*" id="f-2-diekp_date"~', $html);
+        $this->assertMatchesRegularExpression('~id="f-2-diekp_date".*?<div class="invalid-feedback">(?!Μη έγκυρη)[^<]+</div>~s', $html);
+        $this->assertDoesNotMatchRegularExpression('~is-invalid\s*" id="f-2-(in_date|out_date)"~', $html, 'only the date that is wrong');
+        $this->assertSame(2, substr_count($html, $page->errors()->first('forms.2.diekp_date')), 'at the field and above the buttons (R5r), no more');
         $this->assertSame(0, \App\Models\Protocol::count());
 
         $page->set('forms.2.diekp_date', '21/11/2026')->call('register', 2, false)->assertHasNoErrors();

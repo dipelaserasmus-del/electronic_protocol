@@ -38,6 +38,12 @@ is going ahead.
 Livewire hides «while loading» elements before the first request only for the attribute spellings it knows. The
 delayed notice was at first shown permanently; it is now hidden until the first press (a browser test checks it).
 
+- Review (Codex): the inbox's dates (*Ημ/νία εισερχομένου*, *εξερχομένου*, *διεκπεραίωσης*) were never marked
+  wrong. The date field looked for its error under its plain name, while the inbox keeps each e-mail's errors apart,
+  and the message was printed as loose red text below. So *Μετάβαση στο πεδίο* could not find a wrong date. The date
+  field now takes the e-mail's own error: it is marked, its message is under it once, and the page goes to it. Test:
+  `InboxTest::test_outgoing_with_a_handler_asks_for_the_completion_date_in_its_section` (failed before).
+
 ## How verified
 - PHPUnit `InboxTest::test_a_refused_registration_says_why_above_the_buttons`:
   - without a folder: the error at the field, the event to the browser, and the message above the buttons (before

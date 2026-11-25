@@ -2,11 +2,13 @@
     N04 date input. Type "9" → 09/<this month>/<this year> (also "9/4", "9/4/25", "0904"…; rules: App\Support\DateInput),
     ◀ ▶ one day earlier/later (also ↑ ↓ keys), "Σήμερα", calendar. Posts dd/mm/yyyy under "name".
     <x-date-input name="in_date" label="Ημ/νία εισερχομένου" :value="old('in_date', $date)" />
+    :error="…" gives the message when it is not under "name" in the error bag.
 --}}
-@props(['name', 'label' => null, 'value' => '', 'id' => null, 'required' => false, 'readonly' => false, 'help' => null])
+@props(['name', 'label' => null, 'value' => '', 'id' => null, 'required' => false, 'readonly' => false, 'help' => null, 'error' => null])
 @php
     $id ??= 'date-'.\Illuminate\Support\Str::slug($name, '-');
-    $error = isset($errors) ? $errors->first($name) : null;   // no error bag outside a web request
+    // the error under "name"; or given (review of R5r: the inbox keys each e-mail's errors as forms.<uid>.<field>)
+    $error = $error ?: (isset($errors) ? $errors->first($name) : null);   // no error bag outside a web request
 @endphp
 <div {{ $attributes->whereDoesntStartWith('wire:')->class(['date-input']) }} data-date-input>
     @if ($label)<label for="{{ $id }}" class="form-label">{{ $label }}</label>@endif

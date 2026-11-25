@@ -260,9 +260,8 @@
                                                 <div class="col-12 col-sm-8 col-md-4">
                                                     <label for="f-{{ $uid }}-in_date" class="form-label small fw-semibold mb-1">Ημ/νία εισερχ.</label>
                                                     {{-- R5e (owner, 2026-11-19): the app's date field: "9" → 09/this month, ◀ ▶, Σήμερα, calendar --}}
-                                                    <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :value="$f['in_date'] ?? ''" :help="false"
+                                                    <x-date-input name="in_date" :id="'f-'.$uid.'-in_date'" :error="$err($uid, 'in_date')" :value="$f['in_date'] ?? ''" :help="false"
                                                                   wire:model="forms.{{ $uid }}.in_date" />
-                                                    @if ($err($uid, 'in_date'))<div class="text-danger small">{{ $err($uid, 'in_date') }}</div>@endif
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="f-{{ $uid }}-in_arxi_ekdosis" class="form-label small fw-semibold mb-1">Αρχή έκδοσης</label>
@@ -312,9 +311,8 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <label for="f-{{ $uid }}-out_date" class="form-label small fw-semibold mb-1">Ημ/νία εξερχομένου</label>
-                                                            <x-date-input name="out_date" :id="'f-'.$uid.'-out_date'" :value="$f['out_date'] ?? ''" :help="false"
+                                                            <x-date-input name="out_date" :id="'f-'.$uid.'-out_date'" :error="$err($uid, 'out_date')" :value="$f['out_date'] ?? ''" :help="false"
                                                                           wire:model="forms.{{ $uid }}.out_date" />
-                                                            @if ($err($uid, 'out_date'))<div class="text-danger small">{{ $err($uid, 'out_date') }}</div>@endif
                                                         </div>
                                                         <div class="col-12">
                                                             <label for="f-{{ $uid }}-out_perilipsi" class="form-label small fw-semibold mb-1">Περίληψη</label>
@@ -326,9 +324,8 @@
                                                         @if ($canDone)
                                                             <div class="col-md-6">
                                                                 <label for="f-{{ $uid }}-diekp_date" class="form-label small fw-semibold mb-1">Διεκπεραιώθηκε την</label>
-                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :value="$f['diekp_date'] ?? ''" :help="false"
+                                                                <x-date-input name="diekp_date" :id="'f-'.$uid.'-diekp_date'" :error="$err($uid, 'diekp_date')" :value="$f['diekp_date'] ?? ''" :help="false"
                                                                               wire:model="forms.{{ $uid }}.diekp_date" />
-                                                                @if ($err($uid, 'diekp_date'))<div class="text-danger small">{{ $err($uid, 'diekp_date') }}</div>@endif
                                                             </div>
                                                         @endif
                                                     </div>
