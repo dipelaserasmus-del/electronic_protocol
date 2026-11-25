@@ -208,6 +208,12 @@ class ProtocolForm extends Component
         } catch (AuthorizationException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
             return null;
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // R1l (owner, 2026-11-25): refused: the errors at their fields as before, and the browser brings the first one
+            // into view (the field can be far from the floating «Αποθήκευση»; resources/modern/app.js)
+            $this->setErrorBag(new \Illuminate\Support\MessageBag($e->errors()));
+            $this->dispatch('form-refused');
+            return null;
         }
         return $this->done($result, $this->protocolId ? 'Οι αλλαγές αποθηκεύτηκαν.' : "Καταχωρίστηκε με αριθμό {$result->protocol->protocolnum}/{$result->protocol->etos}.", $then);
     }

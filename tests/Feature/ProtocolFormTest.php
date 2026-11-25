@@ -93,6 +93,23 @@ class ProtocolFormTest extends FeatureTestCase
     }
 
     /** R1i: a collapsed section opens by itself when one of its fields has an error */
+    /** R1l (owner, 2026-11-25): a refused save keeps its errors at their fields and tells the browser to show the first */
+    public function test_a_refused_save_tells_the_page_to_show_the_error(): void
+    {
+        // editing a protocol with files: its folder cannot be emptied (the files' place depends on it)
+        $p = Protocol::factory()->number(41)->create(['fakelos' => 'Φ.1', 'thema' => 'Με αρχείο']);
+        Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'έγγραφο.pdf']);
+        $page = Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])
+            ->set('form.fakelos', '')->call('save');
+        $page->assertHasErrors('fakelos')->assertDispatched('form-refused')->assertNoRedirect();
+        $this->assertMatchesRegularExpression('~id="f-fakelos" class="form-control folder-input\s+is-invalid~', $page->html());
+        $this->assertSame('Φ.1', $p->fresh()->fakelos);
+
+        // saved: no such event
+        $page->set('form.fakelos', 'Φ.1')->set('form.thema', 'Με αρχείο, αλλαγμένο')->call('save')->assertHasNoErrors()->assertNotDispatched('form-refused');
+        $this->assertSame('Με αρχείο, αλλαγμένο', $p->fresh()->thema);
+    }
+
     public function test_a_collapsed_section_with_an_error_opens(): void
     {
         $this->setting('protocolValidate', 1);
