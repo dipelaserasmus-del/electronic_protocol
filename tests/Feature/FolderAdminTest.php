@@ -161,6 +161,63 @@ class FolderAdminTest extends FeatureTestCase
         $this->assertSame('Φ12', $folder->fresh()->fakelos);
     }
 
+    /**
+     * R6i (owner, 2026-11-25): a folder's automatic assignment applied to the protocols already in it, those the
+     * administrator chooses (not completed / all / the year in use), merged as on save, without e-mails
+     */
+    public function test_the_rules_are_applied_to_existing_protocols_as_chosen(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->setting('yearInUse', 2026);
+        $admin = $this->admin();
+        $handler = $this->writer();
+        $folder = Keepvalue::create(['fakelos' => 'Φ.960']);
+        FolderAssignment::create(['keepvalue_id' => $folder->id, 'user_id' => $handler->id, 'type' => 'd']);
+        $p = [
+            1 => Protocol::factory()->number(1)->create(['fakelos' => 'Φ.960', 'etos' => 2026]),                          // open, this year
+            2 => Protocol::factory()->number(2)->create(['fakelos' => 'Φ.960', 'etos' => 2026, 'diekp_date' => 20260301]), // completed
+            3 => Protocol::factory()->number(3)->create(['fakelos' => 'Φ.960', 'etos' => 2025]),                          // open, last year
+            4 => Protocol::factory()->number(4)->assignedTo($handler)->create(['fakelos' => 'Φ.960', 'etos' => 2026]),    // already hers
+            5 => Protocol::factory()->number(5)->assignedTo(null, $handler)->create(['fakelos' => 'Φ.960', 'etos' => 2026]), // only to be informed
+        ];
+        Protocol::factory()->number(6)->create(['fakelos' => 'Φ.961', 'etos' => 2026]);   // another folder
+        $hers = fn ($type = 'd') => Protocol::assignedTo($handler->id, $type)->pluck('protocolnum')->map(fn ($n) => (int) $n)->sort()->values()->all();
+
+        // the counts per choice (only protocols that would change)
+        $this->assertSame(['open' => 3, 'all' => 4, 'year' => 3], app(FolderCatalog::class)->existingCounts($folder));
+
+        $page = $this->page($admin)->call('edit', $folder->id)
+            ->assertSeeHtml('id="folder-apply-open"')->assertSee('Εφαρμογή και στα 5 υπάρχοντα πρωτόκολλα του φακέλου')
+            ->call('openApply')->assertSet('applyOpen', true)
+            ->assertSee('Όσα δεν έχουν διεκπεραιωθεί')->assertSee('(3 πρωτόκολλα αλλάζουν)')->assertSee('(4 πρωτόκολλα αλλάζουν)')
+            ->assertSee('Εφαρμογή σε 3');
+        $page->call('applyToExisting')->assertDispatched('toast', type: 'success')->assertSet('applyOpen', false);
+        $this->assertSame([1, 3, 4, 5], $hers(), 'the open ones, and the one she was only informed of: διεκπεραίωση instead');
+        $this->assertSame([], $hers('e'));
+        $this->assertFalse($p[2]->fresh()->assignments()->exists(), 'a completed one is left as it is');
+        \Illuminate\Support\Facades\Mail::assertNothingSent();
+        \Illuminate\Support\Facades\Mail::assertNothingQueued();
+
+        // all: now the completed one too; again: nothing more to do
+        $page->call('openApply')->set('applyScope', 'all')->call('applyToExisting');
+        $this->assertSame([1, 2, 3, 4, 5], $hers());
+        $this->assertSame(0, app(FolderCatalog::class)->applyRulesToExisting($folder, 'all'));
+        $this->assertSame(0, app(FolderCatalog::class)->applyRulesToExisting($folder, 'nonsense'));
+        $this->assertSame([], Protocol::where('fakelos', 'Φ.961')->sole()->assignments->all(), 'other folders untouched');
+
+        // the year in use only
+        $other = $this->writer();
+        FolderAssignment::create(['keepvalue_id' => $folder->id, 'user_id' => $other->id, 'type' => 'e']);
+        $this->assertSame(4, app(FolderCatalog::class)->applyRulesToExisting($folder, 'year'));
+        $this->assertSame([1, 2, 4, 5], Protocol::assignedTo($other->id, 'e')->pluck('protocolnum')->map(fn ($n) => (int) $n)->sort()->values()->all());
+
+        // administrators only (owner: only the administrator changes folders and their assignments)
+        foreach ([$this->assigner(), $handler, $this->reader()] as $u) {
+            Livewire::actingAs($u)->test(FolderAdmin::class)->call('openApply')->assertForbidden();
+            Livewire::actingAs($u)->test(FolderAdmin::class)->set('editing', $folder->id)->call('applyToExisting')->assertForbidden();
+        }
+    }
+
     public function test_search_by_code_or_word(): void
     {
         Keepvalue::create(['fakelos' => 'Φ.993.2', 'describe' => 'Μετακινήσεις ζωολογικού κήπου']);

@@ -91,6 +91,7 @@ class FolderAdmin extends Component
         self::authorizeAdmin();
         $f = Keepvalue::with('assignments')->findOrFail($id);
         $this->resetErrorBag();
+        $this->applyOpen = false;
         $this->editing = $f->id;
         $this->form = [
             'fakelos' => (string) $f->fakelos,
@@ -108,6 +109,39 @@ class FolderAdmin extends Component
     {
         $this->resetForm();
         $this->formOpen = false;
+        $this->applyOpen = false;
+    }
+
+    /** R6i: the box «Εφαρμογή και στα υπάρχοντα πρωτόκολλα» of the folder being edited, and the protocols chosen */
+    public bool $applyOpen = false;
+
+    public string $applyScope = 'open';
+
+    public function openApply(): void
+    {
+        self::authorizeAdmin();
+        $this->applyOpen = $this->editing !== null;
+        $this->applyScope = 'open';
+    }
+
+    public function closeApply(): void
+    {
+        $this->applyOpen = false;
+    }
+
+    /** R6i (owner, 2026-11-25): the saved rules of this folder to the protocols already in it, as chosen; no e-mails */
+    public function applyToExisting(FolderCatalog $catalog): void
+    {
+        self::authorizeAdmin();
+        $folder = $this->editing ? Keepvalue::find($this->editing) : null;
+        if (! $folder || ! isset(FolderCatalog::EXISTING_SCOPES[$this->applyScope])) {
+            return;
+        }
+        $n = $catalog->applyRulesToExisting($folder, $this->applyScope);
+        $this->applyOpen = false;
+        $this->dispatch('toast', message: $n
+            ? "Η αυτόματη ανάθεση του {$folder->fakelos} εφαρμόστηκε σε $n ".($n === 1 ? 'πρωτόκολλο' : 'πρωτόκολλα').' (χωρίς e-mail).'
+            : 'Κανένα πρωτόκολλο δεν χρειαζόταν αλλαγή.', type: 'success');
     }
 
     public function save(FolderCatalog $catalog): void
@@ -195,7 +229,14 @@ class FolderAdmin extends Component
         }
         $users = User::orderBy('name')->get(['id', 'name', 'active']);
 
+        // R6i: the folder being edited: its saved rules and, with the box open, how many protocols each choice changes
+        $editedFolder = $this->editing ? Keepvalue::find($this->editing) : null;
+        $savedRules = $editedFolder ? \App\Support\FolderRules::for($editedFolder->fakelos) : [];
+
         return view('livewire.folder-admin', [
+            'savedRules' => $savedRules,
+            'existingCounts' => $this->applyOpen && $editedFolder && $savedRules ? $catalog->existingCounts($editedFolder) : null,
+            'editedCount' => $editedFolder ? ($counts[mb_strtolower($editedFolder->fakelos)] ?? 0) : 0,
             'folders' => $folders,
             'total' => Keepvalue::count(),
             'counts' => $counts,
