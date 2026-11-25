@@ -141,6 +141,15 @@ class LogViewerTest extends FeatureTestCase
         $this->assertStringNotContainsString('Νίκου', $masked);
         $this->assertStringContainsString('"userId":3', $masked, 'what a developer needs stays');
         $this->assertStringContainsString('/var/www/html/app/X.php:12', $masked);
+        // review of R6k: a value on several lines (Περίληψη, Παρατηρήσεις keep their line breaks), and a brace or a
+        // quote inside a value
+        $multi = "[2026-11-22 11:00:00] production.ERROR: SQLSTATE[22001]: x (Connection: mysql, SQL: insert into `protocols` (`in_perilipsi`, `thema`) values ('Αίτηση\nΜαρία Παπαδοπούλου\nΤηλ. 6900000000', 'Θέμα {Γιάννη} O\\'Brien')) {\"userId\":4}";
+        $masked = \App\Services\Logs\LogMask::text($multi);
+        $this->assertStringNotContainsString('Παπαδοπούλου', $masked);
+        $this->assertStringNotContainsString('6900000000', $masked);
+        $this->assertStringNotContainsString('Γιάννη', $masked);
+        $this->assertStringNotContainsString('Brien', $masked);
+        $this->assertStringContainsString("values ('…', '…')) {\"userId\":4}", $masked);
         $this->assertSame('550 mailbox ***@dipe.gr unavailable', \App\Services\Logs\LogMask::text('550 mailbox kostas.k@dipe.gr unavailable'));
         $this->assertSame('#0 /var/www/html/app/Services/X.php(12): run()', \App\Services\Logs\LogMask::text('#0 /var/www/html/app/Services/X.php(12): run()'));
     }

@@ -37,6 +37,13 @@ So a full export is a document with personal data (GDPR), to be kept like the pr
 
 ![The switch off: the warning](img/R6k/r6k-export-full.png)
 
+## Review (Codex), fixed with a test
+A database value on several lines (Περίληψη, Παρατηρήσεις keep their line breaks) was masked only up to its first line,
+so a name on the next line stayed in the «masked» file. Now every quoted value after `SQL:` is masked across lines (also
+with a brace or a quote inside it), up to the error's context. Each entry is masked on its own, so nothing runs into the
+next one. Test: `test_personal_data_is_masked` with a three-line value (name, phone), a brace and a quote; it failed
+before.
+
 ## How verified
 - PHPUnit `LogViewerTest`:
   - `test_personal_data_is_masked`: the real form of a failed e-mail line, a database error (values out; `userId`

@@ -22,8 +22,10 @@ final class LogMask
         $keys = implode('|', array_map('preg_quote', self::KEYS));
         $text = preg_replace('/("(?:' . $keys . ')"\s*:\s*)"(?:[^"\\\\]|\\\\.)*"/u', '$1"…"', $text) ?? $text;
         $text = preg_replace('/(\'(?:' . $keys . ')\'\s*=>\s*)\'(?:[^\'\\\\]|\\\\.)*\'/u', '$1\'…\'', $text) ?? $text;
-        // a database error's query: every quoted value in it (SQL: … ) or in its bindings
-        $text = preg_replace_callback('/SQL: .*?(?=\)\s*(?:\{|$|\n)|$)/mu', fn ($m) => preg_replace("/'(?:[^'\\\\]|\\\\.)*'/u", "'…'", $m[0]), $text) ?? $text;
+        // a database error's query: every quoted value in it, also over several lines (review of R6k: Περίληψη and
+        // Παρατηρήσεις keep their line breaks), up to the error's context «{…}» outside a value
+        $text = preg_replace_callback("/SQL: (?:[^'{]++|'(?:[^'\\\\]++|\\\\.)*+')*+/su",
+            fn ($m) => preg_replace("/'(?:[^'\\\\]++|\\\\.)*+'/su", "'…'", $m[0]), $text) ?? $text;
         // e-mail addresses anywhere: the name goes, the domain stays (it says which mail server)
         return preg_replace('/[A-Za-z0-9._%+\-]+@([A-Za-z0-9.\-]+\.[A-Za-z]{2,})/u', '***@$1', $text) ?? $text;
     }

@@ -137,10 +137,10 @@ class LogViewer extends Component
         $entries = array_reverse($this->filtered($reader->day($this->day)));   // administrators only: boot()
         $lines = [];
         foreach ($entries as $e) {
-            $lines[] = "[{$this->day} {$e['time']}] {$e['channel']}." . strtoupper($e['level']) . ": {$e['message']}" . ($e['details'] !== '' ? "\n{$e['details']}" : '');
+            $line = "[{$this->day} {$e['time']}] {$e['channel']}." . strtoupper($e['level']) . ": {$e['message']}" . ($e['details'] !== '' ? "\n{$e['details']}" : '');
+            $lines[] = $this->mask ? \App\Services\Logs\LogMask::text($line) : $line;   // each entry on its own
         }
         $text = implode("\n", $lines) . ($lines ? "\n" : '');
-        $text = $this->mask ? \App\Services\Logs\LogMask::text($text) : $text;
         $name = 'log-' . $this->day . ($this->mask ? '' : '-full') . '.txt';
         return response()->streamDownload(fn () => print($text), $name, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
