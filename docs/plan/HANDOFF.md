@@ -2,12 +2,17 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-25 09:21 (after Batches 1–9, 9.5, 9.6, R3j and R4i; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-25 09:29 (after Batches 1–9, 9.5, 9.6, R3j, R4i and R5q; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
-  R5p envelope look (A/B/C, setting `inboxEnvelope`; then drop the other two), R4c browser libraries (only if wanted).
+  R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R5q (owner, 2026-11-25):** `UserPreferences::envelope($user)` = own `envelope` (none/airmail/paper/plain) ??
+  setting `inboxEnvelope` (now with `none`) ?? airmail; `CLEARABLE` keys: `set(key, null)` removes them. Menu
+  *Εμφάνιση των e-mail* for users with Εισερχόμενα; preferences.js dispatches `envelope-changed` → EmailInbox redraws.
+  The list sits in `<div wire:key="inbox-look-{look}">`: without it Livewire's morph dropped an e-mail on a live switch.
+  `none` = `.inbox-noenvelope` + R5o's `.inbox-sep` between e-mails.
 - **R4i (owner, 2026-11-25):** `StampDesigner::ROLES` = administrators. `StampedCopy::applies` no longer looks at
   `putStamp`; `wanted($user)` = the user's own `stamped` (yes/no) if set, else `putStamp` (now «αρχική επιλογή»).
   `<x-stamp-toggle>` always rendered; the «η σφραγίδα είναι μέσα στο αρχείο» note too.
@@ -313,6 +318,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-25 09:29 | R5q | #119 | inbox look per user (user menu), «Καμία» = the thin line; the setting only the default; list keyed by the look (live switch) |
 | 2026-11-25 09:21 | R4i | #118 | stamp: designer for administrators only; «Με σφραγίδα» for every user whatever `putStamp` (now only the default choice); the in-file note always |
 | 2026-11-25 09:05 | R3j | #117 | narrow page: − / + / ↺ for its width (5 rem steps, 40–160 rem), applied at once, saved per user (`narrowWidth`) |
 | 2026-11-24 19:58 | docs | #116 | Batch 9.6 docs PR: [BATCH-9.5](../reports/BATCH-9.5.md) summary written (it was missing); BACKLOG's Batch 9.5 line lists the tasks added during it; OWNER-TODO links both summaries; CLAUDE.md step 5: tracker / PROGRESS / HANDOFF / OWNER-TODO in every task's own PR (owner, 2026-11-24), done for #108–#115 too |

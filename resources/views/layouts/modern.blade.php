@@ -139,6 +139,16 @@
                                                 data-home="{{ url($path) }}" aria-pressed="{{ $home === $key ? 'true' : 'false' }}"><i class="bi bi-{{ $icon }} me-2" aria-hidden="true"></i>{{ $label }}
                                             <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
                                     @endforeach
+                                    {{-- R5q (owner, 2026-11-25): the inbox's look, each user's own (users who have the inbox) --}}
+                                    @if (collect(\App\Support\Navigation::for($user))->contains('label', 'Εισερχόμενα'))
+                                        <h6 class="dropdown-header">Εμφάνιση των e-mail</h6>
+                                        @php $envelope = \App\Support\UserPreferences::envelope($user); @endphp
+                                        @foreach (\App\Support\UserPreferences::ENVELOPES as $key => [$label, $icon])
+                                            <button type="button" class="dropdown-item d-flex align-items-center" data-preference="envelope" data-value="{{ $key }}" data-url="{{ url('/preferences') }}"
+                                                    aria-pressed="{{ $envelope === $key ? 'true' : 'false' }}"><i class="bi bi-{{ $icon }} me-2" aria-hidden="true"></i>{{ $label }}
+                                                <i class="bi bi-check2 ms-auto ps-3 preference-check" aria-hidden="true"></i></button>
+                                        @endforeach
+                                    @endif
                                 </div>
                             </div>
                             <hr class="dropdown-divider">

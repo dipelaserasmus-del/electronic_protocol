@@ -126,16 +126,28 @@
             </aside>
 
             <div class="col-lg-9">
+                {{-- R5q: the look in the key: another look replaces the whole list (Livewire would mix old and new e-mails) --}}
+                <div wire:key="inbox-look-{{ $envelope }}">
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
-                    {{-- R5p (owner, 2026-11-23): each e-mail in an envelope (setting inboxEnvelope): the sender and the date
-                         as the address strip, «N από M» kept; a gap between envelopes (replaces R5o's thin line) --}}
+                    {{-- R5p (owner, 2026-11-23): each e-mail in an envelope: the sender and the date as the address strip,
+                         «N από M» kept; a gap between envelopes. R5q (owner, 2026-11-25): the user's own look; «none» = R5o's
+                         thin line with ↓ N από M ↓ between two e-mails, no envelope --}}
+                    @if ($envelope === 'none')
+                        @unless ($loop->first)
+                            <div class="inbox-sep" role="separator" wire:key="sep-{{ $uid }}">
+                                <span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> {{ $n }} από {{ $total }} <i class="bi bi-arrow-down" aria-hidden="true"></i></span>
+                            </div>
+                        @endunless
+                        <div class="inbox-noenvelope" wire:key="env-{{ $uid }}">
+                    @else
                     <div class="inbox-envelope inbox-envelope-{{ $envelope }}" wire:key="env-{{ $uid }}">
                     <div class="inbox-envelope-address" aria-hidden="true">
                         <span class="inbox-envelope-n">{{ $n }} από {{ $total }}</span>
                         <span class="inbox-envelope-from text-truncate">{{ $m['from_name'] ?: ($m['from_email'] ?: '—') }}@if ($m['from_name'] && $m['from_email']) <small>&lt;{{ $m['from_email'] }}&gt;</small>@endif</span>
                         <span class="inbox-envelope-date text-nowrap">{{ $date($m['date'], 'd/m/Y H:i') }}</span>
                     </div>
+                    @endif
                     <article class="card shadow-sm inbox-message @if ($state) is-done @endif" id="msg-{{ $uid }}" wire:key="msg-{{ $uid }}" tabindex="-1"
                              data-uid="{{ $uid }}" x-intersect.margin.-40%.0.-55%.0="current = {{ $uid }}" x-data="{ shown: false }" :class="{ 'mail-shown': shown }">
                         {{-- R5o (owner, 2026-11-23): lavender like the e-mail below, so the e-mails stand apart (done: green) --}}
@@ -496,6 +508,7 @@
                     </article>
                     </div>
                 @endforeach
+                </div>
 
                 @if ($lastPage > 1)
                     <x-list-pager :paginator="$paginator" position="bottom" class="justify-content-end inbox-pager" />
