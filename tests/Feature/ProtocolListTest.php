@@ -14,10 +14,33 @@ class ProtocolListTest extends FeatureTestCase
     {
         $html = $this->actingAs($this->writer())->get('/home/list')->assertOk()->getContent();
         $list = substr($html, strpos($html, 'class="protocol-list"'));
-        $this->assertStringContainsString('>Νέο</a>', $list);
-        $this->assertStringContainsString('Ανανέωση', $list);
         $this->assertStringNotContainsString('>Αναζήτηση</a>', $list);
         $this->assertStringContainsString('id="app-search-advanced"', $html);   // the top bar's advanced search stays
+    }
+
+    /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων»; no Νέο / Ανανέωση on the page: ↻ next to «Λίστα»; ↑ back to the top */
+    public function test_the_list_header_names_the_screen_and_refresh_is_in_the_top_bar(): void
+    {
+        $writer = $this->writer();
+        $html = $this->actingAs($writer)->get('/home/list')->assertOk()->getContent();
+        $list = substr($html, strpos($html, 'class="protocol-list"'));
+        $this->assertMatchesRegularExpression('~<h1[^>]*id="list-title">Λίστα Πρωτοκόλλων</h1>~', $html);
+        $this->assertStringContainsString('<title>Λίστα Πρωτοκόλλων · ', $html);
+        $this->assertStringNotContainsString('>Νέο</a>', $list, 'the top bar has «Νέο»');
+        $this->assertStringNotContainsString('Ανανέωση</', $list);
+        // ↻ right after «Λίστα» (its ▾ menu), before «Εισερχόμενα»
+        $this->assertMatchesRegularExpression('~id="nav-1-link".*?</ul>\s*</li>.*?data-list-refresh.*?Εισερχόμενα~s', $html);
+        $this->assertStringContainsString('data-scroll-top', $html);
+        // only on the list's pages
+        $about = $this->actingAs($writer)->get('/about')->getContent();
+        $this->assertStringNotContainsString('data-list-refresh', $about);
+        $this->assertStringNotContainsString('data-scroll-top', $about);
+        $this->assertStringContainsString('data-list-refresh', $this->actingAs($writer)->get('/home/list/d')->getContent());
+
+        // the title says whose and which; a refresh from the top bar redraws it
+        Livewire::actingAs($this->admin())->test(ProtocolList::class, ['routeFilter' => 'd'])->assertSee('Λίστα Πρωτοκόλλων · προς Διεκπεραίωση')
+            ->set('who', 'all')->assertSee('Λίστα Πρωτοκόλλων · Όλοι οι χρήστες · προς Διεκπεραίωση')
+            ->dispatch('list-refresh')->assertOk();
     }
 
     public function test_filters_for_oneself_at_the_old_addresses(): void
@@ -330,7 +353,7 @@ class ProtocolListTest extends FeatureTestCase
         $this->actingAs($admin)->get('/home/list')->assertSee('Ανάθεση στον Α')->assertSee('Ανάθεση στον Β');
         $this->actingAs($admin)->get("/home/list?user={$a->id}")
             ->assertSee('Ανάθεση στον Α')->assertSee('Γραμμένο από Α')->assertDontSee('Ανάθεση στον Β')
-            ->assertSee($a->name . ' · Πρωτόκολλο');
+            ->assertSee('Λίστα Πρωτοκόλλων · ' . $a->name);   // R2m
         Livewire::actingAs($admin)->test(ProtocolList::class)->set('who', 'all')->assertSet('who', 'me')   // same list under "Όλα"
             ->assertSee('Ανάθεση στον Β')->set('filter', 'd')->set('who', 'all')->assertSet('who', 'all');
     }

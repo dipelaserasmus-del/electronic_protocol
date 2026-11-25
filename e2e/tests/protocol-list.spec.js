@@ -5,15 +5,15 @@ const { login, evidence, setSetting, fillProtocol, saveProtocol } = require('./h
 test('filters, sorting and the sticky header (R2)', async ({ page }) => {
   await login(page, 'anathetis');
   await page.goto('/home/list');
-  await expect(page.locator('#list-title')).toHaveText('Πρωτόκολλο');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων');
   await expect(page.locator('.protocol-row').first()).toBeVisible();
   await evidence(page, 'r2-list');
 
   // filters: "to handle" for all users
   await page.locator('[data-filter=d]').click();
-  await expect(page.locator('#list-title')).toHaveText('προς Διεκπεραίωση');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων · προς Διεκπεραίωση');
   await page.locator('#list-who').selectOption('all');
-  await expect(page.locator('#list-title')).toHaveText('Όλοι οι χρήστες · προς Διεκπεραίωση');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων · Όλοι οι χρήστες · προς Διεκπεραίωση');
   await expect(page).toHaveURL(/filter=d/);
   await expect(page).toHaveURL(/user=all/);
   await evidence(page, 'r2-filter-all-users');
@@ -94,11 +94,11 @@ test('a user chosen under "Όλα" filters the list; busy users first; file name
   // the writer's protocols only (registered or assigned)
   const writerId = await who.locator('option', { hasText: 'Συγγραφέας Δοκιμών' }).getAttribute('value');
   await who.selectOption(writerId);
-  await expect(page.locator('#list-title')).toHaveText('Συγγραφέας Δοκιμών · Πρωτόκολλο');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων · Συγγραφέας Δοκιμών');
   await expect(page.locator('.protocol-row', { hasText: subject })).toBeVisible();
   const total = Number((await page.locator('text=Σύνολο:').innerText()).replace(/\D/g, ''));
   await who.selectOption('me');
-  await expect(page.locator('#list-title')).toHaveText('Πρωτόκολλο');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων');
   await expect.poll(async () => Number((await page.locator('text=Σύνολο:').innerText()).replace(/\D/g, ''))).toBeGreaterThan(total);
 
   // the detailed view: the whole file name, who registered it
@@ -457,9 +457,68 @@ test('the list has no «Αναζήτηση» button of its own; the search box h
   await login(page, 'admin');
   await page.goto('/home/list');
   const head = page.locator('.protocol-list > div').first();
-  await expect(head.getByRole('link', { name: 'Νέο' })).toBeVisible();
-  await expect(head.getByRole('button', { name: 'Ανανέωση' })).toBeVisible();
   await expect(head.getByText('Αναζήτηση', { exact: true })).toHaveCount(0);
   await expect(page.locator('#app-search-advanced')).toBeVisible();                 // Σύνθετη αναζήτηση, in the top bar
   await evidence(page, 'r2l-list-head', { clip: { x: 0, y: 0, width: 1440, height: 140 } });
+});
+
+// R2m (owner, 2026-11-25): the top bar stays in view on every page; the list is «Λίστα Πρωτοκόλλων», without its own
+// «Νέο» (the top bar has it) and «Ανανέωση» (↻ next to «Λίστα»); a small ↑ at the bottom right goes back to the top
+test('the top bar always in view; list title, ↻ next to Λίστα, ↑ back to the top (R2m)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await login(page, 'admin');
+  const bar = page.locator('nav.app-topbar');
+
+  // app-wide: scrolled down, the top bar is still at the top of the window
+  for (const url of ['/home/list', '/home', '/inbox', '/settings']) {   // pages long enough to scroll in the demo
+    await page.goto(url);
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    expect(await page.evaluate(() => window.scrollY), url).toBeGreaterThan(100);
+    const box = await bar.boundingBox();
+    expect(Math.abs(box.y), url).toBeLessThan(1);
+    await expect(bar.getByRole('link', { name: 'Νέο' }), url).toBeInViewport();
+  }
+
+  await page.goto('/home/list');
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων');
+  const head = page.locator('.protocol-list > div').first();
+  await expect(head.getByRole('link', { name: 'Νέο' })).toHaveCount(0);
+  await expect(head.getByRole('button', { name: 'Ανανέωση' })).toHaveCount(0);
+
+  // ↻ right after «Λίστα» (and its ▾), before «Εισερχόμενα»: refreshes the list in place
+  const refresh = bar.locator('[data-list-refresh]');
+  await expect(refresh).toBeVisible();
+  const [lista, more, re, inbox] = await Promise.all([bar.locator('#nav-1-link'), bar.locator('#nav-1'), refresh,
+    bar.getByRole('link', { name: /Εισερχόμενα/ })].map((l) => l.boundingBox()));
+  expect(more.x).toBeGreaterThan(lista.x);
+  expect(re.x).toBeGreaterThan(more.x);
+  expect(inbox.x).toBeGreaterThan(re.x);
+  const url = page.url();
+  const asked = page.waitForResponse((r) => r.url().includes('/livewire') && r.request().method() === 'POST' && r.request().postData().includes('list-refresh'));
+  await refresh.click();
+  await asked;
+  expect(page.url()).toBe(url);   // not a new page
+  await page.waitForTimeout(700);   // the ↻ has turned
+  await evidence(page, 'r2m-list-head', { clip: { x: 0, y: 0, width: 1440, height: 160 } });
+
+  // ↑ at the bottom right, small, clear of the notepad's tab; back to the top
+  const up = page.locator('[data-scroll-top]');
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  await expect(up).toBeInViewport();
+  const b = await up.boundingBox();
+  expect(b.width).toBeLessThanOrEqual(44);
+  expect(1440 - (b.x + b.width)).toBeLessThan(80);
+  expect(800 - (b.y + b.height)).toBeLessThan(40);
+  const tab = await page.locator('.notepad-tab').boundingBox();
+  expect(b.x + b.width <= tab.x || b.y >= tab.y + tab.height || b.y + b.height <= tab.y).toBe(true);   // not over it
+  // at the very bottom it covers nothing: not the lower pager, not the last row
+  for (const el of await page.locator('.protocol-list nav, .protocol-list .protocol-row').all()) {
+    const r = await el.boundingBox();
+    if (!r) continue;
+    const overlap = r.x < b.x + b.width && b.x < r.x + r.width && r.y < b.y + b.height && b.y < r.y + r.height;
+    expect(overlap).toBe(false);
+  }
+  await evidence(page, 'r2m-scroll-top', { clip: { x: 1440 - 420, y: 800 - 260, width: 420, height: 260 } });
+  await up.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });

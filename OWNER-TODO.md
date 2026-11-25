@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:29 (R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-25 09:36 (R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -11,7 +11,7 @@ its summary too: [BATCH-9.5](docs/reports/BATCH-9.5.md).
 **One thing only you can decide** (see *Questions*, 5): optionally, the preview of Word / Excel files. (The envelope
 look is now each user's own choice, R5q.)
 
-**No hurry.** Try the new steps 63–76 below (74–76: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
+**No hurry.** Try the new steps 63–77 below (74–77: your requests of 2026-11-25) at your own pace. When you are ready, start a **new conversation** and
 send your answers and anything you found, or:
 
 ```
@@ -236,7 +236,7 @@ Open *Εισερχόμενα*.
   more than a look (e.g. «many are the same file in another folder»). Also look on the server for the **2 attachments
   that are not in the trash and have no file** (*Not on the server* in the same list).
 
-### Your requests of 2026-11-25 (R3j, R4i, R5q)
+### Your requests of 2026-11-25 (R3j, R4i, R5q, R2m)
 - [ ] **74.** Your name → *Στενό, στο κέντρο*: under it **− 50% + ↺**. Press **+** or **−** a few times: the page gets
   wider or narrower at once, behind the open menu. Reload the page, or log in on another computer: the width stays.
   **↺** brings back the usual width.
@@ -246,6 +246,9 @@ Open *Εισερχόμενα*.
 - [ ] **76.** *Εισερχόμενα* open; your name → *Εμφάνιση των e-mail*: choose *Καμία (μόνο μια γραμμή)*: the envelopes go
   and a thin line with «↓ 2 από N ↓» separates the e-mails, at once. Try the other three; log in as another user: they
   keep their own (or the one in *Ρυθμίσεις*, if they have not chosen).
+- [ ] **77.** *Λίστα*: the title is *Λίστα Πρωτοκόλλων* (with the filter, e.g. *· προς Διεκπεραίωση*); no *Νέο* and
+  *Ανανέωση* on the page. *Νέο* is in the top bar, which stays at the top while you scroll, on every page; ↻ right after
+  *Λίστα ▾* refreshes the list. Scroll down: the small round ↑ at the bottom right brings you back to the top.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three

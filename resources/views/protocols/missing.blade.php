@@ -23,7 +23,7 @@
             <x-pill-actions class="pill-actions-center">
                 <x-pill variant="primary" :href="$valid ? url('/search?q=' . rawurlencode('αρ:' . (int) $num . '/' . $year)) : url('/find')" data-action="search">
                     <i class="bi bi-search me-1" aria-hidden="true"></i>Αναζήτηση</x-pill>
-                <x-pill :href="url('/home/list')">Λίστα πρωτοκόλλων</x-pill>
+                <x-pill :href="url('/home/list')">Λίστα Πρωτοκόλλων</x-pill>
             </x-pill-actions>
         </div>
     </div>

@@ -68,6 +68,17 @@ body:not(.layout-narrow) .width-steps { display: none !important; }
     .layout-narrow .d-lg-table-cell, .layout-narrow .d-lg-inline-block, .layout-narrow .d-lg-block { display: none !important; }
 }
 .preference-check { visibility: hidden; }
+/* R2m (owner, 2026-11-25): the list's «back to the top», small, at the bottom right; on wide screens left of the
+   notepad's strip (N05), below them the notepad's button is at the bottom left */
+.scroll-top { position: fixed; right: 1rem; bottom: 1rem; z-index: 1030; width: 2.5rem; height: 2.5rem; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center; opacity: .85; }
+.scroll-top:hover, .scroll-top:focus-visible { opacity: 1; }
+@include media-breakpoint-up(lg) { body.has-notepad .scroll-top { right: 3.25rem; } }
+.protocol-list { padding-bottom: 3.5rem; }   /* at the very bottom the ↑ covers nothing (the lower pager) */
+/* R2m: ↻ next to «Λίστα»: turns once while the list is refreshed */
+.list-refresh { border: 0; background: none; }
+.list-refresh.spinning .bi { display: inline-block; animation: list-refresh-spin .6s linear; }
+@keyframes list-refresh-spin { to { transform: rotate(360deg); } }
 [aria-pressed="true"] > .preference-check { visibility: visible; }
 .app-search-list { position: absolute; top: 100%; right: 0; z-index: 1060; width: max(100%, 26rem); max-width: 90vw; max-height: 70vh; overflow-y: auto; margin-top: 2px; }
 .app-search-list mark { padding: 0; background: rgba(var(--bs-warning-rgb), .35); color: inherit; }

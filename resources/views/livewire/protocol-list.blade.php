@@ -13,13 +13,10 @@
      x-data="{ detailed: (() => { try { return localStorage.getItem('protocolList.detailed') === '1' } catch (e) { return false } })() }"
      x-init="$watch('detailed', v => { try { localStorage.setItem('protocolList.detailed', v ? '1' : '0') } catch (e) {} })">
 
+    {{-- R2m (owner, 2026-11-25): no «Νέο» here (the top bar, always in view, has it); «Ανανέωση» is ↻ next to «Λίστα» in
+         the top bar. R2l: no «Αναζήτηση» either (the search box has it). --}}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
         <h1 class="h4 mb-0 me-auto" id="list-title">{{ $title }}</h1>
-        <x-pill-actions class="flex-grow-0">
-            <x-pill :href="url('/home')" variant="primary">Νέο</x-pill>
-            {{-- R2l (owner, 2026-11-23): no «Αναζήτηση» here: the search box in the top bar has it (and Σύνθετη αναζήτηση) --}}
-            <x-pill wire:click="$refresh">Ανανέωση</x-pill>
-        </x-pill-actions>
     </div>
 
     {{-- A02/R2c: missing numbers. A short line here; the numbers themselves are rows in the list (dashed) --}}

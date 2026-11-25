@@ -12,6 +12,7 @@ use App\Services\NumberGaps;
 use App\Services\ProtocolNumbering;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -159,19 +160,25 @@ class ProtocolList extends Component
         };
     }
 
+    /** R2m (owner, 2026-11-25): «Λίστα Πρωτοκόλλων» (was «Πρωτόκολλο»), then whose and which, so the screen is named */
     private function title(): string
     {
-        $base = self::FILTERS[$this->filter] === 'Όλα' ? 'Πρωτόκολλο' : self::FILTERS[$this->filter];
-        if ($this->filter === '' && $this->who === 'me') {
-            return $base;
-        }
+        $parts = ['Λίστα Πρωτοκόλλων'];
         if ($this->who === 'all') {
-            return "Όλοι οι χρήστες · $base";
+            $parts[] = 'Όλοι οι χρήστες';
+        } elseif ($this->who !== 'me') {
+            $parts[] = User::find($this->who)?->name ?? '';
         }
-        if ($this->who !== 'me') {
-            return (User::find($this->who)?->name ?? '') . " · $base";
+        if ($this->filter !== '') {
+            $parts[] = self::FILTERS[$this->filter];
         }
-        return $base;
+        return implode(' · ', array_filter($parts, fn ($p) => $p !== ''));
+    }
+
+    /** R2m: ↻ next to «Λίστα» in the top bar (it replaced the list's own «Ανανέωση») */
+    #[On('list-refresh')]
+    public function refreshList(): void
+    {
     }
 
     /**
