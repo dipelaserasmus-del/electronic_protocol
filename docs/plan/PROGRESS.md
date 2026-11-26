@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **131 / 141** `████████████████████████████░░` 93% |
-| Effort done (PERT) | **55.0 / 59.6 h** `████████████████████████████░░` 92% |
+| Tasks done | **132 / 142** `████████████████████████████░░` 93% |
+| Effort done (PERT) | **55.3 / 59.9 h** `████████████████████████████░░` 92% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o ✅R5v ✅R2s | 31/31 | `██████████` |
+| 9.7 | ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o ✅R5v ✅R2s ✅R4m | 32/32 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -185,6 +185,7 @@ flowchart LR
     R1o["R1o<br/>Protocol form: the time left to change it in days, hours and minutes"]
     R5v["R5v<br/>Inbox: the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user"]
     R2s["R2s<br/>Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table)"]
+    R4m["R4m<br/>Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -362,6 +363,7 @@ flowchart LR
   R1b --> R1o
   R5g --> R5v
   R7 --> R2s
+  R4g --> R4m
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -387,7 +389,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -548,17 +550,18 @@ gantt
   R1o Protocol form  the time left to change it in days, hours and minutes :done, r1o, 2026-11-14 14:23, 19m
   R5v Inbox  the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user :done, r5v, 2026-11-14 14:42, 19m
   R2s Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table) :done, r2s, 2026-11-14 15:01, 19m
+  R4m Old server never stamped  the migration marks no file when putStamp is off; stamp old --none-stamped :done, r4m, 2026-11-14 15:20, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 15:20, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 15:53, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 16:12, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 16:31, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 17:04, 19m
-  X01 Audit log — recording :x01, 2026-11-14 17:23, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 17:56, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 18:29, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 19:02, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 19:21, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 15:39, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 16:12, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 16:31, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 16:50, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 17:23, 19m
+  X01 Audit log — recording :x01, 2026-11-14 17:42, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 18:15, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 18:48, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 19:21, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 19:40, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -662,7 +665,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R4c** | Preview in the app: PDF, images, text; docx / xlsx converted in the browser | R4a | 0.5 | 0.1 | 2.3 | 2.8 | 9.4 | 9.9 | 7.1 | #108 |
 | ✅ | **R4e** | Stamp designer: editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 9.4 | 9.9 | 5.2 | #109 |
 | ✅ | **R4f** | Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice | R4c, R4e | 0.5 | 0.1 | 4.7 | 5.3 | 9.9 | 10.5 | 5.2 | #110 |
-| ✅ | **R4g** | Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.8 | 11.1 | 5.6 | #111 |
+| ✅ | **R4g** | Old stamped PDFs: can the stamp be removed? (investigation, owner-run command only if safe) | R4f | 0.3 | 0.1 | 5.3 | 5.6 | 10.5 | 10.8 | 5.2 | #111 |
 | ✅ | **R4h** | Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own | R4b | 0.5 | 0.1 | 2.8 | 3.4 | 10.3 | 10.8 | 7.4 | #112 |
 | ✅ | **R5p** 🔴 | Inbox: each e-mail in an envelope (2–3 versions, owner chooses) | R5o | 0.3 | 0.1 | 10.2 | 10.5 | 10.2 | 10.5 | 0.0 | #113 |
 | ✅ | **N05** | Notepad per user on every page: sections, to-dos, markdown, autosave | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 10.6 | 11.1 | 7.0 | #114 |
@@ -698,6 +701,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1o** | Protocol form: the time left to change it in days, hours and minutes | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #144 |
 | ✅ | **R5v** | Inbox: the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user | R5g | 0.3 | 0.1 | 6.9 | 7.2 | 10.8 | 11.1 | 3.9 | #145 |
 | ✅ | **R2s** | Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table) | R7 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 | #146 |
+| ✅ | **R4m** | Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped | R4g | 0.3 | 0.1 | 5.6 | 5.9 | 10.8 | 11.1 | 5.2 | #149 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
