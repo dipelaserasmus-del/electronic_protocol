@@ -179,7 +179,7 @@ tasks = [
   { id = "R2q", title = "List: the Από / Προς tooltip one line per part (sender, number, date)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 140 },
   { id = "R2r", title = "List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 141 },
   { id = "R6l", title = "«Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md", phase = "R", batch = 9.7, size = "S", deps = ["R6c"], status = "done", pr = 142 },
-  { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 143 },
+  { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 148 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

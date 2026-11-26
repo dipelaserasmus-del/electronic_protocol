@@ -383,7 +383,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-26 09:48 | V01 | #143 | versions report docs/reports/VERSIONS.md (original / current / newest, flagged) |
+| 2026-11-26 09:48 | V01 | #148 | versions report docs/reports/VERSIONS.md (original / current / newest, flagged) |
 | 2026-11-26 08:49 | R6l | #142 | related numbers applied to existing protocols (back-links); docs/RELATED-NUMBERS.md |
 | 2026-11-25 14:54 | R2r | #141 | list: the e-mail file after the attachments, by its date and time; setting to put it first |
 | 2026-11-25 14:39 | R2q | #140 | list: the Από / Προς tooltip one line per part |

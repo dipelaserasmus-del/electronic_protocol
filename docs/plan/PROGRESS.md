@@ -684,7 +684,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2q** | List: the Από / Προς tooltip one line per part (sender, number, date) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 10.8 | 11.1 | 3.6 | #140 |
 | ✅ | **R2r** | List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 10.8 | 11.1 | 3.6 | #141 |
 | ✅ | **R6l** | «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md | R6c | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #142 |
-| ✅ | **V01** | Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md) | — | 0.3 | 0.1 | 0.0 | 0.3 | 10.5 | 10.8 | 10.5 | #143 |
+| ✅ | **V01** | Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md) | — | 0.3 | 0.1 | 0.0 | 0.3 | 10.5 | 10.8 | 10.5 | #148 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
