@@ -306,6 +306,27 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
+    /** R5x (owner, 2026-11-26): a registered e-mail's envelope is marked (green stripe); a new or only-read one is not */
+    public function test_a_registered_email_is_marked_in_any_look(): void
+    {
+        $this->setting('protocolValidate', 1);
+        $this->setting('inboxEnvelope', 'airmail');
+        $user = $this->writer();
+        $page = Livewire::actingAs($user)->test(EmailInbox::class);
+        $this->assertStringNotContainsString('is-saved', $page->html(), 'nothing registered yet');
+
+        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)->assertHasNoErrors();
+        $page->call('markRead', 2)->assertHasNoErrors();
+        $html = $page->html();
+        $this->assertSame(1, substr_count($html, 'is-saved'), 'only the registered one, not the one moved to «read»');
+        $this->assertMatchesRegularExpression('~class="inbox-envelope inbox-envelope-airmail is-saved" wire:key="env-1"~', $html);
+
+        $this->actingAs($user)->postJson('/preferences', ['key' => 'envelope', 'value' => 'none'])->assertOk();
+        $html = $page->call('envelopeChanged')->html();
+        $this->assertMatchesRegularExpression('~class="inbox-noenvelope is-saved" wire:key="env-1"~', $html);
+        $this->assertSame(1, substr_count($html, 'is-saved'));
+    }
+
     /**
      * R5t (owner, 2026-11-25): an e-mail's attachments have no number before registering: the preview window has no
      * «Με σφραγίδα» for them; once registered, the protocol's files are listed with 👁 and the switch
