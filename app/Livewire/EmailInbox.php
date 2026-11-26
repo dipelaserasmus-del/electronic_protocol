@@ -140,7 +140,7 @@ class EmailInbox extends Component
             return;
         }
         $perPage = max(1, (int) (Config::getConfigValueOf('emailNumFetch') ?: 1));
-        $newest = (bool) Config::getConfigValueOf('emailFetchOrderDesc');
+        $newest = \App\Support\UserPreferences::inboxNewestFirst(auth()->user());
         // the page asked for, even if the cache has nothing for it: only the server's answer may change the page
         $page = $inbox->cachedPage($snapshot, $this->page, $perPage, $newest);
         $this->stale = true;
@@ -172,6 +172,18 @@ class EmailInbox extends Component
         if ($this->failure !== null && $this->uids !== []) {
             $this->page = $before;   // R5n: the e-mails still shown are those of the page before
         }
+    }
+
+    /**
+     * R5v (owner, 2026-11-26): «παλαιότερα πρώτα ↑» / «νεότερα πρώτα ↓» swapped by the user, kept as their own choice
+     * (the setting emailFetchOrderDesc is the default); back to the first page
+     */
+    public function toggleOrder(): void
+    {
+        $this->allowed();
+        $user = auth()->user();
+        \App\Support\UserPreferences::set($user, 'inboxOrder', \App\Support\UserPreferences::inboxNewestFirst($user) ? 'oldest' : 'newest');
+        $this->gotoPage(1);
     }
 
     /** R5g: the list pager's previous / next (x-list-pager, as on the other paged screens) */
@@ -435,7 +447,7 @@ class EmailInbox extends Component
             $mailbox = $this->mailbox();
             $inbox = app(Inbox::class);
             $since = \App\Services\Mail\InboxCount::since();
-            $newest = (bool) Config::getConfigValueOf('emailFetchOrderDesc');
+            $newest = \App\Support\UserPreferences::inboxNewestFirst(auth()->user());
             $page = $inbox->page($mailbox, $since, $this->page, $perPage, $newest);
             // a page left empty (its e-mails registered, by this user or others): back to the first page
             if ($page->messages === [] && $page->total > 0 && $this->page > 1) {
@@ -583,7 +595,7 @@ class EmailInbox extends Component
             'messages' => $messages,
             'extra' => $extra,
             'account' => (string) Config::getConfigValueOf('defaultImapEmail'),
-            'newestFirst' => (bool) Config::getConfigValueOf('emailFetchOrderDesc'),
+            'newestFirst' => \App\Support\UserPreferences::inboxNewestFirst(auth()->user()),
             // R5p: the envelope's look; R5q (owner, 2026-11-25): each user's own, the setting the default; «none» = a line
             'envelope' => \App\Support\UserPreferences::envelope($user),
             'lastPage' => max(1, (int) ceil($this->total / max(1, $this->perPage))),

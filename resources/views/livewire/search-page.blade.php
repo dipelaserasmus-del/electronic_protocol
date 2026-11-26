@@ -12,7 +12,7 @@
         <h1 class="h4 mb-0 me-auto">Αναζήτηση πρωτοκόλλων</h1>
         <x-pill-actions class="flex-grow-0">
             <x-pill :href="url('/home/list')">Λίστα</x-pill>
-            <x-pill :href="url('/home')" variant="primary">Νέο</x-pill>
+            @can('create', \App\Models\Protocol::class)<x-pill :href="url('/home')" variant="primary">Νέο</x-pill>@endcan
         </x-pill-actions>
     </div>
 

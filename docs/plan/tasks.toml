@@ -152,6 +152,7 @@ tasks = [
   { id = "R4h", title = "Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own", phase = "R", batch = 9.6, size = "M", deps = ["R4b"], status = "done", pr = 112 },
   { id = "R5p", title = "Inbox: each e-mail in an envelope (2–3 versions, owner chooses)", phase = "R", batch = 9.6, size = "S", deps = ["R5o"], status = "done", pr = 113 },
   { id = "N05", title = "Notepad per user on every page: sections, to-dos, markdown, autosave", phase = "N", batch = 9.6, size = "M", deps = ["N04"], status = "done", pr = 114 },
+  { id = "N06", title = "Symfony security updates (advisories of 2026-11-25: mailer, routing, http-kernel)", phase = "N", batch = 9.7, size = "S", deps = ["N01"], status = "done", pr = 147 },
   { id = "R6e", title = "Log viewer for administrators (Console-like: levels, search, pages by day)", phase = "R", batch = 9.6, size = "M", deps = ["R6c"], status = "done", pr = 115 },
   { id = "R3j", title = "Narrow page: − / + / ↺ for its width, saved per user", phase = "R", batch = 9.7, size = "S", deps = ["R3d"], status = "done", pr = 117 },
   { id = "R4i", title = "Stamp: designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default)", phase = "R", batch = 9.7, size = "S", deps = ["R4f"], status = "done", pr = 118 },
@@ -179,6 +180,12 @@ tasks = [
   { id = "R2q", title = "List: the Από / Προς tooltip one line per part (sender, number, date)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 140 },
   { id = "R2r", title = "List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 141 },
   { id = "R6l", title = "«Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md", phase = "R", batch = 9.7, size = "S", deps = ["R6c"], status = "done", pr = 142 },
+  { id = "R3k", title = "No «Νέο» for readers (top bar, search page, old menu)", phase = "R", batch = 9.7, size = "S", deps = ["R3d"], status = "done", pr = 143 },
+  { id = "R1o", title = "Protocol form: the time left to change it in days, hours and minutes", phase = "R", batch = 9.7, size = "S", deps = ["R1b"], status = "done", pr = 144 },
+  { id = "R5v", title = "Inbox: the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user", phase = "R", batch = 9.7, size = "S", deps = ["R5g"], status = "done", pr = 145 },
+  { id = "R2s", title = "Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table)", phase = "R", batch = 9.7, size = "S", deps = ["R7"], status = "done", pr = 146 },
+  { id = "R4m", title = "Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped", phase = "R", batch = 9.7, size = "S", deps = ["R4g"], status = "done", pr = 149 },
+  { id = "R5w", title = "Inbox: the round ↑ «back to the top» of the list", phase = "R", batch = 9.7, size = "S", deps = ["R2m"], status = "done", pr = 150 },
   { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 148 },
 
   # ---------------- Batch 10 ----------------
@@ -192,6 +199,7 @@ tasks = [
   { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 10, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
   { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },
   { id = "Z03", title = "Final security review", phase = "Z", batch = 10, size = "M", deps = ["Z02"], status = "todo" },
+  { id = "Z04", title = "End-user manual (details from the owner later)", phase = "Z", batch = 10, size = "M", deps = ["Z03"], status = "todo" },
   { id = "V02", title = "Versions report updated with the release versions", phase = "Z", batch = 10, size = "S", deps = ["Z03", "V01"], status = "todo" },
 
 ]

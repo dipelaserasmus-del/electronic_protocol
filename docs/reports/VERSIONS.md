@@ -1,6 +1,6 @@
 # V01 — Versions of the platform, frameworks and libraries
 
-Last update: 2026-11-26 09:48 (Greek time). **To be updated again at the end of the development (task V02, after Z03).**
+Last update: 2026-11-26 11:36 (Greek time). **To be updated again at the end of the development (task V02, after Z03).**
 
 What the app ran on before the rebuild, what it runs on now, and what is the newest version available. Checked on
 2026-11-26 with `composer audit`, `npm audit`, Packagist, npm and the projects' release / support pages.
@@ -26,7 +26,7 @@ Laravel 13 upgrade of 2026-11-10; that upgrade never reached the production serv
 
 | | Original | Current |
 |---|---|---|
-| Known PHP-package vulnerabilities (`composer audit`, 2026-11-26) | 🔴 **86 advisories in 19 packages** (5 critical: Laravel, PhpSpreadsheet ×2, webklex laravel-imap, webklex php-imap) | 🔴 **5** in Symfony 8.1.10 / 8.1.11 (published 2026-11-25; fixed in 8.1.12, a patch update of the lock file; not applied yet) |
+| Known PHP-package vulnerabilities (`composer audit`, 2026-11-26) | 🔴 **86 advisories in 19 packages** (5 critical: Laravel, PhpSpreadsheet ×2, webklex laravel-imap, webklex php-imap) | 🟢 **0** (the 5 Symfony advisories of 2026-11-25 were closed by N06, Symfony 8.1.12) |
 | Known npm vulnerabilities (`npm audit`, app + e2e) | not measured (Laravel Mix 4 / webpack 4, no lock file) | 🟢 0 |
 | PHP | 🔴 8.1 (end of life since 2025-12-31) | 🟡 8.5 in the image, 8.4 + 8.5 in CI (image rebuild needed for the PHP fixes of 2026-11-19) |
 | Framework | 🔴 Laravel 8 (security fixes ended 2023-01-24) | 🟡 Laravel 13.42 (supported until 2028-03-17; 13.44.1 out) |
@@ -52,7 +52,7 @@ Laravel 13 upgrade of 2026-11-10; that upgrade never reached the production serv
 | Package | Original | Current | Newest available | Status | Notes |
 |---|---|---|---|---|---|
 | laravel/framework | 🔴 8.83.27 | 13.42.0 | **13.44.1** (2026-11-24) | 🔴 original / 🟡 current | Laravel 8: 7 advisories (1 critical, 2 high), security fixes ended 2023-01-24. Laravel 13: bug fixes until Q3 2027, security until 2028-03-17; Laravel 14 expected Q1 2027. |
-| symfony/* (Laravel's base) | 🔴 5.4.23 | 8.1.5–8.1.11 (http-kernel 8.1.11, mailer 8.1.10, routing 8.1.11) | **8.1.12** (2026-11-24/25); 8.2 in RC | 🔴 | Original: 17 advisories across http-foundation, http-kernel, mime, process, routing. **Current: CVE-2026-133743 (http-kernel, forwarded headers in inline fragments), CVE-2026-133751 / -133755 (mailer, STARTTLS man-in-the-middle), CVE-2026-133746 / -133754 (routing, URLs to another host)**, all fixed by 8.1.12. CI's audit job fails on any advisory, so the next PR needs this update (`composer update symfony/http-kernel symfony/mailer symfony/routing --with-dependencies`, checked: lock-only change, audit then clean). |
+| symfony/* (Laravel's base) | 🔴 5.4.23 | **8.1.12** (console, finder, http-foundation, http-kernel, mailer, mime, process, routing, string, translation, var-dumper; N06), others 8.1.5–8.1.10 | 8.1.12; 8.2 in RC | 🔴 original / 🟢 current | Original: 17 advisories across http-foundation, http-kernel, mime, process, routing. Current: CVE-2026-133743 (http-kernel), CVE-2026-133751 / -133755 (mailer, STARTTLS man-in-the-middle), CVE-2026-133746 / -133754 (routing, URLs to another host), published 2026-11-25, all closed by 8.1.12 (N06, PR #147). |
 | livewire/livewire (+ Alpine) | — | 4.4.8 | 4.4.10 (2026-11-24) | 🟡 | New pages (N03). No open advisory for 4.4.8. |
 | laravel/ui | 3.4.6 | 4.6.3 | 4.6.3 | 🟢 | Only the old login / password screens; goes with Z01. |
 | laravel/tinker | 2.8.1 | 3.1.0 | 3.2.0 | 🟡 | Console only. |
@@ -117,7 +117,6 @@ Only the **login, registration and password-reset pages** still use the old layo
 
 ## What to do
 
-1. **Symfony 8.1.12** (patch update, section 2): closes the 5 open advisories; also needed for CI's audit job to pass.
 1. **Production (at deployment, not before — owner's rule of 2026-11-16):** the old server (PHP 8.1, Apache 2.4.58,
    MariaDB 10.4, Laravel 8 code with 86 known advisories) is past end of life with critical fixes missing. The move to
    the Docker stack replaces all of it; until then keep it reachable only from the internal network.

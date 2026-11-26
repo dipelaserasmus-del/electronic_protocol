@@ -31,6 +31,20 @@ class ProtocolFormTest extends FeatureTestCase
     }
 
     /** R1g: an existing protocol's own number says nothing until it is changed; a number from a missing-number row does. */
+    /** R1o (owner, 2026-11-26): the time left to change the protocol in days, hours and minutes, not «5936 λεπτά». */
+    public function test_the_time_left_to_change_it_is_readable(): void
+    {
+        $this->setting('allowWriterUpdateProtocol', 1);
+        $this->setting('allowWriterUpdateProtocolTimeInMinutes', 6000);
+        $writer = $this->writer();
+        $p = Protocol::factory()->number(3)->create(['user_id' => $writer->id]);
+        $p->timestamps = false;
+        $p->updated_at = now()->subMinutes(64);
+        $p->save();
+        $this->actingAs($writer)->get("/home/{$p->id}")->assertOk()
+            ->assertSee('Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη 4 μέρες, 2 ώρες, 56 λεπτά.')->assertDontSee('5936 λεπτά');
+    }
+
     public function test_free_status_only_after_the_number_is_changed(): void
     {
         $this->setting('protocolValidate', 0);

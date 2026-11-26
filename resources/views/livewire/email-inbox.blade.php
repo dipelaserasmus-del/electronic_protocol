@@ -9,10 +9,15 @@
      @if ($connecting) wire:init="connect" @endif>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <h1 class="h4 mb-0 me-auto"><i class="bi bi-inbox me-1" aria-hidden="true"></i>Εισερχόμενα email</h1>
+        {{-- R5v (owner, 2026-11-26): «11–20 από 55» only at the pager (no longer twice); the order, with its arrow, swaps
+             on a click and stays the user's choice --}}
         @if ($total > 0)
-            <span class="small text-body-secondary" id="inbox-count">
-                @if ($total > $perPage) {{ $first }}–{{ $last }} από {{ $total }} @else {{ $total }} {{ $total === 1 ? 'email' : 'email' }} @endif
-                · {{ $newestFirst ? 'νεότερα πρώτα' : 'παλαιότερα πρώτα' }}
+            <span class="small text-body-secondary" id="inbox-count" data-total="{{ $total }}">
+                @if ($total <= $perPage) {{ $total }} email · @endif
+                <button type="button" class="btn btn-link btn-sm p-0 align-baseline text-reset text-decoration-none inbox-order" id="inbox-order"
+                        wire:click="toggleOrder" wire:loading.attr="disabled" data-order="{{ $newestFirst ? 'newest' : 'oldest' }}"
+                        title="{{ $newestFirst ? 'Αλλαγή σε παλαιότερα πρώτα' : 'Αλλαγή σε νεότερα πρώτα' }}">{{ $newestFirst ? 'νεότερα πρώτα' : 'παλαιότερα πρώτα' }}
+                    <i class="bi {{ $newestFirst ? 'bi-arrow-down' : 'bi-arrow-up' }}" aria-hidden="true"></i></button>
             </span>
         @endif
         {{-- R5m (owner, 2026-11-23): when the e-mails last came from the mail server --}}

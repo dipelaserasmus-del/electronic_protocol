@@ -13,6 +13,7 @@ use App\Models\User;
  * - envelope (R5q): the inbox's look: 'none' (a thin line between e-mails), 'airmail', 'paper', 'plain'; none set =
  *   the setting inboxEnvelope (envelope())
  * - narrowWidth (R3j): the narrow page's width in rem, set with − / + (none = the default, about half the screen)
+ * - inboxOrder (R5v): the inbox's order, 'newest' or 'oldest' first; none set = the setting emailFetchOrderDesc
  */
 final class UserPreferences
 {
@@ -20,7 +21,8 @@ final class UserPreferences
 
     /** allowed values per key */
     public const VALUES = ['width' => ['full', 'narrow'], 'home' => ['all', 'd', 'e'], 'stamped' => ['yes', 'no'],   // R4f: files with the stamp or the original
-        'envelope' => ['none', 'airmail', 'paper', 'plain']];   // R5q
+        'envelope' => ['none', 'airmail', 'paper', 'plain'],   // R5q
+        'inboxOrder' => ['newest', 'oldest']];   // R5v
 
     /** R3j (owner, 2026-11-25): numeric choices: [min, max, step]; null clears the choice (back to the default) */
     public const RANGES = ['narrowWidth' => [40, 160, 5]];
@@ -45,6 +47,16 @@ final class UserPreferences
         }
         $setting = (string) \App\Models\Config::getConfigValueOf('inboxEnvelope');
         return self::valid('envelope', $setting) ? $setting : 'airmail';
+    }
+
+    /** R5v (owner, 2026-11-26): the inbox newest first? The user's own choice (↑ / ↓ next to the order), else the setting */
+    public static function inboxNewestFirst(?User $user): bool
+    {
+        $own = $user?->preferences['inboxOrder'] ?? null;
+        if (self::valid('inboxOrder', $own)) {
+            return $own === 'newest';
+        }
+        return (bool) \App\Models\Config::getConfigValueOf('emailFetchOrderDesc');
     }
 
     /** R3e (owner, 2026-11-20): the home pages a user can choose (key => [label, icon, address]) */

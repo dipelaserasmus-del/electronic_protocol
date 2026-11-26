@@ -130,6 +130,39 @@ class OldStampsTest extends FeatureTestCase
     }
 
     /** review of R4g: a stamp added by this application (R4e) is recognised and cut off exactly; failed writes change nothing */
+    /**
+     * R4m (owner, 2026-11-26): the old server never stamped. The migration marks nothing when the old setting putStamp
+     * is off (or missing), and «--none-stamped» takes every mark away without touching a file.
+     */
+    public function test_when_the_old_server_never_stamped_no_file_is_marked(): void
+    {
+        $p = Protocol::factory()->number(1)->create();
+        $pdf = Attachment::factory()->create(['protocol_id' => $p->id, 'name' => 'α.pdf', 'savedPath' => 'arxeio/test/α.pdf']);
+        $word = Attachment::factory()->create(['protocol_id' => $p->id, 'name' => 'β.docx', 'savedPath' => 'arxeio/test/β.docx']);
+        Storage::put('arxeio/test/α.pdf', $bytes = PdfBuilder::make());
+        $migration = require database_path('migrations/2026_11_24_000002_attachments_stamp_in_file.php');
+        $marks = fn () => [$pdf->fresh()->stamp_in_file, $word->fresh()->stamp_in_file];
+
+        foreach ([null, '0', '1'] as $putStamp) {
+            $migration->down();
+            \App\Models\Config::where('key', 'putStamp')->delete();
+            if ($putStamp !== null) {
+                $this->setting('putStamp', $putStamp);
+            }
+            $migration->up();
+            $this->assertSame($putStamp === '1' ? [true, true] : [false, false], $marks(), "putStamp: ".var_export($putStamp, true));
+        }
+
+        $word->delete();   // review of R4m: in the trash (soft-deleted) when the marks are cleared
+        $this->artisan('stamp:old', ['--none-stamped' => true])
+            ->expectsOutputToContain('2 αρχεία δεν σημειώνονται πια ως σφραγισμένα')->assertSuccessful();
+        $word->restore();
+        $this->assertSame([false, false], $marks(), 'also the one in the trash, restored later');
+        $this->assertSame($bytes, Storage::get('arxeio/test/α.pdf'), 'no file changed');
+        $this->assertFalse(Storage::exists(OldStamps::ORIGINALS.'/arxeio/test/α.pdf'));
+        $this->artisan('stamp:old', ['--none-stamped' => true])->expectsOutputToContain(': 0 αρχεία')->assertSuccessful();
+    }
+
     public function test_a_stamp_of_this_application_and_failed_writes(): void
     {
         $plain = PdfBuilder::make();

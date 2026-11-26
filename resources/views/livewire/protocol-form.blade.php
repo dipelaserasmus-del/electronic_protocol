@@ -90,7 +90,7 @@
             </div>
 
             @if ($access->secondsLeft > 0)
-                <x-notice type="info" class="mt-2 text-center">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ (int) ceil($access->secondsLeft / 60) }} λεπτά.</x-notice>
+                <x-notice type="info" class="mt-2 text-center">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ \App\Support\Duration::text($access->secondsLeft) }}.</x-notice>{{-- R1o --}}
             @endif
 
             {{-- R1j (owner, 2026-11-20): Αποθήκευση floats at the bottom right (below); Νέο and Λίστα are in the top bar;
