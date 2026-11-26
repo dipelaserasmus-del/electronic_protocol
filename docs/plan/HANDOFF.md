@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-26 10:44 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06 and R4m; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-26 10:50 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m and R5w; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R5w (owner, 2026-11-26):** `partials/scroll-top` (the ↑, app.js [data-scroll-top]) included by protocols/list and inbox; `.inbox-page` has the list's padding-bottom.
 - **R4m (owner, 2026-11-26):** Migration 2026_11_24_000002 marks stamp_in_file only if configs.putStamp is on; `stamp:old --none-stamped` sets every stamp_in_file to 0 without reading files. **Deployment: the owner's server never stamped** (owner, 2026-11-26): no old file carries a stamp; check `stamp:old` after migrate, `--none-stamped` if needed (OWNER-TODO, Final deployment).
 - **N06 (CI, 2026-11-26):** composer.lock: Symfony 8.1.12 (mailer, routing, http-kernel advisories of 2026-11-25); `composer audit` clean.
 - **R2s (owner, 2026-11-26):** layouts/print: `.sheet` (landscape|portrait), sticky `.toolbar`, @page @bottom-left (institution · title, CSS-escaped: `$cssText`) / @bottom-right (page counter), optional section 'foot'; printed.blade: colgroup widths (#protocol-book only has table-layout fixed), `.groups` / `.span-head` / `.cols` header rows, `$sub(mark, text)` lines.
@@ -146,7 +147,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
   `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
   fail here only (also on master).
-- **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
+- **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide; **last: Z04, the end-user manual** (owner, 2026-11-26; details from the owner later: ask before starting).
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
   `#pager-top` / `#pager-bottom`, `data-pager=previous|next|select`. R2g: used on every paged screen (search
@@ -384,6 +385,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-26 10:50 | R5w | #150 | inbox: back-to-top button |
 | 2026-11-26 10:44 | R4m | #149 | old server never stamped: no old file marked; stamp:old --none-stamped |
 | 2026-11-26 10:05 | N06 | #147 | Symfony 8.1.12 for the advisories of 2026-11-25 |
 | 2026-11-26 09:46 | R2s | #146 | printed protocol book laid out for paper |

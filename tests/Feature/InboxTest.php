@@ -80,6 +80,13 @@ class InboxTest extends FeatureTestCase
         Livewire::actingAs($this->writer())->test(EmailInbox::class)->assertSet('uids', [8, 7, 6]);
     }
 
+    /** R5w (owner, 2026-11-26): the round ↑ «back to the top» of the list (R2m) on the inbox page too. */
+    public function test_the_inbox_has_the_back_to_top_button(): void
+    {
+        $this->actingAs($this->writer())->get('/inbox')->assertOk()
+            ->assertSee('data-scroll-top', false)->assertSee('aria-label="Στην αρχή της σελίδας"', false);
+    }
+
     public function test_cache_keeps_only_what_is_still_in_the_inbox_and_follows_uidvalidity(): void
     {
         $user = $this->writer();

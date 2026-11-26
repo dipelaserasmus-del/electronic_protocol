@@ -553,3 +553,27 @@ test('the inbox order swaps with a click; the range is shown once (R5v)', async 
   await page.locator('#inbox-order').click();   // back as it was
   await expect(page.locator('#inbox-order')).toHaveAttribute('data-order', before);
 });
+
+// R5w (owner, 2026-11-26): the round ↑ «back to the top» (R2m, the list) on the inbox page too, covering nothing
+test('the inbox has the back-to-top button (R5w)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await login(page, 'writer');
+  await openInbox(page, '/inbox');
+  const up = page.locator('[data-scroll-top]');
+  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+  await expect(up).toBeInViewport();
+  const b = await up.boundingBox();
+  expect(1440 - (b.x + b.width)).toBeLessThan(80);
+  expect(800 - (b.y + b.height)).toBeLessThan(40);
+  // at the very bottom it covers no button and not the lower pager
+  for (const el of await page.locator('.inbox-page button:visible, .inbox-page nav').all()) {
+    if (await el.getAttribute('data-scroll-top') !== null) continue;
+    const r = await el.boundingBox();
+    if (!r) continue;
+    const overlap = r.x < b.x + b.width && b.x < r.x + r.width && r.y < b.y + b.height && b.y < r.y + r.height;
+    expect(overlap).toBe(false);
+  }
+  await evidence(page, 'r5w-scroll-top', { clip: { x: 1440 - 520, y: 800 - 260, width: 520, height: 260 } });
+  await up.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});

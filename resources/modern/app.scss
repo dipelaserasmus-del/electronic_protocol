@@ -74,7 +74,7 @@ body:not(.layout-narrow) .width-steps { display: none !important; }
     display: inline-flex; align-items: center; justify-content: center; opacity: .85; }
 .scroll-top:hover, .scroll-top:focus-visible { opacity: 1; }
 @include media-breakpoint-up(lg) { body.has-notepad .scroll-top { right: 3.25rem; } }
-.protocol-list { padding-bottom: 3.5rem; }   /* at the very bottom the ↑ covers nothing (the lower pager) */
+.protocol-list, .inbox-page { padding-bottom: 3.5rem; }   /* at the very bottom the ↑ covers nothing (the lower pager); R5w: the inbox too */
 /* R2m: ↻ next to «Λίστα»: turns once while the list is refreshed */
 .list-refresh { border: 0; background: none; }
 .list-refresh.spinning .bi { display: inline-block; animation: list-refresh-spin .6s linear; }
