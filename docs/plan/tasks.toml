@@ -198,6 +198,7 @@ tasks = [
   { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 10, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
   { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },
   { id = "Z03", title = "Final security review", phase = "Z", batch = 10, size = "M", deps = ["Z02"], status = "todo" },
+  { id = "Z04", title = "End-user manual (details from the owner later)", phase = "Z", batch = 10, size = "M", deps = ["Z03"], status = "todo" },
 
 ]
 

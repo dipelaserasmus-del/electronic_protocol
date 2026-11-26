@@ -19,7 +19,8 @@ run batch 10
 ```
 
 Batch 10 (A01–A06, X01–X02, Z01–Z03) is the last one: integrity checks, a log of who changed what, removing the old
-code, and a final security review. After it, I write the deployment guide.
+code, and a final security review. After it, I write the deployment guide. The very last task is the **end-user
+manual** (Z04, your request of 2026-11-26): I'll ask you for its details before writing it.
 
 ## Try it, batch by batch (optional)
 Before you start: *Update: get latest version from GitHub*, then *Demo: start*. Open http://localhost:8080 and log in

@@ -7,15 +7,15 @@
 
 | | |
 |---|---|
-| Tasks done | **133 / 143** `████████████████████████████░░` 93% |
-| Effort done (PERT) | **55.7 / 60.3 h** `████████████████████████████░░` 92% |
-| Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
-| Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
+| Tasks done | **133 / 144** `████████████████████████████░░` 92% |
+| Effort done (PERT) | **55.7 / 60.8 h** `███████████████████████████░░░` 92% |
+| Remaining effort, one agent in sequence | **5.1 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Remaining critical path (if work could run in parallel) | 2.0 h ± 0.2 |
 | In progress | — |
 | Next task | **A01** — Integrity-check engine + page |
 | On hold | B03d (Date reset on save (pinned, awaiting steps)) |
 
-**Critical path (remaining):** Z01 → Z02 → Z03
+**Critical path (remaining):** Z01 → Z02 → Z03 → Z04
 
 ## Batches
 
@@ -36,7 +36,7 @@
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
 | 9.7 | ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o ✅R5v ✅R2s ✅R4m ✅R5w | 33/33 | `██████████` |
-| 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
+| 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 ⬜Z04 | 0/11 | `░░░░░░░░░░` |
 
 ## Dependency network
 
@@ -199,6 +199,7 @@ flowchart LR
     Z01["Z01<br/>Remove legacy code"]
     Z02["Z02<br/>Auth hardening, security headers"]
     Z03["Z03<br/>Final security review"]
+    Z04["Z04<br/>End-user manual (details from the owner later)"]
   end
   F01 --> F02
   F02 --> S00
@@ -386,15 +387,16 @@ flowchart LR
   R7 --> Z01
   Z01 --> Z02
   Z02 --> Z03
+  Z03 --> Z04
   classDef done fill:#d4edda,stroke:#28a745,color:#155724
   classDef inprogress fill:#cce5ff,stroke:#004085,color:#004085
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
   class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w done
-  class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
+  class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03,Z04 todo
   class B03d onhold
-  class Z01,Z02,Z03 critical
+  class Z01,Z02,Z03,Z04 critical
 ```
 
 ## Timeline (one agent, execution order)
@@ -565,6 +567,7 @@ gantt
   Z01 Remove legacy code :crit, z01, 2026-11-14 19:07, 33m
   Z02 Auth hardening, security headers :crit, z02, 2026-11-14 19:40, 19m
   Z03 Final security review :crit, z03, 2026-11-14 19:59, 33m
+  Z04 End-user manual (details from the owner later) :crit, z04, 2026-11-14 20:32, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -579,7 +582,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **S00** | Close open admin registration | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 10.8 | 11.1 | 9.4 | #5 |
 | ✅ | **B03** | Keep manually typed number | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 10.6 | 11.1 | 9.2 | #6 |
 | ✅ | **B08** | Atomic numbering (concurrency) | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 9.2 | 9.7 | 7.7 | #7 |
-| ✅ | **S02** | Central access-control policy | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 7.4 | 8.0 | 6.0 | #8 |
+| ✅ | **S02** | Central access-control policy | F02 | 0.5 | 0.1 | 1.4 | 2.0 | 7.2 | 7.7 | 5.8 | #8 |
 | ✅ | **A02** | Missing-number reminder | B08 | 0.5 | 0.1 | 2.0 | 2.5 | 9.7 | 10.3 | 7.7 | #9 |
 | ✅ | **B09** | Fix all outgoing email (500s) | F02 | 0.3 | 0.1 | 1.4 | 1.7 | 10.8 | 11.1 | 9.4 | #14 |
 | ✅ | **F04** | Real-data loader (owner runs it) | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 2.7 | 3.1 | 2.2 | #15 |
@@ -601,14 +604,14 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5a** | Email service, EML cache, charsets | N01 | 1.1 | 0.2 | 2.0 | 3.1 | 4.6 | 5.7 | 2.6 | #36 |
 | ✅ | **F08** | Attachment names fit 255 bytes (Linux/Docker) | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 10.8 | 11.1 | 9.9 | #37 |
 | ✅ | **D02** | Assignments table (replace d14,e10 text) | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 3.1 | 3.6 | 2.2 | #38 |
-| ✅ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 8.0 | 8.3 | 7.1 | #39 |
+| ✅ | **D03** | Attachment size/hash/deleted_by | F04 | 0.3 | 0.1 | 0.9 | 1.2 | 7.7 | 8.1 | 6.9 | #39 |
 | ✅ | **D04** | Integer dates → DATE columns | F04 | 0.5 | 0.1 | 0.9 | 1.4 | 10.6 | 11.1 | 9.7 | #40 |
 | ✅ | **R1a** | Protocol service (sanitation, copy date…) | D01, D02 | 0.5 | 0.1 | 1.7 | 2.3 | 4.5 | 5.0 | 2.7 | #42 |
 | ✅ | **R1b** | Protocol form screen | R1a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 5.0 | 5.6 | 1.4 | #43 |
-| ✅ | **R1c** | Attachments panel, drag & drop | R1b, D03 | 0.5 | 0.1 | 4.2 | 4.7 | 8.8 | 9.4 | 4.7 | #44 |
+| ✅ | **R1c** | Attachments panel, drag & drop | R1b, D03 | 0.5 | 0.1 | 4.2 | 4.7 | 8.6 | 9.2 | 4.4 | #44 |
 | ✅ | **R2** | Protocol list rebuild | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 5.4 | 5.9 | 1.7 | #45 |
-| ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 8.0 | 8.3 | 6.0 | #46 |
-| ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 8.3 | 8.8 | 6.0 | #47 |
+| ✅ | **R4a** | Secure file handling | S02 | 0.3 | 0.1 | 2.0 | 2.3 | 7.7 | 8.1 | 5.8 | #46 |
+| ✅ | **R4b** | Attachment trash with retention | R4a, D03 | 0.5 | 0.1 | 2.3 | 2.8 | 8.1 | 8.6 | 5.8 | #47 |
 | ✅ | **R1e** | Form feedback: drop (Firefox), related tags, notices | R1c, R4b | 0.3 | 0.1 | 4.7 | 5.0 | 9.4 | 9.7 | 4.7 | #48 |
 | ✅ | **R2b** | List feedback: user filter, detailed view, file names | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.7 | 10.3 | 5.5 | #49 |
 | ✅ | **R2c** | Missing numbers as rows in the list | R2b, A02 | 0.5 | 0.1 | 4.7 | 5.3 | 10.3 | 10.8 | 5.5 | #50 |
@@ -623,13 +626,13 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R3d** 🔴 | Top bar: fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user | R3c | 0.3 | 0.1 | 5.3 | 5.6 | 5.3 | 5.6 | -0.0 | #60 |
 | ✅ | **R1i** | Protocol page sections: collapsible, movable, one/two columns, saved per user | R1g, R3d | 0.5 | 0.1 | 5.9 | 6.5 | 10.6 | 11.1 | 4.7 | #61 |
 | ✅ | **R5c** | Inbox screen (sidebar, collapsible) | R5a, N04 | 0.5 | 0.1 | 3.6 | 4.2 | 5.7 | 6.2 | 2.1 | #62 |
-| ✅ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 9.2 | 9.7 | 5.0 | #63 |
-| ✅ | **R5b** | winmail.dat (TNEF) | R5a | 1.1 | 0.2 | 3.1 | 4.2 | 8.6 | 9.7 | 5.5 | #64 |
-| ✅ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 9.2 | 9.7 | 5.5 | #65 |
-| ✅ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 8.8 | 9.3 | 5.1 | #66 |
-| ✅ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 9.4 | 9.7 | 5.2 | #67 |
-| ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.8 | 9.4 | 5.2 | #68 |
-| ✅ | **R7** | Printing & exports | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 9.2 | 9.7 | 5.0 | #69 |
+| ✅ | **R5d** | Register-from-email flow, keywords | R5c, R1a | 0.5 | 0.1 | 4.2 | 4.7 | 8.6 | 9.2 | 4.4 | #63 |
+| ✅ | **R5b** | winmail.dat (TNEF) | R5a | 1.1 | 0.2 | 3.1 | 4.2 | 8.1 | 9.2 | 5.0 | #64 |
+| ✅ | **R6a** | Users & roles screens | N04 | 0.5 | 0.1 | 3.6 | 4.2 | 8.6 | 9.2 | 5.0 | #65 |
+| ✅ | **R6b** | Folders + auto-assignment rules | N04, D02 | 0.5 | 0.1 | 3.6 | 4.2 | 8.3 | 8.8 | 4.7 | #66 |
+| ✅ | **R1d** | Apply auto-assignment on save | R1a, R6b | 0.3 | 0.1 | 4.2 | 4.5 | 8.8 | 9.2 | 4.7 | #67 |
+| ✅ | **R6c** | Settings, backups, archive screens | N04, R4b | 0.5 | 0.1 | 3.6 | 4.2 | 8.6 | 9.2 | 5.0 | #68 |
+| ✅ | **R7** | Printing & exports | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 8.6 | 9.2 | 4.4 | #69 |
 | ✅ | **F09** | Docker build: apt retries + 30 s time-outs; CI jobs with time limits | F03 | 0.3 | 0.1 | 0.5 | 0.9 | 10.8 | 11.1 | 10.3 | #99 |
 | ✅ | **R2e** | List pager above the list too; previous / next; any page from a list | R2 | 0.3 | 0.1 | 4.2 | 4.5 | 5.9 | 6.2 | 1.7 | #71 |
 | ✅ | **R6d** | Settings: every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save | R6c | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 | #72 |
@@ -713,9 +716,10 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ⬜ | **A06** | Rule: missing attachment | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **X01** | Audit log — recording | N02 | 0.5 | 0.1 | 2.5 | 3.1 | 10.0 | 10.6 | 7.5 |  |
 | ⬜ | **X02** | Audit log — viewing | X01 | 0.5 | 0.1 | 3.1 | 3.6 | 10.6 | 11.1 | 7.5 |  |
-| ⬜ | **Z01** | Remove legacy code | R1c, R1d, R2, R3c, R4b, R5b, R5d, R6a, R6c, R7 | 0.5 | 0.1 | 5.3 | 5.8 | 9.7 | 10.3 | 4.4 |  |
-| ⬜ | **Z02** | Auth hardening, security headers | Z01 | 0.3 | 0.1 | 5.8 | 6.1 | 10.3 | 10.6 | 4.5 |  |
-| ⬜ | **Z03** | Final security review | Z02 | 0.5 | 0.1 | 6.1 | 6.7 | 10.6 | 11.1 | 4.4 |  |
+| ⬜ | **Z01** | Remove legacy code | R1c, R1d, R2, R3c, R4b, R5b, R5d, R6a, R6c, R7 | 0.5 | 0.1 | 5.3 | 5.8 | 9.2 | 9.7 | 3.9 |  |
+| ⬜ | **Z02** | Auth hardening, security headers | Z01 | 0.3 | 0.1 | 5.8 | 6.1 | 9.7 | 10.0 | 3.9 |  |
+| ⬜ | **Z03** | Final security review | Z02 | 0.5 | 0.1 | 6.1 | 6.7 | 10.0 | 10.6 | 3.9 |  |
+| ⬜ | **Z04** | End-user manual (details from the owner later) | Z03 | 0.5 | 0.1 | 6.7 | 7.2 | 10.6 | 11.1 | 3.9 |  |
 | ⏸️ | **B03d** | Date reset on save (pinned, awaiting steps) | — | 0.3 | 0.1 | 0.0 | 0.3 | 10.8 | 11.1 | 10.8 |  |
 
 Whole-project critical path 🔴: F01 → F02 → N01 → N02 → N03 → N04 → R3a → R3b → R3c → R3d → R1j → R3e → R5f → R5g → R5h → R5i → R5j → R5k → R5l → R5m → R5n → R5o → R5p → R5q → R5u = 11.1 h ± 0.5

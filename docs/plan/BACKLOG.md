@@ -225,6 +225,7 @@ organisation's official stamp (the owner's image is in git-ignored `local-data/`
 | Z01 | Remove legacy code: old layout, jQuery 1.9, Bootstrap 3, old plugins/controllers/views; Vue 2; D04 transitional cast `LegacyYmdDate` → `date` | MOD | P2 | M | R1–R7 |
 | Z02 | Auth hardening: rate limiting login/reset, secure cookies, security headers/CSP (🔎 S07) | SEC | P2 | S | Z01 |
 | Z03 | Final security review of whole app + dependency audit; final evidence report | SEC | P1 | M | Z02 |
+| Z04 | **End-user manual** (owner, 2026-11-26): written when everything else is done; the owner gives the details (audience, form, language) later — ask before starting | DOC | P2 | M | Z03 |
 
 ---
 

@@ -147,7 +147,7 @@ Read this first when (re)starting work. Update it at the end of every task.
   (`npm ci && npm run build`, write `public/build/.source-hash` as `docker/app/build-assets.sh` computes it) and run
   `composer install --ignore-platform-req=php` on the host; BackupTest / backup, printing-Excel and native-drag e2e then
   fail here only (also on master).
-- **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide.
+- **Batch 9 complete** (R6a #65, R6b #66, R1d #67, R6c #68, R7 #69; stacked; summary [`docs/reports/BATCH-9.md`](../reports/BATCH-9.md); 508 PHPUnit). **Next: Batch 10** (A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03), then the deployment guide; **last: Z04, the end-user manual** (owner, 2026-11-26; details from the owner later: ask before starting).
 - **R2e (Batch 9.5, owner's note 2026-11-19):** `x-list-pager` component (resources/views/components/list-pager.blade.php)
   above and below the protocol list (‹ ›, numbers window, `Σελίδα [select] από N` via `$wire.gotoPage`, rows shown);
   `#pager-top` / `#pager-bottom`, `data-pager=previous|next|select`. R2g: used on every paged screen (search
