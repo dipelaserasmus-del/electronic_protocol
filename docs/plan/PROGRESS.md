@@ -723,7 +723,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R4m** | Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped | R4g | 0.3 | 0.1 | 5.6 | 5.9 | 10.8 | 11.1 | 5.2 | #149 |
 | ✅ | **R5w** | Inbox: the round ↑ «back to the top» of the list | R2m | 0.3 | 0.1 | 7.9 | 8.2 | 10.8 | 11.1 | 2.9 | #150 |
 | ✅ | **V01** | Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md) | — | 0.3 | 0.1 | 0.0 | 0.3 | 10.5 | 10.8 | 10.5 | #148 |
-| ✅ | **R5x** | Inbox: a registered e-mail's envelope gets a green stripe on the left | R5q | 0.3 | 0.1 | 10.8 | 11.1 | 10.8 | 11.1 | 0.0 |  |
+| ✅ | **R5x** | Inbox: a registered e-mail's envelope gets a green stripe on the left | R5q | 0.3 | 0.1 | 10.8 | 11.1 | 10.8 | 11.1 | 0.0 | #155 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |

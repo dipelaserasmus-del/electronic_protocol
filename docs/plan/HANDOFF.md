@@ -391,7 +391,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-26 13:55 | R5x | #PR | inbox: registered e-mail marked with a green stripe |
+| 2026-11-26 13:55 | R5x | #155 | inbox: registered e-mail marked with a green stripe |
 | 2026-11-26 12:22 | F10 | #152 | Docker image: security updates from the main archive when security.ubuntu.com fails |
 | 2026-11-26 11:36 | V01 | #148 | versions report docs/reports/VERSIONS.md (original / current / newest, flagged) |
 | 2026-11-26 10:50 | R5w | #150 | inbox: back-to-top button |
