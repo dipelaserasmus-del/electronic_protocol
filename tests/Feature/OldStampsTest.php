@@ -153,9 +153,11 @@ class OldStampsTest extends FeatureTestCase
             $this->assertSame($putStamp === '1' ? [true, true] : [false, false], $marks(), "putStamp: ".var_export($putStamp, true));
         }
 
+        $word->delete();   // review of R4m: in the trash (soft-deleted) when the marks are cleared
         $this->artisan('stamp:old', ['--none-stamped' => true])
             ->expectsOutputToContain('2 αρχεία δεν σημειώνονται πια ως σφραγισμένα')->assertSuccessful();
-        $this->assertSame([false, false], $marks());
+        $word->restore();
+        $this->assertSame([false, false], $marks(), 'also the one in the trash, restored later');
         $this->assertSame($bytes, Storage::get('arxeio/test/α.pdf'), 'no file changed');
         $this->assertFalse(Storage::exists(OldStamps::ORIGINALS.'/arxeio/test/α.pdf'));
         $this->artisan('stamp:old', ['--none-stamped' => true])->expectsOutputToContain(': 0 αρχεία')->assertSuccessful();

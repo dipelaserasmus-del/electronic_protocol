@@ -38,6 +38,12 @@ wrong. The counts above confirm it: not one PDF carries the old stamp.
 - **The deployment list** in [OWNER-TODO.md](../../OWNER-TODO.md) (*Final deployment*): check with `stamp:old`, and
   `--none-stamped` if any file is still counted. It replaces «stamp:old, then --apply».
 
+## Review (Codex), fixed with a test
+`--none-stamped` cleared only the attachments outside the trash. One in the trash kept its wrong mark, and if it was
+restored later it still ignored *Με σφραγίδα*. Now the attachments in the trash are cleared too. Test: in
+`test_when_the_old_server_never_stamped_no_file_is_marked`, the Word file is in the trash when the marks are cleared,
+then restored: unmarked. It failed before.
+
 ## How verified
 - PHPUnit `OldStampsTest::test_when_the_old_server_never_stamped_no_file_is_marked`:
   - the migration with *putStamp* missing, `0` and `1`: marks only with `1`;
