@@ -226,6 +226,8 @@ organisation's official stamp (the owner's image is in git-ignored `local-data/`
 | Z02 | Auth hardening: rate limiting login/reset, secure cookies, security headers/CSP (🔎 S07) | SEC | P2 | S | Z01 |
 | Z03 | Final security review of whole app + dependency audit; final evidence report | SEC | P1 | M | Z02 |
 | Z04 | **End-user manual** (owner, 2026-11-26): written when everything else is done; the owner gives the details (audience, form, language) later — ask before starting | DOC | P2 | M | Z03 |
+| V01 | **Versions report** (owner, 2026-11-26): table of the platform, frameworks, libraries and servers: the original (upstream / production) version, the current one, the newest available / supported; 🔴 end of life or serious open vulnerabilities, 🟠 outdated, 🟡 behind on patches. [`docs/reports/VERSIONS.md`](../reports/VERSIONS.md) | SEC | P2 | S | — |
+| V02 | Update the versions report after the development (release versions) | SEC | P2 | S | Z03, V01 |
 
 ---
 

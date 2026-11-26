@@ -186,6 +186,7 @@ tasks = [
   { id = "R2s", title = "Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table)", phase = "R", batch = 9.7, size = "S", deps = ["R7"], status = "done", pr = 146 },
   { id = "R4m", title = "Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped", phase = "R", batch = 9.7, size = "S", deps = ["R4g"], status = "done", pr = 149 },
   { id = "R5w", title = "Inbox: the round ↑ «back to the top» of the list", phase = "R", batch = 9.7, size = "S", deps = ["R2m"], status = "done", pr = 150 },
+  { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 148 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
@@ -199,6 +200,7 @@ tasks = [
   { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },
   { id = "Z03", title = "Final security review", phase = "Z", batch = 10, size = "M", deps = ["Z02"], status = "todo" },
   { id = "Z04", title = "End-user manual (details from the owner later)", phase = "Z", batch = 10, size = "M", deps = ["Z03"], status = "todo" },
+  { id = "V02", title = "Versions report updated with the release versions", phase = "Z", batch = 10, size = "S", deps = ["Z03", "V01"], status = "todo" },
 
 ]
 
