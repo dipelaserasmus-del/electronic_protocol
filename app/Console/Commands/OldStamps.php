@@ -89,7 +89,8 @@ class OldStamps extends Command
     /** R4m: every «stamp inside the file» mark taken away; the files themselves are not read or changed */
     private function noneStamped(): int
     {
-        $cleared = Attachment::where('stamp_in_file', true)->update(['stamp_in_file' => false]);
+        // review of R4m: also the attachments in the trash, so one restored later follows «Με σφραγίδα» too
+        $cleared = Attachment::withTrashed()->where('stamp_in_file', true)->update(['stamp_in_file' => false]);
         $this->info("Η παλιά εφαρμογή δεν σφράγιζε: {$cleared} αρχεία δεν σημειώνονται πια ως σφραγισμένα.");
         $this->line('Ακολουθούν όλα το «Με σφραγίδα» όπως τα νέα. Κανένα αρχείο δεν άλλαξε.');
         return self::SUCCESS;
