@@ -669,3 +669,26 @@ test('saving right after typing goes to the saved protocol without «leave page?
   await expect(page.locator('#f-thema')).toHaveValue(/^R1n \d+ ΕΚΚΡΕΜΟΤΗΤΑ$/);
   expect(dialogs).toEqual([]);
 });
+
+// R1o (owner, 2026-11-26): the time left to change a protocol in days, hours and minutes (not «6000 λεπτά»)
+test('the time left to change a protocol is readable (R1o)', async ({ browser }) => {
+  const admin = await browser.newPage();
+  await login(admin, 'admin');
+  const previous = await setSetting(admin, 'allowWriterUpdateProtocolTimeInMinutes', 6000);
+  try {
+    const page = await browser.newPage();
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await login(page, 'writer');
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R1o χρόνος ${Date.now()}`, fakelos: 'first' });
+    await saveProtocol(page);
+    const left = page.locator('.alert', { hasText: 'Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη' });
+    await expect(left).toContainText('για ακόμη 4 μέρες, 4 ώρες.');
+    await left.scrollIntoViewIfNeeded();
+    await evidence(page, 'r1o-time-left', { clip: await left.boundingBox() });
+    await page.close();
+  } finally {
+    await setSetting(admin, 'allowWriterUpdateProtocolTimeInMinutes', previous);
+    await admin.close();
+  }
+});

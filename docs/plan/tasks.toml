@@ -180,6 +180,7 @@ tasks = [
   { id = "R2r", title = "List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first)", phase = "R", batch = 9.7, size = "S", deps = ["R2k"], status = "done", pr = 141 },
   { id = "R6l", title = "«Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md", phase = "R", batch = 9.7, size = "S", deps = ["R6c"], status = "done", pr = 142 },
   { id = "R3k", title = "No «Νέο» for readers (top bar, search page, old menu)", phase = "R", batch = 9.7, size = "S", deps = ["R3d"], status = "done", pr = 143 },
+  { id = "R1o", title = "Protocol form: the time left to change it in days, hours and minutes", phase = "R", batch = 9.7, size = "S", deps = ["R1b"], status = "done", pr = 144 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

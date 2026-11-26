@@ -1,6 +1,6 @@
 # Σχετικοί αριθμοί in both protocols
 
-Last update: 2026-11-26 (R6l)
+Last update: 2026-11-26 09:26 (R6l; the form's display helper named in R1o)
 
 A protocol's **Σχετικοί αριθμοί** (column `protocols.sxetiko`, at most 255 characters) list the other protocols it
 relates to, e.g. `125/2026, 40/2025`. The setting **Σχετικοί αριθμοί και στα δύο πρωτόκολλα** (key
@@ -73,6 +73,7 @@ What it does: **if protocol A names protocol B in its Σχετικοί, B gets A
 | The setting's label and explanation | `saveCycleSxetiko` in [`SettingsCatalog.php`](../app/Support/SettingsCatalog.php) (section `registration`) |
 | The button, the question, the apply | `openRelated()` / `closeRelated()` / `applyRelated()` in [`SettingsPage.php`](../app/Livewire/SettingsPage.php); the view [`related-existing.blade.php`](../resources/views/livewire/partials/related-existing.blade.php), included from `settings-page.blade.php` under that setting |
 | How the form tokenizes what is typed | `TagList::related()` in [`app/Support/TagList.php`](../app/Support/TagList.php) |
+| The form's green / orange pills and links (display only, a bare number = the protocol's own year) | `App\Support\RelatedNumbers::resolve()` in [`app/Support/RelatedNumbers.php`](../app/Support/RelatedNumbers.php): not the service above, despite the name |
 | Tests | [`tests/Feature/RelatedNumbersTest.php`](../tests/Feature/RelatedNumbersTest.php); browser: `R6l` in [`e2e/tests/settings.spec.js`](../e2e/tests/settings.spec.js) |
 | History | [`docs/reports/R6l.md`](reports/R6l.md) |
 
