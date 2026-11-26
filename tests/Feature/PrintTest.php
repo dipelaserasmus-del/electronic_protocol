@@ -33,11 +33,31 @@ class PrintTest extends FeatureTestCase
         $this->book();
         $this->actingAs($this->writer())->get('/printed?etosForMany=2026')->assertOk()
             ->assertSee('Πρωτόκολλο έτους 2026')->assertSee('2 πρωτόκολλα')
-            ->assertSeeInOrder(['5', '04/03/2026', 'Φ.12/345/01/03/2026', '✧ Αθήνα', '✦ Υπουργείο', 'Αίτηση μετάθεσης', 'Διευθυντής',
+            ->assertSeeTextInOrder(['5', '04/03/2026', 'Φ.12/345/01/03/2026', '✧ Αθήνα', '✦ Υπουργείο', 'Αίτηση μετάθεσης', 'Διευθυντής',
                 '10/03/2026', '✧ Περιφέρεια', 'Διαβιβαστικό', 'Ανενεργή Διεκπεραιώτρια', '✧ 11/03/2026', 'Φ.1', '✧ 3/2026', '✦ Σημείωση'])
             ->assertSee('Έκτο')->assertDontSee('Περσινό')
             ->assertSee('Σημείωση &lt;b&gt;όχι html&lt;/b&gt;', false)
-            ->assertSee('13, 12')->assertDontSee('20260304');
+            ->assertSee('13, 12')->assertDontSee('20260304')
+            ->assertSee('Σύνολο: 2 πρωτόκολλα');
+    }
+
+    /**
+     * R2s (owner, 2026-11-26): the printout restyled for paper: a sheet on screen, page numbers and the institution
+     * with the title at each page's foot (CSS text, escaped as CSS: entities mean nothing inside <style>).
+     */
+    public function test_the_book_is_laid_out_for_paper(): void
+    {
+        $this->book();
+        $this->setting('ipiresiasName', 'Σχολείο "Δοκιμών" </style><b>');
+        $html = $this->actingAs($this->writer())->get('/printed?etosForMany=2026')->assertOk()->getContent();
+        $this->assertStringContainsString('@bottom-right { content: "Σελίδα " counter(page) " από " counter(pages);', $html);
+        $this->assertStringContainsString('@bottom-left { content: "Σχολείο \\"Δοκιμών\\" \\3c /style\\3e \\3c b\\3e  · Πρωτόκολλο έτους 2026";', $html);
+        $this->assertStringNotContainsString('</style><b>', $html, 'the name cannot close the styles');
+        $this->assertStringContainsString('<main class="sheet landscape">', $html);
+        $this->assertStringContainsString('<span class="mk">✧</span> Αθήνα', $html);
+        $this->assertSame(8, substr_count(substr($html, strpos($html, '<colgroup>'), 600), '<col '), 'a width for each of the 8 columns');
+        $receipt = $this->actingAs($this->admin())->get('/receipt/'.\App\Models\Protocol::where('protocolnum', 5)->value('id'));
+        $receipt->assertOk()->assertSee('<main class="sheet portrait">', false);
     }
 
     public function test_ranges_of_numbers_and_dates_and_several_years(): void
