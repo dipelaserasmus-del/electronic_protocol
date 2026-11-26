@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 08:49 (R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 09:48 (V01 versions report: old, current and newest versions, flagged; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -287,6 +287,7 @@ Open *Εισερχόμενα*.
 - [ ] **96.** *Λίστα*: the mouse over a sender (Από / Προς): the tooltip has one line each for the sender, *Αρ. εισερχομένου* and *Ημ/νία*.
 - [ ] **97.** *Λίστα*: a protocol from the inbox: its real files first, the e-mail last as *12/11/2026 · 10:36:26* (the file's name on hover). *Ρυθμίσεις → Συνημμένα → Το αρχείο του e-mail πρώτο*: as before, for everyone.
 - [ ] **98.** *Ρυθμίσεις → Καταχώριση*: with *Σχετικοί αριθμοί και στα δύο πρωτόκολλα* on, *Εφαρμογή και στα υπάρχοντα πρωτόκολλα…* says how many change; *Εφαρμογή σε N* writes them (take a backup first on real data). How it works: [docs/RELATED-NUMBERS.md](docs/RELATED-NUMBERS.md).
+- [ ] **99.** Read [docs/reports/VERSIONS.md](docs/reports/VERSIONS.md): what the app ran on before, what it runs on now and the newest versions (🔴 end of life or serious open vulnerabilities, 🟠 outdated, 🟡 behind on patches). I update it again after Batch 10 (V02).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -324,6 +325,9 @@ Open *Εισερχόμενα*.
      follow the new stamp: `php artisan stamp:old`, then `--apply` (R4g; it keeps the files as they were);
    - write the log one file per day: `LOG_CHANNEL=daily` (and `LOG_DAILY_DAYS`, default 14) in `.env` (R6e);
    - if you applied the Apache rules below in the meantime, remove them before the move.
+
+   The old server's PHP 8.1, Apache 2.4.58 and MariaDB 10.4 are past end of life and miss critical security fixes
+   ([VERSIONS.md](docs/reports/VERSIONS.md)): keep it reachable only from the office network until the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
    - anyone who can reach it can create an administrator account (S00);
