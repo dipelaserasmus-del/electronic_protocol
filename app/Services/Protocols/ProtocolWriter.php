@@ -571,7 +571,7 @@ final class ProtocolWriter
         $this->storeAttachments($result, $attachments, $v);
 
         if (Config::getConfigValueOf('saveCycleSxetiko') && $protocol->sxetiko) {
-            $this->linkRelated($protocol);
+            (new RelatedNumbers)->linkOnSave($protocol);   // docs/RELATED-NUMBERS.md
         }
 
         if (Config::getConfigValueOf('sendEmailOnDiekperaiosiChange')) {
@@ -688,29 +688,6 @@ final class ProtocolWriter
             }
             $attachment->savedPath = $newPath;
             $attachment->save();
-        }
-    }
-
-    /** Setting saveCycleSxetiko: each related protocol "N/YYYY" also lists this one (and the others). Legacy rule. */
-    private function linkRelated(Protocol $protocol): void
-    {
-        $self = "{$protocol->protocolnum}/{$protocol->etos}";
-        $related = array_map('trim', explode(',', (string) $protocol->sxetiko));
-        foreach ($related as $ref) {
-            if (! preg_match('~^(\d+)/(\d{4})$~', $ref, $m)) {
-                continue;
-            }
-            $other = Protocol::where('protocolnum', (int) $m[1])->where('etos', (int) $m[2])->first();
-            if (! $other || $other->id === $protocol->id) {
-                continue;
-            }
-            $old = $other->sxetiko ? array_map('trim', explode(',', $other->sxetiko)) : [];
-            $new = array_values(array_unique(array_merge($old, array_diff($related, [$ref]), [$self])));
-            $text = implode(', ', array_filter($new, fn ($s) => $s !== ''));
-            if (mb_strlen($text) <= 255 && $text !== $other->sxetiko) {
-                $other->sxetiko = $text;
-                $other->save();
-            }
         }
     }
 
