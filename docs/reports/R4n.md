@@ -38,6 +38,14 @@ top left, center and right corners.»
 
 (page 1 of the stamped file downloaded in the browser test; the test browser draws no PDF in the window itself)
 
+## Review (Codex), fixed with tests
+- **Changing the place while a stamped copy is being made** deleted that copy half-way, so the other user's download
+  failed. Now the change waits for the copy to be made: it takes the same lock as the code that makes it. If that
+  takes too long, the user is asked to try again. Test: `test_a_copy_being_made_is_not_deleted_under_it`, with the
+  lock held, the work file stays and the place is unchanged; once free, it is saved.
+- **Two quick clicks** could save the first one last. Now the three buttons wait while a place is being saved. Browser
+  test (R4n): with the save held, all three are disabled; then enabled again.
+
 ## How verified
 - PHPUnit:
   - `StampTest`:

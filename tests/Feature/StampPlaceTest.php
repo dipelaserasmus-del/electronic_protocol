@@ -81,6 +81,28 @@ class StampPlaceTest extends FeatureTestCase
         $this->postJson('/attachments/' . $a->id . '/stamp-place', ['place' => 'top-right'])->assertUnauthorized();
     }
 
+    /** review of R4n: a stamped copy being made (its lock held) is not deleted half-way; the change waits, then says so */
+    public function test_a_copy_being_made_is_not_deleted_under_it(): void
+    {
+        $a = $this->attachment();
+        $work = StampedCopy::DIR . '/' . $a->id . '-0123456789abcdef.part.pdf';
+        Storage::put($work, 'being made');
+        $lock = \Illuminate\Support\Facades\Cache::lock('stamped-copy-' . $a->id, 30);
+        $this->assertTrue($lock->get());
+        \App\Http\Controllers\StampPlaceController::$wait = 0;
+        try {
+            $this->actingAs($this->reader())->postJson('/attachments/' . $a->id . '/stamp-place', ['place' => 'top-left'])->assertStatus(423);
+            $this->assertTrue(Storage::exists($work), 'the work file of the copy being made stays');
+            $this->assertNull($a->fresh()->stamp_place);
+            $lock->release();
+            $this->actingAs($this->reader())->postJson('/attachments/' . $a->id . '/stamp-place', ['place' => 'top-left'])->assertOk();
+            $this->assertFalse(Storage::exists($work), 'once free: the old copies go');
+        } finally {
+            \App\Http\Controllers\StampPlaceController::$wait = 20;
+            $lock->release();
+        }
+    }
+
     public function test_the_form_and_the_window_offer_the_three_places(): void
     {
         $a = $this->attachment();

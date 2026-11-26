@@ -126,7 +126,19 @@ test('the stamp moved to the top left or centre of one file from the preview (R4
     if (process.env.EVIDENCE) fs.writeFileSync('test-results/r4n-left.pdf', await (await page.request.get(href)).body());
     await evidence(page, 'r4n-place-buttons', { clip: await page.locator('#preview-modal .modal-header').boundingBox() });
 
+    // review of R4n: one save at a time: while it is under way the three wait
+    let release;
+    const held = new Promise((r) => { release = r; });
+    const hold = async (route) => { await held; await route.continue(); };
+    await page.route('**/stamp-place', hold);
+    const answered = page.waitForResponse((r) => r.url().includes('/stamp-place'));
     await places.locator('[data-stamp-place="top-center"]').click();
+    await expect(places).toHaveAttribute('aria-busy', 'true');
+    for (const b of await places.locator('[data-stamp-place]').all()) await expect(b).toBeDisabled();
+    release();
+    await answered;
+    await page.unroute('**/stamp-place', hold);
+    await expect(places.locator('[data-stamp-place="top-right"]')).toBeEnabled();
     await expect(places.locator('[data-stamp-place="top-center"]')).toHaveAttribute('aria-pressed', 'true');
     await expect.poll(stampX).toBeGreaterThan(right / 4);
     expect(await stampX()).toBeLessThan(right);

@@ -20,6 +20,7 @@ const read = (button) => ({
 let items = [];
 let index = 0;
 let stampVersion = 0;
+let saving = false;   // R4n: a stamp place being saved
 
 const $ = (id) => document.getElementById(id);
 
@@ -115,7 +116,17 @@ document.addEventListener('click', async (e) => {
     const item = items[index];
     if (!choice || !item?.placeUrl) return;
     const place = choice.dataset.stampPlace;
-    if (place === item.place) return;
+    if (place === item.place || saving) return;
+    // review of R4n: one save at a time (the buttons wait), so a quick second click never loses to the first
+    saving = true;
+    const group = $('preview-place');
+    group.setAttribute('aria-busy', 'true');
+    group.querySelectorAll('[data-stamp-place]').forEach((b) => { b.disabled = true; });
+    const done = () => {
+        saving = false;
+        group.removeAttribute('aria-busy');
+        group.querySelectorAll('[data-stamp-place]').forEach((b) => { b.disabled = false; });
+    };
     const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     let ok = false;
     try {
@@ -126,6 +137,7 @@ document.addEventListener('click', async (e) => {
         });
         ok = r.ok;
     } catch { ok = false; }
+    done();
     if (!ok) {
         window.appToast?.('Η θέση της σφραγίδας δεν αποθηκεύτηκε. Δοκιμάστε ξανά.', 'danger');
         return;
