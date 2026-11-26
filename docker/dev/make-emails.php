@@ -346,7 +346,7 @@ if ($preloadDir) {
     ]);
     file_put_contents("$inbox/99-large-attachment.eml", $big);
     // R5x: registered by its browser test only, so the other tests keep every e-mail they count on (mock server only);
-    // the oldest, so it is never the first of the inbox (newest first), which other tests take (R5l marks it read)
+    // that test runs before R5l, which marks the first e-mail read (this one, when the inbox shows the oldest first)
     file_put_contents("$inbox/98-registered-mark.eml", buildEml([
         'id' => 'mark', 'case' => 'registered-mark', 'fromAddr' => 'office@example.test',
         'from' => b64h('Γραμματεία Δοκιμών') . ' <office@example.test>', 'to' => $to,
