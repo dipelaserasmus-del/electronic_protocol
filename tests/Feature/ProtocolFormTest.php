@@ -45,6 +45,31 @@ class ProtocolFormTest extends FeatureTestCase
             ->assertSee('Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη 4 μέρες, 2 ώρες, 56 λεπτά.')->assertDontSee('5936 λεπτά');
     }
 
+    /**
+     * R1p (owner, 2026-11-26): keywords offered in the form as in the inbox (R5d/R5e), from the subject once it is left
+     * and from the files' names as soon as they are added; a chosen one is no longer offered; readers get none.
+     */
+    public function test_keywords_are_offered_from_the_subject_and_the_files(): void
+    {
+        Protocol::factory()->create(['keywords' => 'ημερίδα, Επιμόρφωση', 'thema' => 'Ιατρική γνωμάτευση μαθητή']);
+        $form = Livewire::actingAs($this->writer())->test(ProtocolForm::class)
+            ->assertDontSeeHtml('id="keyword-suggestions"');   // nothing typed, no files: nothing offered
+
+        $form->set('form.thema', 'Πρόσκληση σε επιμορφωτική ημερίδα')
+            ->assertSeeHtml('data-suggest="ημερίδα"')->assertSeeHtml('data-suggest="επιμορφωτική"')
+            ->assertDontSeeHtml('data-suggest="ΓΝΩΜΑΤΕΥΣΗ"');
+        // a file added: its name counts too (in capitals, it takes the spelling of earlier subjects)
+        $form->set('uploads', [UploadedFile::fake()->createWithContent('ΙΑΤΡΙΚΗ ΓΝΩΜΑΤΕΥΣΗ.pdf', '%PDF-1.4 x')])
+            ->assertSeeHtml('data-suggest="γνωμάτευση"');
+        // chosen: in the field, no longer offered
+        $form->call('addTag', 'keywords', 'ημερίδα')
+            ->assertSet('form.keywords', 'ημερίδα')->assertDontSeeHtml('data-suggest="ημερίδα"');
+
+        $saved = Protocol::factory()->create(['thema' => 'Εκπαιδευτική εκδρομή']);
+        $this->actingAs($this->reader())->get('/home/'.$saved->id)->assertOk()->assertDontSee('id="keyword-suggestions"', false);
+        $this->actingAs($this->admin())->get('/home/'.$saved->id)->assertOk()->assertSee('data-suggest="εκπαιδευτική"', false);
+    }
+
     public function test_free_status_only_after_the_number_is_changed(): void
     {
         $this->setting('protocolValidate', 0);

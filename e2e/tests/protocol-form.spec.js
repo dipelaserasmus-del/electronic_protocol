@@ -692,3 +692,30 @@ test('the time left to change a protocol is readable (R1o)', async ({ browser })
     await admin.close();
   }
 });
+
+// R1p (owner, 2026-11-26): keywords offered in the form, from the subject once it is left and from the files' names
+test('keywords are offered from the subject and the files (R1p)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await login(page, 'writer');
+  await page.goto('/home');
+  await expect(page.locator('#keyword-suggestions')).toHaveCount(0);
+  await fillProtocol(page, { thema: `Πρόσκληση σε επιμορφωτική ημερίδα ${Date.now()}` });   // left with Tab
+  const offered = page.locator('#keyword-suggestions');
+  await expect(offered.locator('[data-suggest="επιμορφωτική"]')).toBeVisible();
+
+  // a file added: its name counts too
+  const pdf = require('fs').readFileSync(require('path').join(__dirname, '..', 'fixtures', 'preview', 'prosklisi.pdf'));
+  await page.setInputFiles('#f-uploads', { name: 'ΕΚΔΗΛΩΣΗ ΒΡΑΒΕΥΣΗΣ.pdf', mimeType: 'application/pdf', buffer: pdf });
+  await expect(page.locator('.upload-row')).toHaveCount(1);
+  await expect(offered.locator('[data-suggest]').filter({ hasText: /βράβευσης|ΒΡΑΒΕΥΣΗΣ/i })).toHaveCount(1);
+  await page.locator('#keywords-box').scrollIntoViewIfNeeded();
+  await evidence(page, 'r1p-suggestions', { clip: await page.locator('#keywords-box').evaluate((el) => {
+    const r = el.closest('.col-md-6').getBoundingClientRect();
+    return { x: r.x - 8, y: r.y - 8, width: r.width + 16, height: r.height + 16 };
+  }) });
+
+  // a click puts it in the field, and it is no longer offered
+  await offered.locator('[data-suggest="επιμορφωτική"]').click();
+  await expect(page.locator('#keywords-box .keyword-pill[data-tag="επιμορφωτική"]')).toHaveCount(1);
+  await expect(offered.locator('[data-suggest="επιμορφωτική"]')).toHaveCount(0);
+});
