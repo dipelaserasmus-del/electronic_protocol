@@ -1,6 +1,6 @@
 // R6c: Ρυθμίσεις (grouped, explained, checked at the field) and Εκκαθάριση (expired attachments → trash).
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, setSetting, fillProtocol, saveProtocol, notice } = require('./helpers');
 
 test('settings: a wrong value is refused at its field, a right one is saved (R6c)', async ({ page }) => {
   await login(page, 'admin');
@@ -132,4 +132,51 @@ test('settings: a menu of sections, one section at a time, saved on its own (R6f
   const section = await page.locator('#set-trash').boundingBox();
   expect(section.y).toBeGreaterThan(menu.y + menu.height - 1);
   await evidence(page, 'r6f-narrow', { fullPage: true });
+});
+
+// R6l (owner, 2026-11-26): «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» also for protocols saved before the setting was on
+test('related numbers written in both protocols, also for existing ones (R6l)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const n = String(Date.now()).slice(-6);
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'saveCycleSxetiko', 0);
+  try {
+    // with the setting off: B names A, A does not name B
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R6l πρώτο ${n}`, fakelos: 'first' });
+    await saveProtocol(page);
+    const first = page.url();
+    const [, num, year] = (await notice(page)).match(/Καταχωρίστηκε με αριθμό (\d+)\/(\d{4})/);
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R6l δεύτερο ${n}`, fakelos: 'first' });
+    await page.locator('#f-sxetiko').fill(num);
+    await page.locator('#f-sxetiko').press('Enter');
+    await saveProtocol(page);
+    const [, second] = (await notice(page)).match(/Καταχωρίστηκε με αριθμό (\d+\/\d{4})/);
+    await page.goto(first);
+    await expect(page.locator('#related-box .related-pill')).toHaveCount(0);
+
+    // no button while the setting is off; on: the button, the question with the counts, then applied
+    await page.goto('/settings?section=registration');
+    await expect(page.locator('#related-existing')).toHaveCount(0);
+    await setSetting(page, 'saveCycleSxetiko', 1);
+    await expect(page.locator('#related-existing-open')).toContainText('Εφαρμογή και στα υπάρχοντα πρωτόκολλα');
+    await page.locator('#app-toasts').evaluate((el) => el.replaceChildren());   // the saved toast off the screenshots
+    await evidence(page, 'r6l-apply-button', { clip: await page.locator('.settings-section').boundingBox() });
+    await page.locator('#related-existing-open').click();
+    await expect(page.locator('#related-existing-plan')).toContainText(/\d+ πρωτόκολλ(ο|α) παίρν(ει|ουν) \d+ αριθμ/);
+    await evidence(page, 'r6l-apply-question', { clip: await page.locator('.settings-section').boundingBox() });
+    await page.locator('#related-existing-run').click();
+    await expect(page.locator('#app-toasts .toast').last()).toContainText('Οι σχετικοί αριθμοί γράφτηκαν');
+    await page.locator('#related-existing-open').click();
+    await expect(page.locator('#related-existing-plan')).toContainText('Κανένα πρωτόκολλο δεν χρειάζεται αλλαγή');
+
+    // A now names B
+    await page.goto(first);
+    await expect(page.locator('#related-box .related-pill')).toHaveCount(1);
+    await expect(page.locator('#related-box .related-pill').first()).toContainText(second);
+    expect(year).toMatch(/^\d{4}$/);
+  } finally {
+    await setSetting(page, 'saveCycleSxetiko', previous);
+  }
 });

@@ -6,6 +6,8 @@
 **Start every session by reading [`docs/plan/HANDOFF.md`](docs/plan/HANDOFF.md)** — current state, next task,
 environment set-up and open questions. Plan: [`BACKLOG.md`](docs/plan/BACKLOG.md) (what/why),
 [`tasks.toml`](docs/plan/tasks.toml) (status/dependencies), [`PROGRESS.md`](docs/plan/PROGRESS.md) (generated).
+Feature guides (how a feature works, the rules its code keeps, what to check before changing it): read the one
+for the feature you touch and update it in the same PR, e.g. [`docs/RELATED-NUMBERS.md`](docs/RELATED-NUMBERS.md).
 
 ## Workflow (agreed with the owner)
 1. One branch per task: `task/<ID>-<slug>` from up-to-date `master`.

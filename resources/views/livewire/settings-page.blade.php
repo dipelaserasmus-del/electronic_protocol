@@ -45,6 +45,9 @@
                 @endif
                 @foreach ($segment['settings'] as $key => $def)
                     @include('livewire.partials.setting-field')
+                    @if ($key === 'saveCycleSxetiko' && $relatedOn)
+                        @include('livewire.partials.related-existing')
+                    @endif
                 @endforeach
                 @if ($segment['box'])
                     </fieldset>

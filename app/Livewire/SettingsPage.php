@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Config;
+use App\Services\Protocols\RelatedNumbers;
 use App\Support\Roles;
 use App\Support\SettingsCatalog;
 use Illuminate\Support\Facades\Validator;
@@ -31,6 +32,14 @@ class SettingsPage extends Component
     #[Url(as: 'setting', except: '')]
     public string $setting = '';
 
+    /**
+     * R6l (owner, 2026-11-26): «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» also for the protocols saved before; what it
+     * would change (App\Services\Protocols\RelatedNumbers::plan()), shown before it is applied; null: closed
+     *
+     * @var array{protocols: int, numbers: int, left_out: int}|null
+     */
+    public ?array $relatedPlan = null;
+
     public function mount(): void
     {
         self::authorizeAdmin();
@@ -50,6 +59,7 @@ class SettingsPage extends Component
         $this->resetErrorBag();
         $this->values = SettingsCatalog::values();
         $this->section = $section;
+        $this->relatedPlan = null;
     }
 
     private static function authorizeAdmin(): void
@@ -87,10 +97,41 @@ class SettingsPage extends Component
         $this->dispatch('toast', message: $changed ? "Αποθηκεύτηκαν ($changed ".($changed === 1 ? 'αλλαγή' : 'αλλαγές').').' : 'Καμία αλλαγή.', type: 'success');
     }
 
+    /** R6l: what applying the related numbers to the existing protocols would change, for the question */
+    public function openRelated(): void
+    {
+        self::authorizeAdmin();
+        $this->relatedPlan = (new RelatedNumbers)->plan();
+    }
+
+    public function closeRelated(): void
+    {
+        $this->relatedPlan = null;
+    }
+
+    /** R6l: applied to the existing protocols (only while the setting is saved on); no e-mail */
+    public function applyRelated(): void
+    {
+        self::authorizeAdmin();
+        if ((string) Config::getConfigValueOf('saveCycleSxetiko') !== '1') {
+            $this->relatedPlan = null;
+            return;
+        }
+        $done = (new RelatedNumbers)->applyToExisting();
+        $this->relatedPlan = null;
+        $message = $done['protocols'] === 0 ? 'Κανένα πρωτόκολλο δεν χρειάστηκε αλλαγή.'
+            : 'Οι σχετικοί αριθμοί γράφτηκαν και '.($done['protocols'] === 1 ? 'στο άλλο πρωτόκολλο (1).' : 'στα άλλα πρωτόκολλα ('.$done['protocols'].').');
+        if ($done['left_out'] > 0) {
+            $message .= ' '.$done['left_out'].' δεν τους χωρούσαν όλους (255 χαρακτήρες).';
+        }
+        $this->dispatch('toast', message: $message, type: 'success');
+    }
+
     public function render()
     {
         $groups = SettingsCatalog::groups();
         $section = isset($groups[$this->section]) ? $this->section : array_key_first($groups);
-        return view('livewire.settings-page', ['groups' => $groups, 'current' => $section, 'g' => $groups[$section]]);
+        return view('livewire.settings-page', ['groups' => $groups, 'current' => $section, 'g' => $groups[$section],
+            'relatedOn' => (string) Config::getConfigValueOf('saveCycleSxetiko') === '1']);
     }
 }
