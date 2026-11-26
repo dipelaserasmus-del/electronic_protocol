@@ -137,8 +137,8 @@
                                     <li class="dropdown-submenu">
                                         <a class="test" tabindex="-1" href="{{ Auth::user() ? url(config('landing-page.page.' . Auth::user()->role_id)) : '' }}">Πρωτόκολλο</a>
                                         <ul class="dropdown-menu">
-                                          <li><a  tabindex="-1" href="{{ url('/home') }}">Νέο</a></li>
                                           @if( Auth::user()->role->role != "Αναγνώστης")
+                                          <li><a  tabindex="-1" href="{{ url('/home') }}">Νέο</a></li>{{-- R3k: not for readers --}}
                                           @if($defaultImapEmail)
                                           @if( ! $allowedEmailUsers || strpos($allowedEmailUsers,Auth::user()->username) !== false) 
                                           <li class="divider"></li>

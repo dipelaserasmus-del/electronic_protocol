@@ -32,6 +32,13 @@ test('new layout: readers get a shorter menu, and logging out works from the use
   await page.goto('/about');
   const bar = page.locator('nav.app-topbar');
   await expect(bar.locator('.nav-link', { hasText: 'Εισερχόμενα' })).toHaveCount(0);
+  // R3k (owner, 2026-11-26): no «Νέο» for readers, who cannot create; Λίστα is there
+  await expect(bar.locator('.nav-link', { hasText: 'Νέο' })).toHaveCount(0);
+  await expect(bar.locator('#nav-1-link')).toContainText('Λίστα');
+  await evidence(page, 'r3k-reader-bar', { clip: { x: 0, y: 0, width: 1280, height: 70 } });
+  await page.goto('/find');
+  await expect(page.locator('.search-page').getByRole('link', { name: 'Νέο', exact: true })).toHaveCount(0);
+  await page.goto('/about');
   // R3d/R3g: Διαχείριση (user menu) holds Εκτύπωση/Διατήρηση for everybody; the administrators' items only for them
   await bar.locator('#nav-user').click();
   await expect(bar.getByRole('link', { name: 'Φάκελοι και διατήρηση' })).toBeVisible();

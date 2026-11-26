@@ -48,17 +48,22 @@ final class Navigation
      * moved into the search box. Every item has an icon (Bootstrap Icons name in 'icon'). R3g (owner, 2026-11-20):
      * Διαχείριση moved into the user menu (manage()).
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>> keyed by position (0 Νέο, 1 Λίστα, 2 Εισερχόμενα), the same for every role
      */
     public static function for(User $user): array
     {
         $role = $user->role?->role;
-        $items = [['label' => 'Νέο', 'icon' => 'file-earmark-plus', 'url' => url('/home')]];
+        // R3k (owner, 2026-11-26): no «Νέο» for readers, who cannot create (ProtocolPolicy::create). The keys stay the
+        // same for every role (they are the items' ids: nav-1 is always Λίστα)
+        $items = [];
+        if ($role !== self::READER) {
+            $items[0] = ['label' => 'Νέο', 'icon' => 'file-earmark-plus', 'url' => url('/home')];
+        }
         // R1j (owner, 2026-11-20): Λίστα itself leads to the list; its ▾ opens the other lists
-        $items[] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'home' => true, 'children' => self::lists($user, $role)];
+        $items[1] = ['label' => 'Λίστα', 'icon' => 'list-ul', 'url' => self::landing($user), 'home' => true, 'children' => self::lists($user, $role)];
 
         if ($role !== self::READER && InboxAccess::allows($user)) {
-            $items[] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox'), 'count' => url('/inbox/count')];   // R5f
+            $items[2] = ['label' => 'Εισερχόμενα', 'icon' => 'inbox', 'url' => url('/inbox'), 'count' => url('/inbox/count')];   // R5f
         }
 
 

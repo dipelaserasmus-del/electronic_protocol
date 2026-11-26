@@ -32,7 +32,7 @@ class ModernLayoutTest extends FeatureTestCase
         $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($admin));
         $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($this->assigner()));
         $this->assertSame(['Νέο', 'Λίστα', 'Εισερχόμενα'], $this->labels($this->writer()));
-        $this->assertSame(['Νέο', 'Λίστα'], $this->labels($this->reader()), 'readers never register e-mails');
+        $this->assertSame(['Λίστα'], $this->labels($this->reader()), 'readers never register e-mails; R3k: nor create');
 
         $groups = fn ($user) => array_map(fn ($links) => array_column($links, 'label'), Navigation::manage($user));
         $this->assertSame([
@@ -62,6 +62,19 @@ class ModernLayoutTest extends FeatureTestCase
                     $this->assertNotEmpty($child['icon'] ?? null, "icon for {$child['label']}");
                 }
             }
+        }
+    }
+
+    /** R3k (owner, 2026-11-26): readers see no «Νέο» (they cannot create); Λίστα keeps its id for every role. */
+    public function test_readers_see_no_new_protocol_link(): void
+    {
+        $new = '~href="'.preg_quote(url('/home'), '~').'"[^>]*>(?:\s|<[^>]+>|<!--\[if (?:END)?BLOCK\]><!\[endif\]-->)*Νέο\s*<~u';
+        foreach (['/about', '/find'] as $page) {
+            $html = $this->actingAs($this->reader())->get($page)->assertOk()->getContent();
+            $this->assertDoesNotMatchRegularExpression($new, $html, "reader, $page");
+            $this->assertStringContainsString('id="nav-1-link"', $html);
+            $this->assertStringNotContainsString('id="nav-0-link"', $html);
+            $this->assertMatchesRegularExpression($new, $this->actingAs($this->writer())->get($page)->getContent(), "writer, $page");
         }
     }
 
