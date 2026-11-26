@@ -384,7 +384,7 @@
                             @if ($a->savedPath)
                                 {{-- R4c: 👁 opens it here; ‹ › go through this protocol's files --}}
                                 <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)" :group="'protocol-'.$protocol->id"
-                                                  :stamp-in-file="(bool) $a->stamp_in_file" :stampable="\App\Services\Stamp\StampedCopy::applies($a)" />
+                                                  :stamp-in-file="(bool) $a->stamp_in_file" :stampable="\App\Services\Stamp\StampedCopy::applies($a)" :stamp-place="$a" />
                             @endif
                             @if ($a->savedPath && $access->canSave)
                                 {{-- R4d: ✎ renames (the name shown; the file keeps its path; the extension stays) --}}

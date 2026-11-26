@@ -203,7 +203,7 @@
                                                     <x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
                                                     <x-preview-button :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)"
                                                                       :group="'saved-'.$state['protocol_id']" :stamp-in-file="(bool) $a->stamp_in_file"
-                                                                      :stampable="\App\Services\Stamp\StampedCopy::applies($a)" />
+                                                                      :stampable="\App\Services\Stamp\StampedCopy::applies($a)" :stamp-place="$a" />
                                                     <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-break small">{{ $a->name }}</a>
                                                 </div>
                                             @endforeach

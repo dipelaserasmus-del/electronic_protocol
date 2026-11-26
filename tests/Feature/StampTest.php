@@ -336,6 +336,54 @@ class StampTest extends FeatureTestCase
         rmdir($dir);
     }
 
+    /** R4n (owner, 2026-11-26): «top-center»: in the middle of the page's width as shown, the distance from the top kept */
+    public function test_the_stamp_in_the_middle_of_the_top(): void
+    {
+        $img = (new StampRenderer())->render($this->template(), [], 200);
+        [$w, $h] = StampRenderer::sizeMm($img, 200);
+        $mm = 72 / 25.4;
+        [$sw, $sh] = [$w * $mm, $h * $mm];
+        $pdf = PdfBuilder::make([[], ['rotate' => 90]]);
+        $r = new PdfReader((new PdfStamper())->stamp($pdf, $img, [$w, $h], 'top-center', [10, 8], false));
+        $m = array_map(fn ($p) => $this->matrix($this->stampOn($r, $p[1])), $r->pages());
+        $this->assertEqualsWithDelta([(595 - $sw) / 2, 842 - 8 * $mm - $sh], [$m[0][4], $m[0][5]], 0.01, 'upright page');
+        // rotated 90° (shown 842 wide): centred along the shown width, which runs up the page
+        $this->assertEqualsWithDelta([595 - (595 - 8 * $mm - $sh), (842 - $sw) / 2], [$m[1][4], $m[1][5]], 0.01);
+
+        // the Stamp service: a file's own place instead of the template's; an unknown place changes nothing
+        $this->template()->save();
+        $stamp = new Stamp();
+        $stamp->prepare(Protocol::factory()->number(44)->create());
+        $stamp->placeAt('somewhere');
+        $at = fn () => $this->matrix($this->stampOn($pr = new PdfReader($stamp->pdf(PdfBuilder::make())), $pr->pages()[0][1]))[4];
+        $right = $at();
+        $stamp->placeAt('top-left');
+        $this->assertEqualsWithDelta(10 * $mm, $at(), 0.01, 'top-left: the distance from the side kept');
+        $this->assertGreaterThan(300, $right, 'the template: top right');
+    }
+
+    /** R4n: Word files: the stamp centred in the header too */
+    public function test_word_files_take_the_middle_of_the_top(): void
+    {
+        $this->template()->save();
+        $word = new \PhpOffice\PhpWord\PhpWord();
+        $word->addSection()->addText('Έγγραφο δοκιμής');
+        $file = tempnam(sys_get_temp_dir(), 'docx');
+        \PhpOffice\PhpWord\IOFactory::createWriter($word, 'Word2007')->save($file);
+        Storage::put('arxeio/t/mid.docx', file_get_contents($file));
+        unlink($file);
+        $stamp = new Stamp();
+        $stamp->prepare(Protocol::factory()->number(45)->create());
+        $stamp->placeAt('top-center');
+        $stamp->apply('arxeio/t/mid.docx');
+        $zip = new \ZipArchive();
+        $zip->open(Storage::path('arxeio/t/mid.docx'));
+        $header = (string) $zip->getFromName('word/header1.xml');
+        $zip->close();
+        // A4 595.3 pt wide, the stamp 141.73 pt: (595.3 − 141.73) / 2 = 226.78 pt from the left
+        $this->assertMatchesRegularExpression('/width:141\.7\dpt; height:[\d.]+pt; margin-left:226\.7\d?pt; margin-top:22\.68pt/', $header);
+    }
+
     /** docx: the stamp in the first page's header, at its size and distance from the corner */
     public function test_word_files_get_the_stamp_in_the_first_page_header(): void
     {

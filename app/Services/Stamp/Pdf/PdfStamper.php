@@ -21,7 +21,7 @@ final class PdfStamper
     /**
      * @param \GdImage $image the stamp, true colour with transparency
      * @param array{0: float, 1: float} $sizeMm its printed size
-     * @param string $corner top-right | top-left | bottom-right | bottom-left
+     * @param string $corner top-right | top-left | bottom-right | bottom-left | top-center (R4n: centred across the page)
      * @param array{0: float, 1: float} $offsetMm distance from the corner (side, top/bottom)
      */
     public function stamp(string $pdf, \GdImage $image, array $sizeMm, string $corner, array $offsetMm, bool $firstPageOnly): string
@@ -58,7 +58,11 @@ final class PdfStamper
             [$x0, $y0, $x1, $y1] = $box;
             [$bw, $bh] = [$x1 - $x0, $y1 - $y0];
             [$dw, $dh] = $rotate % 180 ? [$bh, $bw] : [$bw, $bh];   // the page as shown
-            $u = str_contains($corner, 'right') ? $dw - $ox - $sw : $ox;
+            $u = match (true) {
+                str_contains($corner, 'center') => ($dw - $sw) / 2,   // R4n: top-center, in the middle of the width
+                str_contains($corner, 'right') => $dw - $ox - $sw,
+                default => $ox,
+            };
             $v = str_contains($corner, 'top') ? $dh - $oy - $sh : $oy;
             // shown (u, v) → the page's own coordinates
             $map = fn (float $u, float $v) => match ($rotate) {
