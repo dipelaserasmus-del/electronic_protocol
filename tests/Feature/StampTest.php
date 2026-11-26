@@ -384,6 +384,115 @@ class StampTest extends FeatureTestCase
         $this->assertMatchesRegularExpression('/width:141\.7\dpt; height:[\d.]+pt; margin-left:226\.7\d?pt; margin-top:22\.68pt/', $header);
     }
 
+    /** a white picture, optionally with an EXIF orientation (the APP1 segment written by hand: GD writes no EXIF) */
+    private function picture(int $w, int $h, string $type = 'jpg', ?int $orientation = null, bool $mark = false): string
+    {
+        $img = imagecreatetruecolor($w, $h);
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+        if ($mark) {   // a green 40 px square at the stored top left
+            imagefilledrectangle($img, 0, 0, 39, 39, imagecolorallocate($img, 0, 200, 0));
+        }
+        ob_start();
+        $type === 'png' ? imagepng($img) : imagejpeg($img, null, 95);
+        $bytes = (string) ob_get_clean();
+        if ($orientation !== null) {
+            $tiff = "II*\0" . pack('V', 8) . pack('v', 1) . pack('vvVvv', 0x0112, 3, 1, $orientation, 0) . pack('V', 0);
+            $exif = "Exif\0\0" . $tiff;
+            $bytes = substr($bytes, 0, 2) . "\xFF\xE1" . pack('n', strlen($exif) + 2) . $exif . substr($bytes, 2);
+        }
+        return $bytes;
+    }
+
+    /** the box of the non-white pixels of a picture: [left, top, right, bottom] */
+    private function inked(string $bytes): array
+    {
+        $img = imagecreatefromstring($bytes);
+        [$l, $t, $r, $b] = [PHP_INT_MAX, PHP_INT_MAX, -1, -1];
+        for ($y = 0; $y < imagesy($img); $y += 2) {
+            for ($x = 0; $x < imagesx($img); $x += 2) {
+                $c = imagecolorsforindex($img, imagecolorat($img, $x, $y));
+                if ($c['red'] + $c['green'] + $c['blue'] < 600) {
+                    [$l, $t, $r, $b] = [min($l, $x), min($t, $y), max($r, $x), max($b, $y)];
+                }
+            }
+        }
+        return [$l, $t, $r, $b];
+    }
+
+    /**
+     * R4o (owner, 2026-11-26): JPG and PNG get the stamp drawn on them, sized as on an A4 page (the picture's width =
+     * 210 mm upright, 297 mm turned), at the template's or the file's place; a photo's EXIF orientation first.
+     */
+    public function test_pictures_get_the_stamp_at_its_size_and_place(): void
+    {
+        $this->template(['width' => 50, 'x' => 10, 'y' => 8])->save();
+        $protocol = Protocol::factory()->number(46)->create();
+        $stamp = new Stamp();
+        $stamp->prepare($protocol);
+        [$wMm] = StampRenderer::sizeMm((new StampRenderer())->render(StampTemplate::current(), StampTemplate::valuesFor($protocol), StampRenderer::PRINT_DPI), StampRenderer::PRINT_DPI);
+
+        // an A4 scan at 10 px per mm (2100 × 2970): top right, 10 mm from the side, 8 mm from the top, 50 mm wide
+        Storage::put('arxeio/t/scan.jpg', $this->picture(2100, 2970));
+        $stamp->apply('arxeio/t/scan.jpg');
+        [$l, $t, $r] = $this->inked(Storage::get('arxeio/t/scan.jpg'));
+        $this->assertEqualsWithDelta(2100 - 100, $r, 12, 'right edge 10 mm from the side (the drawing has a thin transparent margin)');
+        $this->assertEqualsWithDelta(2100 - 100 - $wMm * 10, $l, 12, 'its width in mm');
+        $this->assertEqualsWithDelta(80, $t, 12, '8 mm from the top');
+
+        // a PNG, wider than high (taken as A4 turned: 297 mm), at the top centre (a file's own place)
+        Storage::put('arxeio/t/wide.png', $this->picture(2970, 2100, 'png'));
+        $stamp->placeAt('top-center');
+        $stamp->apply('arxeio/t/wide.png');
+        $png = Storage::get('arxeio/t/wide.png');
+        $this->assertSame(IMAGETYPE_PNG, getimagesizefromstring($png)[2], 'still a PNG');
+        [$l, , $r] = $this->inked($png);
+        $this->assertEqualsWithDelta(2970 / 2, ($l + $r) / 2, 12, 'centred');
+
+        // a phone photo stored sideways (EXIF 6: turn 90° clockwise to show): the stamp at the top right as shown
+        $stamp->placeAt('top-right');
+        Storage::put('arxeio/t/photo.jpg', $this->picture(2970, 2100, 'jpg', 6));
+        $this->assertSame(6, exif_read_data(Storage::path('arxeio/t/photo.jpg'))['Orientation'] ?? null, 'the test photo has its EXIF');
+        $stamp->apply('arxeio/t/photo.jpg');
+        $shown = Storage::get('arxeio/t/photo.jpg');
+        $this->assertSame([2100, 2970], array_slice(getimagesizefromstring($shown), 0, 2), 'turned upright');
+        [, $t, $r] = $this->inked($shown);
+        $this->assertEqualsWithDelta([2000, 80], [$r, $t], 12);
+
+        // too large, or not a picture: left as it is
+        Storage::put('arxeio/t/broken.jpg', 'not a picture');
+        $stamp->apply('arxeio/t/broken.jpg');
+        $this->assertSame('not a picture', Storage::get('arxeio/t/broken.jpg'));
+    }
+
+    /**
+     * R4o review: every EXIF orientation is applied, the mirrored ones (2, 4, 5, 7) too, as the copy is saved without
+     * EXIF. A green mark at the stored picture's top left must end where a viewer shows it.
+     */
+    public function test_pictures_take_all_eight_exif_orientations(): void
+    {
+        $this->template(['width' => 50, 'x' => 10, 'y' => 8])->save();
+        $stamp = new Stamp();
+        $stamp->prepare(Protocol::factory()->number(47)->create());
+        // orientation => [shown width, shown height, the corner the mark is shown at]
+        $expected = [
+            1 => [600, 400, 'top-left'], 2 => [600, 400, 'top-right'], 3 => [600, 400, 'bottom-right'],
+            4 => [600, 400, 'bottom-left'], 5 => [400, 600, 'top-left'], 6 => [400, 600, 'top-right'],
+            7 => [400, 600, 'bottom-right'], 8 => [400, 600, 'bottom-left'],
+        ];
+        foreach ($expected as $orientation => [$w, $h, $corner]) {
+            Storage::put('arxeio/t/o.jpg', $this->picture(600, 400, 'jpg', $orientation, true));
+
+            $stamp->apply('arxeio/t/o.jpg');
+            $shown = imagecreatefromstring(Storage::get('arxeio/t/o.jpg'));
+            $this->assertSame([$w, $h], [imagesx($shown), imagesy($shown)], "orientation $orientation: its size as shown");
+            // 5 px in from the corner: inside the mark, outside the stamp (10 mm ≈ 19-29 px from the side)
+            $x = str_contains($corner, 'right') ? $w - 6 : 5;
+            $y = str_contains($corner, 'bottom') ? $h - 6 : 5;
+            $c = imagecolorsforindex($shown, imagecolorat($shown, $x, $y));
+            $this->assertTrue($c['green'] > 150 && $c['red'] < 80 && $c['blue'] < 80, "orientation $orientation: the mark at the $corner");
+        }
+    }
+
     /** docx: the stamp in the first page's header, at its size and distance from the corner */
     public function test_word_files_get_the_stamp_in_the_first_page_header(): void
     {

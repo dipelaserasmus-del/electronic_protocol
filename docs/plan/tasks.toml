@@ -189,6 +189,7 @@ tasks = [
   { id = "R5w", title = "Inbox: the round ↑ «back to the top» of the list", phase = "R", batch = 9.7, size = "S", deps = ["R2m"], status = "done", pr = 150 },
   { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 148 },
   { id = "R4n", title = "Stamp place per file: top left / centre / right from the preview, for every user", phase = "R", batch = 9.7, size = "S", deps = ["R4f"], status = "done", pr = 151 },
+  { id = "R4o", title = "The stamp on JPG and PNG pictures (as an A4 page; EXIF orientation; per-file place)", phase = "R", batch = 9.7, size = "S", deps = ["R4n"], status = "done", pr = 153 },
   { id = "R5x", title = "Inbox: a registered e-mail's envelope gets a green stripe on the left", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 155 },
 
   # ---------------- Batch 10 ----------------

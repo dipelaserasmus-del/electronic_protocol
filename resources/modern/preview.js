@@ -63,7 +63,9 @@ function show() {
 
     let content;
     // R4f: a fresh copy after «Με σφραγίδα» changes (the address is the same)
-    const src = item.src && item.kind === 'pdf' ? `${item.src}${item.src.includes('?') ? '&' : '?'}v=${stampVersion}` : item.src;
+    // R4o: pictures take the stamp too, so they are fetched again in the same way
+    const fresh = item.src && ['pdf', 'image'].includes(item.kind);
+    const src = fresh ? `${item.src}${item.src.includes('?') ? '&' : '?'}v=${stampVersion}` : item.src;
     if (!item.src) {
         content = message('Η προεπισκόπηση δεν υποστηρίζεται για αυτό το είδος αρχείου.', item.download);
     } else if (item.kind === 'image') {
@@ -172,7 +174,7 @@ document.addEventListener('change', async (e) => {
     }
     stampVersion++;
     if ($('preview-modal')?.classList.contains('show') && items[index]) {
-        if (items[index].kind === 'pdf') show();
+        if (['pdf', 'image'].includes(items[index].kind)) show();   // R4o: pictures too
         else showPlace(items[index]);   // R4n: ↖ ↑ ↗ only while «Με σφραγίδα» is on
     }
 });
