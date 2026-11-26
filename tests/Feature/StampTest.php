@@ -385,10 +385,13 @@ class StampTest extends FeatureTestCase
     }
 
     /** a white picture, optionally with an EXIF orientation (the APP1 segment written by hand: GD writes no EXIF) */
-    private function picture(int $w, int $h, string $type = 'jpg', ?int $orientation = null): string
+    private function picture(int $w, int $h, string $type = 'jpg', ?int $orientation = null, bool $mark = false): string
     {
         $img = imagecreatetruecolor($w, $h);
         imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+        if ($mark) {   // a green 40 px square at the stored top left
+            imagefilledrectangle($img, 0, 0, 39, 39, imagecolorallocate($img, 0, 200, 0));
+        }
         ob_start();
         $type === 'png' ? imagepng($img) : imagejpeg($img, null, 95);
         $bytes = (string) ob_get_clean();
@@ -459,6 +462,35 @@ class StampTest extends FeatureTestCase
         Storage::put('arxeio/t/broken.jpg', 'not a picture');
         $stamp->apply('arxeio/t/broken.jpg');
         $this->assertSame('not a picture', Storage::get('arxeio/t/broken.jpg'));
+    }
+
+    /**
+     * R4o review: every EXIF orientation is applied, the mirrored ones (2, 4, 5, 7) too, as the copy is saved without
+     * EXIF. A green mark at the stored picture's top left must end where a viewer shows it.
+     */
+    public function test_pictures_take_all_eight_exif_orientations(): void
+    {
+        $this->template(['width' => 50, 'x' => 10, 'y' => 8])->save();
+        $stamp = new Stamp();
+        $stamp->prepare(Protocol::factory()->number(47)->create());
+        // orientation => [shown width, shown height, the corner the mark is shown at]
+        $expected = [
+            1 => [600, 400, 'top-left'], 2 => [600, 400, 'top-right'], 3 => [600, 400, 'bottom-right'],
+            4 => [600, 400, 'bottom-left'], 5 => [400, 600, 'top-left'], 6 => [400, 600, 'top-right'],
+            7 => [400, 600, 'bottom-right'], 8 => [400, 600, 'bottom-left'],
+        ];
+        foreach ($expected as $orientation => [$w, $h, $corner]) {
+            Storage::put('arxeio/t/o.jpg', $this->picture(600, 400, 'jpg', $orientation, true));
+
+            $stamp->apply('arxeio/t/o.jpg');
+            $shown = imagecreatefromstring(Storage::get('arxeio/t/o.jpg'));
+            $this->assertSame([$w, $h], [imagesx($shown), imagesy($shown)], "orientation $orientation: its size as shown");
+            // 5 px in from the corner: inside the mark, outside the stamp (10 mm ≈ 19-29 px from the side)
+            $x = str_contains($corner, 'right') ? $w - 6 : 5;
+            $y = str_contains($corner, 'bottom') ? $h - 6 : 5;
+            $c = imagecolorsforindex($shown, imagecolorat($shown, $x, $y));
+            $this->assertTrue($c['green'] > 150 && $c['red'] < 80 && $c['blue'] < 80, "orientation $orientation: the mark at the $corner");
+        }
     }
 
     /** docx: the stamp in the first page's header, at its size and distance from the corner */

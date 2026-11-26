@@ -161,8 +161,13 @@ final class Stamp
             imagepalettetotruecolor($img);   // a palette PNG: the stamp's colours would be lost
         }
         if (! $png && function_exists('exif_read_data')) {
-            $turn = match ((int) (@exif_read_data($path)['Orientation'] ?? 1)) {
-                3 => 180, 6 => 270, 8 => 90,   // imagerotate turns anticlockwise
+            // all eight EXIF orientations: 2, 4, 5 and 7 are mirrored (flipped first), the copy keeps no EXIF to do it later
+            $orientation = (int) (@exif_read_data($path)['Orientation'] ?? 1);
+            if (in_array($orientation, [2, 4, 5, 7], true)) {
+                imageflip($img, $orientation === 4 ? IMG_FLIP_VERTICAL : IMG_FLIP_HORIZONTAL);
+            }
+            $turn = match ($orientation) {
+                3 => 180, 5, 8 => 90, 6, 7 => 270,   // imagerotate turns anticlockwise
                 default => 0,
             };
             if ($turn !== 0) {
