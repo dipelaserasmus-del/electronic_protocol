@@ -158,3 +158,37 @@ test('the stamp moved to the top left or centre of one file from the preview (R4
     await setSetting(page, 'putStamp', previous);
   }
 });
+
+// R4o (owner, 2026-11-26): JPG / PNG get the stamp too (drawn on a copy of the picture), also at a file's own place
+test('a scanned picture is shown and downloaded with the stamp (R4o)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const JPG = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'preview', 'sarosi.jpg'));
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'putStamp', 1);
+  await stamped(page, 'yes');
+  try {
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R4o σαρωμένη εικόνα ${Date.now()}`, fakelos: 'first' });
+    await page.setInputFiles('#f-uploads', { name: 'Σάρωση.jpg', mimeType: 'image/jpeg', buffer: JPG });
+    await expect(page.locator('.upload-row')).toHaveCount(1);
+    await saveProtocol(page);
+    const href = await page.locator('.attachment-row a[href*="/download/"]').first().getAttribute('href');
+    const got = await (await page.request.get(href)).body();
+    expect(got.subarray(0, 3).toString('hex')).toBe('ffd8ff');   // still a JPG
+    expect(got.equals(JPG)).toBe(false);                          // the stamp drawn on the copy
+    expect((await (await page.request.get(`${href}?original=1`)).body()).equals(JPG)).toBe(true);
+
+    // the preview shows the stamped picture, with ↖ ↑ ↗ as for PDFs
+    await page.locator('.attachment-row .preview-button').first().click();
+    const img = page.locator('#preview-body img.preview-image');
+    await expect(img).toBeVisible();
+    await expect(page.locator('#preview-place')).toBeVisible();
+    await page.locator('#preview-place [data-stamp-place="top-left"]').click();
+    await expect(page.locator('#preview-place [data-stamp-place="top-left"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(img).toHaveAttribute('src', /v=\d+$/);
+    await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
+    await evidence(page, 'r4o-picture-preview');
+  } finally {
+    await setSetting(page, 'putStamp', previous);
+  }
+});

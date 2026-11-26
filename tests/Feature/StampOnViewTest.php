@@ -109,6 +109,39 @@ class StampOnViewTest extends FeatureTestCase
         $this->assertStringContainsString(PdfStamper::MARK, $this->actingAs($writer->fresh())->get('/download/' . $a->id)->streamedContent());
     }
 
+    /** R4o (owner, 2026-11-26): a JPG is shown and downloaded with the stamp drawn on it; the stored picture stays */
+    public function test_a_picture_is_stamped_when_shown(): void
+    {
+        $img = imagecreatetruecolor(1050, 1485);   // A4 at 5 px per mm
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+        ob_start();
+        imagejpeg($img, null, 95);
+        $jpg = (string) ob_get_clean();
+        $a = $this->attachment(['name' => 'σάρωση.jpg'], null, $jpg);
+        $this->assertTrue(StampedCopy::applies($a));
+        $admin = $this->admin();
+
+        $got = $this->actingAs($admin)->get('/download/' . $a->id)->assertOk()->streamedContent();
+        $this->assertSame(IMAGETYPE_JPEG, getimagesizefromstring($got)[2]);
+        $this->assertNotSame($jpg, $got, 'the stamp is drawn on the copy');
+        $shown = imagecreatefromstring($got);
+        $inked = function (int $x0, int $x1) use ($shown): int {   // non-white pixels in the top 60 mm, between x0 and x1
+            $n = 0;
+            for ($y = 0; $y < 300; $y += 3) {
+                for ($x = $x0; $x < $x1; $x += 3) {
+                    $c = imagecolorsforindex($shown, imagecolorat($shown, $x, $y));
+                    $n += $c['red'] + $c['green'] + $c['blue'] < 600 ? 1 : 0;
+                }
+            }
+            return $n;
+        };
+        $this->assertGreaterThan(50, $inked(525, 1040), 'ink at the top right, where the stamp is');
+        $this->assertSame(0, $inked(10, 500), 'none at the top left');
+        $this->assertSame($jpg, Storage::get($a->savedPath), 'the stored picture is not changed');
+        $this->assertSame($jpg, $this->actingAs($admin)->get('/download/' . $a->id . '?original=1')->streamedContent());
+        $this->assertCount(1, $this->copies());
+    }
+
     public function test_what_is_never_stamped(): void
     {
         $admin = $this->admin();
