@@ -172,8 +172,7 @@ test('incoming date: the app\'s date field; keyword suggestions from the file na
 test('a red badge next to Εισερχόμενα counts the e-mails waiting; checked again when coming back to the tab (R5f)', async ({ page }) => {
   await login(page, 'writer');
   await openInbox(page, '/inbox');
-  const said = (await page.locator('#inbox-count').innerText()).replace(/\s+/g, ' ');   // «1–3 από 8 · …» or «2 email · …»
-  const total = Number((said.match(/από (\d+)/) ?? said.match(/^\s*(\d+) email/))[1]);
+  const total = Number(await page.locator('#inbox-count').getAttribute('data-total'));   // R5v: the range is only at the pager
   expect(total).toBeGreaterThan(0);
   const badge = page.locator('nav.app-topbar [data-inbox-count]');
   await expect(badge).toHaveText(String(total));
@@ -297,7 +296,9 @@ test('the files are above the buttons; the e-mail (Από, Προς, Θέμα, t
 test('registering says so until it is done; meanwhile no other e-mail can be registered or marked (R5k)', async ({ page }) => {
   await login(page, 'writer');
   const message = await findEmail(page, 'Κοινοποιείται σε όλα τα σχολεία');   // synthetic e-mail 12, no attachments
-  const other = page.locator('article.inbox-message').filter({ hasNot: page.locator(`#${await message.getAttribute('id')}`) }).first();
+  // R5v: «:not(#id)», since «hasNot» looks only inside each article and so never left this one out (it failed whenever
+  // this e-mail was the first of its page)
+  const other = page.locator(`article.inbox-message:not(#${await message.getAttribute('id')})`).first();
   // hold the registration request until the checks below are done
   let release;
   const held = new Promise((r) => { release = r; });
@@ -523,4 +524,32 @@ test('opening Κείμενο / HTML keeps the clicked e-mail in place; form sect
   } finally {
     await setSetting(page, 'emailNumFetch', previous);
   }
+});
+
+// R5v (owner, 2026-11-26): the range («11–20 από 55») only at the pager; the order swaps with a click, arrow and all
+test('the inbox order swaps with a click; the range is shown once (R5v)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'writer');
+  await openInbox(page, '/inbox');
+  const top = page.locator('#inbox-count');
+  await expect(top).not.toContainText(/από \d+/);
+  const order = page.locator('#inbox-order');
+  const before = await order.getAttribute('data-order');
+  const other = before === 'oldest' ? 'newest' : 'oldest';
+  await expect(order).toContainText(before === 'oldest' ? 'παλαιότερα πρώτα' : 'νεότερα πρώτα');
+  await expect(order.locator(`i.bi-arrow-${before === 'oldest' ? 'up' : 'down'}`)).toHaveCount(1);
+  const head = { x: 0, y: 40, width: 1440, height: 110 };
+  await evidence(page, `r5v-order-${before}`, { clip: head });
+
+  await order.click();
+  await expect(order).toHaveAttribute('data-order', other);
+  await expect(order).toContainText(other === 'oldest' ? 'παλαιότερα πρώτα' : 'νεότερα πρώτα');
+  await expect(order.locator(`i.bi-arrow-${other === 'oldest' ? 'up' : 'down'}`)).toHaveCount(1);
+  await evidence(page, `r5v-order-${other}`, { clip: head });
+  await page.reload();
+  await inboxReady(page);
+  await expect(page.locator('#inbox-order')).toHaveAttribute('data-order', other);   // kept for this user
+
+  await page.locator('#inbox-order').click();   // back as it was
+  await expect(page.locator('#inbox-order')).toHaveAttribute('data-order', before);
 });

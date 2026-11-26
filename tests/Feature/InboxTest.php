@@ -51,6 +51,35 @@ class InboxTest extends FeatureTestCase
         $this->assertSame([9], $this->mailbox->fetches[3], 'newest first (9, 8, 7): only the new message is downloaded');
     }
 
+    /**
+     * R5v (owner, 2026-11-26): «11–20 από 55» only at the pager, not again at the top; the order next to it swaps with a
+     * click (↑ oldest first, ↓ newest first), back to the first page, and stays that user's choice.
+     */
+    public function test_each_user_swaps_the_order_and_the_range_is_shown_once(): void
+    {
+        $user = $this->writer();
+        $html = $this->actingAs($user)->get('/inbox?page=2')->assertOk()->getContent();
+        $top = substr($html, strpos($html, 'id="inbox-count"'), 900);
+        $top = substr($top, 0, strpos($top, '</span>'));
+        $this->assertStringNotContainsString('από 8', $top, 'the range is at the pager only');
+        $this->assertStringContainsString('data-total="8"', $top);
+        $this->assertMatchesRegularExpression('~παλαιότερα πρώτα\s*<i class="bi bi-arrow-up"~u', $top);
+        $this->assertStringContainsString('Εμφάνιση 4–6 από 8', $html, 'the range at the pager');
+
+        $page = Livewire::actingAs($user)->test(EmailInbox::class)->call('gotoPage', 2)->assertSet('uids', [4, 5, 6])
+            ->call('toggleOrder')
+            ->assertSet('page', 1)->assertSet('uids', [8, 7, 6])
+            ->assertSeeHtml('data-order="newest"')->assertSee('Αλλαγή σε παλαιότερα πρώτα');
+        $this->assertSame('newest', $user->fresh()->preferences['inboxOrder']);
+        $this->assertMatchesRegularExpression('~νεότερα πρώτα\s*<i class="bi bi-arrow-down"~u', $this->actingAs($user->fresh())->get('/inbox')->getContent());
+        $page->call('toggleOrder')->assertSet('uids', [1, 2, 3]);   // and back
+        $this->assertSame('oldest', $user->fresh()->preferences['inboxOrder']);
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->assertSet('uids', [1, 2, 3]);   // another user: the setting
+        $this->setting('emailFetchOrderDesc', 1);
+        Livewire::actingAs($user->fresh())->test(EmailInbox::class)->assertSet('uids', [1, 2, 3]);   // the own choice wins
+        Livewire::actingAs($this->writer())->test(EmailInbox::class)->assertSet('uids', [8, 7, 6]);
+    }
+
     public function test_cache_keeps_only_what_is_still_in_the_inbox_and_follows_uidvalidity(): void
     {
         $user = $this->writer();
