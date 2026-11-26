@@ -44,7 +44,7 @@ test.describe('@smoke', () => {
     await login(page, 'admin');
     await openInbox(page, '/inbox');
     const body = page.locator('body');
-    await expect(page.locator('#inbox-count')).toContainText(/από \d+|\d+ email/);
+    await expect(page.locator('#inbox-count')).toHaveAttribute('data-total', /^[1-9]\d*$/);   // R5v: the range only at the pager
     // whichever mock e-mails are left on page 1 (other tests register some, the order differs between machines):
     // their subjects are decoded Greek
     const subjects = await page.locator('.inbox-subject').allInnerTexts();
