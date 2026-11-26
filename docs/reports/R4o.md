@@ -17,7 +17,8 @@
   and 297 mm when it is wider than high. The stamp then has the same size and distance from the edge as on a scanned
   PDF.
 - **Phone photos** stored sideways (with an EXIF note saying how to turn them) are turned first, so the stamp is at
-  the top as the photo is shown. The stamped copy is saved upright.
+  the top as the photo is shown. The stamped copy is saved upright. All eight EXIF orientations are handled, the
+  mirrored ones (2, 4, 5, 7) too (review finding).
 - **Left as they are:**
   - pictures over 30 megapixels (memory);
   - unreadable files.
@@ -34,6 +35,8 @@
     - a wide PNG, centred, still a PNG;
     - a photo with EXIF orientation 6, turned upright and stamped top right;
     - a broken file left as it is.
+  - `StampTest::test_pictures_take_all_eight_exif_orientations`: a mark at the stored top left ends at the corner a
+    viewer shows it, with the shown size, for orientations 1 to 8 (fails for 2 without the fix).
   - `StampOnViewTest::test_a_picture_is_stamped_when_shown`: the download is a stamped JPG (ink at the top right,
     none at the top left), the stored picture unchanged, the original on request, one copy.
 
