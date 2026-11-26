@@ -134,7 +134,9 @@
                 {{-- R5q: the look in the key: another look replaces the whole list (Livewire would mix old and new e-mails) --}}
                 <div wire:key="inbox-look-{{ $envelope }}">
                 @foreach ($messages as $uid => $m)
-                    @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null; @endphp
+                    @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null;
+                         $saved = ($state['type'] ?? null) === 'registered'; @endphp
+                    {{-- R5x (owner, 2026-11-26): registered: a green stripe down the left of the envelope (any look, «none» too) --}}
                     {{-- R5p (owner, 2026-11-23): each e-mail in an envelope: the sender and the date as the address strip,
                          «N από M» kept; a gap between envelopes. R5q (owner, 2026-11-25): the user's own look; «none» = R5o's
                          thin line with ↓ N από M ↓ between two e-mails, no envelope --}}
@@ -144,9 +146,9 @@
                                 <span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> {{ $n }} από {{ $total }} <i class="bi bi-arrow-down" aria-hidden="true"></i></span>
                             </div>
                         @endunless
-                        <div class="inbox-noenvelope" wire:key="env-{{ $uid }}">
+                        <div class="inbox-noenvelope{{ $saved ? ' is-saved' : '' }}" wire:key="env-{{ $uid }}">
                     @else
-                    <div class="inbox-envelope inbox-envelope-{{ $envelope }}" wire:key="env-{{ $uid }}">
+                    <div class="inbox-envelope inbox-envelope-{{ $envelope }}{{ $saved ? ' is-saved' : '' }}" wire:key="env-{{ $uid }}">
                     <div class="inbox-envelope-address" aria-hidden="true">
                         <span class="inbox-envelope-n">{{ $n }} από {{ $total }}</span>
                         <span class="inbox-envelope-from text-truncate">{{ $m['from_name'] ?: ($m['from_email'] ?: '—') }}@if ($m['from_name'] && $m['from_email']) <small>&lt;{{ $m['from_email'] }}&gt;</small>@endif</span>
