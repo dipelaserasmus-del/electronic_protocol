@@ -67,4 +67,4 @@ top left, center and right corners.»
   - a reader's page has the file's new place.
 
 ## Owner actions
-None. To try it: step 105 in [OWNER-TODO.md](../../OWNER-TODO.md).
+None. To try it: step 106 in [OWNER-TODO.md](../../OWNER-TODO.md).

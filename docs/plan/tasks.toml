@@ -53,6 +53,7 @@ tasks = [
   { id = "F08", title = "Attachment names fit 255 bytes (Linux/Docker)", phase = "F", batch = 4, size = "S", deps = ["F04"], status = "done", pr = 37 },
   # Found 2026-11-23: security.ubuntu.com stopped answering; CI image builds hung for an hour (owner asked for the fix)
   { id = "F09", title = "Docker build: apt retries + 30 s time-outs; CI jobs with time limits", phase = "F", batch = 9.5, size = "S", deps = ["F03"], status = "done", pr = 99 },
+  { id = "F10", title = "Docker image: security updates from the main archive when security.ubuntu.com fails", phase = "F", batch = 9.7, size = "S", deps = ["F09"], status = "done", pr = 152 },
 
   # ---------------- Batch 5 ----------------
   { id = "D02", title = "Assignments table (replace d14,e10 text)", phase = "D", batch = 5, size = "M", deps = ["F04"], status = "done", pr = 38 },
@@ -186,6 +187,7 @@ tasks = [
   { id = "R2s", title = "Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table)", phase = "R", batch = 9.7, size = "S", deps = ["R7"], status = "done", pr = 146 },
   { id = "R4m", title = "Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped", phase = "R", batch = 9.7, size = "S", deps = ["R4g"], status = "done", pr = 149 },
   { id = "R5w", title = "Inbox: the round ↑ «back to the top» of the list", phase = "R", batch = 9.7, size = "S", deps = ["R2m"], status = "done", pr = 150 },
+  { id = "V01", title = "Versions report: original / current / newest, flagged (docs/reports/VERSIONS.md)", phase = "N", batch = 9.7, size = "S", deps = [], status = "done", pr = 148 },
   { id = "R4n", title = "Stamp place per file: top left / centre / right from the preview, for every user", phase = "R", batch = 9.7, size = "S", deps = ["R4f"], status = "done", pr = 151 },
 
   # ---------------- Batch 10 ----------------
@@ -200,6 +202,7 @@ tasks = [
   { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },
   { id = "Z03", title = "Final security review", phase = "Z", batch = 10, size = "M", deps = ["Z02"], status = "todo" },
   { id = "Z04", title = "End-user manual (details from the owner later)", phase = "Z", batch = 10, size = "M", deps = ["Z03"], status = "todo" },
+  { id = "V02", title = "Versions report updated with the release versions", phase = "Z", batch = 10, size = "S", deps = ["Z03", "V01"], status = "todo" },
 
 ]
 

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 11:44 (R4n stamp place per file; R5w inbox: back to the top; R4m old server never stamped; N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 12:22 (R4n stamp place per file; F10 image: apt fallback; V01 versions report: old, current and newest versions, flagged; R5w inbox: back to the top; R4m old server never stamped; N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -296,7 +296,8 @@ Open *Εισερχόμενα*.
 - [ ] **102.** *Εκτύπωση → Πρωτόκολλο → Άνοιγμα*: a sheet on screen; *Εκτύπωση* (or save as PDF): A4 landscape with *Σελίδα N από M* at the foot (Chrome / Edge).
 - [ ] **103.** On your real copy, once: `./dev.sh real artisan stamp:old --none-stamped`. Then the PDF from before shows the stamp with *Με σφραγίδα* on (and no *η σφραγίδα είναι μέσα στο αρχείο*).
 - [ ] **104.** *Εισερχόμενα*: scroll down; the round ↑ at the bottom right takes you back to the top.
-- [ ] **105.** Open a protocol's PDF with 👁 (*Με σφραγίδα* on): ↖ ↑ ↗ next to the switch move the stamp on that file to the top left, centre or right; *Λήψη* gives it there too, for everyone.
+- [ ] **105.** Read [docs/reports/VERSIONS.md](docs/reports/VERSIONS.md): what the app ran on before, what it runs on now and the newest versions (🔴 end of life or serious open vulnerabilities, 🟠 outdated, 🟡 behind on patches). I update it again after Batch 10 (V02).
+- [ ] **106.** Open a protocol's PDF with 👁 (*Με σφραγίδα* on): ↖ ↑ ↗ next to the switch move the stamp on that file to the top left, centre or right; *Λήψη* gives it there too, for everyone.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -337,6 +338,9 @@ Open *Εισερχόμενα*.
      touched). Then every old file follows *Με σφραγίδα* like the new ones;
    - write the log one file per day: `LOG_CHANNEL=daily` (and `LOG_DAILY_DAYS`, default 14) in `.env` (R6e);
    - if you applied the Apache rules below in the meantime, remove them before the move.
+
+   The old server's PHP 8.1, Apache 2.4.58 and MariaDB 10.4 are past end of life and miss critical security fixes
+   ([VERSIONS.md](docs/reports/VERSIONS.md)): keep it reachable only from the office network until the move.
 
    Two security gaps of the **current** server stay open until then, by your decision (2026-11-16):
    - anyone who can reach it can create an administrator account (S00);
