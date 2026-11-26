@@ -24,6 +24,20 @@ final class StampedCopy
 
     public const PREFERENCE = 'stamped';
 
+    /**
+     * R4n: where the stamp is on this file, as one of Stamp::PLACES: its own choice, otherwise the stamp's place when that
+     * is one of them (a stamp at the bottom: none of the three)
+     */
+    public static function place(Attachment $a): ?string
+    {
+        $own = $a->stamp_place;
+        if (isset(Stamp::PLACES[$own ?? ''])) {
+            return $own;
+        }
+        $corner = StampTemplate::current()->corner;
+        return isset(Stamp::PLACES[$corner]) ? $corner : null;
+    }
+
     /** this attachment can be stamped when shown (a protocol's file of a type that takes a stamp, none inside it already) */
     public static function applies(Attachment $a): bool
     {
@@ -75,6 +89,7 @@ final class StampedCopy
             $stamp = new Stamp();
             try {
                 if ($stamp->prepare($protocol)) {
+                    $stamp->placeAt($a->stamp_place);   // R4n: this file's own place, if a user chose one
                     $stamp->apply($work);
                 }
             } finally {
@@ -104,6 +119,7 @@ final class StampedCopy
         // the values the stamp shows (number, date, year, the office's name: review of R4f), the template, the file, and
         // how the stamp is drawn (review of R4k: copies drawn before the white under the number are made again)
         $values = json_encode(StampTemplate::valuesFor($p), JSON_UNESCAPED_UNICODE);
-        return substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file, 'r'.StampRenderer::REVISION])), 0, 16);
+        return substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file, 'r'.StampRenderer::REVISION,
+            'p'.$a->stamp_place])), 0, 16);   // R4n: this file's own place
     }
 }

@@ -46,6 +46,21 @@ final class Stamp
         return true;
     }
 
+    /** R4n: the places a user may choose for one file (attachments.stamp_place), shown in the preview */
+    public const PLACES = ['top-left' => 'πάνω αριστερά', 'top-center' => 'πάνω στο κέντρο', 'top-right' => 'πάνω δεξιά'];
+
+    /**
+     * R4n (owner, 2026-11-26): this file's own place instead of the stamp's (when the usual place hides something). The
+     * distance from the top stays the stamp's; top-center ignores the distance from the side.
+     */
+    public function placeAt(?string $place): void
+    {
+        if ($this->template !== null && isset(self::PLACES[$place ?? ''])) {
+            $this->template = clone $this->template;
+            $this->template->corner = $place;
+        }
+    }
+
     public function ready(): bool
     {
         return $this->image !== null;
@@ -94,7 +109,11 @@ final class Stamp
         $t = $this->template;
         $dpmm = StampRenderer::PRINT_DPI / 25.4;
         $canvas = StampRenderer::canvas((int) round(210 * $dpmm), imagesy($this->image));
-        $x = str_contains($t->corner, 'right') ? (int) round((210 - $t->x - $w) * $dpmm) : (int) round($t->x * $dpmm);
+        $x = match (true) {
+            str_contains($t->corner, 'center') => (int) round((210 - $w) / 2 * $dpmm),   // R4n
+            str_contains($t->corner, 'right') => (int) round((210 - $t->x - $w) * $dpmm),
+            default => (int) round($t->x * $dpmm),
+        };
         imagecopy($canvas, $this->image, max(0, $x), 0, 0, 0, imagesx($this->image), imagesy($this->image));
         $png = $this->tempPath('png');
         imagepng($canvas, $png);
@@ -129,7 +148,11 @@ final class Stamp
         // placed from the page's own size (twips → points), the stamp's distance from the corner kept
         $style = $section->getStyle();
         [$pageW, $pageH] = [($style->getPageSizeW() ?: 11906) / 20, ($style->getPageSizeH() ?: 16838) / 20];
-        $left = str_contains($t->corner, 'right') ? $pageW - ($t->x + $w) * $pt : $t->x * $pt;
+        $left = match (true) {
+            str_contains($t->corner, 'center') => ($pageW - $w * $pt) / 2,   // R4n
+            str_contains($t->corner, 'right') => $pageW - ($t->x + $w) * $pt,
+            default => $t->x * $pt,
+        };
         $top = str_contains($t->corner, 'top') ? $t->y * $pt : $pageH - ($t->y + $h) * $pt;
         $container->addImage($png, [
             'width' => round($w * $pt, 2), 'height' => round($h * $pt, 2),

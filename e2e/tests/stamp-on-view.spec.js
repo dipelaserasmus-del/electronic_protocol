@@ -88,3 +88,61 @@ test('stamp on view: stamped download by default, the original with «Με σφ�
     await setSetting(page, 'putStamp', previous);
   }
 });
+
+// R4n (owner, 2026-11-26): the stamp's place on one file (↖ ↑ ↗ in the preview), for every user who sees the protocol
+test('the stamp moved to the top left or centre of one file from the preview (R4n)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'putStamp', 1);
+  await stamped(page, 'yes');
+  try {
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R4n θέση σφραγίδας ${Date.now()}`, fakelos: 'first' });
+    await page.setInputFiles('#f-uploads', { name: 'Πρόσκληση.pdf', mimeType: 'application/pdf', buffer: PDF });
+    await expect(page.locator('.upload-row')).toHaveCount(1);
+    await saveProtocol(page);
+    const protocolUrl = page.url();
+    const href = await page.locator('.attachment-row a[href*="/download/"]').first().getAttribute('href');
+    // where the stamp is: the x of its placement on page 1
+    const stampX = async () => {
+      const pdf = (await (await page.request.get(href)).body()).toString('latin1');
+      return Number(pdf.match(/q ([-\d. ]+) cm \/EPStamp Do/)[1].split(' ')[4]);
+    };
+    const right = await stampX();
+
+    await page.locator('.attachment-row .preview-button').first().click();
+    const places = page.locator('#preview-place');
+    await expect(places).toBeVisible();
+    await expect(places.locator('[data-stamp-place="top-right"]')).toHaveAttribute('aria-pressed', 'true');
+    const frame = page.locator('#preview-body iframe');
+    const before = await frame.getAttribute('src');
+
+    const saved = page.waitForResponse((r) => r.url().includes('/stamp-place') && r.request().method() === 'POST');
+    await places.locator('[data-stamp-place="top-left"]').click();
+    expect((await saved).ok()).toBe(true);
+    await expect(places.locator('[data-stamp-place="top-left"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(frame).not.toHaveAttribute('src', before);   // shown again
+    expect(await stampX()).toBeLessThan(right / 4);
+    if (process.env.EVIDENCE) fs.writeFileSync('test-results/r4n-left.pdf', await (await page.request.get(href)).body());
+    await evidence(page, 'r4n-place-buttons', { clip: await page.locator('#preview-modal .modal-header').boundingBox() });
+
+    await places.locator('[data-stamp-place="top-center"]').click();
+    await expect(places.locator('[data-stamp-place="top-center"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(stampX).toBeGreaterThan(right / 4);
+    expect(await stampX()).toBeLessThan(right);
+    // the headless browser draws no PDF in a frame: the stamped file itself is kept for the report (page 1 as a picture)
+    if (process.env.EVIDENCE) fs.writeFileSync('test-results/r4n-centre.pdf', await (await page.request.get(href)).body());
+
+    // with «Με σφραγίδα» off the three are hidden; another user sees the file's place
+    await page.locator('#preview-stamp-input').uncheck();
+    await expect(places).toBeHidden();
+    await page.locator('#preview-stamp-input').check();
+    const reader = await page.context().browser().newPage();
+    await login(reader, 'reader');
+    await reader.goto(protocolUrl);
+    await expect(reader.locator('.attachment-row .preview-button').first()).toHaveAttribute('data-preview-place', 'top-center');
+    await reader.close();
+  } finally {
+    await setSetting(page, 'putStamp', previous);
+  }
+});

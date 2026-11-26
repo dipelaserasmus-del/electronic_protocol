@@ -12,6 +12,9 @@ const read = (button) => ({
     name: button.dataset.previewName || 'αρχείο',
     stampInFile: button.dataset.previewStamp === 'in-file',   // R4f
     stampable: button.dataset.previewStampable === '1',       // R5t: «Με σφραγίδα» only where a stamp can be put
+    place: button.dataset.previewPlace ?? '',                 // R4n: the stamp's place on this file
+    placeUrl: button.dataset.previewPlaceUrl ?? '',
+    button,
 });
 
 let items = [];
@@ -54,6 +57,7 @@ function show() {
     $('preview-note').hidden = !['word', 'sheet'].includes(item.kind);
     $('preview-stamp-note').hidden = !item.stampInFile;
     if ($('preview-stamp')) $('preview-stamp').hidden = !item.stampable;
+    showPlace(item);
     body.dataset.kind = item.kind;
 
     let content;
@@ -70,6 +74,19 @@ function show() {
         content = frame(src, item.name, item.kind !== 'pdf');   // Chrome does not show a PDF in a sandboxed frame
     }
     body.replaceChildren(content);
+}
+
+// R4n: ↖ ↑ ↗ for a file that takes the stamp, while «Με σφραγίδα» is on; the file's place pressed
+function showPlace(item) {
+    const group = $('preview-place');
+    if (!group) return;
+    const stampOn = document.querySelector('[data-stamp-toggle]')?.checked ?? false;
+    group.hidden = !(item.stampable && item.placeUrl && stampOn);
+    group.querySelectorAll('[data-stamp-place]').forEach((b) => {
+        const on = b.dataset.stampPlace === item.place;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', String(on));
+    });
 }
 
 function step(by) {
@@ -90,6 +107,33 @@ document.addEventListener('click', (e) => {
     index = Math.max(0, buttons.indexOf(button));
     show();
     Modal.getOrCreateInstance($('preview-modal')).show();
+});
+
+// R4n: a place chosen: saved for the file (for every user), the PDF shown again with the stamp there
+document.addEventListener('click', async (e) => {
+    const choice = e.target.closest?.('[data-stamp-place]');
+    const item = items[index];
+    if (!choice || !item?.placeUrl) return;
+    const place = choice.dataset.stampPlace;
+    if (place === item.place) return;
+    const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+    let ok = false;
+    try {
+        const r = await fetch(item.placeUrl, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': token, Accept: 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ place }),
+        });
+        ok = r.ok;
+    } catch { ok = false; }
+    if (!ok) {
+        window.appToast?.('Η θέση της σφραγίδας δεν αποθηκεύτηκε. Δοκιμάστε ξανά.', 'danger');
+        return;
+    }
+    item.place = place;
+    item.button.dataset.previewPlace = place;   // the 👁 opens it so next time too
+    stampVersion++;
+    show();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -115,5 +159,8 @@ document.addEventListener('change', async (e) => {
         return;
     }
     stampVersion++;
-    if ($('preview-modal')?.classList.contains('show') && items[index]?.kind === 'pdf') show();
+    if ($('preview-modal')?.classList.contains('show') && items[index]) {
+        if (items[index].kind === 'pdf') show();
+        else showPlace(items[index]);   // R4n: ↖ ↑ ↗ only while «Με σφραγίδα» is on
+    }
 });

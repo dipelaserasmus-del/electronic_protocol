@@ -60,6 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/goto/{etos}/{protocolnum}/{step?}', [ProtocolController::class, 'gotonum']);
     Route::get('/download/{attachment}', [ProtocolController::class, 'download']);
     Route::get('/preview/{attachment}', [ProtocolController::class, 'preview'])->whereNumber('attachment');   // R4c
+    Route::post('/attachments/{attachment}/stamp-place', [\App\Http\Controllers\StampPlaceController::class, 'update'])
+        ->whereNumber('attachment')->middleware('throttle:60,1');   // R4n: the stamp's place on one file
     Route::get('/trash', [ProtocolFormController::class, 'trash']);   // R4b (administrators)
     Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
