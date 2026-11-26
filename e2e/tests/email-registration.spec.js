@@ -5,10 +5,8 @@
 const { test, expect } = require('@playwright/test');
 const { login, evidence, openInbox, inboxReady } = require('./helpers');
 
-const inboxCount = async (page) => {
-  const text = await page.locator('#inbox-count').innerText();
-  return Number((text.match(/από (\d+)/) ?? text.match(/(\d+) email/))[1]);
-};
+// R5v: the range («1–5 από 13») is only at the pager now; the heading carries the total as data-total
+const inboxCount = async (page) => Number(await page.locator('#inbox-count').getAttribute('data-total'));
 
 /** The message of the inbox e-mail whose text contains `text` (whichever page it is on), and the inbox count. */
 async function open(page, text) {
