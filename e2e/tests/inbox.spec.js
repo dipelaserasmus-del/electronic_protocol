@@ -577,3 +577,59 @@ test('the inbox has the back-to-top button (R5w)', async ({ page }) => {
   await up.click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
+
+// R5x (owner, 2026-11-26): a registered e-mail gets a green stripe down the left of its envelope, in every look (and the
+// card's left border in «Καμία»); the others on the page have none. Photographed in the four looks, without reloading.
+// Last in this file: it registers synthetic e-mail 06 (no other test uses it), one e-mail fewer for the tests above.
+test('a registered e-mail is marked with a green stripe on the left, in every look (R5x)', async ({ page }) => {
+  await login(page, 'writer');
+  const clear = () => page.evaluate(async () => {
+    const token = document.querySelector('meta[name="csrf-token"]').content;
+    await fetch('/preferences', { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ key: 'envelope', value: null }) });
+  });
+  const choose = async (value) => {
+    await page.locator('#nav-user').click();
+    const saved = page.waitForResponse((r) => r.url().endsWith('/preferences') && r.request().method() === 'POST');
+    await page.locator(`[data-preference="envelope"][data-value="${value}"]`).click();
+    expect((await saved).status()).toBe(200);
+  };
+  const green = 'rgb(25, 135, 84)';   // Bootstrap's --bs-success
+  try {
+    await openInbox(page);
+    await choose('airmail');
+    const message = await findEmail(page, 'μεταφοράς μαθητών');   // synthetic e-mail 06
+    const uid = await message.getAttribute('data-uid');
+    const envelope = page.locator(`[wire\\:key="env-${uid}"]`);
+    await expect(page.locator('.is-saved')).toHaveCount(0);
+    expect(await envelope.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('none');
+
+    await message.locator(`#f-${uid}-fakelos`).click();
+    await message.locator(`#folder-list-${uid} li[role=option]`).first().click();
+    await message.locator('[data-action="register"]').click();
+    const anyway = message.locator('[data-action="register-anyway"]');   // a run before left the same protocol
+    const done = message.locator('.inbox-done');
+    await expect(done.or(anyway)).toBeVisible();
+    if (await anyway.isVisible()) await anyway.click();
+    await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
+
+    for (const look of ['airmail', 'paper', 'plain', 'none']) {
+      if (look !== 'airmail') await choose(look);
+      // this look's element (the previous look's is marked too, until Livewire replaces it)
+      const saved = page.locator(`${look === 'none' ? '.inbox-noenvelope' : `.inbox-envelope-${look}`}[wire\\:key="env-${uid}"]`);
+      await expect(saved).toHaveClass(/is-saved/);
+      await expect(page.locator('.is-saved')).toHaveCount(1);   // only the registered one
+      if (look === 'none') {
+        await expect(saved.locator('.inbox-message')).toHaveCSS('border-left-color', green);
+      } else {
+        await expect.poll(() => saved.evaluate((el) => getComputedStyle(el, '::after').backgroundColor)).toBe(green);
+        expect(await saved.evaluate((el) => parseFloat(getComputedStyle(el, '::after').width))).toBeGreaterThan(6);
+      }
+      await saved.evaluate((el) => { el.scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy({ top: -90, behavior: 'instant' }); });
+      const box = await saved.boundingBox();
+      await evidence(page, `r5x-${look}`, { clip: { x: box.x - 12, y: Math.max(0, box.y - 12), width: box.width + 24, height: 520 } });
+    }
+  } finally {
+    await clear();
+  }
+});
