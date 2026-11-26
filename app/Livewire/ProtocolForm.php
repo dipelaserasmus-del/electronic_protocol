@@ -304,6 +304,32 @@ class ProtocolForm extends Component
     }
 
     /** R1c: subject offered from the first new file's name while the subject is empty. */
+    /**
+     * R1p (owner, 2026-11-26): keywords offered from the subject (once the user leaves Θέμα: it is sent on blur) and the
+     * names of the files (just added, and those saved), as in the inbox (R5d/R5e: App\Support\KeywordSuggestions):
+     * keywords already in use first, then new significant words; those in the field are left out. Only while the field
+     * can be changed.
+     *
+     * @return list<array{0: string, 1: bool}> [keyword, already in use]
+     */
+    private function suggestedKeywords(ProtocolAccess $access, \Illuminate\Support\Collection $attachments): array
+    {
+        $names = array_merge(
+            array_map(fn ($f) => (string) $f->getClientOriginalName(), array_values((array) $this->uploads)),
+            $attachments->pluck('name')->filter()->all(),
+        );
+        $subject = trim((string) $this->form['thema']);
+        if (! $access->canSave || ! $access->head || ($subject === '' && $names === [])) {
+            return [];
+        }
+        $user = Auth::user();
+        // the same caches as the inbox (keywords in use: a minute; spellings of words in subjects: ten minutes)
+        $known = \Illuminate\Support\Facades\Cache::remember('inbox-keywords:'.$user->id, 60, fn () => \App\Support\Suggestions::keywords($user));
+        $spellings = \Illuminate\Support\Facades\Cache::remember('inbox-spellings:'.$user->id, 600, fn () => \App\Support\Suggestions::spellings($user));
+        return \App\Support\KeywordSuggestions::for($subject, '', $known,
+            \App\Support\TagList::keywords()->tokens($this->form['keywords']), $names, $spellings);
+    }
+
     private function suggestedSubject(): ?string
     {
         foreach ((array) $this->uploads as $file) {
@@ -483,7 +509,8 @@ class ProtocolForm extends Component
             'keepWords' => Keepvalue::whereNotNull('keep_alt')->distinct()->orderBy('keep_alt')->pluck('keep_alt'),
             'users' => User::get_writers_and_admins(),
             'creator' => $protocol->exists ? User::find($protocol->user_id) : null,
-            'attachments' => $protocol->exists ? $protocol->attachments : collect(),
+            'attachments' => $attachments = ($protocol->exists ? $protocol->attachments : collect()),
+            'suggestedKeywords' => $this->suggestedKeywords($access, $attachments),   // R1p
             'canComplete' => $protocol->exists && ! $access->canSave && $access->doneDate && $user->can('complete', $protocol),
             'isReader' => $isReader,
             'canEmailReceipt' => $protocol->exists && ! $isReader,

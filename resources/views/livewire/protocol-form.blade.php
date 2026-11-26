@@ -264,6 +264,17 @@
                                 </ul>
                             </div>
                             @if ($e('keywords'))<div class="invalid-feedback d-block">{{ $e('keywords') }}</div>@endif
+                            {{-- R1p (owner, 2026-11-26): offered from the subject and the files' names, as in the inbox (R5d) --}}
+                            @if ($suggestedKeywords)
+                                <div class="d-flex flex-wrap align-items-center gap-1 mt-1 keyword-suggestions" id="keyword-suggestions">
+                                    <small class="text-body-secondary me-1">Προτάσεις από το θέμα και τα συνημμένα:</small>
+                                    @foreach ($suggestedKeywords as [$word, $inUse])
+                                        <button type="button" class="btn btn-sm rounded-pill py-0 {{ $inUse ? 'btn-outline-primary' : 'btn-outline-secondary' }}"
+                                                wire:click="addTag('keywords', @js($word))" data-suggest="{{ $word }}" wire:key="kws-{{ $word }}"
+                                                title="{{ $inUse ? 'Λέξη κλειδί που ήδη χρησιμοποιείται' : 'Νέα λέξη κλειδί' }}">+ {{ $word }}</button>
+                                    @endforeach
+                                </div>
+                            @endif
                             <div class="form-text" id="keywords-help">Enter ή κόμμα μετά από κάθε λέξη· ↑ ↓ για τις προτάσεις.</div>
                         </div>
                     </div>
