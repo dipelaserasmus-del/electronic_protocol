@@ -16,10 +16,16 @@ use Illuminate\Support\Facades\Storage;
  *                                    storage/app/stamp-originals/, same path); PDFs the old tool never wrote get
  *                                    the new stamp when shown. Both then follow «Με σφραγίδα» (R4f).
  * Word files (docx, odt) stay as they are: the old tool saved them again, the file before it is not there to restore.
+ *
+ *   php artisan stamp:old --none-stamped
+ *                                    R4m (owner, 2026-11-26): the old server never stamped (its setting putStamp was
+ *                                    off), so no file carries a stamp: every mark is taken away (PDF, Word, unreadable
+ *                                    or missing alike) and they all follow «Με σφραγίδα». No file is read or changed.
  */
 class OldStamps extends Command
 {
-    protected $signature = 'stamp:old {--apply : take the old stamp out of the PDFs (originals kept)} {--list : one line per file}';
+    protected $signature = 'stamp:old {--apply : take the old stamp out of the PDFs (originals kept)} {--list : one line per file}
+        {--none-stamped : the old server never stamped: no file is marked as stamped any more (files untouched)}';
 
     protected $description = 'Files saved with the old stamp: what there is, and (--apply) take it out of the PDFs';
 
@@ -27,6 +33,9 @@ class OldStamps extends Command
 
     public function handle(OldStampRemover $remover): int
     {
+        if ($this->option('none-stamped')) {
+            return $this->noneStamped();
+        }
         $apply = (bool) $this->option('apply');
         $counts = ['removable' => 0, 'no-old-stamp' => 0, 'unknown' => 0, 'word' => 0, 'missing' => 0, 'done' => 0, 'cleared' => 0];
         Attachment::where('stamp_in_file', true)->orderBy('id')->chunkById(200, function ($chunk) use ($remover, $apply, &$counts) {
@@ -74,6 +83,15 @@ class OldStamps extends Command
         if (! $apply && $counts['removable'] + $counts['no-old-stamp'] > 0) {
             $this->line('Για να γίνει: php artisan stamp:old --apply (τα αρχεία όπως είναι τώρα κρατιούνται στο storage/app/' . self::ORIGINALS . ').');
         }
+        return self::SUCCESS;
+    }
+
+    /** R4m: every «stamp inside the file» mark taken away; the files themselves are not read or changed */
+    private function noneStamped(): int
+    {
+        $cleared = Attachment::where('stamp_in_file', true)->update(['stamp_in_file' => false]);
+        $this->info("Η παλιά εφαρμογή δεν σφράγιζε: {$cleared} αρχεία δεν σημειώνονται πια ως σφραγισμένα.");
+        $this->line('Ακολουθούν όλα το «Με σφραγίδα» όπως τα νέα. Κανένα αρχείο δεν άλλαξε.');
         return self::SUCCESS;
     }
 

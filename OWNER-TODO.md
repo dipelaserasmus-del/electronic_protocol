@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 09:46 (N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-26 10:44 (R4m old server never stamped; N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -213,7 +213,9 @@ Open *Εισερχόμενα*.
 - [ ] **68.** Add a PDF to a protocol; in *Συνημμένα* turn *Με σφραγίδα* on and open it with 👁 or download it: it
   has the stamp, top right of the first page. Turn *Με σφραγίδα* off (in *Συνημμένα* or in the preview window): the
   file as you uploaded it. Older files say *η σφραγίδα είναι μέσα στο αρχείο*.
-- [ ] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
+- [x] **69.** Optional, real copy: `./dev.sh real artisan stamp:old` and tell me the numbers it prints (no names).
+  Done 2026-11-26: 0 with the old stamp, 5336 PDFs without, 183 left as they are, 164 Word, 2 missing; the old server
+  never stamped (R4m).
 - [ ] **70.** With *Έλεγχοι καταχώρισης* off, *Διαγραφή* on a test protocol: it goes to *Κάδος → Πρωτόκολλα* and its
   number is free. *Επαναφορά*: back with its number (or a new one, with a note in *Παρατηρήσεις*, if the number was
   given meanwhile). As Συγγραφέας you see only your own deleted protocols.
@@ -291,6 +293,7 @@ Open *Εισερχόμενα*.
 - [ ] **100.** As a writer with a time limit (*Ρυθμίσεις → Δικαιώματα*), open your own recent protocol: *για ακόμη 4 μέρες, 2 ώρες, 56 λεπτά* instead of minutes.
 - [ ] **101.** *Εισερχόμενα*: the heading shows *παλαιότερα πρώτα ↑* (no *11–20 από 55*, that is at the pager); click it: *νεότερα πρώτα ↓*, first page; it stays so for you only.
 - [ ] **102.** *Εκτύπωση → Πρωτόκολλο → Άνοιγμα*: a sheet on screen; *Εκτύπωση* (or save as PDF): A4 landscape with *Σελίδα N από M* at the foot (Chrome / Edge).
+- [ ] **103.** On your real copy, once: `./dev.sh real artisan stamp:old --none-stamped`. Then the PDF from before shows the stamp with *Με σφραγίδα* on (and no *η σφραγίδα είναι μέσα στο αρχείο*).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -324,8 +327,11 @@ Open *Εισερχόμενα*.
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);
    - apply the folder glossary and the Φ.43 → Φ.46 merge: `php artisan folders:glossary --apply` (D07, after the files
      are copied: it moves them);
-   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e), and if you want the old files to
-     follow the new stamp: `php artisan stamp:old`, then `--apply` (R4g; it keeps the files as they were);
+   - load your official stamp: `php artisan stamp:import <the stamp folder>` (R4e);
+   - **old files and the stamp (R4m; you, 2026-11-26: the old server never stamped):** `migrate` marks no file as
+     «stamp inside» when the old setting *putStamp* is off. Check with `php artisan stamp:old`: «PDF όπου η παλιά
+     σφραγίδα αφαιρείται: 0» and, if any file is still counted, run `php artisan stamp:old --none-stamped` (no file is
+     touched). Then every old file follows *Με σφραγίδα* like the new ones;
    - write the log one file per day: `LOG_CHANNEL=daily` (and `LOG_DAILY_DAYS`, default 14) in `.env` (R6e);
    - if you applied the Apache rules below in the meantime, remove them before the move.
 

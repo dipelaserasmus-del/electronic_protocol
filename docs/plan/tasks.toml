@@ -184,6 +184,7 @@ tasks = [
   { id = "R1o", title = "Protocol form: the time left to change it in days, hours and minutes", phase = "R", batch = 9.7, size = "S", deps = ["R1b"], status = "done", pr = 144 },
   { id = "R5v", title = "Inbox: the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user", phase = "R", batch = 9.7, size = "S", deps = ["R5g"], status = "done", pr = 145 },
   { id = "R2s", title = "Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table)", phase = "R", batch = 9.7, size = "S", deps = ["R7"], status = "done", pr = 146 },
+  { id = "R4m", title = "Old server never stamped: the migration marks no file when putStamp is off; stamp:old --none-stamped", phase = "R", batch = 9.7, size = "S", deps = ["R4g"], status = "done", pr = 149 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
