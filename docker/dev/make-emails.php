@@ -345,5 +345,13 @@ if ($preloadDir) {
         ],
     ]);
     file_put_contents("$inbox/99-large-attachment.eml", $big);
-    echo 'Mock mailbox preloaded: ' . (count($sources) + 1) . " emails -> $inbox\n";
+    // R5x: registered by its browser test only, so the other tests keep every e-mail they count on (mock server only);
+    // that test runs before R5l, which marks the first e-mail read (this one, when the inbox shows the oldest first)
+    file_put_contents("$inbox/98-registered-mark.eml", buildEml([
+        'id' => 'mark', 'case' => 'registered-mark', 'fromAddr' => 'office@example.test',
+        'from' => b64h('Γραμματεία Δοκιμών') . ' <office@example.test>', 'to' => $to,
+        'subject' => b64h('Ενημέρωση για το πρόγραμμα εξετάσεων'), 'date' => date(DATE_RFC2822, $base - 86400),
+        'parts' => [['type' => 'text/plain', 'charset' => 'UTF-8', 'cte' => '8bit', 'body' => "Σας στέλνουμε το πρόγραμμα των εξετάσεων.\n"]],
+    ]));
+    echo 'Mock mailbox preloaded: ' . (count($sources) + 2) . " emails -> $inbox\n";
 }
