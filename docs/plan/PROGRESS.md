@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| Tasks done | **128 / 138** `████████████████████████████░░` 93% |
-| Effort done (PERT) | **54.0 / 58.6 h** `████████████████████████████░░` 92% |
+| Tasks done | **129 / 139** `████████████████████████████░░` 93% |
+| Effort done (PERT) | **54.4 / 59.0 h** `████████████████████████████░░` 92% |
 | Remaining effort, one agent in sequence | **4.6 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 1.4 h ± 0.2 |
 | In progress | — |
@@ -35,7 +35,7 @@
 | 9 | ✅R6a ✅R6b ✅R1d ✅R6c ✅R7 | 5/5 | `██████████` |
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
-| 9.7 | ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k | 28/28 | `██████████` |
+| 9.7 | ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o | 29/29 | `██████████` |
 | 10 | ⬜A01 ⬜A03 ⬜A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 | 0/10 | `░░░░░░░░░░` |
 
 ## Dependency network
@@ -182,6 +182,7 @@ flowchart LR
     R2r["R2r<br/>List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first)"]
     R6l["R6l<br/>«Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md"]
     R3k["R3k<br/>No «Νέο» for readers (top bar, search page, old menu)"]
+    R1o["R1o<br/>Protocol form: the time left to change it in days, hours and minutes"]
   end
   subgraph Z["5 Finish"]
     A01["A01<br/>Integrity-check engine + page"]
@@ -356,6 +357,7 @@ flowchart LR
   R2k --> R2r
   R6c --> R6l
   R3d --> R3k
+  R1b --> R1o
   R2 --> A01
   A01 --> A03
   A01 --> A04
@@ -381,7 +383,7 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o done
   class A01,A03,A04,A05,A06,X01,X02,Z01,Z02,Z03 todo
   class B03d onhold
   class Z01,Z02,Z03 critical
@@ -539,17 +541,18 @@ gantt
   R2r List  the e-mail's own file after the attachments, shown by its date and time (setting to put it first) :done, r2r, 2026-11-14 13:26, 19m
   R6l «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md :done, r6l, 2026-11-14 13:45, 19m
   R3k No «Νέο» for readers (top bar, search page, old menu) :done, r3k, 2026-11-14 14:04, 19m
+  R1o Protocol form  the time left to change it in days, hours and minutes :done, r1o, 2026-11-14 14:23, 19m
   section Batch 10
-  A01 Integrity-check engine + page :a01, 2026-11-14 14:23, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 14:56, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 15:15, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 15:34, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 16:07, 19m
-  X01 Audit log — recording :x01, 2026-11-14 16:26, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 16:59, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 17:32, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 18:05, 19m
-  Z03 Final security review :crit, z03, 2026-11-14 18:24, 33m
+  A01 Integrity-check engine + page :a01, 2026-11-14 14:42, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 15:15, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 15:34, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 15:53, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 16:26, 19m
+  X01 Audit log — recording :x01, 2026-11-14 16:45, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 17:18, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-14 17:51, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-14 18:24, 19m
+  Z03 Final security review :crit, z03, 2026-11-14 18:43, 33m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -686,6 +689,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R2r** | List: the e-mail's own file after the attachments, shown by its date and time (setting to put it first) | R2k | 0.3 | 0.1 | 7.2 | 7.5 | 10.8 | 11.1 | 3.6 | #141 |
 | ✅ | **R6l** | «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md | R6c | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #142 |
 | ✅ | **R3k** | No «Νέο» for readers (top bar, search page, old menu) | R3d | 0.3 | 0.1 | 5.6 | 5.9 | 10.8 | 11.1 | 5.2 | #143 |
+| ✅ | **R1o** | Protocol form: the time left to change it in days, hours and minutes | R1b | 0.3 | 0.1 | 4.2 | 4.5 | 10.8 | 11.1 | 6.7 | #144 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.0 | 10.6 | 5.9 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 10.8 | 11.1 | 6.1 |  |
