@@ -580,7 +580,7 @@ test('the inbox has the back-to-top button (R5w)', async ({ page }) => {
 
 // R5x (owner, 2026-11-26): a registered e-mail gets a green stripe down the left of its envelope, in every look (and the
 // card's left border in «Καμία»); the others on the page have none. Photographed in the four looks, without reloading.
-// Last in this file: it registers synthetic e-mail 06 (no other test uses it), one e-mail fewer for the tests above.
+// It registers the mock mailbox's 98-registered-mark (make-emails.php), there for this test only: the other tests keep theirs.
 test('a registered e-mail is marked with a green stripe on the left, in every look (R5x)', async ({ page }) => {
   await login(page, 'writer');
   const clear = () => page.evaluate(async () => {
@@ -598,7 +598,7 @@ test('a registered e-mail is marked with a green stripe on the left, in every lo
   try {
     await openInbox(page);
     await choose('airmail');
-    const message = await findEmail(page, 'μεταφοράς μαθητών');   // synthetic e-mail 06
+    const message = await findEmail(page, 'πρόγραμμα εξετάσεων');   // 98-registered-mark, for this test only
     const uid = await message.getAttribute('data-uid');
     const envelope = page.locator(`[wire\\:key="env-${uid}"]`);
     await expect(page.locator('.is-saved')).toHaveCount(0);
@@ -625,9 +625,11 @@ test('a registered e-mail is marked with a green stripe on the left, in every lo
         await expect.poll(() => saved.evaluate((el) => getComputedStyle(el, '::after').backgroundColor)).toBe(green);
         expect(await saved.evaluate((el) => parseFloat(getComputedStyle(el, '::after').width))).toBeGreaterThan(6);
       }
-      await saved.evaluate((el) => { el.scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy({ top: -90, behavior: 'instant' }); });
+      // with the end of the e-mail above (not marked), for comparison
+      await saved.evaluate((el) => { el.scrollIntoView({ block: 'end', behavior: 'instant' }); window.scrollBy({ top: 60, behavior: 'instant' }); });
       const box = await saved.boundingBox();
-      await evidence(page, `r5x-${look}`, { clip: { x: box.x - 12, y: Math.max(0, box.y - 12), width: box.width + 24, height: 520 } });
+      const top = Math.max(0, box.y - 230);
+      await evidence(page, `r5x-${look}`, { clip: { x: box.x - 12, y: top, width: box.width + 24, height: box.y + box.height + 12 - top } });
     }
   } finally {
     await clear();

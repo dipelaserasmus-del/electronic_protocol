@@ -22,7 +22,7 @@ at the left of the envelope.»
 
 | Air mail | Paper |
 |---|---|
-| ![Air mail: registered e-mail with the green stripe, the next one without](img/R5x/r5x-airmail.png) | ![Paper envelope with the green stripe](img/R5x/r5x-paper.png) |
+| ![Air mail: registered e-mail with the green stripe, the one above without](img/R5x/r5x-airmail.png) | ![Paper envelope with the green stripe](img/R5x/r5x-paper.png) |
 | **Plain** | **None** |
 | ![Plain envelope with the green stripe](img/R5x/r5x-plain.png) | ![No envelope: the card's green left border](img/R5x/r5x-none.png) |
 
@@ -30,12 +30,11 @@ at the left of the envelope.»
 - PHPUnit: `InboxTest::test_a_registered_email_is_marked_in_any_look`: nothing is marked before; after registering
   e-mail 1 and marking e-mail 2 read, only e-mail 1 is marked, in the air-mail look and in «none». The whole
   `InboxTest` is green (48 tests).
-- Browser (`inbox.spec.js`, R5x, last in the file): synthetic e-mail 06, which no other test uses, is registered, then
-  the look is switched from the user menu (air mail → paper → plain → none, without reloading). Each time the
+- Browser (`inbox.spec.js`, R5x): an invented e-mail added to the mock mailbox for this test only
+  (`98-registered-mark`, made by `docker/dev/make-emails.php`, not a fixture) is registered, then the look is switched from the user menu (air mail → paper → plain → none, without reloading). Each time the
   registered envelope has the green stripe (the Bootstrap success colour, wider than 6 px), no other e-mail on the page
-  is marked, and a screenshot is taken. It runs last because each registration leaves one e-mail fewer for the tests
-  before it (the first CI run, with the test in `inbox-envelopes.spec.js` registering the first e-mail, broke three
-  of them).
+  is marked, and a screenshot is taken. Its own e-mail because each registration leaves one e-mail fewer: in the first CI
+  runs, registering an e-mail other tests use broke them (R5a, R5j, R5o, then the smoke test's «at least 3»).
 
 ## Owner actions
 None. To try it: step 109 in [OWNER-TODO.md](../../OWNER-TODO.md).
