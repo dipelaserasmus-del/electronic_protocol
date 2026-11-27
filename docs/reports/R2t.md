@@ -16,6 +16,9 @@
   the column titles always meet it.
 - While rows go under it, a thin shadow at its bottom shows that it is fixed.
 - It covers the rows that go under it, so the filters and the page buttons stay clickable.
+- The lower pager used to scroll the upper pager into view to show the list's start. The upper pager is now always in
+  view, so on the list the lower pager scrolls to the top of the page instead (review finding). Other paged pages are
+  unchanged.
 - On small or low screens (under 768 px wide or 600 px high) it would leave too little room for the list. There it
   scrolls away as before, and the column titles stick under the top bar.
 
@@ -29,7 +32,9 @@
     - the column titles right under it;
     - the shadow on;
     - the point just above its bottom edge belongs to it, not to a row;
-    - a filter clicked while scrolled works; after a re-render it sticks again.
+    - a filter clicked while scrolled works; after a re-render it sticks again;
+    - from the bottom of the page, the lower pager's › goes to page 2 with the first rows in view. Without the fix the
+      page stayed 908 px down.
   - At 560 px high it scrolls away and the column titles meet the top bar.
   - **R2**: the column titles meet the head's bottom.
 

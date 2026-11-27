@@ -77,6 +77,14 @@ test('the list\'s head stays under the top bar, the column titles under it (R2t)
   await expect(head).toHaveClass(/is-stuck/);
   await evidence(page, 'r2t-scrolled', { clip: { x: 0, y: 0, width: 1440, height: 420 } });
 
+  // review of R2t: the lower pager brings the list's first rows into view (the upper pager is always in view now)
+  await page.locator('#pager-bottom').scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+  await page.locator('#pager-bottom [data-pager=next]').click();
+  await expect(page).toHaveURL(/[?&]page=2/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
+  await expect(page.locator('.protocol-row').first()).toBeInViewport();
+
   // a low window: it scrolls away, the column titles under the top bar as before
   await page.setViewportSize({ width: 1440, height: 560 });
   await page.mouse.wheel(0, 800);
