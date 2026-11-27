@@ -95,7 +95,7 @@
                                            :value="open ? query : label()" :placeholder="open ? 'Γράψτε κωδικό ή λέξη της περιγραφής' : 'Όλοι οι φάκελοι'"
                                            x-on:focus="show()" x-on:click="show()" x-on:input="input($event)" x-on:keydown="key($event)"
                                            x-on:blur="setTimeout(() => { if (! $root.contains(document.activeElement)) close() }, 150)">
-                                    <ul class="list-group shadow folder-list" id="s-folder-list" role="listbox" x-show="open" x-cloak>
+                                    <ul class="list-group shadow folder-list" id="s-folder-list" role="listbox" tabindex="-1" x-show="open" x-cloak>
                                         <template x-for="(f, n) in items" :key="'f' + f[0]">
                                             <li class="list-group-item list-group-item-action py-1" role="option" :aria-selected="n === active"
                                                 :class="{ active: n === active, 'fst-italic': isChoice(f) }" :data-folder-active="n === active ? '' : null" :title="f[1]"

@@ -1,5 +1,5 @@
 // R3h: direct links /protocol/N (this year) and /protocol/N/YYYY open the protocol's form; a missing / forbidden /
-// malformed link gets one «Δεν υπάρχει» page; the form's «Σύνδεσμος» pill copies the link.
+// malformed link gets one «Δεν υπάρχει» page. (The form's «Σύνδεσμος» pill was removed in R1q.)
 const { test, expect } = require('@playwright/test');
 const { login, evidence, fillProtocol, saveProtocol } = require('./helpers');
 
@@ -12,8 +12,7 @@ async function newProtocol(page) {
   return { num, year, form: new URL(page.url()).pathname };
 }
 
-test('a direct link opens the form; «Σύνδεσμος» copies it (R3h)', async ({ page, context }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+test('a direct link opens the form (R3h); no «Σύνδεσμος» in it (R1q)', async ({ page }) => {
   await login(page, 'admin');
   const { num, year, form } = await newProtocol(page);
 
@@ -22,13 +21,8 @@ test('a direct link opens the form; «Σύνδεσμος» copies it (R3h)', asy
   await page.goto(`/protocol/${num}`);   // this year
   await expect(page).toHaveURL(new RegExp(`${form}$`));
 
-  const pill = page.locator('[data-action=link]');
-  await expect(pill).toHaveText(/Σύνδεσμος/);
-  await pill.click();
-  await expect(pill).toHaveText(/Αντιγράφηκε/);
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(new URL(`/protocol/${num}/${year}`, page.url()).href);
-  await evidence(page, 'r3h-link-copied', { clip: { x: 0, y: 0, width: 1440, height: 420 } });
-  await expect(pill).toHaveText(/Σύνδεσμος/, { timeout: 5000 });   // the label comes back
+  // R1q (owner, 2026-11-27): the form no longer has «Σύνδεσμος»
+  await expect(page.locator('[data-action=link]')).toHaveCount(0);
 
   // a guest logs in first and then lands on the protocol
   await page.context().clearCookies();

@@ -243,7 +243,7 @@
                                                :value="open ? query : label()" :placeholder="open ? (label() || 'Γράψτε κωδικό ή λέξη της περιγραφής') : '—'"
                                                x-on:focus="show()" x-on:click="show()" x-on:input="input($event)" x-on:keydown="key($event)"
                                                x-on:blur="setTimeout(() => { if (! $root.contains(document.activeElement)) close() }, 150)">
-                                        <ul class="list-group shadow folder-list" id="folder-list-{{ $uid }}" role="listbox" x-show="open" x-cloak>
+                                        <ul class="list-group shadow folder-list" id="folder-list-{{ $uid }}" role="listbox" tabindex="-1" x-show="open" x-cloak>
                                             <template x-for="(f, n) in items" :key="f[0]">
                                                 <li class="list-group-item list-group-item-action py-1" role="option" :aria-selected="n === active"
                                                     :class="{ active: n === active }" :data-folder-active="n === active ? '' : null" :title="f[1]"
@@ -392,7 +392,7 @@
                                                        placeholder="{{ $x['keywords'] ? '' : 'π.χ. εκδρομή' }}"
                                                        x-on:keydown="key($event)" x-on:input="typed($event)" x-on:blur="left($event)">
                                             </div>
-                                            <ul class="list-group shadow tag-suggest" id="keywords-suggest-{{ $uid }}" role="listbox" x-show="items.length" x-cloak>
+                                            <ul class="list-group shadow tag-suggest" id="keywords-suggest-{{ $uid }}" role="listbox" tabindex="-1" x-show="items.length" x-cloak>
                                                 <template x-for="(it, n) in items" :key="it[0]">
                                                     <li class="list-group-item list-group-item-action py-1 d-flex justify-content-between gap-2" role="option"
                                                         :class="{ active: n === active }" :aria-selected="n === active"
