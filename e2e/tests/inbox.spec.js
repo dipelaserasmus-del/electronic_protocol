@@ -312,7 +312,10 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
   await message.locator('[data-action=register]').click();
   await expect(message.locator('.inbox-saving')).toBeVisible();
   await expect(message.locator('.inbox-saving')).toContainText('Καταχωρίζεται');
-  await expect(message.locator('[data-action=register] .spinner-border')).toBeVisible();
+  // R5y (owner, 2026-11-27): one spinner, in the notice; the pressed button only waits
+  await expect(message.locator('.inbox-saving .spinner-border')).toBeVisible();
+  await expect(message.locator('[data-action=register] .spinner-border')).toHaveCount(0);
+  await expect(message.locator('[data-action=register]')).toBeDisabled();
   await expect(other.locator('[data-action=register]')).toBeDisabled();   // one registration at a time
   await expect(other.locator('[data-action=mark-read]')).toBeDisabled();
   await expect(other.locator('.inbox-saving')).toBeHidden();
@@ -332,7 +335,7 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
     });
     await anyway.click();
     await expect(message.locator('.inbox-saving')).toBeVisible();
-    await expect(anyway.locator('.spinner-border')).toBeVisible();
+    await expect(anyway.locator('.spinner-border')).toHaveCount(0);   // R5y: the notice has the spinner
     await expect(anyway).toBeDisabled();
     again();
   }
@@ -342,10 +345,11 @@ test('registering says so until it is done; meanwhile no other e-mail can be reg
   await page.unroute('**/update');
 });
 
-// R5x (owner, 2026-11-26): a registered e-mail gets a green stripe down the left of its envelope, in every look (and the
-// card's left border in «Καμία»); the others on the page have none. Photographed in the four looks, without reloading.
+// R5x (owner, 2026-11-26): a registered e-mail is marked, in every look; the others on the page are not. R5y (owner,
+// 2026-11-27): the whole e-mail tinted green with a green border (and one round its envelope), and once it shrinks the
+// page follows it (its top just below the top bar). Photographed in the four looks, without reloading.
 // It registers the mock mailbox's 98-registered-mark (make-emails.php), there for this test only: the other tests keep theirs.
-test('a registered e-mail is marked with a green stripe on the left, in every look (R5x)', async ({ page }) => {
+test('a registered e-mail is tinted and bordered green, in every look, and stays in view (R5x, R5y)', async ({ page }) => {
   await login(page, 'writer');
   const clear = () => page.evaluate(async () => {
     const token = document.querySelector('meta[name="csrf-token"]').content;
@@ -366,16 +370,26 @@ test('a registered e-mail is marked with a green stripe on the left, in every lo
     const uid = await message.getAttribute('data-uid');
     const envelope = page.locator(`[wire\\:key="env-${uid}"]`);
     await expect(page.locator('.is-saved')).toHaveCount(0);
-    expect(await envelope.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('none');
+    expect(await envelope.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
 
     await message.locator(`#f-${uid}-fakelos`).click();
     await message.locator(`#folder-list-${uid} li[role=option]`).first().click();
+    // the buttons at the bottom of a low window, as when the form has just been filled: the e-mail's top out of view above
+    const size = page.viewportSize();
+    await page.setViewportSize({ width: size.width, height: 480 });
+    await message.locator('[data-action="register"]').evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+    expect((await envelope.boundingBox()).y).toBeLessThan(0);
     await message.locator('[data-action="register"]').click();
     const anyway = message.locator('[data-action="register-anyway"]');   // a run before left the same protocol
     const done = message.locator('.inbox-done');
     await expect(done.or(anyway)).toBeVisible();
     if (await anyway.isVisible()) await anyway.click();
     await expect(done).toContainText('Καταχωρίστηκε με αριθμό');
+    // R5y: the page followed the shorter e-mail: its envelope's top just below the top bar
+    const bar = await page.locator('.app-topbar').boundingBox();
+    await expect.poll(async () => (await envelope.boundingBox()).y).toBeGreaterThan(bar.y + bar.height - 2);
+    await expect.poll(async () => (await envelope.boundingBox()).y).toBeLessThan(bar.y + bar.height + 40);
+    await page.setViewportSize(size);
 
     for (const look of ['airmail', 'paper', 'plain', 'none']) {
       if (look !== 'airmail') await choose(look);
@@ -383,17 +397,18 @@ test('a registered e-mail is marked with a green stripe on the left, in every lo
       const saved = page.locator(`${look === 'none' ? '.inbox-noenvelope' : `.inbox-envelope-${look}`}[wire\\:key="env-${uid}"]`);
       await expect(saved).toHaveClass(/is-saved/);
       await expect(page.locator('.is-saved')).toHaveCount(1);   // only the registered one
-      if (look === 'none') {
-        await expect(saved.locator('.inbox-message')).toHaveCSS('border-left-color', green);
-      } else {
-        await expect.poll(() => saved.evaluate((el) => getComputedStyle(el, '::after').backgroundColor)).toBe(green);
-        expect(await saved.evaluate((el) => parseFloat(getComputedStyle(el, '::after').width))).toBeGreaterThan(6);
+      // the card: green all round, tinted; the envelope: a green line round it («Καμία» has none)
+      for (const side of ['top', 'right', 'bottom', 'left']) await expect(saved.locator('.inbox-message')).toHaveCSS(`border-${side}-color`, green);
+      await expect(saved.locator('.inbox-message')).toHaveCSS('background-color', 'rgb(209, 231, 221)');   // --bs-success-bg-subtle
+      if (look !== 'none') {
+        await expect(saved).toHaveCSS('outline-color', green);
+        await expect(saved).toHaveCSS('outline-style', 'solid');
       }
       // with the end of the e-mail above (not marked), for comparison
       await saved.evaluate((el) => { el.scrollIntoView({ block: 'end', behavior: 'instant' }); window.scrollBy({ top: 60, behavior: 'instant' }); });
       const box = await saved.boundingBox();
       const top = Math.max(0, box.y - 230);
-      await evidence(page, `r5x-${look}`, { clip: { x: box.x - 12, y: top, width: box.width + 24, height: box.y + box.height + 12 - top } });
+      await evidence(page, `r5y-${look}`, { clip: { x: box.x - 12, y: top, width: box.width + 24, height: box.y + box.height + 12 - top } });
     }
   } finally {
     await clear();
@@ -407,8 +422,15 @@ test('a done e-mail folds: «Εμφάνιση email» opens it again, «Επόμ
   await first.locator('[data-action=mark-read]').click();
   await expect(first.locator('.inbox-done')).toContainText('Μεταφέρθηκε στα αναγνωσμένα');
   await expect(first.locator('.inbox-mail')).toBeHidden();
+  // R5y (owner, 2026-11-27): moved to «Αναγνωσμένα»: tinted and bordered grey, and in view
+  const box = page.locator(`[wire\\:key="env-${await first.getAttribute('data-uid')}"]`);
+  await expect(box).toHaveClass(/is-read/);
+  await expect(first).toHaveCSS('border-top-color', 'rgb(108, 117, 125)');   // --bs-secondary
+  await expect(first).toHaveCSS('background-color', 'rgb(226, 227, 229)');  // --bs-secondary-bg-subtle
+  await expect(first).toBeInViewport();
   await first.scrollIntoViewIfNeeded();
   await evidence(page, 'r5l-folded');
+  await evidence(page, 'r5y-read', { clip: await box.boundingBox() });
   await first.locator('[data-action=show-mail]').click();
   await expect(first.locator('.inbox-mail')).toBeVisible();
   await first.locator('[data-action=show-mail]').click();

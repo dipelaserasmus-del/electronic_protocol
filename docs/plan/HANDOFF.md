@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-27 10:10 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p and R4q; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-27 10:10 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p, R5y and R4q; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R5y (owner, 2026-11-27):** email-inbox: no spinner in the register / receipt / «Ναι, καταχώριση» buttons; envelope classes `is-saved` / `is-read` (CSS variables `--inbox-mark`, `--inbox-tint`: Bootstrap theme colours); `EmailInbox` dispatches `inbox-done` after register / markRead, inbox.js `followDone()` scrolls the envelope to the top.
 - **R4q (owner, 2026-11-27):** `Preview::CONVERTED` + `eml => mail`, `Preview::mail()` (MailParser / MailContent: headers table, `<style>` + body kept, script / iframe / object / meta / base / link removed; the page's CSP loads nothing remote; up to MAX_MAIL_BYTES 40 MB); protocol-list: `<x-preview-button>` per file (group `list-<id>`), the stamp's corner read once (`stampCorner` prop, `StampedCopy::place($a, $corner)`); `.col-files` 17rem (narrow 9.5rem).
 - **R4p (owner, 2026-11-27):** `attachments.stamp_opaque` (migration 2026_11_27_000001); `Stamp::opaque()` puts the drawing on white; `StampedCopy` key + `'o'`; the stamp-place endpoint takes `opaque` too (alone or with `place`); preview window: `#preview-opacity` (`data-stamp-opaque`), button data `data-preview-opaque`.
 - **R1p (owner, 2026-11-26):** `ProtocolForm::suggestedKeywords()` (KeywordSuggestions::for with the subject, the uploads' and saved attachments' names, the inbox's caches); view `#keyword-suggestions` buttons → addTag('keywords', word).
@@ -396,6 +397,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-27 09:31 | R5y | #157 | inbox: one spinner; registered green, read grey; the page follows the e-mail |
 | 2026-11-27 10:10 | R4q | #158 | e-mail files previewed; 👁 in the list |
 | 2026-11-27 09:04 | R4p | #156 | the stamp see-through or opaque per file |
 | 2026-11-26 13:08 | R1p | #154 | keyword suggestions in the protocol form |

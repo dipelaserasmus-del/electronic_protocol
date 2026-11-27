@@ -331,6 +331,7 @@ class EmailInbox extends Component
         $p = $result->protocol;
         $this->done[$uid] = ['type' => 'registered', 'protocol_id' => $p->id, 'label' => "{$p->protocolnum}/{$p->etos}",
             'messages' => $result->messages, 'warnings' => $result->warnings, 'files' => $result->attachmentsAdded];
+        $this->dispatch('inbox-done', uid: $uid);   // R5y: the page follows the e-mail, now much shorter
     }
 
     /** "Αναγνωσμένο": the e-mail leaves the inbox for the beenRead folder, without a protocol. */
@@ -359,6 +360,7 @@ class EmailInbox extends Component
         }
         $this->leftInbox();
         $this->done[$uid] = ['type' => 'read'];
+        $this->dispatch('inbox-done', uid: $uid);   // R5y
     }
 
     /**

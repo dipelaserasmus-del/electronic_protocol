@@ -198,7 +198,17 @@ function showRefusal(uid) {
     const focusable = target.matches('input, textarea, select') ? target : target.querySelector('input, textarea, select, button');
     focusable?.focus({ preventScroll: true });
 }
+// R5y (owner, 2026-11-27): registered or moved to «Αναγνωσμένα»: the e-mail shrinks at once (its form goes); the page
+// follows it, its top just below the top bar, so the eye does not have to look for it
+function followDone(uid) {
+    const message = document.getElementById(`msg-${uid}`);
+    const box = message?.closest('.inbox-envelope, .inbox-noenvelope') ?? message;
+    if (!box) return;
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    box.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'instant' });
+}
 document.addEventListener('livewire:init', () => {
+    window.Livewire.on('inbox-done', ({ uid }) => requestAnimationFrame(() => followDone(uid)));   // after the page is updated
     window.Livewire.on('inbox-register-refused', ({ uid }) => requestAnimationFrame(() => showRefusal(uid)));   // after the page is updated
 });
 document.addEventListener('click', (e) => {

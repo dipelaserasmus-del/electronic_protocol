@@ -208,12 +208,15 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .inbox-envelope-plain::before { content: ""; display: block; height: 6px; margin: 0 -.5rem .1rem;
     background: repeating-linear-gradient(90deg, #c8102e 0 18px, transparent 18px 26px, #0b3d91 26px 44px, transparent 44px 52px); border-radius: .6rem .6rem 0 0; }
 .inbox-envelope-plain .inbox-envelope-n { color: var(--bs-secondary-color); }
-// R5x (owner, 2026-11-26): a registered e-mail: a green stripe down the left, in the envelope's own margin (each look keeps
-// its colours); «none»: the card's left border
-.inbox-envelope.is-saved { padding-left: .6rem; }
-.inbox-envelope.is-saved::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: .6rem; z-index: 3;
-    background: var(--bs-success); border-radius: .6rem 0 0 .6rem; pointer-events: none; }
-.inbox-noenvelope.is-saved > .inbox-message { border-left: .6rem solid var(--bs-success); }
+// R5x / R5y (owner, 2026-11-27): a registered e-mail: the whole e-mail tinted green, a green border round it, and round
+// its envelope (each look keeps its own pattern inside); moved to «Αναγνωσμένα»: the same in grey. Bootstrap's theme
+// colours, so a dark theme gets its own shades.
+.inbox-envelope, .inbox-noenvelope { scroll-margin-top: calc(var(--app-topbar-height, 3.2rem) + .75rem); }
+.is-saved { --inbox-mark: var(--bs-success); --inbox-mark-rgb: var(--bs-success-rgb); --inbox-tint: var(--bs-success-bg-subtle); }
+.is-read { --inbox-mark: var(--bs-secondary); --inbox-mark-rgb: var(--bs-secondary-rgb); --inbox-tint: var(--bs-secondary-bg-subtle); }
+.inbox-envelope:is(.is-saved, .is-read) { outline: 3px solid var(--inbox-mark); outline-offset: 2px; }
+:is(.is-saved, .is-read) > .inbox-message { --bs-card-bg: var(--inbox-tint); border: 2px solid var(--inbox-mark); }
+:is(.is-saved, .is-read) > .inbox-message.is-done > .card-header { background: rgba(var(--inbox-mark-rgb), .18); }
 // R5o (owner, 2026-11-23): each e-mail's header lavender, as its preview (apart from the next one); done: green
 .inbox-message > .inbox-message-head { background: rgba(111, 66, 193, .12); }
 .inbox-message.is-done > .card-header { background: rgba(var(--bs-success-rgb), .08); }
