@@ -474,4 +474,21 @@ class ProtocolListTest extends FeatureTestCase
         $this->assertSame('σύντομο.pdf', \App\Support\FileBadge::shortName('σύντομο.pdf'));
         $this->assertSame(24, mb_strlen(\App\Support\FileBadge::shortName(str_repeat('α', 40))));
     }
+
+    /** R2u (owner, 2026-11-27): each filter says what it shows (Δικά μου vs Καταχωρίσεις); a file's size after its name */
+    public function test_the_filters_explain_themselves_and_the_size_follows_the_name(): void
+    {
+        $this->assertSame(array_keys(ProtocolList::FILTERS), array_keys(ProtocolList::FILTER_HELP));
+        $p = Protocol::factory()->number(9)->create();
+        $a = \App\Models\Attachment::factory()->withFile()->create(['protocol_id' => $p->id, 'name' => 'απόφαση.pdf', 'size' => 2048]);
+        $html = Livewire::actingAs($this->admin())->test(ProtocolList::class)->html();
+        $this->assertStringContainsString('data-filter="m"', $html);
+        $this->assertMatchesRegularExpression('~data-filter="m"[^>]*title="Όσα καταχωρίσατε εσείς ή σας έχουν ανατεθεί~u', preg_replace('/\s+/', ' ', $html));
+        $this->assertMatchesRegularExpression('~data-filter="a"[^>]*title="Μόνο όσα καταχωρίσατε εσείς~u', preg_replace('/\s+/', ' ', $html));
+        // the type before 👁 has no size; the size follows the name, dimmed
+        $size = \App\Support\FileBadge::size($a->fresh()->size);
+        $this->assertNotSame('', $size);
+        $this->assertMatchesRegularExpression('~class="[^"]*attachment-link"[^>]*>.*?</a>\s*(?:<!--.*?-->\s*)*<small class="attachment-size text-body-tertiary[^"]*">' . preg_quote($size, '~') . '</small>~su', $html);
+        $this->assertMatchesRegularExpression('~<span class="file-badge[^"]*">\s*<span class="badge[^>]*>PDF</span>\s*(?:<!--.*?-->\s*)*</span>~u', $html, 'the type alone');
+    }
 }

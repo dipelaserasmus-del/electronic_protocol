@@ -107,7 +107,8 @@ body:not(.layout-narrow) .width-steps { display: none !important; }
 // R2t (owner, 2026-11-27): the list's head (title, gaps notice, filters, pager) stays under the top bar, the column titles
 // under it; not on small or low screens, where it would leave too little room for the list
 @media (min-width: 768px) and (min-height: 600px) {
-    .list-head { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 4; background: var(--bs-body-bg);
+    // R2u (owner, 2026-11-27): the page's own background (the body is bg-body-tertiary), so it blends in
+    .list-head { position: sticky; top: var(--app-topbar-height, 3.2rem); z-index: 4; background: var(--bs-tertiary-bg);
         margin-top: -.5rem; padding-top: .5rem; }
     .list-head.is-stuck { box-shadow: 0 6px 6px -6px rgba(0, 0, 0, .25); }
     .protocol-list .table-sticky thead th { top: calc(var(--app-topbar-height, 3.2rem) + var(--list-head-height, 0px)); }
@@ -416,6 +417,8 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
     border-radius: 4px; background: var(--bs-primary); }
 .settings-section > .setting:last-of-type { margin-bottom: .5rem; }
 
+// R2u: the list's file line: the type, 👁, the name (the name shortens, the others keep their size)
+.protocol-table .attachment-link { min-width: 0; }
 // R1q (owner, 2026-11-27): a file added but not saved yet: the whole line tinted (theme colours), «ΝΕΟ» before it
 .upload-row { background: var(--bs-warning-bg-subtle); border-left: 4px solid var(--bs-warning) !important; border-radius: .25rem; margin-bottom: 2px; }
 .upload-new { letter-spacing: .04em; }

@@ -137,7 +137,7 @@ test('a user chosen under "Όλα" filters the list; busy users first; file name
   const row = page.locator('.protocol-row', { hasText: subject });
   await expect(row).toBeVisible();
   // attachments column: the start of the name and the extension; the whole name on hover
-  const name = row.locator('.attachment-name a');
+  const name = row.locator('.attachment-name a.attachment-link');
   await expect(name).toContainText('Πρόσκληση_σε_επιμορ….pdf');
   await expect(name).toHaveAttribute('title', file);
   await evidence(page, 'r2b-user-menu-and-file-names', { clip: { x: 0, y: 0, width: 1440, height: 520 } });
@@ -154,7 +154,7 @@ test('a user chosen under "Όλα" filters the list; busy users first; file name
 
   // the detailed view: the whole file name, who registered it
   await page.locator('#list-detailed').check();
-  await expect(row.locator('.attachment-name a')).toContainText(file);
+  await expect(row.locator('.attachment-name a.attachment-link')).toContainText(file);
   await expect(row.locator('.detailed')).toContainText('Καταχώριση: Συγγραφέας Δοκιμών');
   await evidence(page, 'r2b-detailed', { clip: { x: 0, y: 0, width: 1440, height: 620 } });
   await page.locator('#list-detailed').uncheck();
@@ -651,4 +651,40 @@ test('the e-mail file comes after the attachments, by its date and time (R2r)', 
   await expect(names.nth(1).locator('.badge')).toHaveText('EML');
   const box = await row.boundingBox();
   await evidence(page, 'r2r-email-last', { clip: { x: 0, y: box.y - 10, width: 1440, height: box.height + 20 } });
+});
+
+// R2u (owner, 2026-11-27): in the list, as in the form, a file's line is: its type, 👁, its name; the fixed head has the
+// page's own background (it showed as a lighter band)
+test('a file\'s 👁 comes before its name, its size after it; the filters explain themselves; the fixed head blends with the page (R2u)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const thema = `R2u σειρά ${Date.now()}`;
+  await page.goto('/home');
+  await fillProtocol(page, { thema, fakelos: 'first' });
+  await page.setInputFiles('#f-uploads', { name: 'Πρόσκληση.txt', mimeType: 'text/plain', buffer: Buffer.from('Καλημέρα') });
+  await expect(page.locator('.upload-row')).toHaveCount(1);
+  await saveProtocol(page);
+  await page.goto('/home/list');
+  const line = page.locator('tr.protocol-row', { hasText: thema }).locator('.attachment-name').first();
+  const badge = await line.locator('.file-badge').boundingBox();
+  const eye = await line.locator('.preview-button').boundingBox();
+  const name = await line.locator('a.attachment-link').boundingBox();
+  expect(badge.x).toBeLessThan(eye.x);
+  expect(eye.x).toBeLessThan(name.x);
+  // the size after the name, dimmed; the type alone before it
+  const size = line.locator('.attachment-size');
+  await expect(size).toHaveText('16 B');   // «Καλημέρα» in UTF-8
+  expect((await size.boundingBox()).x).toBeGreaterThan(name.x + name.width - 1);
+  await expect(line.locator('.file-badge')).not.toContainText('B');
+  expect(await size.evaluate((el) => getComputedStyle(el).color)).not.toBe(await line.locator('a.attachment-link').evaluate((el) => getComputedStyle(el).color));
+  // the filters explain themselves
+  await expect(page.locator('[data-filter=m]')).toHaveAttribute('title', /ανατεθεί/);
+  await expect(page.locator('[data-filter=a]')).toHaveAttribute('title', /Μόνο όσα καταχωρίσατε εσείς/);
+  await evidence(page, 'r2u-file-line', { clip: await page.locator('tr.protocol-row', { hasText: thema }).boundingBox() });
+
+  const colour = (sel) => page.locator(sel).evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(await colour('#list-head')).toBe(await colour('body'));
+  await page.mouse.wheel(0, 2000);
+  await expect(page.locator('#list-head')).toHaveClass(/is-stuck/);
+  await evidence(page, 'r2u-head', { clip: { x: 0, y: 0, width: 1440, height: 330 } });
 });
