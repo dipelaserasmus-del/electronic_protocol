@@ -207,6 +207,11 @@
                                            title="{{ $a->name }}"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" />
                                             <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($shown) }}</span>
                                             <span x-show="detailed || open" x-cloak class="text-break">{{ $shown }}</span></a>
+                                        {{-- R4q (owner, 2026-11-27): 👁 here too; ‹ › go through this protocol's files --}}
+                                        @php $stampCorner ??= \App\Services\Stamp\StampTemplate::current()->corner; @endphp
+                                        <x-preview-button class="position-relative z-2 flex-shrink-0" :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)"
+                                                          :group="'list-'.$p->id" :stamp-in-file="(bool) $a->stamp_in_file" :stampable="\App\Services\Stamp\StampedCopy::applies($a)"
+                                                          :stamp-place="$a" :stamp-corner="$stampCorner" />
                                     @endif
                                     @if ($a->ada && ! $a->savedPath)
                                         {{-- R2p (owner, 2026-11-25): only an ΑΔΑ: a pill «ΑΔΑ», then its code as the link (as a file's name), as R1m --}}

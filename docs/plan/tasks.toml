@@ -192,6 +192,7 @@ tasks = [
   { id = "R4o", title = "The stamp on JPG and PNG pictures (as an A4 page; EXIF orientation; per-file place)", phase = "R", batch = 9.7, size = "S", deps = ["R4n"], status = "done", pr = 153 },
   { id = "R4p", title = "The stamp see-through or opaque per file (chosen in the preview, for every user)", phase = "R", batch = 9.7, size = "S", deps = ["R4n"], status = "done", pr = 156 },
   { id = "R5y", title = "Inbox: one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it", phase = "R", batch = 9.7, size = "S", deps = ["R5x"], status = "done", pr = 157 },
+  { id = "R4q", title = "Preview of e-mail files (.eml); 👁 next to each file in the protocol list", phase = "R", batch = 9.7, size = "S", deps = ["R4c"], status = "done", pr = 158 },
   { id = "R1p", title = "Protocol form: keywords offered from the subject (on leaving Θέμα) and the files' names", phase = "R", batch = 9.7, size = "S", deps = ["R5d"], status = "done", pr = 154 },
   { id = "R5x", title = "Inbox: a registered e-mail's envelope gets a green stripe on the left", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 155 },
 

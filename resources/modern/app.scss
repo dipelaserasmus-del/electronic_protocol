@@ -272,14 +272,14 @@ body.sorting .form-zone { min-height: 4rem; outline: 2px dashed rgba(var(--bs-pr
 .protocol-table .col-folder { width: 6.5rem; }
 .protocol-table .col-from { width: 18%; }
 .protocol-table .col-assign { width: 11rem; }
-.protocol-table .col-files { width: 15rem; }
+.protocol-table .col-files { width: 17rem; }   // R4q: room for 👁 (Θέμα takes what is left)
 .protocol-table .col-actions { width: 4.75rem; }
 // review of R2i: on medium screens the fixed columns are narrower, so the subject keeps room (≥ 14rem at 768px)
 @media (max-width: 1199.98px) {
     .protocol-table .col-number { width: 6.5rem; }
     .protocol-table .col-folder { width: 4.5rem; }
     .protocol-table .col-assign { width: 8rem; }
-    .protocol-table .col-files { width: 8rem; }
+    .protocol-table .col-files { width: 9.5rem; }
 }
 .protocol-table td { overflow-wrap: anywhere; }
 // review of R2k: only the protocol list (.protocol-table) has ▾ to open a row; the search results show everything

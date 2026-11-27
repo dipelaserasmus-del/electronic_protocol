@@ -10,8 +10,10 @@
     R4n (owner, 2026-11-26): "stampPlace" (the attachment, when stampable) adds the stamp's place on this file and the
     address that changes it: the window then offers ↖ ↑ ↗ (top left, centre, right) next to «Με σφραγίδα».
     R4p (owner, 2026-11-27): and whether the stamp is opaque on this file (the same address): see-through / opaque.
+    R4q: "stampCorner" (the stamp's own corner, read once by a page with many files, e.g. the list), so that each button
+    does not read the stamp's settings again.
 --}}
-@props(['name' => null, 'download', 'preview', 'group' => null, 'stampInFile' => false, 'stampable' => false, 'stampPlace' => null])
+@props(['name' => null, 'download', 'preview', 'group' => null, 'stampInFile' => false, 'stampable' => false, 'stampPlace' => null, 'stampCorner' => null])
 @php
     $kind = \App\Services\Attachments\Preview::kind($name);
     $src = match (true) {
@@ -28,6 +30,6 @@
 <button type="button" {{ $attributes->class(['btn btn-sm btn-link p-0 text-body-secondary preview-button']) }}
         data-preview-kind="{{ $kind ?? 'none' }}" data-preview-src="{{ $src }}" data-preview-download="{{ $download }}"
         data-preview-name="{{ $name }}" @if ($group) data-preview-group="{{ $group }}" @endif @if ($stampInFile) data-preview-stamp="in-file" @endif @if ($stampable) data-preview-stampable="1" @endif
-        @if ($stampable && $stampPlace instanceof \App\Models\Attachment) data-preview-place="{{ \App\Services\Stamp\StampedCopy::place($stampPlace) }}" data-preview-place-url="{{ url('/attachments/'.$stampPlace->id.'/stamp-place') }}" data-preview-opaque="{{ $stampPlace->stamp_opaque ? '1' : '0' }}" @endif
+        @if ($stampable && $stampPlace instanceof \App\Models\Attachment) data-preview-place="{{ \App\Services\Stamp\StampedCopy::place($stampPlace, $stampCorner) }}" data-preview-place-url="{{ url('/attachments/'.$stampPlace->id.'/stamp-place') }}" data-preview-opaque="{{ $stampPlace->stamp_opaque ? '1' : '0' }}" @endif
         title="Προεπισκόπηση" aria-label="Προεπισκόπηση του «{{ $name }}»"><i class="bi bi-eye" aria-hidden="true"></i></button>
 @endif
