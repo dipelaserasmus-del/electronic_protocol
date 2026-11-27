@@ -17,7 +17,7 @@ class SettingsPageTest extends FeatureTestCase
 {
     public function test_only_administrators_open_the_pages(): void
     {
-        $this->actingAs($this->admin())->get('/settings')->assertOk()->assertSee('Λίστες και αναζήτηση')->assertSee('Συντήρηση');
+        $this->actingAs($this->admin())->get('/settings')->assertOk()->assertSee('Λίστες και αναζήτηση')->assertSee('Ειδοποιήσεις')->assertDontSee('Συντήρηση');
         $this->actingAs($this->admin())->get('/arxeio')->assertOk()->assertSee('Εκκαθάριση αρχείου');
         $this->actingAs($this->admin())->get('/backups')->assertOk()->assertSee('Αντίγραφα ασφαλείας');
         foreach ([$this->assigner(), $this->writer(), $this->reader()] as $u) {
