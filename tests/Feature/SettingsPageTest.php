@@ -218,6 +218,27 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertFalse(Config::where('key', 'searchField1')->exists());
     }
 
+    /** R6m (owner, 2026-11-27): the rows of the two settings moved to .env say so, with the old value kept */
+    public function test_rows_of_settings_moved_to_env_say_where_they_went(): void
+    {
+        $migration = require base_path('database/migrations/2026_11_27_000002_settings_moved_to_env.php');
+        DB::table('configs')->where('key', 'mysqldumpPath')->delete();
+        Config::setConfigValueOf('maxRowsInXlsExport', '700');
+        $migration->up();
+        $migration->up();   // twice: nothing more happens
+        $this->assertSame('Δεν χρησιμοποιείται πια: ορίζεται στο .env ως MYSQLDUMP_PATH (δείτε το .env.example).',
+            (string) Config::getConfigValueOf('mysqldumpPath'));
+        $this->assertSame('Δεν χρησιμοποιείται πια: ορίζεται στο .env ως PRINT_MAX_ROWS (δείτε το .env.example). Παλιά τιμή: 700',
+            (string) Config::getConfigValueOf('maxRowsInXlsExport'));
+        $this->assertSame(5000, \App\Services\Printing\PrintRange::limit(), 'the row is not read');
+        $this->assertStringContainsString("MYSQLDUMP_PATH=\n", file_get_contents(base_path('.env.example')));
+        $this->assertStringContainsString("PRINT_MAX_ROWS=5000\n", file_get_contents(base_path('.env.example')));
+
+        $migration->down();
+        $this->assertSame('700', (string) Config::getConfigValueOf('maxRowsInXlsExport'));
+        $this->assertFalse(Config::where('key', 'mysqldumpPath')->exists());
+    }
+
     /** R6c: the inbox list of users is whole usernames (it was a substring check) */
     public function test_inbox_users_are_whole_usernames(): void
     {
@@ -227,6 +248,13 @@ class SettingsPageTest extends FeatureTestCase
         $this->setting('allowedEmailUsers', 'nikos, maria');
         $this->assertFalse(InboxAccess::allows($nik));
         $this->assertTrue(InboxAccess::allows($nikos));
+        // R6m (owner, 2026-11-27): an administrator always has the inbox, listed or not (but not without an account)
+        $admin = $this->admin();
+        $this->assertTrue(InboxAccess::allows($admin));
+        $this->actingAs($admin)->get('/inbox')->assertOk();
+        $this->setting('defaultImapEmail', '');
+        $this->assertFalse(InboxAccess::allows($admin));
+        $this->setting('defaultImapEmail', 'default');
         $this->setting('allowedEmailUsers', '');
         $this->assertTrue(InboxAccess::allows($nik));
     }

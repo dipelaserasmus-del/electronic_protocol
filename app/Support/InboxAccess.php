@@ -10,6 +10,7 @@ use App\Models\User;
  * the user's username appears in it. Used by the ProtocolEmail middleware and the top bar (N03), so both agree.
  * The list is usernames separated by spaces or commas, compared whole and without case (R6c; it was a substring
  * match: "anna" also passed with "annab" in the list).
+ * R6m (owner, 2026-11-27): administrators always may, whether or not the list names them.
  */
 final class InboxAccess
 {
@@ -17,6 +18,9 @@ final class InboxAccess
     {
         if (! Config::getConfigValueOf('defaultImapEmail')) {
             return false;
+        }
+        if ($user->role?->role === Roles::ADMIN) {
+            return true;   // R6m: the list never shuts an administrator out
         }
         $allowed = Config::getConfigValueOf('allowedEmailUsers');
 
