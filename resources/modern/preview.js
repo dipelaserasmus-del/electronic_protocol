@@ -14,13 +14,14 @@ const read = (button) => ({
     stampable: button.dataset.previewStampable === '1',       // R5t: «Με σφραγίδα» only where a stamp can be put
     place: button.dataset.previewPlace ?? '',                 // R4n: the stamp's place on this file
     placeUrl: button.dataset.previewPlaceUrl ?? '',
+    opaque: button.dataset.previewOpaque === '1',             // R4p: the stamp opaque on this file
     button,
 });
 
 let items = [];
 let index = 0;
 let stampVersion = 0;
-let saving = false;   // R4n: a stamp place being saved
+let saving = false;   // R4n: a stamp place (R4p: or its opacity) being saved
 
 const $ = (id) => document.getElementById(id);
 
@@ -79,17 +80,22 @@ function show() {
     body.replaceChildren(content);
 }
 
-// R4n: ↖ ↑ ↗ for a file that takes the stamp, while «Με σφραγίδα» is on; the file's place pressed
+// R4n: ↖ ↑ ↗ for a file that takes the stamp, while «Με σφραγίδα» is on; the file's place pressed.
+// R4p: next to them, see-through / opaque, in the same way
 function showPlace(item) {
-    const group = $('preview-place');
-    if (!group) return;
     const stampOn = document.querySelector('[data-stamp-toggle]')?.checked ?? false;
-    group.hidden = !(item.stampable && item.placeUrl && stampOn);
-    group.querySelectorAll('[data-stamp-place]').forEach((b) => {
-        const on = b.dataset.stampPlace === item.place;
-        b.classList.toggle('active', on);
-        b.setAttribute('aria-pressed', String(on));
-    });
+    const visible = item.stampable && item.placeUrl && stampOn;
+    const press = (b, on) => { b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); };
+    const group = $('preview-place');
+    if (group) {
+        group.hidden = !visible;
+        group.querySelectorAll('[data-stamp-place]').forEach((b) => press(b, b.dataset.stampPlace === item.place));
+    }
+    const opacity = $('preview-opacity');
+    if (opacity) {
+        opacity.hidden = !visible;
+        opacity.querySelectorAll('[data-stamp-opaque]').forEach((b) => press(b, (b.dataset.stampOpaque === '1') === item.opaque));
+    }
 }
 
 function step(by) {
@@ -112,22 +118,25 @@ document.addEventListener('click', (e) => {
     Modal.getOrCreateInstance($('preview-modal')).show();
 });
 
-// R4n: a place chosen: saved for the file (for every user), the PDF shown again with the stamp there
+// R4n: a place chosen (R4p: or see-through / opaque): saved for the file (for every user), shown again with it
 document.addEventListener('click', async (e) => {
-    const choice = e.target.closest?.('[data-stamp-place]');
+    const choice = e.target.closest?.('[data-stamp-place], [data-stamp-opaque]');
     const item = items[index];
-    if (!choice || !item?.placeUrl) return;
-    const place = choice.dataset.stampPlace;
-    if (place === item.place || saving) return;
+    if (!choice || !item?.placeUrl || saving) return;
+    const change = 'stampPlace' in choice.dataset
+        ? { place: choice.dataset.stampPlace }
+        : { opaque: choice.dataset.stampOpaque === '1' };
+    if (change.place === item.place || change.opaque === item.opaque) return;
     // review of R4n: one save at a time (the buttons wait), so a quick second click never loses to the first
     saving = true;
-    const group = $('preview-place');
-    group.setAttribute('aria-busy', 'true');
-    group.querySelectorAll('[data-stamp-place]').forEach((b) => { b.disabled = true; });
+    const buttons = document.querySelectorAll('#preview-place [data-stamp-place], #preview-opacity [data-stamp-opaque]');
+    const groups = [$('preview-place'), $('preview-opacity')].filter(Boolean);
+    groups.forEach((g) => g.setAttribute('aria-busy', 'true'));
+    buttons.forEach((b) => { b.disabled = true; });
     const done = () => {
         saving = false;
-        group.removeAttribute('aria-busy');
-        group.querySelectorAll('[data-stamp-place]').forEach((b) => { b.disabled = false; });
+        groups.forEach((g) => g.removeAttribute('aria-busy'));
+        buttons.forEach((b) => { b.disabled = false; });
     };
     const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
     let ok = false;
@@ -135,17 +144,25 @@ document.addEventListener('click', async (e) => {
         const r = await fetch(item.placeUrl, {
             method: 'POST', credentials: 'same-origin',
             headers: { 'X-CSRF-TOKEN': token, Accept: 'application/json', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ place }),
+            body: JSON.stringify(change),
         });
         ok = r.ok;
     } catch { ok = false; }
     done();
     if (!ok) {
-        window.appToast?.('Η θέση της σφραγίδας δεν αποθηκεύτηκε. Δοκιμάστε ξανά.', 'danger');
+        window.appToast?.('place' in change
+            ? 'Η θέση της σφραγίδας δεν αποθηκεύτηκε. Δοκιμάστε ξανά.'
+            : 'Η επιλογή διάφανη / αδιαφανής δεν αποθηκεύτηκε. Δοκιμάστε ξανά.', 'danger');
         return;
     }
-    item.place = place;
-    item.button.dataset.previewPlace = place;   // the 👁 opens it so next time too
+    // the 👁 opens it so next time too
+    if ('place' in change) {
+        item.place = change.place;
+        item.button.dataset.previewPlace = change.place;
+    } else {
+        item.opaque = change.opaque;
+        item.button.dataset.previewOpaque = change.opaque ? '1' : '0';
+    }
     stampVersion++;
     show();
 });
@@ -175,6 +192,6 @@ document.addEventListener('change', async (e) => {
     stampVersion++;
     if ($('preview-modal')?.classList.contains('show') && items[index]) {
         if (['pdf', 'image'].includes(items[index].kind)) show();   // R4o: pictures too
-        else showPlace(items[index]);   // R4n: ↖ ↑ ↗ only while «Με σφραγίδα» is on
+        else showPlace(items[index]);   // R4n: ↖ ↑ ↗ (R4p: and see-through / opaque) only while «Με σφραγίδα» is on
     }
 });

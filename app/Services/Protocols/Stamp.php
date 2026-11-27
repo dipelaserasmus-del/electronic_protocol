@@ -68,6 +68,23 @@ final class Stamp
         }
     }
 
+    /**
+     * R4p (owner, 2026-11-27): the whole stamp on opaque white (frame, emblem, every line), so nothing printed under it
+     * shows through; otherwise it stays as drawn: see-through, the number and date lines on white (R4k).
+     */
+    public function opaque(bool $on): void
+    {
+        if (! $on || $this->image === null) {
+            return;
+        }
+        [$w, $h] = [imagesx($this->image), imagesy($this->image)];
+        $img = imagecreatetruecolor($w, $h);
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
+        imagealphablending($img, true);
+        imagecopy($img, $this->image, 0, 0, 0, 0, $w, $h);
+        $this->image = $img;
+    }
+
     public function ready(): bool
     {
         return $this->image !== null;
