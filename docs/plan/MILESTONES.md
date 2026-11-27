@@ -22,7 +22,7 @@ Where the project stands:
   administration (users, folders, settings, logs, backup), printing. Summaries: `docs/reports/BATCH-*.md`.
 - **Platform:** Laravel 13, PHP 8.5 (Ubuntu 26.04 image), MySQL only, utf8mb4; `composer audit` clean
   (versions: `docs/reports/VERSIONS.md`).
-- **Tests:** 656 PHPUnit tests on MySQL, 145 Playwright browser tests in 33 specs; CI runs both (plus `dev.sh` on
+- **Tests:** 722 PHPUnit tests on MySQL, 148 Playwright browser tests in 33 specs; CI runs both (plus `dev.sh` on
   Linux and macOS).
 - **Feature guides:** `docs/SETTINGS.md`, `docs/RELATED-NUMBERS.md`, `docs/FOLDERS.md`.
 - **Still to do (Batch 10):** A01, A03–A06 (integrity checks), X01–X02 (audit log), Z01 (remove the old code),
