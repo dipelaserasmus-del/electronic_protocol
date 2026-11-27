@@ -404,7 +404,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-28 00:34 | M1 | #167 | milestone M1 (tags M0, M1); docs checked: DEVELOPMENT.md commands, Batch 10 order with V02 / Z04 |
+| 2026-11-28 00:34 | M1 | #167 | milestone M1 (tags M0, M1); docs checked: DEVELOPMENT.md commands, Batch 10 order with V02 / Z04; e2e: browser and test dates in Greek time (CI failed after 00:00 Greek time: UTC still the day before) |
 | 2026-11-27 19:41 | Batch 9.7 | — | summary BATCH-9.7.md; settings spreadsheet deleted (the planner replaces it) |
 | 2026-11-27 14:20 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path, print limit and time zone in .env; field suggestions on the page; docs/SETTINGS.md |
 | 2026-11-27 13:56 | V01b | #164 | VERSIONS.md: tooltip descriptions (link titles → «What each component does») + forecast for after Batch 10; artifact page updated |

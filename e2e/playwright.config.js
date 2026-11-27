@@ -4,6 +4,10 @@
 //   EVIDENCE=B04 ./dev.sh e2e          also save screenshots to docs/reports/img/B04/
 const { defineConfig } = require('@playwright/test');
 
+// The app's time zone (APP_TIMEZONE, Europe/Athens) for the tests' own dates too (new Date() in a spec), not only the
+// browser's (timezoneId below); the test workers inherit it
+process.env.TZ = 'Europe/Athens';
+
 module.exports = defineConfig({
   testDir: './tests',
   timeout: 60_000,
@@ -14,6 +18,9 @@ module.exports = defineConfig({
     baseURL: process.env.APP_URL || 'http://localhost:8080',
     viewport: { width: 1440, height: 900 },
     locale: 'el-GR',
+    // the app's time zone (APP_TIMEZONE, Europe/Athens), as the users' browsers: otherwise between 00:00 and 02:00/03:00
+    // Greek time the browser (UTC in CI and the Playwright container) and the app disagree on today's date
+    timezoneId: 'Europe/Athens',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     // Claude Code cloud sandbox: use the preinstalled Chromium
