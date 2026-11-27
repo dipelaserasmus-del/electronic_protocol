@@ -13,6 +13,9 @@
      x-data="{ detailed: (() => { try { return localStorage.getItem('protocolList.detailed') === '1' } catch (e) { return false } })() }"
      x-init="$watch('detailed', v => { try { localStorage.setItem('protocolList.detailed', v ? '1' : '0') } catch (e) {} })">
 
+    {{-- R2t (owner, 2026-11-27): the title, the gaps notice, the filters and the pager stay in place under the top bar while
+         the list scrolls (the table's column titles stick right under them) --}}
+    <div class="list-head" id="list-head">
     {{-- R2m (owner, 2026-11-25): no «Νέο» here (the top bar, always in view, has it); «Ανανέωση» is ↻ next to «Λίστα» in
          the top bar. R2l: no «Αναζήτηση» either (the search box has it). --}}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
@@ -76,6 +79,7 @@
 
     {{-- R2e: the pager above the list too; both on the right (owner, 2026-11-19) --}}
     <x-list-pager :paginator="$protocols" position="top" class="mb-2 justify-content-end" />
+    </div>
 
     <div class="card shadow-sm">
         {{-- R2i (owner, 2026-11-20): rows in alternating colours; fixed column widths; each row short (subject and sender in two
