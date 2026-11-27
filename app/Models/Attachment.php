@@ -55,7 +55,7 @@ class Attachment extends Model
     ];
 
     /** D03: numbers; D04: DATE column, shown to the legacy code as an integer Ymd (transitional, see LegacyYmdDate) */
-    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class, 'stamp_in_file' => 'boolean'];
+    protected $casts = ['size' => 'integer', 'deleted_by' => 'integer', 'expires' => \App\Casts\LegacyYmdDate::class, 'stamp_in_file' => 'boolean', 'stamp_opaque' => 'boolean'];
 
     public function protocol(){
         return $this->belongsTo('App\Models\Protocol');

@@ -16,6 +16,15 @@
                             <i class="bi bi-{{ ['top-left' => 'arrow-up-left', 'top-center' => 'arrow-up', 'top-right' => 'arrow-up-right'][$place] }}" aria-hidden="true"></i></button>
                     @endforeach
                 </div>
+                {{-- R4p (owner, 2026-11-27): the stamp on this file as it is (see-through, number and date on white) or opaque --}}
+                <div class="btn-group btn-group-sm me-2" role="group" id="preview-opacity" aria-label="Η σφραγίδα σε αυτό το αρχείο: διάφανη ή αδιαφανής" hidden>
+                    <button type="button" class="btn btn-outline-secondary" data-stamp-opaque="0" aria-pressed="false"
+                            title="Διάφανη σφραγίδα: φαίνεται ό,τι είναι από κάτω, ο αριθμός και η ημερομηνία σε λευκό (σε αυτό το αρχείο, για όλους)" aria-label="Διάφανη σφραγίδα">
+                        <i class="bi bi-transparency" aria-hidden="true"></i></button>
+                    <button type="button" class="btn btn-outline-secondary" data-stamp-opaque="1" aria-pressed="false"
+                            title="Αδιαφανής σφραγίδα: όλη σε λευκό, δεν φαίνεται τίποτα από κάτω (σε αυτό το αρχείο, για όλους)" aria-label="Αδιαφανής σφραγίδα">
+                        <i class="bi bi-square-fill" aria-hidden="true"></i></button>
+                </div>
                 <a class="btn btn-sm btn-outline-primary rounded-pill text-nowrap" id="preview-download" href="#" download>
                     <i class="bi bi-download me-1" aria-hidden="true"></i>Λήψη</a>
                 <button type="button" class="btn-close ms-1" data-bs-dismiss="modal" aria-label="Κλείσιμο"></button>

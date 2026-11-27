@@ -90,6 +90,7 @@ final class StampedCopy
             try {
                 if ($stamp->prepare($protocol)) {
                     $stamp->placeAt($a->stamp_place);   // R4n: this file's own place, if a user chose one
+                    $stamp->opaque((bool) $a->stamp_opaque);   // R4p: drawn opaque, if a user chose it
                     $stamp->apply($work);
                 }
             } finally {
@@ -120,6 +121,6 @@ final class StampedCopy
         // how the stamp is drawn (review of R4k: copies drawn before the white under the number are made again)
         $values = json_encode(StampTemplate::valuesFor($p), JSON_UNESCAPED_UNICODE);
         return substr(sha1(implode('|', [StampTemplate::current()->hash(), $values, $stored, $file, 'r'.StampRenderer::REVISION,
-            'p'.$a->stamp_place])), 0, 16);   // R4n: this file's own place
+            'p'.$a->stamp_place, 'o'.(int) $a->stamp_opaque])), 0, 16);   // R4n: its own place; R4p: opaque
     }
 }

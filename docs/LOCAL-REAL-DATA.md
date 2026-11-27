@@ -128,6 +128,15 @@ git fetch && git checkout task/<ID>-...
 ```
 Report back only what you see ("works" or the error message), never the data itself.
 
+To keep the copy you already have (no new load) after `git pull`, apply only the new database changes:
+```bash
+./dev.sh real up
+./dev.sh real artisan migrate --force   # e.g. the stamp's place / opacity per file (R4n, R4p)
+```
+`real up` alone starts the copy but does not change its database. A feature whose column is missing fails: for
+example the stamp buttons say «… δεν αποθηκεύτηκε». The app's error log is in the container, one file a day; the newest one's end:
+`docker exec ep-real-app sh -c 'tail -n 50 "$(ls -t storage/logs/*.log | head -1)"'`.
+
 ## AI tools in VS Code
 If you use AI extensions in VS Code (Copilot, Claude, …), do not let them read `local-data/`: anything they
 read is sent to their provider.

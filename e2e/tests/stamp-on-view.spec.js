@@ -192,3 +192,74 @@ test('a scanned picture is shown and downloaded with the stamp (R4o)', async ({ 
     await setSetting(page, 'putStamp', previous);
   }
 });
+
+// R4p (owner, 2026-11-27): the stamp on one file as it is (see-through, the number and date on white) or opaque
+test('the stamp made opaque on one file from the preview, and see-through again (R4p)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await login(page, 'admin');
+  // an A4 page full of grey lines (made in the browser), so that what shows through the stamp is seen
+  const JPG = Buffer.from(await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    [c.width, c.height] = [1050, 1485];
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff';
+    g.fillRect(0, 0, c.width, c.height);
+    g.strokeStyle = '#555';
+    g.lineWidth = 3;
+    for (let i = -c.height; i < c.width; i += 18) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + c.height, c.height); g.stroke(); }
+    return c.toDataURL('image/jpeg', 0.9).split(',')[1];
+  }), 'base64');
+  const previous = await setSetting(page, 'putStamp', 1);
+  await stamped(page, 'yes');
+  try {
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `R4p αδιαφανής σφραγίδα ${Date.now()}`, fakelos: 'first' });
+    await page.setInputFiles('#f-uploads', { name: 'Σάρωση.jpg', mimeType: 'image/jpeg', buffer: JPG });
+    await expect(page.locator('.upload-row')).toHaveCount(1);
+    await saveProtocol(page);
+    const href = await page.locator('.attachment-row a[href*="/download/"]').first().getAttribute('href');
+    const seeThrough = await (await page.request.get(href)).body();
+
+    await page.locator('.attachment-row .preview-button').first().click();
+    const img = page.locator('#preview-body img.preview-image');
+    const opacity = page.locator('#preview-opacity');
+    await expect(opacity).toBeVisible();
+    await expect(opacity.locator('[data-stamp-opaque="0"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
+    // evidence: the stamp's corner of the downloaded copy, at the picture's own size
+    const corner = async (bytes, name) => {
+      const view = await page.context().newPage();
+      await view.setViewportSize({ width: 480, height: 150 });
+      await view.setContent(`<body style="margin:0;overflow:hidden"><img style="margin-left:-570px"
+        src="data:image/jpeg;base64,${bytes.toString('base64')}"></body>`);
+      await view.waitForFunction(() => document.images[0].complete);
+      await evidence(view, name);
+      await view.close();
+    };
+    await corner(seeThrough, 'r4p-see-through');
+
+    await opacity.locator('[data-stamp-opaque="1"]').click();
+    await expect(opacity.locator('[data-stamp-opaque="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(opacity.locator('[data-stamp-opaque="0"]')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#preview-place [data-stamp-place="top-right"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(img).toHaveAttribute('src', /v=\d+$/);
+    await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
+    await evidence(page, 'r4p-buttons', { clip: await page.locator('#preview-modal .modal-header').boundingBox() });
+    const opaque = await (await page.request.get(href)).body();
+    expect(opaque.subarray(0, 3).toString('hex')).toBe('ffd8ff');
+    expect(opaque.equals(seeThrough)).toBe(false);
+    await corner(opaque, 'r4p-opaque');
+    expect((await (await page.request.get(`${href}?original=1`)).body()).equals(JPG)).toBe(true);   // stored as it came
+
+    // kept for the file: opened again, opaque is pressed; then back to see-through
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await page.locator('.attachment-row .preview-button').first().click();
+    await expect(opacity.locator('[data-stamp-opaque="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await opacity.locator('[data-stamp-opaque="0"]').click();
+    await expect(opacity.locator('[data-stamp-opaque="0"]')).toHaveAttribute('aria-pressed', 'true');
+    expect((await (await page.request.get(href)).body()).equals(seeThrough)).toBe(true);
+  } finally {
+    await setSetting(page, 'putStamp', previous);
+  }
+});
