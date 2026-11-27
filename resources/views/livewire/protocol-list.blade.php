@@ -44,7 +44,7 @@
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2" role="group" aria-label="Φίλτρα">
         @foreach (\App\Livewire\ProtocolList::FILTERS as $key => $label)
             <button type="button" wire:click="setFilter('{{ $key }}')" data-filter="{{ $key === '' ? 'all' : $key }}"
-                    class="btn btn-sm rounded-pill {{ $filter === $key ? 'btn-primary' : 'btn-outline-primary' }}"
+                    class="btn btn-sm rounded-pill {{ $filter === $key ? 'btn-primary' : 'btn-outline-primary' }}" title="{{ \App\Livewire\ProtocolList::FILTER_HELP[$key] }}"
                     @if ($filter === $key) aria-pressed="true" @endif>{{ $label }}</button>
         @endforeach
         @if ($canSeeOthers)
@@ -211,7 +211,7 @@
                                              as in the form: the type, 👁, then the name (the link) --}}
                                         @php $stampCorner ??= \App\Services\Stamp\StampTemplate::current()->corner; @endphp
                                         <a href="{{ url('/download/'.$a->id) }}" target="_blank" class="text-decoration-none position-relative z-2 d-inline-flex flex-shrink-0"
-                                           title="{{ $a->name }}" tabindex="-1" aria-hidden="true"><x-file-badge :name="$a->name" :size="$a->size" :mime="$a->mimeType" /></a>
+                                           title="{{ $a->name }}" tabindex="-1" aria-hidden="true"><x-file-badge :name="$a->name" :mime="$a->mimeType" /></a>
                                         <x-preview-button class="position-relative z-2 flex-shrink-0" :name="$a->name" :download="url('/download/'.$a->id)" :preview="url('/preview/'.$a->id)"
                                                           :group="'list-'.$p->id" :stamp-in-file="(bool) $a->stamp_in_file" :stampable="\App\Services\Stamp\StampedCopy::applies($a)"
                                                           :stamp-place="$a" :stamp-corner="$stampCorner" />
@@ -219,6 +219,8 @@
                                            title="{{ $a->name }}">
                                             <span x-show="! (detailed || open)" class="text-truncate">{{ \App\Support\FileBadge::shortName($shown) }}</span>
                                             <span x-show="detailed || open" x-cloak class="text-break">{{ $shown }}</span></a>
+                                        {{-- R2u (owner, 2026-11-27): the size after the name, dimmed (the type alone before it leaves the name more room) --}}
+                                        @if (($size = \App\Support\FileBadge::size($a->size)) !== '')<small class="attachment-size text-body-tertiary text-nowrap flex-shrink-0">{{ $size }}</small>@endif
                                     @endif
                                     @if ($a->ada && ! $a->savedPath)
                                         {{-- R2p (owner, 2026-11-25): only an ΑΔΑ: a pill «ΑΔΑ», then its code as the link (as a file's name), as R1m --}}

@@ -195,7 +195,7 @@ flowchart LR
     R5y["R5y<br/>Inbox: one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it"]
     R4q["R4q<br/>Preview of e-mail files (.eml); 👁 next to each file in the protocol list"]
     R2t["R2t<br/>The list's head (title, gaps notice, filters, pager) stays under the top bar"]
-    R2u["R2u<br/>List: a file's 👁 before its name (as in the form); the fixed head blends with the page"]
+    R2u["R2u<br/>List: a file's 👁 before its name, its size after it (dimmed); filter tooltips; the fixed head blends with the page"]
     R1p["R1p<br/>Protocol form: keywords offered from the subject (on leaving Θέμα) and the files' names"]
     R5x["R5x<br/>Inbox: a registered e-mail's envelope gets a green stripe on the left"]
   end
@@ -589,7 +589,7 @@ gantt
   R5y Inbox  one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it :done, r5y, 2026-11-14 17:33, 19m
   R4q Preview of e-mail files (.eml); 👁 next to each file in the protocol list :done, r4q, 2026-11-14 17:52, 19m
   R2t The list's head (title, gaps notice, filters, pager) stays under the top bar :done, r2t, 2026-11-14 18:11, 19m
-  R2u List  a file's 👁 before its name (as in the form); the fixed head blends with the page :done, r2u, 2026-11-14 18:30, 19m
+  R2u List  a file's 👁 before its name, its size after it (dimmed); filter tooltips; the fixed head blends with the page :done, r2u, 2026-11-14 18:30, 19m
   R1p Protocol form  keywords offered from the subject (on leaving Θέμα) and the files' names :done, r1p, 2026-11-14 18:49, 19m
   R5x Inbox  a registered e-mail's envelope gets a green stripe on the left :done, r5x, 2026-11-14 19:08, 19m
   section Batch 10
@@ -754,7 +754,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R5y** 🔴 | Inbox: one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it | R5x | 0.3 | 0.1 | 11.1 | 11.5 | 11.1 | 11.5 | 0.0 | #157 |
 | ✅ | **R4q** | Preview of e-mail files (.eml); 👁 next to each file in the protocol list | R4c | 0.3 | 0.1 | 2.8 | 3.2 | 10.8 | 11.1 | 8.0 | #158 |
 | ✅ | **R2t** | The list's head (title, gaps notice, filters, pager) stays under the top bar | R2e | 0.3 | 0.1 | 4.5 | 4.8 | 10.8 | 11.1 | 6.3 | #159 |
-| ✅ | **R2u** | List: a file's 👁 before its name (as in the form); the fixed head blends with the page | R2t, R4q | 0.3 | 0.1 | 4.8 | 5.1 | 11.1 | 11.5 | 6.3 | #161 |
+| ✅ | **R2u** | List: a file's 👁 before its name, its size after it (dimmed); filter tooltips; the fixed head blends with the page | R2t, R4q | 0.3 | 0.1 | 4.8 | 5.1 | 11.1 | 11.5 | 6.3 | #161 |
 | ✅ | **R1p** | Protocol form: keywords offered from the subject (on leaving Θέμα) and the files' names | R5d | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 | #154 |
 | ✅ | **R5x** 🔴 | Inbox: a registered e-mail's envelope gets a green stripe on the left | R5q | 0.3 | 0.1 | 10.8 | 11.1 | 10.8 | 11.1 | 0.0 | #155 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.4 | 10.9 | 6.2 |  |

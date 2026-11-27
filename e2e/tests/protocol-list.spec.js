@@ -655,7 +655,7 @@ test('the e-mail file comes after the attachments, by its date and time (R2r)', 
 
 // R2u (owner, 2026-11-27): in the list, as in the form, a file's line is: its type, 👁, its name; the fixed head has the
 // page's own background (it showed as a lighter band)
-test('a file\'s 👁 comes before its name; the fixed head blends with the page (R2u)', async ({ page }) => {
+test('a file\'s 👁 comes before its name, its size after it; the filters explain themselves; the fixed head blends with the page (R2u)', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await login(page, 'admin');
   const thema = `R2u σειρά ${Date.now()}`;
@@ -671,6 +671,15 @@ test('a file\'s 👁 comes before its name; the fixed head blends with the page 
   const name = await line.locator('a.attachment-link').boundingBox();
   expect(badge.x).toBeLessThan(eye.x);
   expect(eye.x).toBeLessThan(name.x);
+  // the size after the name, dimmed; the type alone before it
+  const size = line.locator('.attachment-size');
+  await expect(size).toHaveText('16 B');   // «Καλημέρα» in UTF-8
+  expect((await size.boundingBox()).x).toBeGreaterThan(name.x + name.width - 1);
+  await expect(line.locator('.file-badge')).not.toContainText('B');
+  expect(await size.evaluate((el) => getComputedStyle(el).color)).not.toBe(await line.locator('a.attachment-link').evaluate((el) => getComputedStyle(el).color));
+  // the filters explain themselves
+  await expect(page.locator('[data-filter=m]')).toHaveAttribute('title', /ανατεθεί/);
+  await expect(page.locator('[data-filter=a]')).toHaveAttribute('title', /Μόνο όσα καταχωρίσατε εσείς/);
   await evidence(page, 'r2u-file-line', { clip: await page.locator('tr.protocol-row', { hasText: thema }).boundingBox() });
 
   const colour = (sel) => page.locator(sel).evaluate((el) => getComputedStyle(el).backgroundColor);

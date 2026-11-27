@@ -305,7 +305,7 @@ Open *Εισερχόμενα*.
 - [ ] **111.** *Εισερχόμενα*: register an e-mail with the buttons at the bottom of the screen: one spinner (in the blue notice), the buttons greyed; when it is saved the page moves to the e-mail's top, now tinted green with a green border (also round its envelope). *Αναγνωσμένο* does the same in grey.
 - [ ] **112.** *Λίστα*: next to a protocol's file there is now 👁; ‹ › go through that protocol's files. Open a protocol registered from an e-mail: its *.eml* file opens with 👁 as an e-mail (Από, Προς, Θέμα, then the message).
 - [ ] **113.** *Λίστα*: scroll down: the title, the gaps notice, the filters and the page buttons stay under the top bar, the column titles right under them (on a small or low window they scroll away as before).
-- [ ] **115.** *Λίστα*: a file's line reads type, 👁, name (as in the form); scrolled, the fixed head has the same grey as the page.
+- [ ] **115.** *Λίστα*: a file's line reads type, 👁, name, then the size, dimmed; hover *Δικά μου* / *Καταχωρίσεις* for what they show; scrolled, the fixed head has the same grey as the page.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
