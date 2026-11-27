@@ -121,7 +121,7 @@ printed book and the receipt are laid out for paper.
 - Each task's own findings and review fixes are in its report (linked above).
 
 ## For you
-- Try the new steps in [OWNER-TODO](../../OWNER-TODO.md) (up to 116), at your own pace.
+- Try the new steps in [OWNER-TODO](../../OWNER-TODO.md) (up to 117), at your own pace.
 - On your real copy, after updating: `./dev.sh real artisan migrate --force` (new columns for the stamp's place and
   look, and the notes in the three retired settings' rows).
 - Every setting explained, for the future manual: [docs/SETTINGS.md](../SETTINGS.md).
