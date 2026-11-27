@@ -61,6 +61,25 @@ class IntegrityChecksTest extends FeatureTestCase
         $this->assertSame([2025 => [101], 2026 => [51]], $this->between('2025-12-01', '2026-01-31', '2026-01-31'));
     }
 
+    public function test_only_gaps_next_to_a_protocol_of_the_range_count_when_dates_are_out_of_order(): void
+    {
+        // review of A01: 1 and 5 in November, 2 and 4 in February; 3 lies between 2 and 4, both February
+        $this->book(2026, [1, 5], '1110');
+        $this->book(2026, [2, 4], '0210');
+
+        $this->assertSame([], $this->between('2026-11-01', '2026-11-30'));
+        $this->assertSame([2026 => [3]], $this->between('2026-02-01', '2026-02-28'));
+    }
+
+    public function test_a_book_year_other_than_the_date_s_year_is_checked(): void
+    {
+        // review of A01: numbers of 2025 dated January 2026
+        $this->book(2025, [1, 3], '0101');
+        Protocol::where('etos', 2025)->update(['protocoldate' => '2026-01-15']);
+
+        $this->assertSame([2025 => [2]], $this->between('2026-01-01', '2026-01-31', '2026-01-31'));
+    }
+
     public function test_the_gap_rule_names_the_protocols_around_each_run(): void
     {
         Protocol::factory()->number(87, 2026)->onDate('20261103')->create();

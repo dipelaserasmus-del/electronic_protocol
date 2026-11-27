@@ -27,7 +27,7 @@ which have that notice) find something in the last 30 days, a second line *Έλ�
 
 | Check | What it reports | Task |
 |---|---|---|
-| **Κενά στην αρίθμηση** | Numbers missing between the protocols of the range, one line per run of missing numbers, with the protocols on either side (number and date). A gap right before or after the range's protocols counts too. In the current year, numbers below *Αρ.Πρωτοκόλλου για ξεκίνημα* are not checked. If you may choose the number (administrator, *Έλεγχοι καταχώρισης* off), *Καταχώριση με το N* opens a new protocol with that number. | A01 |
+| **Κενά στην αρίθμηση** | Numbers missing between the protocols of the range, one line per run of missing numbers, with the protocols on either side (number and date). A run counts when one of the two protocols around it is dated in the range (so a gap right at the edge of the range is found, and one between two protocols dated elsewhere is not); a protocol's numbering year may differ from its date's year. In the current year, numbers below *Αρ.Πρωτοκόλλου για ξεκίνημα* are not checked. If you may choose the number (administrator, *Έλεγχοι καταχώρισης* off), *Καταχώριση με το N* opens a new protocol with that number. | A01 |
 
 The list's own gap notice (A02) looks at the last *N months* of the setting *Έλεγχος κενών: τελευταίοι μήνες*; the page
 looks at the range you choose.
@@ -64,6 +64,8 @@ looks at the range you choose.
   (`ProtocolPolicy::isLimited`); findings without one (gaps) are shown to all allowed users.
 - The list's line counts only `inList()` rules over `Checks::defaultRange()`; the gaps are not counted twice.
 - The range: both dates valid, from ≤ to, at most `Checks::MAX_DAYS`.
+- `NumberGaps::between()`: a missing run is reported only if its previous or next existing number is dated in the
+  range; the years checked are the `etos` of the protocols dated in the range (review of A01).
 
 ### Before changing it
 - The list runs `Checks::listCount()` on every load and auto-refresh: an `inList()` rule must be cheap for 30 days.
