@@ -77,8 +77,9 @@ class PreviewTest extends FeatureTestCase
 
     public function test_kinds(): void
     {
-        $this->assertSame(['pdf', 'image', 'image', 'text', 'text', 'word', 'word', 'sheet', 'sheet', 'sheet', null, null, null],
-            array_map([Preview::class, 'kind'], ['a.PDF', 'b.jpg', 'c.webp', 'd.txt', 'e.csv', 'f.docx', 'g.odt', 'h.xlsx', 'i.xls', 'j.ods', 'k.doc', 'l.zip', 'χωρίς']));
+        $this->assertSame(['pdf', 'image', 'image', 'text', 'text', 'word', 'word', 'sheet', 'sheet', 'sheet', 'mail', null, null, null],
+            array_map([Preview::class, 'kind'], ['a.PDF', 'b.jpg', 'c.webp', 'd.txt', 'e.csv', 'f.docx', 'g.odt', 'h.xlsx', 'i.xls', 'j.ods', 'm.EML', 'k.doc', 'l.zip', 'χωρίς']));
+        $this->assertTrue(Preview::converted('mail'));
     }
 
     public function test_word_documents_are_converted_and_their_text_escaped(): void
@@ -194,5 +195,77 @@ class PreviewTest extends FeatureTestCase
 
         // the modal is on every page of the new layout, once
         $this->assertSame(1, substr_count($this->actingAs($this->reader())->get('/home/' . $p->id)->getContent(), 'id="preview-modal"'));
+    }
+
+    /** an e-mail file: HTML (with what must never run or load) and a file, or text only */
+    private function eml(?string $html, string $text = 'Καλημέρα σας.'): string
+    {
+        $head = "From: =?UTF-8?B?" . base64_encode('Γραμματεία Δοκιμών') . "?= <office@example.test>\r\nTo: school@example.test\r\n"
+            . "Cc: dept@example.test\r\nSubject: =?UTF-8?B?" . base64_encode('Πρόσκληση σε ημερίδα') . "?=\r\n"
+            . "Date: Mon, 02 Nov 2026 07:15:00 +0000\r\nMIME-Version: 1.0\r\n";
+        if ($html === null) {
+            return $head . "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n" . $text . "\r\n";
+        }
+        return $head . "Content-Type: multipart/mixed; boundary=\"B\"\r\n\r\n"
+            . "--B\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n" . $html . "\r\n"
+            . "--B\r\nContent-Type: application/pdf; name=\"=?UTF-8?B?" . base64_encode('απόφαση.pdf') . "?=\"\r\n"
+            . "Content-Disposition: attachment; filename=\"=?UTF-8?B?" . base64_encode('απόφαση.pdf') . "?=\"\r\n"
+            . "Content-Transfer-Encoding: base64\r\n\r\n" . base64_encode("%PDF-1.4\n") . "\r\n--B--\r\n";
+    }
+
+    /**
+     * R4q (owner, 2026-11-27): an .eml file is shown as an e-mail: its headers, the names of its files, its HTML (or its
+     * text), in the sandboxed page, with nothing that runs or loads from elsewhere
+     */
+    public function test_emails_are_shown_with_their_headers_and_their_html_kept_harmless(): void
+    {
+        $admin = $this->admin();
+        $html = '<html><head><meta http-equiv="refresh" content="0;url=https://evil.example/"><base href="https://evil.example/">'
+            . '<link rel="stylesheet" href="https://evil.example/x.css"><style>p.greet { color: #c00; }</style><script>alert(1)</script></head>'
+            . '<body><p class="greet">Καλημέρα σε όλους</p><img src="https://tracker.example/pixel.gif"><iframe src="https://evil.example/"></iframe>'
+            . '<script src="https://evil.example/x.js"></script><object data="x.swf"></object></body></html>';
+        $a = $this->attach('email_20261102_091500.eml', $this->eml($html));
+        $r = $this->actingAs($admin)->get('/preview/' . $a->id);
+        $this->assertSandboxed($r);
+        $r->assertSee('Γραμματεία Δοκιμών &lt;office@example.test&gt;', false)->assertSee('school@example.test')->assertSee('dept@example.test')
+            ->assertSee('02/11/2026 09:15')->assertSee('Πρόσκληση σε ημερίδα')->assertSee('απόφαση.pdf')
+            ->assertSee('<p class="greet">Καλημέρα σε όλους</p>', false)->assertSee('p.greet { color: #c00; }', false);
+        foreach (['<script', '<iframe', '<object', '<meta http-equiv', '<base', '<link', 'alert(1)'] as $gone) {
+            $r->assertDontSee($gone, false);
+        }
+        // a remote picture may stay: the page's own rules load nothing from the internet (img-src data: only)
+        $this->assertStringContainsString('img-src data:', $r->headers->get('Content-Security-Policy'));
+
+        $text = $this->attach('απλό.eml', $this->eml(null, "Γραμμή 1\n<b>όχι έντονο</b>"));
+        $this->actingAs($admin)->get('/preview/' . $text->id)->assertOk()->assertSee('Γραμμή 1')
+            ->assertSee('&lt;b&gt;όχι έντονο&lt;/b&gt;', false)->assertSee('Πρόσκληση σε ημερίδα');
+
+        // larger than the converted files' limit, still shown (only its headers and text are read)
+        config(['attachments.preview_max_kb' => 1]);
+        $big = $this->attach('μεγάλο.eml', $this->eml(null, str_repeat('κείμενο ', 400)));
+        $this->actingAs($admin)->get('/preview/' . $big->id)->assertOk()->assertSee('Πρόσκληση σε ημερίδα');
+    }
+
+    /** R4q (owner, 2026-11-27): the list has 👁 next to each file too; ‹ › go through that protocol's files */
+    public function test_the_list_offers_a_preview_of_each_file(): void
+    {
+        $p = Protocol::factory()->number(4)->create();
+        $pdf = $this->attach('απόφαση.pdf', "%PDF-1.4\n", $p);
+        $eml = $this->attach('email_20261102_091500.eml', $this->eml(null), $p);
+        $other = Protocol::factory()->number(5)->create();
+        $this->attach('πίνακας.xlsx', 'x', $other);
+        $this->attach('διαβιβαστικό.pdf', "%PDF-1.4\n", $other);   // more files that take the stamp: one read still
+        $this->attach('συνημμένο.pdf', "%PDF-1.4\n", Protocol::factory()->number(6)->create());
+
+        \DB::enableQueryLog();
+        $html = Livewire::actingAs($this->reader())->test(\App\Livewire\ProtocolList::class)->html();
+        $templateReads = collect(\DB::getQueryLog())->filter(fn ($q) => str_starts_with($q['query'], 'select') && in_array('stampTemplate', $q['bindings'], true))->count();
+        \DB::disableQueryLog();
+        $this->assertSame(2, substr_count($html, 'data-preview-group="list-' . $p->id . '"'));
+        $this->assertSame(2, substr_count($html, 'data-preview-group="list-' . $other->id . '"'));
+        $this->assertStringContainsString('data-preview-kind="pdf" data-preview-src="' . url('/download/' . $pdf->id) . '"', $html);
+        $this->assertStringContainsString('data-preview-kind="mail" data-preview-src="' . url('/preview/' . $eml->id) . '"', $html);
+        $this->assertStringContainsString('data-preview-place="top-right"', $html, 'the stamp\'s place buttons work from the list too');
+        $this->assertLessThanOrEqual(1, $templateReads, 'the stamp\'s settings are read once for the page, not per file');
     }
 }
