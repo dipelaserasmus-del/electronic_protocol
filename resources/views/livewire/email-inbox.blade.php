@@ -135,8 +135,10 @@
                 <div wire:key="inbox-look-{{ $envelope }}">
                 @foreach ($messages as $uid => $m)
                     @php $f = $forms[$uid] ?? []; $state = $done[$uid] ?? null; $n = $first + $loop->index; $x = $extra[$uid] ?? null;
-                         $saved = ($state['type'] ?? null) === 'registered'; @endphp
-                    {{-- R5x (owner, 2026-11-26): registered: a green stripe down the left of the envelope (any look, «none» too) --}}
+                         $saved = ($state['type'] ?? null) === 'registered';
+                         $mark = match ($state['type'] ?? null) { 'registered' => ' is-saved', 'read' => ' is-read', default => '' }; @endphp
+                    {{-- R5x (owner, 2026-11-26): registered: marked in any look («none» too). R5y (owner, 2026-11-27): the whole
+                         e-mail tinted and bordered green; moved to «Αναγνωσμένα»: grey --}}
                     {{-- R5p (owner, 2026-11-23): each e-mail in an envelope: the sender and the date as the address strip,
                          «N από M» kept; a gap between envelopes. R5q (owner, 2026-11-25): the user's own look; «none» = R5o's
                          thin line with ↓ N από M ↓ between two e-mails, no envelope --}}
@@ -146,9 +148,9 @@
                                 <span class="inbox-sep-label"><i class="bi bi-arrow-down" aria-hidden="true"></i> {{ $n }} από {{ $total }} <i class="bi bi-arrow-down" aria-hidden="true"></i></span>
                             </div>
                         @endunless
-                        <div class="inbox-noenvelope{{ $saved ? ' is-saved' : '' }}" wire:key="env-{{ $uid }}">
+                        <div class="inbox-noenvelope{{ $mark }}" wire:key="env-{{ $uid }}">
                     @else
-                    <div class="inbox-envelope inbox-envelope-{{ $envelope }}{{ $saved ? ' is-saved' : '' }}" wire:key="env-{{ $uid }}">
+                    <div class="inbox-envelope inbox-envelope-{{ $envelope }}{{ $mark }}" wire:key="env-{{ $uid }}">
                     <div class="inbox-envelope-address" aria-hidden="true">
                         <span class="inbox-envelope-n">{{ $n }} από {{ $total }}</span>
                         <span class="inbox-envelope-from text-truncate">{{ $m['from_name'] ?: ($m['from_email'] ?: '—') }}@if ($m['from_name'] && $m['from_email']) <small>&lt;{{ $m['from_email'] }}&gt;</small>@endif</span>
@@ -477,7 +479,7 @@
                                         @php $anyway = 'register('.$uid.', '.(($confirming[$uid] ?? false) ? 'true' : 'false').', true)'; @endphp
                                         <button type="button" class="btn btn-sm btn-warning rounded-pill ms-2" data-action="register-anyway"
                                                 wire:click="{{ $anyway }}" wire:loading.attr="disabled" wire:target="register,markRead">
-                                            <span class="spinner-border spinner-border-sm me-1" wire:loading wire:target="{{ $anyway }}" aria-hidden="true"></span>Ναι, καταχώριση</button>
+                                            Ναι, καταχώριση</button>
                                     </x-notice>
                                 @endif
                                 {{-- R5r (owner, 2026-11-25): refused: why, right above the buttons (the field may be far above) --}}
@@ -488,16 +490,15 @@
                                         <button type="button" class="btn btn-sm btn-link p-0 ms-1 align-baseline" data-goto-invalid="{{ $uid }}">Μετάβαση στο πεδίο</button>
                                     </x-notice>
                                 @endif
+                                {{-- R5y (owner, 2026-11-27): one spinner, in the notice above; the buttons only wait (disabled) --}}
                                 <x-pill-actions class="mt-2 inbox-actions">
                                     @unless ($receiptOnly)
                                         <x-pill type="submit" variant="primary" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register">
-                                            <span class="spinner-border spinner-border-sm" wire:loading.delay.longer wire:target="register({{ $uid }}, false)" aria-hidden="true"></span>
-                                            <i class="bi bi-journal-plus" aria-hidden="true" wire:loading.remove.delay.longer wire:target="register({{ $uid }}, false)"></i> Καταχώριση
+                                            <i class="bi bi-journal-plus" aria-hidden="true"></i> Καταχώριση
                                         </x-pill>
                                     @endunless
                                     <x-pill :variant="$receiptOnly ? 'primary' : 'secondary'" wire:click="register({{ $uid }}, true)" wire:loading.attr="disabled" wire:target="register,markRead" data-action="register-receipt">
-                                        <span class="spinner-border spinner-border-sm" wire:loading.delay.longer wire:target="register({{ $uid }}, true)" aria-hidden="true"></span>
-                                        <i class="bi bi-envelope-check" aria-hidden="true" wire:loading.remove.delay.longer wire:target="register({{ $uid }}, true)"></i> Καταχώριση και απόδειξη
+                                        <i class="bi bi-envelope-check" aria-hidden="true"></i> Καταχώριση και απόδειξη
                                     </x-pill>
                                     <x-pill wire:click="markRead({{ $uid }})" wire:loading.attr="disabled" wire:target="register,markRead" data-action="mark-read" title="Το email φεύγει από τα εισερχόμενα χωρίς πρωτόκολλο">
                                         <i class="bi bi-envelope-open" aria-hidden="true"></i> Αναγνωσμένο
