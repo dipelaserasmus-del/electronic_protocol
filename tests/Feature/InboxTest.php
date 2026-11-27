@@ -306,7 +306,10 @@ class InboxTest extends FeatureTestCase
         $this->assertSame(1, \App\Models\Protocol::count());
     }
 
-    /** R5x (owner, 2026-11-26): a registered e-mail's envelope is marked (green stripe); a new or only-read one is not */
+    /**
+     * R5x (owner, 2026-11-26): a registered e-mail's envelope is marked; a new one is not. R5y (owner, 2026-11-27): green
+     * (is-saved), and one moved to «Αναγνωσμένα» grey (is-read); each tells the page to follow the e-mail (inbox-done).
+     */
     public function test_a_registered_email_is_marked_in_any_look(): void
     {
         $this->setting('protocolValidate', 1);
@@ -315,15 +318,21 @@ class InboxTest extends FeatureTestCase
         $page = Livewire::actingAs($user)->test(EmailInbox::class);
         $this->assertStringNotContainsString('is-saved', $page->html(), 'nothing registered yet');
 
-        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)->assertHasNoErrors();
-        $page->call('markRead', 2)->assertHasNoErrors();
+        $this->assertStringNotContainsString('is-read', $page->html());
+
+        $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->call('register', 1, false)->assertHasNoErrors()
+            ->assertDispatched('inbox-done', uid: 1);
+        $page->call('markRead', 2)->assertHasNoErrors()->assertDispatched('inbox-done', uid: 2);
         $html = $page->html();
         $this->assertSame(1, substr_count($html, 'is-saved'), 'only the registered one, not the one moved to «read»');
         $this->assertMatchesRegularExpression('~class="inbox-envelope inbox-envelope-airmail is-saved" wire:key="env-1"~', $html);
+        $this->assertMatchesRegularExpression('~class="inbox-envelope inbox-envelope-airmail is-read" wire:key="env-2"~', $html);
+        $this->assertSame(1, substr_count($html, 'is-read'));
 
         $this->actingAs($user)->postJson('/preferences', ['key' => 'envelope', 'value' => 'none'])->assertOk();
         $html = $page->call('envelopeChanged')->html();
         $this->assertMatchesRegularExpression('~class="inbox-noenvelope is-saved" wire:key="env-1"~', $html);
+        $this->assertMatchesRegularExpression('~class="inbox-noenvelope is-read" wire:key="env-2"~', $html);
         $this->assertSame(1, substr_count($html, 'is-saved'));
     }
 
@@ -415,7 +424,10 @@ class InboxTest extends FeatureTestCase
         $this->assertStringNotContainsString('inbox-register-error', substr($html, strpos($html, 'id="msg-2"')), 'only that e-mail');
         // the notice «Καταχωρίζεται…» and the spinners wait half a second (a quick refusal does not flash them)
         $this->assertMatchesRegularExpression('~inbox-saving" role="status" style="display: none" wire:loading\.flex\.delay\.longer~', $form);
-        $this->assertStringNotContainsString('spinner-border-sm" wire:loading wire:target="register(1', $form);
+        // R5y (owner, 2026-11-27): one spinner only, in that notice; the buttons are only disabled while it runs
+        $this->assertSame(1, substr_count($form, 'class="spinner-border '));
+        $this->assertMatchesRegularExpression('~data-action="register">\s*<i class="bi bi-journal-plus" aria-hidden="true"></i> Καταχώριση~', $form);
+        $this->assertMatchesRegularExpression('~wire:loading.attr="disabled" wire:target="register,markRead" data-action="register"~', $form);
 
         // fixed and registered: no message, no event
         $page->set('forms.1.fakelos', 'Φ.1')->set('forms.1.thema', 'Ημερίδα')->set('forms.1.fakelos', 'Φ.1')->call('register', 1, false)
@@ -696,8 +708,8 @@ class InboxTest extends FeatureTestCase
         $page->call('refresh')->assertSee('Υπάρχει ήδη πρωτόκολλο με το ίδιο θέμα')->assertSeeHtml('/home/'.$old->id);
 
         $page->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasErrors('forms.2.similar')->assertSeeHtml('data-action="register-anyway"');
-        // R5k: the yellow button too is disabled during a save and turns while its own save runs
-        $this->assertMatchesRegularExpression('~data-action="register-anyway"\s+wire:click="register\(2, false, true\)" wire:loading.attr="disabled" wire:target="register,markRead">\s*<span class="spinner-border[^"]*" wire:loading wire:target="register\(2, false, true\)"~', $page->html());
+        // R5k: the yellow button too is disabled during a save; R5y: without a spinner of its own (the notice has it)
+        $this->assertMatchesRegularExpression('~data-action="register-anyway"\s+wire:click="register\(2, false, true\)" wire:loading.attr="disabled" wire:target="register,markRead">\s*Ναι, καταχώριση</button>~', $page->html());
         $this->assertStringContainsString('wire:target="register(2, false), register(2, true), register(2, false, true), register(2, true, true)"', $page->html(), 'the notice of this e-mail');
         $this->assertSame(1, \App\Models\Protocol::count(), 'not registered yet');
 

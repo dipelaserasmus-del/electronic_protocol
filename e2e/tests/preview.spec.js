@@ -95,3 +95,54 @@ test('👁 previews the protocol\'s files; ‹ › go through them (R4c)', async
   const box = await zip.boundingBox();
   await evidence(page, 'r4j-no-preview', { clip: { x: box.x, y: box.y - 4, width: Math.min(box.width, 700), height: box.height + 8 } });
 });
+
+// R4q (owner, 2026-11-27): an e-mail file (.eml) is previewed as an e-mail (headers, then its HTML), and the list has
+// 👁 next to each protocol's files too (‹ › go through that protocol's files)
+test('e-mail files are previewed, and the list has 👁 for each protocol\'s files (R4q)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const thema = `R4q προεπισκόπηση email ${Date.now()}`;
+  const b64 = (s) => Buffer.from(s).toString('base64');
+  const eml = Buffer.from([
+    `From: =?UTF-8?B?${b64('Διεύθυνση Δοκιμής')}?= <directorate@example.test>`, 'To: school@example.test',
+    `Subject: =?UTF-8?B?${b64('Πρόσκληση σε ημερίδα')}?=`, 'Date: Mon, 02 Nov 2026 07:15:00 +0000', 'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: 8bit', '',
+    '<html><head><style>.lead{color:#0b3d91;font-size:18px}</style></head><body><p class="lead">Σας προσκαλούμε στην ημερίδα.</p>'
+      + '<p>Με εκτίμηση,<br>Η Διεύθυνση</p><img src="https://tracker.example/pixel.gif" alt=""><script>document.body.innerHTML = "ran"</script></body></html>',
+  ].join('\r\n'), 'utf8');
+  await login(page, 'admin');
+  await page.goto('/home');
+  await fillProtocol(page, { thema, fakelos: 'first' });
+  await page.setInputFiles('#f-uploads', [
+    { name: 'email_20261102_091500.eml', mimeType: 'message/rfc822', buffer: eml },
+    { name: 'Πρόσκληση.pdf', mimeType: 'application/pdf', buffer: require('fs').readFileSync(fixture('prosklisi.pdf')) },
+  ]);
+  await expect(page.locator('.upload-row')).toHaveCount(2);
+  await saveProtocol(page);
+
+  // in the form: the e-mail file has a 👁 (before R4q it had the grey one) and opens as an e-mail
+  const emlRow = page.locator('.attachment-row', { hasText: '.eml' });
+  await emlRow.locator('.preview-button').click();
+  const frame = page.frameLocator('#preview-body iframe');
+  await expect(frame.locator('body')).toContainText('Πρόσκληση σε ημερίδα');
+  await expect(frame.locator('body')).toContainText('Διεύθυνση Δοκιμής <directorate@example.test>');
+  await expect(frame.locator('.lead')).toHaveText('Σας προσκαλούμε στην ημερίδα.');
+  await expect(frame.locator('body')).not.toContainText('ran');   // its script never runs
+  await expect(page.locator('#preview-note')).toBeHidden();       // not an approximation: no «κατά προσέγγιση»
+  await evidence(page, 'r4q-eml-preview');
+  await page.keyboard.press('Escape');
+
+  // the list: 👁 next to the file; ‹ › go through this protocol's two files
+  await page.goto('/home/list');
+  const row = page.locator('tr.protocol-row', { hasText: thema });
+  await expect(row.locator('.preview-button')).toHaveCount(2);
+  await expect(row.locator('.preview-button').first()).toBeVisible();
+  await evidence(page, 'r4q-list', { clip: await row.boundingBox() });
+  await row.locator('.preview-button').first().click();
+  await expect(page.locator('#preview-modal')).toBeVisible();
+  await expect(page.locator('#preview-count')).toHaveText('1 από 2');
+  const first = await page.locator('#preview-title').textContent();
+  await page.locator('#preview-modal [data-preview-step="1"]').click();
+  await expect(page.locator('#preview-count')).toHaveText('2 από 2');
+  expect(await page.locator('#preview-title').textContent()).not.toBe(first);
+  await evidence(page, 'r4q-list-preview');
+});

@@ -25,7 +25,11 @@ final class Preview
         'txt' => 'text', 'csv' => 'text',
         'docx' => 'word', 'odt' => 'word',
         'xlsx' => 'sheet', 'xls' => 'sheet', 'ods' => 'sheet',
+        'eml' => 'mail',   // R4q
     ];
+
+    /** R4q: e-mails are read for their headers and text, not converted as a whole: a larger file is still shown */
+    public const MAX_MAIL_BYTES = 41943040;
 
     public const MAX_ROWS = 500;
     public const MAX_COLS = 50;
@@ -49,7 +53,7 @@ final class Preview
     /** The kinds shown by this application's converter (the others are shown as the download gives them). */
     public static function converted(?string $kind): bool
     {
-        return in_array($kind, ['text', 'word', 'sheet'], true);
+        return in_array($kind, ['text', 'word', 'sheet', 'mail'], true);
     }
 
     /** The largest file converted (config attachments.preview_max_kb) */
@@ -68,7 +72,7 @@ final class Preview
         if (! is_file($path)) {
             return self::page(self::notice('Το αρχείο δεν βρέθηκε.'));
         }
-        if (filesize($path) > self::maxBytes()) {
+        if (filesize($path) > ($kind === 'mail' ? max(self::maxBytes(), self::MAX_MAIL_BYTES) : self::maxBytes())) {
             return self::page(self::notice('Το αρχείο είναι πολύ μεγάλο για προεπισκόπηση. Κατεβάστε το για να το δείτε.'));
         }
         try {
@@ -76,6 +80,7 @@ final class Preview
                 'text' => self::text($path),
                 'word' => self::word($path, strtolower(pathinfo($name, PATHINFO_EXTENSION))),
                 'sheet' => self::sheet($path, strtolower(pathinfo($name, PATHINFO_EXTENSION))),
+                'mail' => self::mail($path),
             };
         } catch (\Throwable $e) {
             report($e);
@@ -148,6 +153,65 @@ final class Preview
             return $need > $back ? substr($bytes, 0, $len - $back) : $bytes;
         }
         return $bytes;
+    }
+
+    /**
+     * R4q (owner, 2026-11-27): an e-mail file (.eml, e.g. the e-mail a protocol was registered from) as an e-mail program
+     * shows it: Από, Προς, Κοιν., date, Θέμα and the names of its files, then its HTML (or its text). The HTML stays in
+     * this sandboxed page: no scripts, forms or plugins, and nothing loaded from the internet (remote pictures and
+     * trackers stay blank); only its <style> and body are kept, without <meta>, <base>, <link> and embedded frames.
+     */
+    private static function mail(string $path): string
+    {
+        $mail = \App\Support\Mail\MailParser::parse((string) file_get_contents($path));
+        $s = \App\Support\Mail\MailContent::summary($mail);
+        $date = $s['date'] ? (new \DateTimeImmutable($s['date']))->setTimezone(\App\Services\Mail\EmailRegistration::zone())->format('d/m/Y H:i') : '';
+        $files = implode(', ', array_map(fn ($a) => e($a['name']) . ' <span style="color:#6c757d">(' . e(\App\Support\FileBadge::size($a['size'])) . ')</span>', $s['attachments']));
+        $rows = array_filter([
+            'Από' => e(\App\Support\Mail\MailContent::sender($s)),
+            'Προς' => e(implode(', ', $s['to'])),
+            'Κοιν.' => e(implode(', ', $s['cc'])),
+            'Ημερομηνία' => e($date),
+            'Θέμα' => '<strong>' . e($s['subject'] !== '' ? $s['subject'] : '(χωρίς θέμα)') . '</strong>',
+            'Συνημμένα' => $files,
+        ], fn ($v) => $v !== '');
+        $head = '<table style="border-collapse:collapse;margin:0 0 12px;font:14px/1.45 system-ui,\'Segoe UI\',Roboto,Arial,sans-serif;color:#212529">';
+        foreach ($rows as $label => $value) {
+            $head .= '<tr><th style="text-align:left;vertical-align:top;padding:2px 12px 2px 0;color:#6c757d;font-weight:600;white-space:nowrap">'
+                . $label . '</th><td style="padding:2px 0;overflow-wrap:anywhere">' . $value . '</td></tr>';
+        }
+        $head .= '</table><hr style="border:0;border-top:1px solid #dee2e6;margin:0 0 12px">';
+
+        $html = \App\Support\Mail\MailContent::html($mail);
+        if ($html === null || trim($html) === '') {
+            return $head . '<pre>' . e(\App\Support\Mail\MailContent::text($mail)) . '</pre>';
+        }
+        preg_match_all('~<style\b[^>]*>.*?</style>~is', $html, $styles);
+        $body = preg_match('~<body\b[^>]*>(.*)</body>~is', $html, $m) ? $m[1] : preg_replace('~<head\b.*?</head>~is', '', $html);
+        // what the page's sandbox would block anyway, removed as well
+        $body = preg_replace('~<(script|iframe|object|embed|frameset|frame|noscript|template)\b.*?</\1\s*>|<(script|iframe|object|embed|frame|meta|base|link)\b[^>]*>~is', '', (string) $body);
+        $body = preg_replace('~</?(html|head|body)\b[^>]*>~i', '', (string) $body);
+        return implode('', $styles[0]) . $head . '<div class="mail-body">' . self::embedded($mail, $body) . '</div>';
+    }
+
+    /** R4q review: the e-mail's own pictures (`cid:`), a part each, as data: (the page loads nothing from elsewhere) */
+    public const MAX_EMBEDDED_BYTES = 15728640;
+
+    private static function embedded(\ZBateson\MailMimeParser\Message $mail, string $body): string
+    {
+        $left = self::MAX_EMBEDDED_BYTES;
+        $done = [];
+        return (string) preg_replace_callback('~\bcid:([^"\'()\s>]+)~i', function ($m) use ($mail, &$left, &$done) {
+            $id = rawurldecode($m[1]);
+            if (! isset($done[$id])) {
+                $part = $mail->getPartByContentId($id);
+                $type = strtolower((string) $part?->getContentType());
+                $content = $part !== null && str_starts_with($type, 'image/') && preg_match('~^image/[a-z0-9.+-]+$~', $type) ? (string) $part->getContent() : '';
+                $done[$id] = $content !== '' && strlen($content) <= $left ? 'data:' . $type . ';base64,' . base64_encode($content) : null;
+                $left -= $done[$id] === null ? 0 : strlen($content);
+            }
+            return $done[$id] ?? $m[0];
+        }, $body);
     }
 
     /** Word (docx) or OpenDocument text (odt) → HTML (PhpWord) */

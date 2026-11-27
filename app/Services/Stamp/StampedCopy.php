@@ -28,13 +28,13 @@ final class StampedCopy
      * R4n: where the stamp is on this file, as one of Stamp::PLACES: its own choice, otherwise the stamp's place when that
      * is one of them (a stamp at the bottom: none of the three)
      */
-    public static function place(Attachment $a): ?string
+    public static function place(Attachment $a, ?string $corner = null): ?string
     {
         $own = $a->stamp_place;
         if (isset(Stamp::PLACES[$own ?? ''])) {
             return $own;
         }
-        $corner = StampTemplate::current()->corner;
+        $corner ??= StampTemplate::current()->corner;   // R4q: a page with many files reads it once and passes it
         return isset(Stamp::PLACES[$corner]) ? $corner : null;
     }
 
