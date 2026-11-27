@@ -247,6 +247,10 @@ class EmailInbox extends Component
     private function registerChecked(int $uid, bool $receipt, bool $confirmed): void
     {
         $this->allowed();
+        // R6m: «Αποστολή απόδειξης για κάθε e-mail» is a rule, not only a hidden button: a receipt always goes out
+        if ((string) Config::getConfigValueOf('alwaysSendReceitForEmails') === '1') {
+            $receipt = true;
+        }
         if (! in_array($uid, $this->uids, true) || isset($this->done[$uid]) || $this->doneByOther($uid)) {
             return;
         }

@@ -460,6 +460,18 @@ class InboxTest extends FeatureTestCase
         $this->assertStringContainsString('απόδειξη παραλαβής σε sender@example.org', \App\Models\Protocol::sole()->paratiriseis);
     }
 
+    /** R6m: «Αποστολή απόδειξης για κάθε e-mail» is kept by the server too, not only by hiding «Καταχώριση» */
+    public function test_always_receipt_is_enforced_on_the_server(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->setting('alwaysSendReceitForEmails', '1');
+        $page = Livewire::actingAs($this->writer())->test(EmailInbox::class);
+        $page->set('forms.2.reply_to_email', '')->set('forms.2.fakelos', 'Φ.1')->call('register', 2, false)->assertHasErrors('forms.2.reply_to_email');
+        $this->assertSame(0, \App\Models\Protocol::count());
+        $page->set('forms.2.reply_to_email', 'sender@example.org')->set('forms.2.files', [])->call('register', 2, false)->assertHasNoErrors();
+        $this->assertStringContainsString('απόδειξη παραλαβής σε sender@example.org', \App\Models\Protocol::sole()->paratiriseis);
+    }
+
     /** Readers, users without inbox access and logged-out visitors get neither the page nor its actions. */
     public function test_only_writers_with_inbox_access(): void
     {

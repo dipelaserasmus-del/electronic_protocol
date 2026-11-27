@@ -81,15 +81,55 @@ Gone: *Εκτυπώσεις και Excel*, *Καταχώριση e-mail*, *Συ�
 - **The ⓘ may now be shorter than the line under the field** (*Αριθμός πρωτοκόλλων ανά σελίδα*): the R6d test that
   required a longer ⓘ now requires only that every setting has one.
 
+## Owner's answers and second round (2026-11-27)
+- «Έλεγχοι καταχώρισης» in three ⓘ texts: **keep** (no rename).
+- **Administrators always have the Inbox**, listed in *Χρήστες με δικαίωμα καταχώρισης email* or not
+  (`App\Support\InboxAccess`); the ⓘ says so instead of «απαιτείται … Διαχειριστή». Still no Inbox for anyone when
+  *Λογαριασμός εισερχομένων* is empty.
+- Spelling fixes above: **kept**.
+- **The two retired rows say where they went:** migration `2026_11_27_000002_settings_moved_to_env` turns the
+  `configs` value of `mysqldumpPath` / `maxRowsInXlsExport` into «Δεν χρησιμοποιείται πια: ορίζεται στο .env ως
+  MYSQLDUMP_PATH / PRINT_MAX_ROWS (δείτε το .env.example).», with «Παλιά τιμή: …» at the end when there was one
+  (a fresh installation gets the note too; `down()` puts the old value back).
+- **Every setting checked against the code** (each read of each key followed). The result is the new guide
+  **[docs/SETTINGS.md](../SETTINGS.md)**: per setting its values, what empty means, the fresh-installation value, who it
+  affects, what it does, its limits and the settings it works with, plus everything in `configs` that is not on the
+  page. It is the base for the administrator / user manual (Z04).
+- **One setting did less than it said:** «Αποστολή απόδειξης για κάθε e-mail» only hid a button; a registration
+  without a receipt was still possible. The server now always sends the receipt while it is on (`EmailInbox`,
+  test `test_always_receipt_is_enforced_on_the_server`).
+- **Texts corrected to say what the code does** (the code was right; the words were incomplete or wrong):
+
+| Setting | Was | Now says |
+|---|---|---|
+| Ενεργό έτος (line) | a new year starts at 1 | … (a year that already has protocols continues from its highest number) |
+| Ενεργό έτος (ⓘ) | «η συμπλήρωση του τρέχοντος έτους απαιτείται» | with the checks on and **another** year written here, no new protocol is saved, also from the Inbox (empty is fine) |
+| Αριθμός για ξεκίνημα (line, ⓘ) | first number «ενός βιβλίου χωρίς πρωτόκολλα» | only when there is no protocol of **any** year; a new year always starts at 1 |
+| Έλεγχοι-περιορισμοί (line, ⓘ) | «Ελέγχει τα πεδία» | «Επιπλέον έλεγχοι» (basic checks always run); + the done-date rule, no place needed for e-mails; the year «πρέπει να είναι» the current one |
+| Χωρίς θέμα (ⓘ) | «εντελώς άδειο» | + «(συνημμένα επιτρέπονται)» |
+| Σχετικοί αριθμοί (ⓘ) | gets «τον αριθμό που αποθηκεύετε»; «μόνο για νέα πρωτόκολλα» | + the other related numbers, comma-separated, the 255-character limit; applies to every save from now on, new **or edited** |
+| Δικαιώματα τροποποίησης (ⓘ) | without a subject «όλοι» | «όλοι οι Συγγραφείς και Αναθέτοντες»; assigned readers only the done date |
+| Ημερομηνία (line) | «Αλλιώς … η σημερινή» | a new protocol gets today's, an existing one keeps its own |
+| Περιορισμός λίστας (line) | «τους ανατέθηκαν» | + «(για Διεκπεραίωση ή Ενημέρωση)» |
+| Διαύγεια (line) | ΑΔΑ becomes a link | + «(στη Λίστα και στη φόρμα πρωτοκόλλου)» |
+| Λογαριασμός εισερχομένων (line, ⓘ) | accounts «στο config/imap.php» | in `.env` (IMAP_…); empty hides the Inbox from administrators too; also the menu's count |
+| Τελευταίες Ν ημέρες (ⓘ) | not yet registered | … nor marked «Αναγνωσμένο»; also the menu's count |
+| Ταξινόμηση (line) | «Η σειρά» | the **starting** order; each user switches with ↑/↓ |
+| Ανάθεση e-mail (ⓘ) | — | + each send is noted in *Παρατηρήσεις* |
+| Απόδειξη (ⓘ) | the sender address «απαιτείται να συμπληρωθεί» | it is filled in automatically; only if none is found must it be typed |
+
 ## Questions for the owner
-1. Three ⓘ texts still name «Έλεγχοι καταχώρισης» (Ενεργό έτος, Χωρίς θέμα, Ημερομηνία), but its label is now
-   «Έλεγχοι-περιορισμοί καταχώρισης». Rename them too?
-2. *Χρήστες με δικαίωμα καταχώρισης email* (ⓘ): «απαιτείται να συμπληρωθεί και τουλάχιστον ένας χρήστης με δικαιώματα
-   Διαχειριστή». Nothing checks this when saving: an administrator not in the list simply does not see the Inbox. Keep
-   the wording, or should saving refuse a list without an administrator?
+1. **Still read, but not on the page** (found by the check; never on the new page):
+   - `timeZone` (Europe/Athens): the time zone of Inbox dates and of the e-mail's HTML copy. Put it on the page
+     (e.g. *Υπηρεσία/Οργανισμός*), move it to `.env`, or leave it fixed?
+   - `rowsToSearchGiaSimplirosi` / `rowsToShowGiaSimplirosi` (1000 / 10): how many protocols the field suggestions look
+     through and show. Put them on the page, or leave them fixed?
+   - `protocolArrowStep` was hidden by your decision of 2026-11-19 (R6d): only typed addresses use it. Unchanged.
 
 ## How it was verified
-- PHPUnit: `SettingsPageTest::test_sections_follow_the_owners_plan` (sections, groups, order, moved settings, the
+- PHPUnit: `SettingsPageTest::test_rows_of_settings_moved_to_env_say_where_they_went`, the administrator case in
+  `test_inbox_users_are_whole_usernames`, `InboxTest::test_always_receipt_is_enforced_on_the_server`;
+  `SettingsPageTest::test_sections_follow_the_owners_plan` (sections, groups, order, moved settings, the
   removed ones gone from the page with their stored rows kept, `PRINT_MAX_ROWS`); the R6f / R6d tests updated to the
   new menu; `BackupTest` with `MYSQLDUMP_PATH`; `PrintTest` with `PRINT_MAX_ROWS`.
 - Browser (`e2e/tests/settings.spec.js`, «settings follow the owner's plan (R6m)»): the menu in order, the settings of
