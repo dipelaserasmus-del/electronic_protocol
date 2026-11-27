@@ -2,12 +2,13 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-27 13:56 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p, R5y, R4q, R2t, R2u and R1q; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-27 14:37 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p, R5y, R4q, R2t, R2u, R1q, R6m, V01b and R2v; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
   The owner's official stamp lives only in `local-data/stamp/` (template.json + emblem.png from the public-domain
   Wikimedia SVG; never commit anything from `local-data/official stamp.*`); loaded by the owner with `stamp:import`.
+- **R2v (owner, 2026-11-27):** `receipt.blade.php`: `#receipt-number` / `#receipt-date` box, `table.receipt-details` (filled-in rows only), signature and stamp area; its styles through `@push('print-styles')` (new stack in layouts/print).
 - **R2u (owner, 2026-11-27):** protocol-list: the file line is badge link (tabindex -1, aria-hidden), `<x-preview-button>`, `a.attachment-link` (the name), `.attachment-size` after it; `ProtocolList::FILTER_HELP` (filter tooltips); `.list-head` background `--bs-tertiary-bg` (the body is `bg-body-tertiary`).
 - **R1q (owner, 2026-11-27):** protocol-form: `.form-head` grid (title, `.form-head-nav` ◀ ▶, last change); `[data-form-actions]` first in `.number-head` (grid cell 3 with the date: copy, receipt, delete); `data-copy-link` / copy-link.js removed; `#f-etos` in the TAB order, `tabindex=-1` on the layout buttons, `.section-toggle` and the folder / keyword `role=listbox` lists (also inbox, search: a scrolling list is focusable and swallowed TAB); app.js focuses the number or the date on load; `.upload-row` tinted + `.upload-new` «ΝΕΟ».
 - **R6m (owner, 2026-11-27):** `SettingsCatalog` = the owner's plan from the «Σχεδιαστής ρυθμίσεων» artifact (sections office · numbering · display · registration · rights · files · trash · mailbox · inbox · notifications; printing, emailRegistration, backup gone); texts word for word except spelling fixes (docs/reports/R6m.md). `mysqldumpPath` → `MYSQLDUMP_PATH` (config database.mysqldump_path), `maxRowsInXlsExport` → `PRINT_MAX_ROWS` (config app.print_max_rows, 5000); stored rows annotated by migration 2026_11_27_000002; the ⓘ may be shorter than the line. Second round: `InboxAccess` lets administrators in whatever `allowedEmailUsers` says; `EmailInbox::registerChecked` forces the receipt while `alwaysSendReceitForEmails` is on; texts corrected to the code. **Feature guide: docs/SETTINGS.md** (every setting, verified against the code; base for Z04). Third round: `timeZone` → APP_TIMEZONE (config app.timezone); rowsToSearchGiaSimplirosi / rowsToShowGiaSimplirosi on Καταχώριση (box `suggestions`; Suggestions::DEFAULT_SEARCHED 1000 / DEFAULT_SHOWN 50, no floor of 50 any more).
@@ -403,6 +404,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 |---|---|---|---|
 | 2026-11-27 14:20 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path, print limit and time zone in .env; field suggestions on the page; docs/SETTINGS.md |
 | 2026-11-27 13:56 | V01b | #164 | VERSIONS.md: tooltip descriptions (link titles → «What each component does») + forecast for after Batch 10; artifact page updated |
+| 2026-11-27 13:56 | R2v | #163 | the receipt restyled for paper |
 | 2026-11-27 11:21 | R2u | #161 | list: 👁 before the name; the fixed head blends in |
 | 2026-11-27 11:17 | R1q | #160 | form: buttons, TAB order, «ΝΕΟ» files |
 | 2026-11-27 09:31 | R5y | #157 | inbox: one spinner; registered green, read grey; the page follows the e-mail |
