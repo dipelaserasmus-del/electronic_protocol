@@ -122,6 +122,23 @@ class PrintTest extends FeatureTestCase
         $p = Protocol::factory()->number(12, 2026)->create(['protocoldate' => '2026-05-06', 'thema' => 'Θέμα απόδειξης']);
         $this->actingAs($this->writer())->get('/receipt/'.$p->id)->assertOk()
             ->assertSee('Απόδειξη καταχώρισης')->assertSee('12/2026')->assertSee('06/05/2026')->assertSee('Θέμα απόδειξης');
+
+        // R2v (owner, 2026-11-27): restyled: the number and the date in the box, the details filled in (only those), a
+        // place to sign and stamp; text from the protocol stays text
+        $q = Protocol::factory()->number(13, 2026)->create(['protocoldate' => '2026-05-07', 'thema' => '<b>Αίτηση</b> & δικαιολογητικά',
+            'in_arxi_ekdosis' => 'Γιάννης Παπαδόπουλος', 'in_num' => '45', 'in_date' => '2026-05-05', 'fakelos' => 'Φ.1', 'in_topos_ekdosis' => '']);
+        $html = $this->actingAs($this->writer())->get('/receipt/'.$q->id)->assertOk()->getContent();
+        $this->assertStringContainsString('<main class="sheet portrait">', $html);
+        $this->assertMatchesRegularExpression('~id="receipt-number">13/2026</span>~', $html);
+        $this->assertMatchesRegularExpression('~id="receipt-date">07/05/2026</span>~', $html);
+        $this->assertStringContainsString('&lt;b&gt;Αίτηση&lt;/b&gt; &amp; δικαιολογητικά', $html);
+        $this->assertStringNotContainsString('<b>Αίτηση</b>', $html);
+        foreach (['Αρχή έκδοσης</th><td>Γιάννης Παπαδόπουλος', 'Αρ./Ημ. εισερχομένου</th><td>45 / 05/05/2026', 'Φάκελος</th><td>Φ.1'] as $row) {
+            $this->assertStringContainsString($row, $html);
+        }
+        $this->assertStringNotContainsString('Τόπος έκδοσης', $html, 'an empty detail is left out');
+        $this->assertStringContainsString('Ο/Η παραλαβών/ούσα', $html);
+        $this->assertStringContainsString('class="stamp">Σφραγίδα', $html);
     }
 
     public function test_range_rules(): void

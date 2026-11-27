@@ -69,6 +69,7 @@
             .sheet { margin: 0; padding: 0; max-width: none; box-shadow: none; border-radius: 0; }
         }
     </style>
+    @stack('print-styles'){{-- R2v: a page's own styles (the receipt) --}}
 </head>
 <body>
     <div class="toolbar">

@@ -57,6 +57,15 @@ test('receipt of a protocol on the print layout (R7)', async ({ page, context })
   await receipt.waitForLoadState();
   await expect(receipt.locator('#receipt')).toContainText(subject);
   await evidence(receipt, 'r7-receipt');
+  // R2v (owner, 2026-11-27): restyled as the protocol book: a sheet on screen, the number and date in a box
+  await expect(receipt.locator('main.sheet.portrait')).toBeVisible();
+  await expect(receipt.locator('#receipt-number')).toHaveText(/^\d+\/\d{4}$/);
+  await expect(receipt.locator('#receipt-date')).toHaveText(/^\d\d\/\d\d\/\d{4}$/);
+  await receipt.setViewportSize({ width: 1000, height: 1100 });
+  await evidence(receipt, 'r2v-receipt');
+  await receipt.emulateMedia({ media: 'print' });
+  await expect(receipt.locator('.toolbar')).toBeHidden();   // on paper: the sheet alone
+  await evidence(receipt, 'r2v-receipt-print');
 });
 
 // R2s (owner, 2026-11-26): the protocol book restyled for paper: a sheet on screen, the print view without buttons
