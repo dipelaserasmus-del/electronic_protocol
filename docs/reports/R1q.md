@@ -23,6 +23,10 @@ Also: a new attachment should say **ΝΕΟ**, coloured, with its whole line in a
   - *Απόδειξη*;
   - *Διαγραφή* (red, for those who may delete).
 
+  When the form is narrower (a smaller window, or the narrow page), there is no room beside the date. The buttons then
+  go under it, in a row, and the date keeps its width (review finding). The form's own width decides, so the
+  narrow-page setting counts too.
+
   The row of buttons under the number is gone: only *Ανάθεση* / *Διεκπεραιώθηκε* remain there, for the users who have
   them. The card is a line shorter.
 - **Σύνδεσμος removed**, with its script. The direct links `/protocol/N/YYYY` still open a protocol.
@@ -40,6 +44,8 @@ Also: a new attachment should say **ΝΕΟ**, coloured, with its whole line in a
   The hover title, and a hidden text for screen readers, still say it is saved with the protocol.
 
 ![The title line and the buttons at the right](img/R1q/r1q-form-head.png)
+
+![At 1100 px: the buttons under the date](img/R1q/r1q-form-head-1100.png)
 
 ![A new file](img/R1q/r1q-new-file.png)
 
@@ -63,6 +69,7 @@ Also: a new attachment should say **ΝΕΟ**, coloured, with its whole line in a
     - the three buttons in one column, top to bottom, at the right of the date;
     - the date still on the number's line;
     - TAB from the date goes to Φάκελος;
+    - at 1100 px the date group is over 330 px wide and the buttons are under it;
     - ◀ works.
   - R1j adjusted to the stack.
   - The form, trash, direct links, inbox, search, preview and stamp specs are green.

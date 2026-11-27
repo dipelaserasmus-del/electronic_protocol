@@ -776,6 +776,19 @@ test('the form\'s buttons, its TAB order and new files marked «ΝΕΟ» (R1q)',
     await page.keyboard.press('Tab');
     expect(await focused()).toBe('f-fakelos');
     await evidence(page, 'r1q-form-head', { clip: { x: 0, y: 0, width: 1440, height: 440 } });
+    // review of R1q: a narrower form (window or narrow page): the actions go under the date, which keeps its width
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await page.reload();
+    const group = await page.locator('#f-protocoldate').locator('xpath=ancestor::div[contains(@class,"input-group")][1]').boundingBox();
+    const narrowDate = await page.locator('#f-protocoldate').boundingBox();
+    expect(group.width).toBeGreaterThan(330);
+    expect(narrowDate.width).toBeGreaterThan(90);                    // the date itself readable, not squeezed
+    const copyNarrow = await page.locator('[data-form-actions] [data-action=copy]').boundingBox();
+    expect(copyNarrow.y).toBeGreaterThan(group.y + group.height);   // under the date
+    await evidence(page, 'r1q-form-head-1100', { clip: { x: 0, y: 0, width: 1100, height: 480 } });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload();
+
     // the buttons still work: the previous protocol
     const url = page.url();
     await page.locator('[data-action=previous]').click();

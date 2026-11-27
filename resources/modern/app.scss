@@ -151,6 +151,14 @@ body:not(.layout-narrow) .width-steps { display: none !important; }
 .form-head-title { grid-column: 1; }
 .form-head-nav { grid-column: 2; }
 .form-head-changed { grid-column: 3; justify-self: end; text-align: right; }
+// review of R1q: when the form itself is narrower (a smaller window, or the narrow page of R3j), the date would be
+// squeezed beside the actions: they go under it, in a row, and the date keeps its width. Measured on the form's card
+// (a container), not on the window, so the narrow-page setting counts too.
+.protocol-form .card-body:has(> .number-head) { container: formhead / inline-size; }
+@container formhead (max-width: 1279.98px) {
+    .number-head-actions { grid-row: 2; flex-direction: row !important; flex-wrap: wrap; justify-content: flex-end; }
+    .number-head:has(.number-head-actions) .number-head-date { max-width: 24rem; }
+}
 .protocol-number { font-size: 2.1rem; line-height: 1.2; padding: .3rem .75rem; letter-spacing: .02em; }
 .protocol-number.is-valid, .protocol-number.is-invalid { border-width: 2px; background-image: none; padding-right: .75rem; }
 .pill-actions-center .pill-actions-row { justify-content: center; }
