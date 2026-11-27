@@ -195,6 +195,7 @@ test('settings follow the owner\'s plan (R6m)', async ({ page }) => {
 
   for (const [section, ids, shot] of [
     ['display', ['minutesRefreshInterval', 'showRowsInPage', 'maxRowsInFindPage'], 'r6m-display'],
+    ['registration', ['protocolValidate', 'allowEmptyProtocol', 'saveCycleSxetiko', 'rowsToSearchGiaSimplirosi', 'rowsToShowGiaSimplirosi'], 'r6m-registration'],
     ['rights', ['allowWriterUpdateProtocol', 'allowWriterUpdateProtocolTimeInMinutes', 'allowWriterChangeDate', 'limitProtocolAccessList', 'allowUserChangeKeepSelect'], 'r6m-rights'],
     ['files', ['putStamp', 'diavgeiaUrl', 'emailFileFirst', 'saveEmailAs'], 'r6m-files'],
     ['notifications', ['sendEmailOnDiekperaiosiChange', 'alwaysSendReceitForEmails'], 'r6m-notifications']]) {

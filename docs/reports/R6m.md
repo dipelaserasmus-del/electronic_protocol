@@ -118,16 +118,23 @@ Gone: *Εκτυπώσεις και Excel*, *Καταχώριση e-mail*, *Συ�
 | Ανάθεση e-mail (ⓘ) | — | + each send is noted in *Παρατηρήσεις* |
 | Απόδειξη (ⓘ) | the sender address «απαιτείται να συμπληρωθεί» | it is filled in automatically; only if none is found must it be typed |
 
-## Questions for the owner
-1. **Still read, but not on the page** (found by the check; never on the new page):
-   - `timeZone` (Europe/Athens): the time zone of Inbox dates and of the e-mail's HTML copy. Put it on the page
-     (e.g. *Υπηρεσία/Οργανισμός*), move it to `.env`, or leave it fixed?
-   - `rowsToSearchGiaSimplirosi` / `rowsToShowGiaSimplirosi` (1000 / 10): how many protocols the field suggestions look
-     through and show. Put them on the page, or leave them fixed?
-   - `protocolArrowStep` was hidden by your decision of 2026-11-19 (R6d): only typed addresses use it. Unchanged.
+## Third round (owner, 2026-11-27)
+- **`timeZone` → `.env`** as `APP_TIMEZONE` (Laravel's own; default Europe/Athens, so nothing changes): config
+  `app.timezone`, used by `EmailRegistration::zone()` and the e-mail's HTML copy. Its `configs` row gets the same
+  «Δεν χρησιμοποιείται πια…» note (same migration); fresh installations no longer seed it.
+- **The field suggestions' two values are on the page**, in **Πρωτόκολλο → Καταχώριση**, in a frame «Προτάσεις κατά την
+  πληκτρολόγηση» (where they help most: filling in a protocol, in the form and the Inbox; also in *Σύνθετη αναζήτηση*):
+  «Προτάσεις: από πόσα πρόσφατα πρωτόκολλα» (1–50000, empty 1000) and «Προτάσεις: πόσες τιμές ανά πεδίο» (1–1000,
+  empty 50). The code used to raise «how many» to 50 at least (so the stored 10 showed 50); now the value means what it
+  says, and empty = 50 keeps today's behaviour.
+![Καταχώριση with the suggestions frame](img/R6m/r6m-registration.png)
+
+- Nothing else is read from `configs` without being on the page, except `protocolArrowStep` (hidden by the owner,
+  R6d), the old layout's `wideListProtocol` and the stamp design (its own page); see [SETTINGS.md](../SETTINGS.md).
 
 ## How it was verified
-- PHPUnit: `SettingsPageTest::test_rows_of_settings_moved_to_env_say_where_they_went`, the administrator case in
+- PHPUnit: `SettingsPageTest::test_field_suggestions_follow_their_two_settings`,
+  `SettingsPageTest::test_rows_of_settings_moved_to_env_say_where_they_went`, the administrator case in
   `test_inbox_users_are_whole_usernames`, `InboxTest::test_always_receipt_is_enforced_on_the_server`;
   `SettingsPageTest::test_sections_follow_the_owners_plan` (sections, groups, order, moved settings, the
   removed ones gone from the page with their stored rows kept, `PRINT_MAX_ROWS`); the R6f / R6d tests updated to the

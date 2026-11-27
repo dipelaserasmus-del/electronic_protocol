@@ -307,7 +307,7 @@ Open *Εισερχόμενα*.
 - [ ] **113.** *Λίστα*: scroll down: the title, the gaps notice, the filters and the page buttons stay under the top bar, the column titles right under them (on a small or low window they scroll away as before).
 - [ ] **114.** Open a protocol: ◀ Προηγούμενο / Επόμενο ▶ in the title line; Αντιγραφή ως νέο, Απόδειξη, Διαγραφή one under the other at the right; no Σύνδεσμος. *Νέο*: TAB goes Έτος → number → date → Φάκελος → Θέμα …; add a file: a yellow «ΝΕΟ» line.
 - [ ] **115.** *Λίστα*: a file's line reads type, 👁, name, then the size, dimmed; hover *Δικά μου* / *Καταχωρίσεις* for what they show; scrolled, the fixed head has the same grey as the page.
-- [ ] **116.** *Ρυθμίσεις*: the menu and texts are as you planned them in the «Σχεδιαστής ρυθμίσεων» (no *Εκτυπώσεις και Excel*, *Καταχώριση e-mail*, *Συντήρηση*); the texts I corrected to match the code are listed in [R6m](docs/reports/R6m.md). *Διαχείριση → Backup* works without the old setting. On your real copy run `./dev.sh real artisan migrate --force`: in the `configs` table, `mysqldumpPath` and `maxRowsInXlsExport` now say they moved to `.env`. Every setting is explained in [docs/SETTINGS.md](docs/SETTINGS.md).
+- [ ] **116.** *Ρυθμίσεις*: the menu and texts are as you planned them in the «Σχεδιαστής ρυθμίσεων» (no *Εκτυπώσεις και Excel*, *Καταχώριση e-mail*, *Συντήρηση*); the texts I corrected to match the code are listed in [R6m](docs/reports/R6m.md). *Διαχείριση → Backup* works without the old setting. On your real copy run `./dev.sh real artisan migrate --force`: in the `configs` table, `mysqldumpPath` and `maxRowsInXlsExport` (and `timeZone`) now say they moved to `.env`; *Καταχώριση* has the two «Προτάσεις» values. Every setting is explained in [docs/SETTINGS.md](docs/SETTINGS.md).
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -322,10 +322,6 @@ Open *Εισερχόμενα*.
 5. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
    has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
    as it is (my suggestion), or ask for the browser libraries.
-6. **Ρυθμίσεις (R6m):** two kinds of values are still read but have never been on the new page: `timeZone`
-   (time zone of Inbox dates, Europe/Athens) and the field suggestions' limits (1000 searched / 10 shown). Put them on
-   the page, move them to `.env`, or leave them fixed? Details: [R6m](docs/reports/R6m.md),
-   [docs/SETTINGS.md](docs/SETTINGS.md).
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:

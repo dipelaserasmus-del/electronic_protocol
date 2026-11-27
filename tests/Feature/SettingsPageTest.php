@@ -218,11 +218,37 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertFalse(Config::where('key', 'searchField1')->exists());
     }
 
+    /** R6m (owner, 2026-11-27): the field suggestions' two values are on the page (Καταχώριση) and mean what they say */
+    public function test_field_suggestions_follow_their_two_settings(): void
+    {
+        $this->assertSame('registration', SettingsCatalog::sectionOf('rowsToSearchGiaSimplirosi'));
+        $this->assertSame('registration', SettingsCatalog::sectionOf('rowsToShowGiaSimplirosi'));
+        $writer = $this->writer();
+        foreach (['Αθήνα', 'Αθήνα', 'Πάτρα', 'Βόλος'] as $i => $place) {
+            Protocol::factory()->create(['etos' => 2026, 'protocolnum' => 900 + $i, 'in_topos_ekdosis' => $place]);
+        }
+        $this->assertSame(['Αθήνα', 'Βόλος', 'Πάτρα'], \App\Support\Suggestions::for($writer)['in_topos_ekdosis']);
+        $this->setting('rowsToShowGiaSimplirosi', '1');   // was raised to 50 at least: now 1 means 1, the most used
+        $this->assertSame(['Αθήνα'], \App\Support\Suggestions::for($writer)['in_topos_ekdosis']);
+        $this->setting('rowsToShowGiaSimplirosi', '');
+        $this->setting('rowsToSearchGiaSimplirosi', '2');   // the two latest only
+        $this->assertSame(['Βόλος', 'Πάτρα'], \App\Support\Suggestions::for($writer)['in_topos_ekdosis']);
+
+        $page = Livewire::actingAs($this->admin())->test(SettingsPage::class)->call('show', 'registration');
+        $box = substr($page->html(), strpos($page->html(), 'id="box-suggestions"'));
+        $this->assertStringContainsString('id="s-rowsToSearchGiaSimplirosi"', $box);
+        $this->assertStringContainsString('id="s-rowsToShowGiaSimplirosi"', $box);
+        $page->set('values.rowsToShowGiaSimplirosi', '0')->call('save')->assertHasErrors('values.rowsToShowGiaSimplirosi');
+        $page->set('values.rowsToShowGiaSimplirosi', '30')->call('save')->assertHasNoErrors();
+        $this->assertSame('30', (string) Config::getConfigValueOf('rowsToShowGiaSimplirosi'));
+    }
+
     /** R6m (owner, 2026-11-27): the rows of the two settings moved to .env say so, with the old value kept */
     public function test_rows_of_settings_moved_to_env_say_where_they_went(): void
     {
         $migration = require base_path('database/migrations/2026_11_27_000002_settings_moved_to_env.php');
         DB::table('configs')->where('key', 'mysqldumpPath')->delete();
+        Config::setConfigValueOf('timeZone', 'Europe/Athens');
         Config::setConfigValueOf('maxRowsInXlsExport', '700');
         $migration->up();
         $migration->up();   // twice: nothing more happens
@@ -231,8 +257,13 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertSame('Δεν χρησιμοποιείται πια: ορίζεται στο .env ως PRINT_MAX_ROWS (δείτε το .env.example). Παλιά τιμή: 700',
             (string) Config::getConfigValueOf('maxRowsInXlsExport'));
         $this->assertSame(5000, \App\Services\Printing\PrintRange::limit(), 'the row is not read');
+        $this->assertStringStartsWith('Δεν χρησιμοποιείται πια: ορίζεται στο .env ως APP_TIMEZONE', (string) Config::getConfigValueOf('timeZone'));
+        $this->assertSame('Europe/Athens', \App\Services\Mail\EmailRegistration::zone()->getName(), 'the time zone is APP_TIMEZONE');
+        config(['app.timezone' => 'Europe/London']);
+        $this->assertSame('Europe/London', \App\Services\Mail\EmailRegistration::zone()->getName());
         $this->assertStringContainsString("MYSQLDUMP_PATH=\n", file_get_contents(base_path('.env.example')));
         $this->assertStringContainsString("PRINT_MAX_ROWS=5000\n", file_get_contents(base_path('.env.example')));
+        $this->assertStringContainsString("APP_TIMEZONE=Europe/Athens\n", file_get_contents(base_path('.env.example')));
 
         $migration->down();
         $this->assertSame('700', (string) Config::getConfigValueOf('maxRowsInXlsExport'));

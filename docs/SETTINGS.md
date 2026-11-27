@@ -127,6 +127,21 @@ and the first number of the last *N* months, and runs to the year's last number.
   numbers separated by commas, spaces or `;`), as many as fit, keeps their «last change» time, sends no e-mail.
   Administrators only. Details: [RELATED-NUMBERS.md](RELATED-NUMBERS.md).
 
+### ▢ Προτάσεις κατά την πληκτρολόγηση (frame of the next two; R6m, on the page since 2026-11-27)
+While typing in *Τόπος έκδοσης*, *Αρχή έκδοσης*, *Παραλήπτης* and *Απευθύνεται σε* (protocol form, Inbox, *Σύνθετη
+αναζήτηση*), each field offers the values written most often in the latest protocols the user may see (with
+*Περιορισμός λίστας* on, only their own and assigned ones), in alphabetical order. The list is made when the page opens.
+
+### Προτάσεις: από πόσα πρόσφατα πρωτόκολλα — `rowsToSearchGiaSimplirosi`
+- **Values:** empty or 1–50000; empty = 1000.
+- **Does:** the suggestions come from the latest *N* protocols (by entry). More gives more (and older) values but a
+  slower page.
+
+### Προτάσεις: πόσες τιμές ανά πεδίο — `rowsToShowGiaSimplirosi`
+- **Values:** empty or 1–1000; empty = 50.
+- **Does:** each field offers its *N* most used values. (Before R6m the code raised any value below 50 to 50, so the
+  old stored 10 showed 50: hence the default 50.)
+
 ## Πρωτόκολλο → Δικαιώματα
 
 ### Δικαιώματα τροποποίησης πρωτοκόλλων — `allowWriterUpdateProtocol`
@@ -271,15 +286,14 @@ and the first number of the last *N* months, and runs to the year's last number.
 |---|---|---|---|
 | `MYSQLDUMP_PATH` | «Διαδρομή του mysqldump» (`mysqldumpPath`) | empty = `mysqldump` / `mariadb-dump` found on the PATH (the Docker image has it) | the program *Διαχείριση → Backup* runs; only those two programs are ever run |
 | `PRINT_MAX_ROWS` | «Μέγιστες γραμμές εκτύπωσης και Excel» (`maxRowsInXlsExport`) | 5000 | most protocols in one printout or Excel file; the printout says when more were left out |
+| `APP_TIMEZONE` | the hidden key `timeZone` (never on the new page) | Europe/Athens | the application's time zone: every date it shows and fills in, also the Inbox's and the e-mail's HTML copy |
 
-Their `configs` rows now read «Δεν χρησιμοποιείται πια: ορίζεται στο .env ως … (δείτε το .env.example).», with the
-old value at the end (migration `2026_11_27_000002`). Template: `.env.example`.
+Their `configs` rows (and `timeZone`'s) now read «Δεν χρησιμοποιείται πια: ορίζεται στο .env ως … (δείτε το
+.env.example).», with the old value at the end (migration `2026_11_27_000002`). Template: `.env.example`.
 
 ### `configs` keys still read, not on the page
 | Key | Read by | Effect | Status |
 |---|---|---|---|
-| `timeZone` | `EmailRegistration::zone()`, `viewEmail.blade.php` | time zone of Inbox dates (empty → the application's, Europe/Athens) and of the e-mail's HTML copy | **open question to the owner** |
-| `rowsToSearchGiaSimplirosi`, `rowsToShowGiaSimplirosi` | `App\Support\Suggestions` | how many protocols field suggestions look through (1000) and show (10; values under 50 have no effect) | **open question to the owner** |
 | `protocolArrowStep` | `ProtocolController` `/goto/…/bb|ff` | step of the «jump N» addresses; no button uses them | hidden by the owner's decision (R6d) |
 | `wideListProtocol` | old layout (login pages only) | full-width old layout | kept until the old layout goes (Z01) |
 | `stampTemplate` | `StampTemplate` | the stamp's design | edited on the *Σφραγίδα* page, not here |
@@ -287,7 +301,7 @@ old value at the end (migration `2026_11_27_000002`). Template: `.env.example`.
 
 ### Dead keys (nothing reads them)
 `safeNewProtocolNum`, `updatesAutoCheck` (hidden, R6d), `needsUpdate`, `alwaysShowFakelosInViewEmails` (R5s: every
-e-mail needs a folder), `mysqldumpPath`, `maxRowsInXlsExport` (R6m, above). Removed rows: `searchField1–3`,
+e-mail needs a folder), `mysqldumpPath`, `maxRowsInXlsExport`, `timeZone` (R6m, above). Removed rows: `searchField1–3`,
 `showUserInfo`, `allowListValuesMatchingInput` (R6c), `gapCheckFromNumber` (moved into `firstProtocolNum`).
 
 ## Changing a setting (for developers and AI assistants)

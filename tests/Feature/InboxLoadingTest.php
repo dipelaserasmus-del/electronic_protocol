@@ -72,7 +72,7 @@ class InboxLoadingTest extends FeatureTestCase
      */
     public function test_the_last_checks_emails_are_shown_at_once_while_it_connects(): void
     {
-        $this->setting('timeZone', 'Europe/Athens');
+        config(['app.timezone' => 'Europe/Athens']);   // R6m: APP_TIMEZONE
         \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 06:05:00', 'UTC'));
         Livewire::actingAs($this->admin())->test(EmailInbox::class)->assertSee('inbox-message', false);   // a check, by someone
 
@@ -203,7 +203,7 @@ class InboxLoadingTest extends FeatureTestCase
     /** owner, 2026-11-23: «Τελευταία ανανέωση: ΩΡΑ» next to «Ανανέωση»; a failed refresh keeps the last good time */
     public function test_the_last_refresh_time_is_shown_next_to_the_button(): void
     {
-        $this->setting('timeZone', 'Europe/Athens');
+        config(['app.timezone' => 'Europe/Athens']);   // R6m: APP_TIMEZONE
         \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-23 06:42:00', 'UTC'));
         $page = Livewire::actingAs($this->writer())->test(EmailInbox::class)
             ->assertSeeHtml('id="inbox-checked-at"')->assertSee('Τελευταία ανανέωση: 08:42');

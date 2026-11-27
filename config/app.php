@@ -67,7 +67,8 @@ return [
     |
     */
 
-    'timezone' => 'Europe/Athens',
+    // R6m (owner, 2026-11-27): APP_TIMEZONE in .env (was also the configs key timeZone, read only by the inbox)
+    'timezone' => env('APP_TIMEZONE', 'Europe/Athens'),
 
     // R6m (owner, 2026-11-27): most protocols in one printout or Excel file (was the setting «Μέγιστες γραμμές εκτύπωσης και Excel»)
     'print_max_rows' => (int) env('PRINT_MAX_ROWS', 5000),
