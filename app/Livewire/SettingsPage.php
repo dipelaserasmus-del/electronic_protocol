@@ -77,7 +77,6 @@ class SettingsPage extends Component
         $rules = array_intersect_key(SettingsCatalog::rules(), array_flip(array_map(fn ($k) => 'values.'.$k, array_keys($keys))));
         $validator = Validator::make(['values' => $values], $rules, [
             'values.titleColor.regex' => 'Γράψτε ένα χρώμα όπως #1f4e79 ή το όνομά του στα αγγλικά (π.χ. teal).',
-            'values.mysqldumpPath.regex' => 'Γίνεται δεκτό μόνο το αρχείο mysqldump ή mariadb-dump.',
         ], SettingsCatalog::attributes());
         if ($validator->fails()) {
             $this->setErrorBag($validator->errors());

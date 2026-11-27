@@ -25,7 +25,7 @@ class BackupTest extends FeatureTestCase
 
     public function test_backup_creates_a_complete_compressed_dump(): void
     {
-        $this->setting('mysqldumpPath', '/usr/bin/mysqldump');
+        config(['database.mysqldump_path' => '/usr/bin/mysqldump']);   // R6m: MYSQLDUMP_PATH
 
         $this->createBackup('success');
 
@@ -57,15 +57,15 @@ class BackupTest extends FeatureTestCase
         $this->assertSame([], $this->backupFiles(), 'only the login fails; nothing is run by a shell');
     }
 
-    public function test_setting_cannot_run_another_program(): void
+    public function test_the_path_cannot_run_another_program(): void
     {
         $this->assertSame('/usr/bin/mysqldump', (new DatabaseBackup('/bin/sh'))->binary(), 'falls back to mysqldump on PATH');
         $this->assertSame('/usr/bin/mysqldump', (new DatabaseBackup('/usr/bin/mysqldump; touch /tmp/x'))->binary());
     }
 
-    public function test_wrong_setting_falls_back_to_mysqldump_on_path(): void
+    public function test_wrong_path_falls_back_to_mysqldump_on_path(): void
     {
-        $this->setting('mysqldumpPath', 'c:\xampp\mysql\bin\mysqldump.exe');
+        config(['database.mysqldump_path' => 'c:\xampp\mysql\bin\mysqldump.exe']);   // R6m: MYSQLDUMP_PATH
 
         $this->createBackup('success');
         $this->assertCount(1, $this->backupFiles());
