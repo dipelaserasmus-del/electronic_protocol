@@ -12,7 +12,8 @@
         $last = $paginator->lastPage();
         $name = $paginator->getPageName();
         // the lower pager brings the start of the list (the upper pager) into view; the upper one is already there (R2g)
-        $scroll = $position === 'bottom' ? "document.getElementById('pager-top')?.scrollIntoView({ block: 'start' })" : '';
+        // review of R2t: the protocol list's head (with the upper pager) stays in view, so its start is the page's top
+        $scroll = $position === 'bottom' ? "document.getElementById('list-head') ? window.scrollTo({ top: 0 }) : document.getElementById('pager-top')?.scrollIntoView({ block: 'start' })" : '';
         // the window never leaves 1…last, whatever page was asked for (review of R2e)
         $middle = min(max($current, 1), $last);
         $numbers = collect([1, $last])->merge(range(max(1, $middle - 2), min($last, $middle + 2)))->unique()->sort()->values();

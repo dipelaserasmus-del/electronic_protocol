@@ -235,6 +235,40 @@ function measureTopbar() {
 window.addEventListener('load', measureTopbar);
 window.addEventListener('resize', measureTopbar);
 
+/*
+ * R2t (owner, 2026-11-27): the list's head stays under the top bar; its height (it changes: the gaps notice, a narrower
+ * window, a re-render) puts the table's column titles right under it. 0 where it does not stay (small or low screens).
+ * While it is stuck it casts a thin shadow over the rows going under it.
+ */
+const listHeadsWatched = new WeakSet();   // a re-render keeps the element: watched once (Livewire drops data-* set here)
+const listHeadSize = window.ResizeObserver ? new ResizeObserver(() => measureListHead()) : null;
+function measureListHead() {
+    const head = document.getElementById('list-head');
+    const stays = head && getComputedStyle(head).position === 'sticky';
+    document.documentElement.style.setProperty('--list-head-height', `${stays ? head.getBoundingClientRect().height : 0}px`);
+}
+function listHeadStuck() {
+    const head = document.getElementById('list-head');
+    if (!head) return;
+    const style = getComputedStyle(head);
+    head.classList.toggle('is-stuck', style.position === 'sticky' && window.scrollY > 0
+        && head.getBoundingClientRect().top <= (parseFloat(style.top) || 0) + 0.5);
+}
+function watchListHead() {
+    const head = document.getElementById('list-head');
+    if (head && !listHeadsWatched.has(head)) {
+        listHeadsWatched.add(head);
+        listHeadSize?.observe(head);
+    }
+    measureListHead();
+    listHeadStuck();
+}
+window.addEventListener('resize', measureListHead);
+window.addEventListener('scroll', listHeadStuck, { passive: true });
+document.addEventListener('DOMContentLoaded', watchListHead);
+document.addEventListener('livewire:navigated', watchListHead);
+document.addEventListener('livewire:init', () => window.Livewire.hook('morph.updated', ({ el }) => { if (el.id === 'list-head') watchListHead(); }));
+
 // R2m (owner, 2026-11-25): ↻ next to «Λίστα» refreshes the list (ProtocolList listens for «list-refresh»); the round ↑ at
 // the bottom right goes back to the top of the page
 document.addEventListener('click', (e) => {

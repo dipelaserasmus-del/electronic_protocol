@@ -37,8 +37,59 @@ test('filters, sorting and the sticky header (R2)', async ({ page }) => {
   await page.waitForTimeout(200);
   const header = await page.locator('.table-sticky thead th').first().boundingBox();   // the cells stick, not the row
   expect(header.y).toBeGreaterThanOrEqual(0);
-  expect(header.y).toBeLessThan(120);
+  // R2t: right under the list's head, which stays under the top bar
+  const head = await page.locator('#list-head').boundingBox();
+  expect(Math.abs(header.y - (head.y + head.height))).toBeLessThan(2);
   await evidence(page, 'r2-sticky-header');
+});
+
+// R2t (owner, 2026-11-27): the title, the gaps notice, the filters and the pager stay in place under the top bar while
+// the list scrolls; the column titles stay right under them; on a low window they scroll away as before
+test('the list\'s head stays under the top bar, the column titles under it (R2t)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  await expect(page.locator('.protocol-row').first()).toBeVisible();
+  const head = page.locator('#list-head');
+  const bar = await page.locator('.app-topbar').boundingBox();
+  const before = await head.boundingBox();
+  await expect(head).not.toHaveClass(/is-stuck/);
+
+  await page.mouse.wheel(0, 3000);
+  await expect(head).toHaveClass(/is-stuck/);
+  const stuck = await head.boundingBox();
+  expect(Math.abs(stuck.y - (bar.y + bar.height))).toBeLessThan(2);      // under the top bar
+  expect(Math.abs(stuck.height - before.height)).toBeLessThan(2);         // all of it: title, filters, pager
+  for (const part of ['#list-title', '[data-filter=d]', '#list-detailed', '#pager-top']) {
+    await expect(page.locator(part).first()).toBeInViewport();
+  }
+  const th = await page.locator('.protocol-table thead th').first().boundingBox();
+  expect(Math.abs(th.y - (stuck.y + stuck.height))).toBeLessThan(2);      // the column titles right under it
+  // a row going under it is covered by it (the head is on top), so the filters stay clickable
+  const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('#list-head') !== null,
+    { x: stuck.x + 20, y: stuck.y + stuck.height - 4 });
+  expect(hit).toBe(true);
+  await page.locator('[data-filter=d]').click();
+  await expect(page.locator('#list-title')).toContainText('προς Διεκπεραίωση');
+  await page.locator('[data-filter=all]').click();   // the whole list again (the filtered one may be too short to scroll)
+  await expect(page.locator('#list-title')).toHaveText('Λίστα Πρωτοκόλλων');
+  await page.mouse.wheel(0, 1500);
+  await expect(head).toHaveClass(/is-stuck/);
+  await evidence(page, 'r2t-scrolled', { clip: { x: 0, y: 0, width: 1440, height: 420 } });
+
+  // review of R2t: the lower pager brings the list's first rows into view (the upper pager is always in view now)
+  await page.locator('#pager-bottom').scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+  await page.locator('#pager-bottom [data-pager=next]').click();
+  await expect(page).toHaveURL(/[?&]page=2/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
+  await expect(page.locator('.protocol-row').first()).toBeInViewport();
+
+  // a low window: it scrolls away, the column titles under the top bar as before
+  await page.setViewportSize({ width: 1440, height: 560 });
+  await page.mouse.wheel(0, 800);
+  await expect.poll(async () => (await head.boundingBox()).y).toBeLessThan(0);
+  await expect.poll(async () => (await page.locator('.protocol-table thead th').first().boundingBox()).y).toBeLessThan(bar.y + bar.height + 2);
 });
 
 test('"Αναλυτικά" shows more and is remembered by the browser (R2)', async ({ page }) => {
