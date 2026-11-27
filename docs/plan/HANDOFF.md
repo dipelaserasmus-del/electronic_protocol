@@ -2,7 +2,7 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-27 11:17 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p, R5y, R4q, R2t, R2u and R1q; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-27 13:56 (after Batches 1–9, 9.5, 9.6, R3j, R4i, R5q, R2m, R4j, R5r, R5s, R4k, R5t, R2n and R5u, R6f, R6g, R6h, R6i, R1l, R1m, R1n, R4l, R2o, R2p, R6j, R6k, R2q, R2r, R6l, R3k, R1o, R5v and R2s, N06, R4m, R5w, V01, F10, R5x, R4n, R4o, R1p, R4p, R5y, R4q, R2t, R2u and R1q; next: Batch 10 when the owner says so; times are Greek time)
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
   R4c browser libraries (only if wanted). (R5p's look: each user chooses since R5q.)
@@ -30,7 +30,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 - **V01 (owner, 2026-11-26):** [`docs/reports/VERSIONS.md`](../reports/VERSIONS.md) = versions of platform / framework /
   libraries / servers: original (upstream `g-theodoroy` master = `2f06ea6` lock, production XAMPP facts), current, newest;
   🔴🟠🟡🟢 flags. Upstream lock: 86 `composer audit` advisories; current: 0 (N06 brought Symfony 8.1.12). Open: rebuild the image once Ubuntu's php8.5 has the 2026-11-19 PHP fixes;
-  patch bumps (Laravel 13.44, Livewire 4.4.10, …) as one task. **V02 (Batch 10, after Z03): update the report.**
+  patch bumps (Laravel 13.44, Livewire 4.4.10, …) as one task. **V02 (Batch 10, after Z03): update the report; V01b's forecast says what to expect.** Descriptions: `[name](#c-slug "text")` + `<a id="c-slug">` list.
 - **R6l (owner, 2026-11-26):** `App\Services\Protocols\RelatedNumbers` (linkOnSave = the legacy save rule moved out of ProtocolWriter, unchanged; numbers / plan / applyToExisting for R6l); SettingsPage openRelated / applyRelated (admin, setting stored on); partial `related-existing`. Rules and how to change them: docs/RELATED-NUMBERS.md.
 - **R2r (owner, 2026-11-25):** `App\Support\EmailFile` (is / label / ordered: «email_YYYYMMDD_HHMMSS.eml|html»); protocol-list loops `EmailFile::ordered($p->attachments)` and shows `label()`; setting `emailFileFirst` (bool, off = last; no row needed) in the «Συνημμένα» section.
 - **R2q (owner, 2026-11-25):** protocol-list `$inMore` / `$outMore` joined with "\n"; tooltips `customClass: 'from-to-tooltip'` → `.tooltip-inner { white-space: pre-line }` (the title stays plain text).
@@ -401,7 +401,8 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-27 13:40 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path and print limit in .env |
+| 2026-11-27 14:20 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path, print limit and time zone in .env; field suggestions on the page; docs/SETTINGS.md |
+| 2026-11-27 13:56 | V01b | #164 | VERSIONS.md: tooltip descriptions (link titles → «What each component does») + forecast for after Batch 10; artifact page updated |
 | 2026-11-27 11:21 | R2u | #161 | list: 👁 before the name; the fixed head blends in |
 | 2026-11-27 11:17 | R1q | #160 | form: buttons, TAB order, «ΝΕΟ» files |
 | 2026-11-27 09:31 | R5y | #157 | inbox: one spinner; registered green, read grey; the page follows the e-mail |
