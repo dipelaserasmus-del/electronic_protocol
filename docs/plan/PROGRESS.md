@@ -764,7 +764,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **R1q** | Protocol form: ◀ ▶ in the title line; copy / receipt / delete stacked at the right; no «Σύνδεσμος»; TAB from field to field; new files marked «ΝΕΟ» | R1j | 0.3 | 0.1 | 5.9 | 6.2 | 11.1 | 11.5 | 5.2 | #160 |
 | ✅ | **R1p** | Protocol form: keywords offered from the subject (on leaving Θέμα) and the files' names | R5d | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 | #154 |
 | ✅ | **R5x** 🔴 | Inbox: a registered e-mail's envelope gets a green stripe on the left | R5q | 0.3 | 0.1 | 10.8 | 11.1 | 10.8 | 11.1 | 0.0 | #155 |
-| ✅ | **R6m** | Ρυθμίσεις as the owner planned them (settings planner): new grouping and texts; mysqldump path and print limit to .env | R6f | 0.3 | 0.1 | 5.3 | 5.6 | 11.1 | 11.5 | 5.9 |  |
+| ✅ | **R6m** | Ρυθμίσεις as the owner planned them (settings planner): new grouping and texts; mysqldump path and print limit to .env | R6f | 0.3 | 0.1 | 5.3 | 5.6 | 11.1 | 11.5 | 5.9 | #162 |
 | ⬜ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.4 | 10.9 | 6.2 |  |
 | ⬜ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 |  |
 | ⬜ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 |  |

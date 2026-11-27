@@ -401,7 +401,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
-| 2026-11-27 13:40 | R6m | #? | Ρυθμίσεις as the owner planned them; mysqldump path and print limit in .env |
+| 2026-11-27 13:40 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path and print limit in .env |
 | 2026-11-27 11:21 | R2u | #161 | list: 👁 before the name; the fixed head blends in |
 | 2026-11-27 11:17 | R1q | #160 | form: buttons, TAB order, «ΝΕΟ» files |
 | 2026-11-27 09:31 | R5y | #157 | inbox: one spinner; registered green, read grey; the page follows the e-mail |
