@@ -2,7 +2,8 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-27 19:41 (after Batches 1–9, 9.5, 9.6 and 9.7; next: Batch 10 when the owner says so; times are Greek time)
+## Current state — 2026-11-28 00:34 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10 started; times are Greek time)
+- **Milestone M1 (2026-11-28):** tag `milestone-M1-batch-9.7`, summary in [`MILESTONES.md`](MILESTONES.md) (M0's tag pushed with it). Batch 10 runs A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03 → V02; then the deployment guide; Z04 last (ask the owner first).
 - **Batch 9.7 complete (2026-11-27):** 48 tasks (R3j … R6m, V01b, R2v; PRs #117–#164), summary [`docs/reports/BATCH-9.7.md`](../reports/BATCH-9.7.md). Settings: `docs/SETTINGS.md` is the feature guide (keep it true). The settings planner artifact starts from the merged settings.
 - **Batch 9.6 complete (2026-11-24):** R3h #105, R3i #106, R4d #107, R4c #108, R4e #109, R4f #110, R4g #111, R4h #112,
   R5p #113, N05 #114, R6e #115 (summary [`docs/reports/BATCH-9.6.md`](../reports/BATCH-9.6.md); Batch 9.5: [`BATCH-9.5.md`](../reports/BATCH-9.5.md)). **Open with the owner:**
@@ -395,7 +396,7 @@ setup script already did this before Claude started. Then:
 ```
 Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a cold container).
 - Playwright: `NODE_PATH=$(npm root -g) node script.js` (Chromium preinstalled).
-- Git tags can't be pushed through the sandbox proxy; milestones are recorded in `MILESTONES.md`.
+- Git tags can't be pushed through the sandbox proxy; milestones are recorded in `MILESTONES.md` (tag `milestone-M<n>-…`, pushed from the owner's computer: M0 and M1 on 2026-11-28).
 - Never run `artisan db:wipe` without `--env=testing` (it would wipe the dev demo DB).
 - **Owner's Fedora runs Docker Desktop** (VM file sharing): a file replaced by an atomic rename (Claude's Write/Edit tools) can stay stale *inside the containers* for minutes. Before running tests in the containers, rewrite changed files in place (`cat f > tmp && cat tmp > f`).
 - Frontend (N03): `docker/dev/cloud-setup.sh` builds the app image, which now runs `npm ci`; the cloud sandbox must reach the npm registry (not yet tried there).
@@ -403,6 +404,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-28 00:34 | M1 | #167 | milestone M1 (tags M0, M1); docs checked: DEVELOPMENT.md commands, Batch 10 order with V02 / Z04; e2e: browser and test dates in Greek time (CI failed after 00:00 Greek time: UTC still the day before) |
 | 2026-11-27 19:41 | Batch 9.7 | — | summary BATCH-9.7.md; settings spreadsheet deleted (the planner replaces it) |
 | 2026-11-27 14:20 | R6m | #162 | Ρυθμίσεις as the owner planned them; mysqldump path, print limit and time zone in .env; field suggestions on the page; docs/SETTINGS.md |
 | 2026-11-27 13:56 | V01b | #164 | VERSIONS.md: tooltip descriptions (link titles → «What each component does») + forecast for after Batch 10; artifact page updated |

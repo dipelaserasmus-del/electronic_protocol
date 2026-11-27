@@ -36,6 +36,15 @@ Your normal `.env` is never used or changed by the dev stack: it reads `.env.dev
 | `./dev.sh artisan <cmd>` | run a Laravel artisan command |
 | `./dev.sh shell` | shell inside the app container |
 | `./dev.sh logs` | follow the logs |
+| `./dev.sh assets` | rebuild the new pages' frontend (Vite) if its sources changed |
+| `./dev.sh doctor` | check the set-up (versions and status only, no data: safe to send) |
+| `./dev.sh real load\|up\|down\|wipe\|check-names` | local copy of your production data on port 8081 (see below) |
+| `./dev.sh cloud-up` | same as `up`, inside a Claude Code cloud sandbox |
+
+`EVIDENCE=<ID> ./dev.sh e2e` also saves screenshots to `docs/reports/img/<ID>/`. Feature guides (how a feature
+works, the rules its code keeps): [SETTINGS.md](SETTINGS.md), [RELATED-NUMBERS.md](RELATED-NUMBERS.md),
+[FOLDERS.md](FOLDERS.md). Plan and status: [plan/HANDOFF.md](plan/HANDOFF.md), [plan/PROGRESS.md](plan/PROGRESS.md),
+milestones [plan/MILESTONES.md](plan/MILESTONES.md).
 
 To preview a task branch: `git fetch && git checkout task/<ID>-... && ./dev.sh up`.
 
