@@ -131,21 +131,6 @@ class DatabaseSeeder extends Seeder
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        if ('\\' === DIRECTORY_SEPARATOR) {
-            DB::table('configs')->insert([
-                'key' => 'mysqldumpPath',
-                'value' => 'c:\xampp\mysql\bin\mysqldump.exe',
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            ]);
-        } else {
-            DB::table('configs')->insert([
-                'key' => 'mysqldumpPath',
-                'value' => '/usr/bin/mysqldump',
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            ]);
-        }
 
         DB::table('configs')->insert([
             'key' => 'wideListProtocol',
@@ -185,13 +170,6 @@ class DatabaseSeeder extends Seeder
         DB::table('configs')->insert([
             'key' => 'saveCycleSxetiko',
             'value' => null,
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('configs')->insert([
-            'key' => 'maxRowsInXlsExport',
-            'value' => 5000,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);

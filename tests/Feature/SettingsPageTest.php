@@ -77,11 +77,11 @@ class SettingsPageTest extends FeatureTestCase
         // the menu: every section under its heading, in order; the first one open
         $html = $this->actingAs($admin)->get('/settings')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('~settings-nav-item\s+active\s*"\s+aria-current="page"\s*>\s*<i class="bi bi-building"~', $html);
-        $this->assertMatchesRegularExpression('~Υπηρεσία.*?Λίστες και αναζήτηση.*?settings-nav-heading">Πρωτόκολλο</div>.*?Αρίθμηση.*?Καταχώριση.*?Δικαιώματα.*?settings-nav-heading">Αρχεία</div>.*?Συνημμένα.*?Κάδος.*?Εκτυπώσεις και Excel.*?settings-nav-heading">E-mail</div>.*?Λογαριασμός εισερχομένων.*?Εισερχόμενα.*?Καταχώριση e-mail.*?Ειδοποιήσεις.*?settings-nav-heading">Συντήρηση</div>.*?Αντίγραφα ασφαλείας~s', $html);
+        $this->assertMatchesRegularExpression('~Υπηρεσία/Οργανισμός.*?settings-nav-heading">Πρωτόκολλο</div>.*?Αρίθμηση και έλεγχοι.*?Λίστες και αναζήτηση.*?Καταχώριση.*?Δικαιώματα.*?settings-nav-heading">Αρχεία</div>.*?Συνημμένα.*?Κάδος.*?settings-nav-heading">E-mail</div>.*?Λογαριασμός εισερχομένων.*?Εισερχόμενα.*?Ειδοποιήσεις~s', $html);
         $this->assertSame(count(SettingsCatalog::SECTIONS), substr_count($html, 'class="settings-nav-item'));
         // by address
         $this->actingAs($admin)->get('/settings?section=trash')->assertSee('id="s-trashRetentionDays"', false)->assertDontSee('id="s-ipiresiasName"', false);
-        $this->actingAs($admin)->get('/settings?setting=mysqldumpPath')->assertSee('id="s-mysqldumpPath"', false);
+        $this->actingAs($admin)->get('/settings?setting=saveEmailAs')->assertSee('id="s-saveEmailAs"', false)->assertSee('id="s-putStamp"', false);
         $this->actingAs($admin)->get('/settings?section=nonsense')->assertOk()->assertSee('id="s-ipiresiasName"', false);
 
         // saving a section saves only it: a wrong value typed elsewhere (not shown) is neither checked nor stored
@@ -97,10 +97,10 @@ class SettingsPageTest extends FeatureTestCase
 
         // review of R6f: ?setting= picks the section once and leaves the address (so a reload opens the section shown);
         // a section already in the address wins
-        $deep = Livewire::actingAs($admin)->withQueryParams(['setting' => 'mysqldumpPath'])->test(SettingsPage::class)
-            ->assertSet('section', 'backup')->assertSet('setting', '');
+        $deep = Livewire::actingAs($admin)->withQueryParams(['setting' => 'saveEmailAs'])->test(SettingsPage::class)
+            ->assertSet('section', 'files')->assertSet('setting', '');
         $deep->call('show', 'office')->assertSet('section', 'office')->assertSet('setting', '');
-        Livewire::actingAs($admin)->withQueryParams(['section' => 'display', 'setting' => 'mysqldumpPath'])->test(SettingsPage::class)
+        Livewire::actingAs($admin)->withQueryParams(['section' => 'display', 'setting' => 'saveEmailAs'])->test(SettingsPage::class)
             ->assertSet('section', 'display');
     }
 
@@ -113,7 +113,7 @@ class SettingsPageTest extends FeatureTestCase
             ->call('save')->assertHasErrors(['values.titleColor'])->assertSee('settings-errors');
         $this->assertSame($before, Config::getConfigValueOf('ipiresiasName'));
         // R6f: each of the others in its own section
-        foreach ([['numbering', 'yearInUse', '26'], ['rights', 'allowWriterUpdateProtocol', '5'], ['backup', 'mysqldumpPath', '/bin/sh'],
+        foreach ([['numbering', 'yearInUse', '26'], ['rights', 'allowWriterUpdateProtocol', '5'], ['notifications', 'alwaysSendReceitForEmails', 'maybe'],
             ['files', 'diavgeiaUrl', 'javascript:alert(1)'], ['display', 'showRowsInPage', '']] as [$section, $key, $bad]) {
             $stored = (string) Config::getConfigValueOf($key);
             $page->call('show', $section)->set("values.$key", $bad)->call('save')->assertHasErrors("values.$key")->assertSee('settings-errors');
@@ -121,11 +121,45 @@ class SettingsPageTest extends FeatureTestCase
         }
     }
 
-    public function test_mysqldump_path_accepts_windows_and_linux_paths(): void
+    /**
+     * R6m (owner, 2026-11-27): the settings planner's grouping. Gone from the page: «Εκτυπώσεις και Excel», «Καταχώριση
+     * e-mail» and «Συντήρηση»; «Διαδρομή του mysqldump» and «Μέγιστες γραμμές εκτύπωσης και Excel» are .env values now
+     * (MYSQLDUMP_PATH, PRINT_MAX_ROWS), their stored rows untouched.
+     */
+    public function test_sections_follow_the_owners_plan(): void
     {
-        foreach (['', 'c:\xampp\mysql\bin\mysqldump.exe', '/usr/bin/mariadb-dump'] as $path) {
-            Livewire::actingAs($this->admin())->test(SettingsPage::class)->call('show', 'backup')->set('values.mysqldumpPath', $path)->call('save')->assertHasNoErrors();
+        $this->assertSame(['office', 'numbering', 'display', 'registration', 'rights', 'files', 'trash', 'mailbox', 'inbox', 'notifications'],
+            array_keys(SettingsCatalog::SECTIONS));
+        $this->assertSame([null, 'Πρωτόκολλο', 'Πρωτόκολλο', 'Πρωτόκολλο', 'Πρωτόκολλο', 'Αρχεία', 'Αρχεία', 'E-mail', 'E-mail', 'E-mail'],
+            array_column(SettingsCatalog::SECTIONS, 0));
+        foreach (['allowUserChangeKeepSelect' => 'rights', 'saveEmailAs' => 'files', 'sendEmailOnDiekperaiosiChange' => 'notifications',
+            'alwaysSendReceitForEmails' => 'notifications', 'daysToCheckEmailBack' => 'inbox', 'titleColor' => 'office'] as $key => $section) {
+            $this->assertSame($section, SettingsCatalog::sectionOf($key), $key);
         }
+        $this->assertSame(['minutesRefreshInterval', 'showRowsInPage', 'maxRowsInFindPage'], SettingsCatalog::SECTIONS['display'][4]);
+        $this->assertSame('Υπηρεσία/Οργανισμός', SettingsCatalog::SECTIONS['office'][1]);
+        $this->assertSame(['' => 'σελίδα html', 'eml' => 'αρχείο e-mail eml'], SettingsCatalog::all()['saveEmailAs']['options'], 'the stored values stay');
+
+        Config::setConfigValueOf('mysqldumpPath', '/usr/bin/mysqldump');
+        Config::setConfigValueOf('maxRowsInXlsExport', '700');
+        $admin = $this->admin();
+        foreach (['mysqldumpPath', 'maxRowsInXlsExport'] as $key) {
+            $this->assertArrayNotHasKey($key, SettingsCatalog::all());
+            $this->assertNull(SettingsCatalog::sectionOf($key));
+        }
+        $html = $this->actingAs($admin)->get('/settings?setting=mysqldumpPath')->assertOk()->getContent();
+        $this->assertStringNotContainsString('s-mysqldumpPath', $html);
+        $this->assertStringNotContainsString('Αντίγραφα ασφαλείας', $html);
+        $this->assertStringNotContainsString('Εκτυπώσεις και Excel', $html);
+        $this->assertStringNotContainsString('Καταχώριση e-mail', $html);
+        Livewire::actingAs($admin)->test(SettingsPage::class)->call('show', 'backup')->assertSet('section', 'office');
+        Livewire::actingAs($admin)->test(SettingsPage::class)->call('show', 'files')->set('values.putStamp', '1')->call('save')->assertHasNoErrors();
+        $this->assertSame('/usr/bin/mysqldump', (string) Config::getConfigValueOf('mysqldumpPath'));
+        $this->assertSame('700', (string) Config::getConfigValueOf('maxRowsInXlsExport'));
+        // the print limit is PRINT_MAX_ROWS (config app.print_max_rows), not the old row
+        $this->assertSame(5000, \App\Services\Printing\PrintRange::limit());
+        config(['app.print_max_rows' => 12]);
+        $this->assertSame(12, \App\Services\Printing\PrintRange::limit());
     }
 
     /**
@@ -148,12 +182,13 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertSame('0', (string) Config::getConfigValueOf('safeNewProtocolNum'));
     }
 
-    /** R6d: every setting has its line and its fuller explanation (ⓘ); the two numbering settings are framed together. */
+    /** R6d: every setting has its line and its explanation (ⓘ); the two numbering settings are framed together. */
     public function test_every_setting_has_help_and_an_explanation(): void
     {
         foreach (SettingsCatalog::all() as $key => $def) {
             $this->assertNotEmpty($def['help'] ?? null, "$key: help");
-            $this->assertGreaterThan(mb_strlen($def['help']), mb_strlen($def['more'] ?? ''), "$key: a fuller explanation");
+            // R6m (owner, 2026-11-27): the ⓘ is the owner's text; it may be shorter than the line (showRowsInPage), but never missing
+            $this->assertNotEmpty($def['more'] ?? null, "$key: an explanation");
         }
         // R6f: every section's settings have their ⓘ
         $page = Livewire::actingAs($this->admin())->test(SettingsPage::class);
@@ -172,7 +207,7 @@ class SettingsPageTest extends FeatureTestCase
         $this->assertStringContainsString('ο έλεγχος κενών ξεκινά από τον μεγαλύτερο', $box);
         $this->assertStringNotContainsString('id="s-yearInUse"', $box);
 
-        $this->assertSame('Αποτελέσματα αναζήτησης ανά σελίδα', SettingsCatalog::all()['maxRowsInFindPage']['label']);
+        $this->assertSame('Αριθμός αποτελεσμάτων αναζήτησης ανά σελίδα', SettingsCatalog::all()['maxRowsInFindPage']['label']);
     }
 
     public function test_unused_settings_are_removed(): void

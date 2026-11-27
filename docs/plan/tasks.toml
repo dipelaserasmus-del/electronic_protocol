@@ -198,6 +198,7 @@ tasks = [
   { id = "R1q", title = "Protocol form: ◀ ▶ in the title line; copy / receipt / delete stacked at the right; no «Σύνδεσμος»; TAB from field to field; new files marked «ΝΕΟ»", phase = "R", batch = 9.7, size = "S", deps = ["R1j"], status = "done", pr = 160 },
   { id = "R1p", title = "Protocol form: keywords offered from the subject (on leaving Θέμα) and the files' names", phase = "R", batch = 9.7, size = "S", deps = ["R5d"], status = "done", pr = 154 },
   { id = "R5x", title = "Inbox: a registered e-mail's envelope gets a green stripe on the left", phase = "R", batch = 9.7, size = "S", deps = ["R5q"], status = "done", pr = 155 },
+  { id = "R6m", title = "Ρυθμίσεις as the owner planned them (settings planner): new grouping and texts; mysqldump path and print limit to .env", phase = "R", batch = 9.7, size = "S", deps = ["R6f"], status = "done", pr = 0 },
 
   # ---------------- Batch 10 ----------------
   { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },

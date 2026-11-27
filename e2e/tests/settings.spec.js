@@ -50,7 +50,7 @@ test('every setting explains itself in its ⓘ; the numbering settings are frame
   await info.hover();
   const popover = page.locator('.popover.setting-popover');
   await expect(popover).toBeVisible();
-  await expect(popover).toContainText('Έλεγχος κενών αριθμών: τελευταίοι μήνες');
+  await expect(popover).toContainText('Έλεγχος κενών αριθμών και ασυνεχειών για τους τελευταίους Ν μήνες');   // R6m
   await expect(popover).toContainText('Αριθμό για ξεκίνημα');
   await page.waitForFunction(() => getComputedStyle(document.querySelector('.popover.setting-popover')).opacity === '1');   // faded in
   await evidence(page, 'r6d-numbering-box', { clip: await box.evaluate((el) => {
@@ -90,13 +90,13 @@ test('settings: a menu of sections, one section at a time, saved on its own (R6f
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/settings');
   const nav = page.locator('.settings-nav');
-  await expect(nav.locator('.settings-nav-heading')).toHaveText(['Πρωτόκολλο', 'Αρχεία', 'E-mail', 'Συντήρηση']);
-  await expect(nav.locator('.settings-nav-item.active')).toHaveText('Υπηρεσία');
-  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία');
+  await expect(nav.locator('.settings-nav-heading')).toHaveText(['Πρωτόκολλο', 'Αρχεία', 'E-mail']);   // R6m: no «Συντήρηση»
+  await expect(nav.locator('.settings-nav-item.active')).toHaveText('Υπηρεσία/Οργανισμός');
+  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία/Οργανισμός');
   await evidence(page, 'r6f-office', { clip: { x: 0, y: 0, width: 1440, height: 640 } });
 
   // another section: by the menu, without a new page; the address follows
-  for (const [section, title, shot] of [['numbering', 'Αρίθμηση', 'r6f-numbering'], ['rights', 'Δικαιώματα', 'r6f-rights'],
+  for (const [section, title, shot] of [['numbering', 'Αρίθμηση και έλεγχοι', 'r6f-numbering'], ['rights', 'Δικαιώματα', 'r6f-rights'],
     ['inbox', 'Εισερχόμενα', 'r6f-inbox'], ['files', 'Συνημμένα', 'r6f-files']]) {
     await nav.locator(`[data-section="${section}"]`).click();
     await expect(page.locator(`#set-${section} h2`)).toHaveText(title);
@@ -117,13 +117,13 @@ test('settings: a menu of sections, one section at a time, saved on its own (R6f
   await expect(page.locator('#app-toasts .toast', { hasText: 'Αποθηκεύτηκαν' }).last()).toBeVisible();
 
   // review of R6f: a link to a setting opens its section once; the address then follows the section shown
-  await page.goto('/settings?setting=mysqldumpPath');
-  await expect(page.locator('#set-backup h2')).toHaveText('Αντίγραφα ασφαλείας');
+  await page.goto('/settings?setting=saveEmailAs');   // R6m: now in «Συνημμένα»
+  await expect(page.locator('#set-files h2')).toHaveText('Συνημμένα');
   await nav.locator('[data-section="office"]').click();
-  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία');
+  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία/Οργανισμός');
   await expect(page).not.toHaveURL(/setting=/);
   await page.reload();
-  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία');
+  await expect(page.locator('#set-office h2')).toHaveText('Υπηρεσία/Οργανισμός');
 
   // narrow screens: the menu above the section
   await page.setViewportSize({ width: 600, height: 900 });
@@ -179,4 +179,42 @@ test('related numbers written in both protocols, also for existing ones (R6l)', 
   } finally {
     await setSetting(page, 'saveCycleSxetiko', previous);
   }
+});
+
+// R6m (owner, 2026-11-27): the settings planner applied: new grouping, the owner's texts, three sections gone
+test('settings follow the owner\'s plan (R6m)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/settings');
+  const nav = page.locator('.settings-nav');
+  await expect(nav.locator('.settings-nav-item')).toHaveText(['Υπηρεσία/Οργανισμός', 'Αρίθμηση και έλεγχοι', 'Λίστες και αναζήτηση',
+    'Καταχώριση', 'Δικαιώματα', 'Συνημμένα', 'Κάδος', 'Λογαριασμός εισερχομένων', 'Εισερχόμενα', 'Ειδοποιήσεις']);
+  await expect(nav).not.toContainText('Συντήρηση');
+  await expect(nav).not.toContainText('Εκτυπώσεις και Excel');
+  await evidence(page, 'r6m-office', { clip: { x: 0, y: 0, width: 1440, height: 720 } });
+
+  for (const [section, ids, shot] of [
+    ['display', ['minutesRefreshInterval', 'showRowsInPage', 'maxRowsInFindPage'], 'r6m-display'],
+    ['rights', ['allowWriterUpdateProtocol', 'allowWriterUpdateProtocolTimeInMinutes', 'allowWriterChangeDate', 'limitProtocolAccessList', 'allowUserChangeKeepSelect'], 'r6m-rights'],
+    ['files', ['putStamp', 'diavgeiaUrl', 'emailFileFirst', 'saveEmailAs'], 'r6m-files'],
+    ['notifications', ['sendEmailOnDiekperaiosiChange', 'alwaysSendReceitForEmails'], 'r6m-notifications']]) {
+    await nav.locator(`[data-section="${section}"]`).click();
+    await expect(page.locator(`#set-${section} .setting`)).toHaveCount(ids.length);
+    for (const [i, id] of ids.entries()) {
+      await expect(page.locator(`#set-${section} .setting`).nth(i)).toHaveAttribute('data-setting', id);
+    }
+    await evidence(page, shot, { fullPage: true });
+  }
+
+  // a tooltip in the owner's words
+  await nav.locator('[data-section="registration"]').click();
+  await page.locator('[data-more=saveCycleSxetiko]').hover();
+  await expect(page.locator('.popover.setting-popover')).toContainText('το κουμπί εμφανίζεται αφού ενεργοποιήσετε τη ρύθμιση και πατήσετε Αποθήκευση');
+  await evidence(page, 'r6m-tooltip');
+  await page.mouse.move(5, 5);
+
+  // the two settings that became .env values are not on the page
+  await page.goto('/settings?setting=mysqldumpPath');
+  await expect(page.locator('#s-mysqldumpPath, #s-maxRowsInXlsExport')).toHaveCount(0);
+  await expect(page.locator('#set-office')).toBeVisible();
 });

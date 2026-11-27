@@ -2,7 +2,6 @@
 
 namespace App\Services\Printing;
 
-use App\Models\Config;
 use App\Models\Protocol;
 use App\Support\DateInput;
 use Carbon\Carbon;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
  * so old bookmarks and the old POST /printed still work.
  *
  * Invalid values are not guessed: they are left out and listed in $ignored, and the printout says so (B07).
- * At most maxRowsInXlsExport protocols (setting, 5000 if empty) are printed or exported; the printout says when the
+ * At most app.print_max_rows protocols (PRINT_MAX_ROWS in .env, 5000 if unset; R6m: no longer a setting) are printed or exported; the printout says when the
  * range had more (before R7 it was cut silently).
  */
 final class PrintRange
@@ -93,7 +92,7 @@ final class PrintRange
 
     public static function limit(): int
     {
-        return max(1, (int) (Config::getConfigValueOf('maxRowsInXlsExport') ?: 5000));
+        return max(1, (int) config('app.print_max_rows', 5000));
     }
 
     /** "έτους 2026", "έτους 2026, αριθμοί 10–20", "15/01/2026 – 31/01/2026" */

@@ -1,6 +1,6 @@
 # Your to-do list
 
-Kept up to date by Claude after every task. Most important first. Last update: 2026-11-27 11:17 (R1q form: buttons, TAB order, «ΝΕΟ» files; R2u list: 👁 first, head blends in; R2t list head fixed; R4q e-mail files previewed; 👁 in the list; R5y inbox: saved e-mail tinted and followed; R4p stamp see-through or opaque per file; R1p keyword suggestions in the form; R4o stamp on pictures; R4n stamp place per file; R5x inbox: a registered e-mail marked green; F10 image: apt fallback; V01 versions report: old, current and newest versions, flagged; R5w inbox: back to the top; R4m old server never stamped; N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
+Kept up to date by Claude after every task. Most important first. Last update: 2026-11-27 13:40 (R6m Ρυθμίσεις as you planned them; R1q form: buttons, TAB order, «ΝΕΟ» files; R2u list: 👁 first, head blends in; R2t list head fixed; R4q e-mail files previewed; 👁 in the list; R5y inbox: saved e-mail tinted and followed; R4p stamp see-through or opaque per file; R1p keyword suggestions in the form; R4o stamp on pictures; R4n stamp place per file; R5x inbox: a registered e-mail marked green; F10 image: apt fallback; V01 versions report: old, current and newest versions, flagged; R5w inbox: back to the top; R4m old server never stamped; N06 Symfony security updates; R2s printed book for paper; R5v inbox order per user, range once; R1o time left in days, hours, minutes; R3k no «Νέο» for readers; R6l related numbers to existing protocols; R2r e-mail file last, by its date; R2q Από / Προς tooltip on lines; R6k logs: export, masked by default; R6j logs: Σήμερα; R2p ΑΔΑ pill in the list; R2o «Χωρίς φάκελο» in full; R4l shorter trash notice; R1n fix: «leave page?» when saving; R1m ΑΔΑ-only attachment row; R1l the form shows a refused save; R6i folder rules to existing protocols; R6h fix: saving folder Φ12; R6g folders: sort, a code shows its protocols; R6f Ρυθμίσεις as GitHub's, approved; R5u the inbox look only in the inbox's menu; R2n no folder flagged in the list; R5t stamp the files after registering; R4k the stamp's number and date on white; R5s a folder for every e-mail; R5r a refused Καταχώριση is seen; R4j grey 👁 where there is no preview; R2m list header, ↻ in the top bar, ↑ to the top; R5q inbox look per user, with «Καμία»; R4i the stamp for everyone, designer for administrators; R3j − / + for the narrow page; Batch 9.6 done: direct links, search by when / who, rename, preview, stamp, protocol trash, envelopes, notepad, logs; Batch 9.5 summary written; before: D07–D11 your folder list and real copy, the inbox, the list). Times are Greek time.
 
 ## ▶ Your next message
 Batch 9.6 is done ([summary](docs/reports/BATCH-9.6.md)): direct links, search by *when* and *who*, renaming and
@@ -307,6 +307,7 @@ Open *Εισερχόμενα*.
 - [ ] **113.** *Λίστα*: scroll down: the title, the gaps notice, the filters and the page buttons stay under the top bar, the column titles right under them (on a small or low window they scroll away as before).
 - [ ] **114.** Open a protocol: ◀ Προηγούμενο / Επόμενο ▶ in the title line; Αντιγραφή ως νέο, Απόδειξη, Διαγραφή one under the other at the right; no Σύνδεσμος. *Νέο*: TAB goes Έτος → number → date → Φάκελος → Θέμα …; add a file: a yellow «ΝΕΟ» line.
 - [ ] **115.** *Λίστα*: a file's line reads type, 👁, name, then the size, dimmed; hover *Δικά μου* / *Καταχωρίσεις* for what they show; scrolled, the fixed head has the same grey as the page.
+- [ ] **116.** *Ρυθμίσεις*: the menu and texts are as you planned them in the «Σχεδιαστής ρυθμίσεων» (no *Εκτυπώσεις και Excel*, *Καταχώριση e-mail*, *Συντήρηση*). Check the spelling fixes and the two questions in [R6m](docs/reports/R6m.md). *Διαχείριση → Backup* still works without the old setting.
 
 ## Questions for you
 1. **`??` in `ΑΔΕΙΑ ΚΩΝΣΤΑΝΤΙΝΙΔΟΥ`:** the new inbox shows this e-mail correctly (sender, subject, text, three
@@ -316,11 +317,15 @@ Open *Εισερχόμενα*.
    everyone who still works with the protocol is *Ενεργός*. Is there anyone marked inactive who still logs in today?
 3. **Firefox on Fedora crashes when a file is dropped:** a Firefox/GNOME bug, not the page (see
    [Batch 6.6](docs/reports/BATCH-6.6.md)). On Fedora use *επιλέξτε* in the attachments box; drop works on Windows.
-4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Ο Συγγραφέας αλλάζει την ημερομηνία
-   πρωτοκόλλου* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
+4. **Writers and the protocol date:** setting *Ρυθμίσεις → Δικαιώματα → Δικαίωμα τροποποίησης ημερομηνίας
+   πρωτοκόλλων* (off). Turn it on if writers should set the date (e.g. a document received yesterday).
 5. **Preview of Word / Excel files (R4c):** they are converted on the server with libraries the application already
    has; the layout is approximate. A browser library would look closer to the original but adds new packages. Keep it
    as it is (my suggestion), or ask for the browser libraries.
+6. **Ρυθμίσεις texts (R6m):** three ⓘ texts still say «Έλεγχοι καταχώρισης», now labelled «Έλεγχοι-περιορισμοί
+   καταχώρισης»: rename them too? And *Χρήστες με δικαίωμα καταχώρισης email* says an administrator «απαιτείται» in
+   the list, but nothing checks it on saving: keep the wording, or should saving refuse such a list? Also check my
+   spelling fixes in [R6m](docs/reports/R6m.md).
 
 ## Final deployment (when all tasks are completed and verified)
 1. I'll write a step-by-step guide for moving the server from XAMPP to Docker Desktop on the same Windows 11 PC:
@@ -334,7 +339,7 @@ Open *Εισερχόμενα*.
    - check the user list for unknown administrators, and that everyone who works with the protocol is *Ενεργός*
      (inactive users cannot log in, R6a);
    - press *Διαχείριση → Backup → Νέο αντίγραφο* once and check the file opens (it needs `mysqldump`, which the Docker
-     stack has);
+     stack has; the old setting «Διαδρομή του mysqldump» is gone: `MYSQLDUMP_PATH` in `.env` only if needed, R6m);
    - choose how many days the trash keeps deleted attachments (30 if left empty; the old trash gets these days from
      the deployment day);
    - set *Αρ.Πρωτοκόλλου για ξεκίνημα* to the first number to check for missing numbers (R2c);

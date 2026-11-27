@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Config;
 use App\Services\DatabaseBackup;
 use App\Support\Roles;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +29,7 @@ class BackupPage extends Component
     {
         self::authorizeAdmin();
         try {
-            $name = (new DatabaseBackup(Config::getConfigValueOf('mysqldumpPath')))->create();
+            $name = (new DatabaseBackup(config('database.mysqldump_path')))->create();
             $this->dispatch('toast', message: "Δημιουργήθηκε το αντίγραφο $name.", type: 'success');
         } catch (\RuntimeException $e) {
             Log::error('Backup failed: '.$e->getMessage());
