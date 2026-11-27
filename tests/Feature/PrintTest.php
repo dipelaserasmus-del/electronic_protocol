@@ -75,7 +75,7 @@ class PrintTest extends FeatureTestCase
     public function test_the_limit_is_said_not_hidden(): void
     {
         $this->book();
-        $this->setting('maxRowsInXlsExport', 1);
+        config(['app.print_max_rows' => 1]);   // R6m: PRINT_MAX_ROWS
         $this->actingAs($this->writer())->get('/printed?etosForMany=2026')->assertSee('από 2: τα υπόλοιπα δεν χωρούν')->assertDontSee('Έκτο');
     }
 

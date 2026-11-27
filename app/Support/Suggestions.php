@@ -16,14 +16,20 @@ final class Suggestions
 {
     public const FIELDS = ['in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis', 'out_to'];
 
+    /** R6m: how many of the latest protocols the suggestions come from, and how many values each field offers (when empty) */
+    public const DEFAULT_SEARCHED = 1000;
+
+    public const DEFAULT_SHOWN = 50;
+
     /** R1f: at most this many keywords are offered (the most used). */
     public const KEYWORDS_MAX = 5000;
 
     /** @return array<string, list<string>> field => values */
     public static function for(User $user): array
     {
-        $rows = (int) (Config::getConfigValueOf('rowsToSearchGiaSimplirosi') ?: 1000);
-        $show = max(50, (int) (Config::getConfigValueOf('rowsToShowGiaSimplirosi') ?: 10));
+        // R6m (owner, 2026-11-27): both on Ρυθμίσεις → Καταχώριση; «shown» means what it says (it was raised to 50 at least)
+        $rows = max(1, (int) (Config::getConfigValueOf('rowsToSearchGiaSimplirosi') ?: self::DEFAULT_SEARCHED));
+        $show = max(1, (int) (Config::getConfigValueOf('rowsToShowGiaSimplirosi') ?: self::DEFAULT_SHOWN));
         $query = Protocol::query()->latest('id')->take($rows);
         if (ProtocolPolicy::isLimited($user)) {
             $query->ownOrAssigned((int) $user->id);

@@ -94,7 +94,7 @@ class DatabaseBackup
                 return $found;
             }
         }
-        throw new RuntimeException("Δεν βρέθηκε το mysqldump (ρύθμιση: \"$configured\"). Ελέγξτε τη διαδρομή του στις Ρυθμίσεις.");
+        throw new RuntimeException("Δεν βρέθηκε το mysqldump (MYSQLDUMP_PATH: \"$configured\"). Ορίστε τη διαδρομή του στη μεταβλητή MYSQLDUMP_PATH του .env.");
     }
 
     public static function isValidName(string $name): bool
@@ -102,7 +102,7 @@ class DatabaseBackup
         return (bool) preg_match(self::NAME_PATTERN, $name);
     }
 
-    /** Only mysqldump / mariadb-dump may be run, whatever the setting says. */
+    /** Only mysqldump / mariadb-dump may be run, whatever MYSQLDUMP_PATH says. */
     private function isDumpBinary(string $path): bool
     {
         return (bool) preg_match('/^(mysqldump|mariadb-dump)(\.exe)?$/i', basename(str_replace('\\', '/', $path)));

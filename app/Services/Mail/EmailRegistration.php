@@ -113,13 +113,13 @@ final class EmailRegistration
         return $row + ['stamp' => false, 'dir' => 'arxeio/emails'];
     }
 
-    /** The time zone of the settings (timeZone), for the dates shown and filled in. */
+    /** The application's time zone (APP_TIMEZONE; R6m: was the configs key timeZone), for the dates shown and filled in. */
     public static function zone(): \DateTimeZone
     {
         try {
-            return new \DateTimeZone((string) (Config::getConfigValueOf('timeZone') ?: config('app.timezone')));
-        } catch (\Throwable) {
             return new \DateTimeZone((string) config('app.timezone'));
+        } catch (\Throwable) {
+            return new \DateTimeZone('Europe/Athens');
         }
     }
 

@@ -18,6 +18,10 @@ return [
     //'default' => env('DB_CONNECTION', 'mysql'),
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    // R6m (owner, 2026-11-27): the program the Backup page runs (was the setting «Διαδρομή του mysqldump»). Empty: mysqldump or
+    // mariadb-dump found on the PATH (the Docker image has it). Only those two programs are ever run (App\Services\DatabaseBackup).
+    'mysqldump_path' => env('MYSQLDUMP_PATH'),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections
