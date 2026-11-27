@@ -65,7 +65,7 @@ test('every setting explains itself in its ⓘ; the numbering settings are frame
   const stamp = page.locator('#s-putStamp');
   const wasOn = await stamp.isChecked();
   await page.locator('[data-more=putStamp]').focus();
-  await expect(page.locator('.popover.setting-popover')).toContainText('Κάθε χρήστης επιλέγει «Με σφραγίδα»');   // R4f
+  await expect(page.locator('.popover.setting-popover')).toContainText('απενεργοποιήσει το «Με σφραγίδα» για τον λογαριασμό του');   // R4f; R6m: the owner's words
   await page.locator('[data-more=putStamp]').click();
   await expect(stamp).toBeChecked({ checked: wasOn });
   await evidence(page, 'r6d-settings', { fullPage: true });
