@@ -88,6 +88,9 @@ final class Navigation
             ];
         }
         $groups['Φάκελοι'] = [['label' => 'Φάκελοι και διατήρηση', 'icon' => 'folder2', 'url' => url('/keep')]];
+        if (\App\Services\Integrity\Checks::allowed($user)) {   // A01: administrators, assigners, writers
+            $groups['Φάκελοι'][] = ['label' => 'Έλεγχοι πρωτοκόλλου', 'icon' => 'clipboard-check', 'url' => url('/checks')];
+        }
         if (\App\Livewire\StampDesigner::allowed($user)) {   // R4e; administrators only (R4i)
             $groups['Φάκελοι'][] = ['label' => 'Σφραγίδα αρχείων', 'icon' => 'patch-check', 'url' => url('/stamp')];
         }

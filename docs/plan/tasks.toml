@@ -203,7 +203,7 @@ tasks = [
   { id = "R6m", title = "Ρυθμίσεις as the owner planned them (settings planner): new grouping and texts; mysqldump path and print limit to .env", phase = "R", batch = 9.7, size = "S", deps = ["R6f"], status = "done", pr = 162 },
 
   # ---------------- Batch 10 ----------------
-  { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "todo" },
+  { id = "A01", title = "Integrity-check engine + page", phase = "Z", batch = 10, size = "M", deps = ["R2"], status = "done", pr = 168 },
   { id = "A03", title = "Rule: dates going backwards", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
   { id = "A04", title = "Rule: εκκρεμότητα", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "todo" },
   { id = "A05", title = "Rule: (partial) duplicates", phase = "Z", batch = 10, size = "M", deps = ["A01", "D03"], status = "todo" },

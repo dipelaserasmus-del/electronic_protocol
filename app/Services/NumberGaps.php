@@ -56,6 +56,43 @@ class NumberGaps
     }
 
     /**
+     * A01: the missing numbers around the protocols dated from $from to $to (the «Έλεγχοι» page). A missing number counts
+     * when a protocol next to it (the nearest existing number before or after it) is dated in the range, so a gap just
+     * at the start or the end of the range is found too. The start number (firstProtocolNum) applies to the current
+     * year, as in find().
+     *
+     * @return array<int, int[]>  year => missing numbers (ascending); years without gaps are omitted
+     */
+    public function between(\Carbon\CarbonInterface $from, \Carbon\CarbonInterface $to, ?Carbon $today = null): array
+    {
+        $today ??= Carbon::now();
+        $start = (int) Config::getConfigValueOf('firstProtocolNum');
+        $result = [];
+        for ($year = $from->year; $year <= $to->year; $year++) {
+            $inRange = Protocol::whereEtos($year)->whereBetween('protocoldate', [$from->toDateString(), $to->toDateString()]);
+            [$low, $high] = [(int) (clone $inRange)->min('protocolnum'), (int) (clone $inRange)->max('protocolnum')];
+            if (! $low) {
+                continue;
+            }
+            $lower = (int) (Protocol::whereEtos($year)->where('protocolnum', '<', $low)->max('protocolnum') ?: $low);
+            $upper = (int) (Protocol::whereEtos($year)->where('protocolnum', '>', $high)->min('protocolnum') ?: $high);
+            if ($year === $today->year && $start > $lower) {
+                $lower = $start;
+            }
+            if ($lower >= $upper) {
+                continue;
+            }
+            $numbers = Protocol::whereEtos($year)->whereBetween('protocolnum', [$lower, $upper])->pluck('protocolnum')->map(fn ($n) => (int) $n)->all();
+            $missing = array_values(array_diff(range($lower, $upper), $numbers));
+            if ($missing) {
+                $result[$year] = $missing;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * R2c: the missing numbers as runs of consecutive numbers, for the placeholder rows of the list.
      *
      * @param  array<int, int[]>  $gaps  the result of find()
