@@ -37,13 +37,13 @@ class ModernLayoutTest extends FeatureTestCase
         $groups = fn ($user) => array_map(fn ($links) => array_column($links, 'label'), Navigation::manage($user));
         $this->assertSame([
             'Εκτύπωση' => ['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων'],
-            'Φάκελοι' => ['Φάκελοι και διατήρηση', 'Σφραγίδα αρχείων'],   // R4e
+            'Φάκελοι' => ['Φάκελοι και διατήρηση', 'Έλεγχοι πρωτοκόλλου', 'Σφραγίδα αρχείων'],   // R4e; A01
             'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Αρχεία καταγραφής'],
         ], $groups($admin));
         $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
         // R4i (owner, 2026-11-25): the stamp for administrators only
-        $this->assertSame(['Φάκελοι και διατήρηση', 'Κάδος'], $groups($this->writer())['Φάκελοι']);
-        $this->assertSame(['Φάκελοι και διατήρηση', 'Κάδος'], $groups($this->assigner())['Φάκελοι']);
+        $this->assertSame(['Φάκελοι και διατήρηση', 'Έλεγχοι πρωτοκόλλου', 'Κάδος'], $groups($this->writer())['Φάκελοι']);
+        $this->assertSame(['Φάκελοι και διατήρηση', 'Έλεγχοι πρωτοκόλλου', 'Κάδος'], $groups($this->assigner())['Φάκελοι']);
         $this->assertSame(['Φάκελοι και διατήρηση'], $groups($this->reader())['Φάκελοι']);
         foreach (Navigation::manage($admin) as $links) {
             foreach ($links as $link) {

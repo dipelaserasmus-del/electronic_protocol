@@ -267,6 +267,8 @@ class ProtocolList extends Component
             'userGroups' => $this->canSeeOthers() ? $this->userGroups() : [],
             'names' => User::pluck('name', 'id'),
             'numberGaps' => $gaps,
+            // A01: findings of the last 30 days' checks (rules shown in the list; the gaps have their notice above)
+            'checksCount' => $seesGaps ? app(\App\Services\Integrity\Checks::class)->listCount($user) : 0,
             'gapMonths' => (int) (Config::getConfigValueOf('gapCheckMonths') ?: NumberGaps::DEFAULT_MONTHS),
             'canCreate' => app(ProtocolNumbering::class)->userMayChooseNumber($user),
             'formYear' => (int) (Config::getConfigValueOf('yearInUse') ?: Carbon::now()->year),

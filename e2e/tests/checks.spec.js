@@ -1,0 +1,54 @@
+// A01: «Έλεγχοι» (/checks): the integrity checks over a date range, opened from the user menu and from the list's
+// gaps notice. The demo data has deliberate gaps (A02), so this year has at least one missing number.
+const { test, expect } = require('@playwright/test');
+const { login, evidence } = require('./helpers');
+
+test('the checks page: a date range, the gaps with their neighbours (A01)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  await page.locator('nav.app-topbar #nav-user').click();
+  await page.locator('.user-menu-manage').getByRole('link', { name: 'Έλεγχοι πρωτοκόλλου' }).click();
+  await expect(page).toHaveURL(/\/checks/);
+  await expect(page.locator('h1')).toHaveText('Έλεγχοι πρωτοκόλλου');
+  await expect(page.locator('#checks-summary')).toBeVisible();
+
+  // the last 30 days by default; «Φέτος» checks from 1 January
+  const year = new Date().getFullYear();
+  await page.locator('#checks-year').click();
+  await expect(page.locator('#checks-from')).toHaveValue(`01/01/${year}`);
+  const gaps = page.locator('#check-gaps');
+  await expect(gaps).not.toHaveAttribute('data-count', '0');
+  await expect(page.locator('#checks-summary')).toContainText('ευρήμα');
+  const first = gaps.locator('.checks-finding').first();
+  await expect(first.locator('.checks-ref')).toContainText(`/${year}`);
+  await expect(first.locator('.checks-message')).toContainText(/Λείπ(ει|ουν)/);
+  await evidence(page, 'a01-checks', { fullPage: true });
+
+  // a typed range is kept in the address
+  await page.locator('#checks-from').fill(`1/1/${year}`);
+  await page.locator('#checks-to').fill(`31/1/${year}`);
+  await page.locator('#checks-run').click();
+  await expect(page).toHaveURL(new RegExp(`from=01%2F01%2F${year}`));
+  await expect(page.locator('#checks-to')).toHaveValue(`31/01/${year}`);
+
+  // a wrong range is refused
+  await page.locator('#checks-from').fill(`31/1/${year}`);
+  await page.locator('#checks-to').fill(`1/1/${year}`);
+  await page.locator('#checks-run').click();
+  await expect(page.locator('#checks-range .invalid-feedback').filter({ hasText: 'πριν από την αρχική' })).toBeVisible();
+});
+
+test('the list\'s gaps notice links to the checks; readers have no checks (A01)', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('/home/list');
+  const notice = page.locator('#numberGaps');
+  if (await notice.count()) {
+    await notice.getByRole('link', { name: 'Έλεγχοι' }).click();
+    await expect(page).toHaveURL(/\/checks/);
+  }
+
+  await page.context().clearCookies();
+  await login(page, 'reader');
+  const response = await page.goto('/checks');
+  expect(response.status()).toBe(403);
+});

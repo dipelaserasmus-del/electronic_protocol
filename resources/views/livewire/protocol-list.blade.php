@@ -37,6 +37,15 @@
                 @endif
                 (έλεγχος {{ $gapFrom > 1 ? 'από τον αριθμό '.$gapFrom.', ' : '' }}τελευταίων {{ $gapMonths }} μηνών)
             </small>
+            <a href="{{ url('/checks') }}" class="alert-link small ms-auto">Έλεγχοι</a>
+        </div>
+    @endif
+    {{-- A01: the other checks of the last 30 days, one line with a link to the page --}}
+    @if ($checksCount > 0)
+        <div class="alert alert-warning py-2 d-flex flex-wrap align-items-center gap-2" id="checks-notice" role="alert">
+            <strong>Έλεγχοι:</strong>
+            <span>{{ $checksCount }} {{ $checksCount === 1 ? 'εύρημα' : 'ευρήματα' }} τις τελευταίες {{ \App\Services\Integrity\Checks::DEFAULT_DAYS }} ημέρες.</span>
+            <a href="{{ url('/checks') }}" class="alert-link">Προβολή</a>
         </div>
     @endif
 
