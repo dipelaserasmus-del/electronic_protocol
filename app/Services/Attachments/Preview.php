@@ -191,7 +191,27 @@ final class Preview
         // what the page's sandbox would block anyway, removed as well
         $body = preg_replace('~<(script|iframe|object|embed|frameset|frame|noscript|template)\b.*?</\1\s*>|<(script|iframe|object|embed|frame|meta|base|link)\b[^>]*>~is', '', (string) $body);
         $body = preg_replace('~</?(html|head|body)\b[^>]*>~i', '', (string) $body);
-        return implode('', $styles[0]) . $head . '<div class="mail-body">' . $body . '</div>';
+        return implode('', $styles[0]) . $head . '<div class="mail-body">' . self::embedded($mail, $body) . '</div>';
+    }
+
+    /** R4q review: the e-mail's own pictures (`cid:`), a part each, as data: (the page loads nothing from elsewhere) */
+    public const MAX_EMBEDDED_BYTES = 15728640;
+
+    private static function embedded(\ZBateson\MailMimeParser\Message $mail, string $body): string
+    {
+        $left = self::MAX_EMBEDDED_BYTES;
+        $done = [];
+        return (string) preg_replace_callback('~\bcid:([^"\'()\s>]+)~i', function ($m) use ($mail, &$left, &$done) {
+            $id = rawurldecode($m[1]);
+            if (! isset($done[$id])) {
+                $part = $mail->getPartByContentId($id);
+                $type = strtolower((string) $part?->getContentType());
+                $content = $part !== null && str_starts_with($type, 'image/') && preg_match('~^image/[a-z0-9.+-]+$~', $type) ? (string) $part->getContent() : '';
+                $done[$id] = $content !== '' && strlen($content) <= $left ? 'data:' . $type . ';base64,' . base64_encode($content) : null;
+                $left -= $done[$id] === null ? 0 : strlen($content);
+            }
+            return $done[$id] ?? $m[0];
+        }, $body);
     }
 
     /** Word (docx) or OpenDocument text (odt) → HTML (PhpWord) */

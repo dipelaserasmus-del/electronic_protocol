@@ -236,6 +236,15 @@ class PreviewTest extends FeatureTestCase
         // a remote picture may stay: the page's own rules load nothing from the internet (img-src data: only)
         $this->assertStringContainsString('img-src data:', $r->headers->get('Content-Security-Policy'));
 
+        // review of R4q: a picture inside the e-mail (multipart/related, cid:) is shown, from the e-mail itself
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+        $related = "From: office@example.test\r\nSubject: Logo\r\nMIME-Version: 1.0\r\nContent-Type: multipart/related; boundary=\"R\"\r\n\r\n"
+            . "--R\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<p>Λογότυπο: <img src=\"cid:logo@example.test\" alt=\"λογότυπο\"> <img src=\"cid:missing@x\"></p>\r\n"
+            . "--R\r\nContent-Type: image/png\r\nContent-ID: <logo@example.test>\r\nContent-Transfer-Encoding: base64\r\n\r\n" . base64_encode($png) . "\r\n--R--\r\n";
+        $r = $this->actingAs($admin)->get('/preview/' . $this->attach('λογότυπο.eml', $related)->id)->assertOk();
+        $r->assertSee('<img src="data:image/png;base64,' . base64_encode($png) . '" alt="λογότυπο">', false)
+            ->assertSee('src="cid:missing@x"', false);   // not in the e-mail: left as it is (shown blank)
+
         $text = $this->attach('απλό.eml', $this->eml(null, "Γραμμή 1\n<b>όχι έντονο</b>"));
         $this->actingAs($admin)->get('/preview/' . $text->id)->assertOk()->assertSee('Γραμμή 1')
             ->assertSee('&lt;b&gt;όχι έντονο&lt;/b&gt;', false)->assertSee('Πρόσκληση σε ημερίδα');

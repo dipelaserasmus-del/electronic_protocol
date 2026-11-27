@@ -20,6 +20,8 @@ a little.»
 - **Safety:** the message stays in the preview's sandboxed page, as Word files do. Nothing in it can run, send a form or
   open a frame, and nothing is loaded from the internet, so remote pictures and trackers stay blank. `<script>`,
   `<iframe>`, `<object>`, `<meta>`, `<base>` and `<link>` are also removed from it.
+- **Embedded pictures:** pictures inside the e-mail itself (a logo or a signature: `cid:`) are shown. They are put into
+  the page from the e-mail, up to 15 MB in all (review finding).
 - **Size limit:** an e-mail is read only for its headers and text, so it is shown up to 40 MB. The other converted files
   keep the 10 MB limit.
 - **The list:** 👁 is next to each file in *Συνημμένα*. In a closed row it is next to the first file. ‹ › go through all
@@ -42,6 +44,7 @@ a little.»
     - the HTML and its style are kept;
     - script, iframe, object, meta refresh, base, link and `alert(1)` are gone;
     - the CSP's `img-src data:`;
+    - an embedded picture (`cid:`) is shown from the e-mail, and one that is missing is left as it is;
     - a text-only e-mail is escaped;
     - an e-mail over the 1 KB limit set for the test is still shown.
   - `test_the_list_offers_a_preview_of_each_file`:
