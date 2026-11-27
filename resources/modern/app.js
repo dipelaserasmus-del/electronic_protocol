@@ -12,7 +12,6 @@ import './unsaved';   // R1k
 import './inbox-count';   // R5f
 import './notes';   // N05
 import './preview';   // R4c
-import './copy-link';   // R3h
 
 window.bootstrap = bootstrap;
 
@@ -301,4 +300,18 @@ function showFormError() {
 }
 document.addEventListener('livewire:init', () => {
     window.Livewire.on('form-refused', () => requestAnimationFrame(() => requestAnimationFrame(showFormError)));   // after the page is updated
+});
+
+/*
+ * R1q (owner, 2026-11-27): the protocol form starts where typing starts: the number (its own autofocus), otherwise the
+ * date when it may be changed. Only when nothing has the focus yet (a click is never undone). Never Φάκελος: its list
+ * opens on focus and would cover the fields below it.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('protocol-form');
+    if (!form || (document.activeElement && document.activeElement !== document.body)) return;
+    const first = ['#f-protocolnum', '#f-protocoldate']
+        .map((s) => form.querySelector(s))
+        .find((el) => el && el.matches('input, textarea') && !el.readOnly && !el.disabled && !el.closest('fieldset:disabled') && el.offsetParent !== null);
+    first?.focus({ preventScroll: true });
 });

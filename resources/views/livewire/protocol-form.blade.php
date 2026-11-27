@@ -17,20 +17,45 @@
       x-data="unsavedChanges({ labels: @js(\App\Livewire\ProtocolForm::LABELS), users: @js($users->pluck('name', 'id')), enabled: @js($access->canSave) })"
       x-on:submit.capture="if (progress !== null) { $event.preventDefault(); $event.stopImmediatePropagation() }">
     <div class="card shadow-sm mb-3 border-{{ $tone }}">
-        <div class="card-header bg-{{ $tone }}-subtle d-flex flex-wrap align-items-center gap-3">
-            <h1 class="h4 mb-0 me-auto">{{ $title }}</h1>
+        {{-- R1q (owner, 2026-11-27): ◀ Προηγούμενο / Επόμενο ▶ in the middle of the title line (saves a line of the page) --}}
+        <div class="card-header bg-{{ $tone }}-subtle form-head">
+            <h1 class="h4 mb-0 form-head-title">{{ $title }}</h1>
+            @if ($protocol->exists)
+                <div class="form-head-nav d-flex gap-2" data-pill-nav>
+                    <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/b')" title="Προηγούμενο" data-action="previous">◀ Προηγούμενο</x-pill>
+                    <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/f')" title="Επόμενο" data-action="next">Επόμενο ▶</x-pill>
+                </div>
+            @endif
             @if ($creator)
-                <small class="text-body-secondary">Τελευταία αλλαγή: {{ $creator->name }}, {{ $protocol->updated_at?->format('d/m/Y H:i') }}</small>
+                <small class="text-body-secondary form-head-changed">Τελευταία αλλαγή: {{ $creator->name }}, {{ $protocol->updated_at?->format('d/m/Y H:i') }}</small>
             @endif
         </div>
         <div class="card-body">
             {{-- number, year, date: TAB from the number goes straight to the date (owner). R1g (owner, 2026-11-18): the number is
                  the most important piece of information, so it is large, in the middle; the year small next to it. --}}
             <div class="number-head">
+                {{-- R1q (owner, 2026-11-27): the rarely used actions stacked at the right: Αντιγραφή ως νέο, Απόδειξη, Διαγραφή
+                     (no «Σύνδεσμος»: the owner does not need it; /protocol/N/YYYY still opens a protocol). First in the page's
+                     order, so that TAB goes Έτος → number → date → the first section's fields without passing them. --}}
+                @if ($protocol->exists)
+                    <div class="number-head-actions d-flex flex-column align-items-stretch gap-2" data-form-actions>
+                        @if ($mayCreate)   {{-- a copy is a new protocol: not for readers, who only view --}}
+                            <x-pill :href="url('/home/'.$protocol->id.'/1')" data-action="copy" title="Νέο πρωτόκολλο με το περιεχόμενο αυτού">
+                                <i class="bi bi-copy me-1" aria-hidden="true"></i>Αντιγραφή ως νέο</x-pill>
+                        @endif
+                        <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
+                            <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
+                        @if ($access->canDelete)
+                            <x-pill variant="danger" wire:click="deleteProtocol" data-action="delete"
+                                    data-confirm="Να μεταφερθεί στον κάδο το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} με τα συνημμένα του; Ο αριθμός του γίνεται πάλι ελεύθερος.">
+                                <i class="bi bi-trash me-1" aria-hidden="true"></i>Διαγραφή</x-pill>
+                        @endif
+                    </div>
+                @endif
                 <div class="number-head-year">
                     <label for="f-etos" class="form-label small text-body-secondary mb-1">Έτος</label>
                     <input id="f-etos" class="form-control form-control-sm text-center @if ($e('etos')) is-invalid @endif" inputmode="numeric"
-                           value="{{ $form['etos'] }}" wire:model.live.debounce.400ms="form.etos" @disabled(! $access->number) tabindex="-1">
+                           value="{{ $form['etos'] }}" wire:model.live.debounce.400ms="form.etos" @disabled(! $access->number)>{{-- R1q: in the TAB order, before the number --}}
                     @if ($e('etos'))<div class="invalid-feedback">{{ $e('etos') }}</div>@endif
                 </div>
                 <div class="number-head-number text-center">
@@ -93,8 +118,9 @@
                 <x-notice type="info" class="mt-2 text-center">Μπορείτε να αλλάξετε το πρωτόκολλο για ακόμη {{ \App\Support\Duration::text($access->secondsLeft) }}.</x-notice>{{-- R1o --}}
             @endif
 
-            {{-- R1j (owner, 2026-11-20): Αποθήκευση floats at the bottom right (below); Νέο and Λίστα are in the top bar;
-                 the rarely used Αντιγραφή ως νέο and Απόδειξη go to the far right, with icons --}}
+            {{-- R1j (owner, 2026-11-20): Αποθήκευση floats at the bottom right (below); Νέο and Λίστα are in the top bar.
+                 R1q: Προηγούμενο / Επόμενο in the title line, the other actions at the right of the number; here only what
+                 some users have (hidden when there is none) --}}
             <x-pill-actions class="mt-3 pill-actions-center">
                 @if ($protocol->exists && $access->canAssign && ! $access->canSave)
                     <x-pill variant="primary" wire:click="assignOnly">Ανάθεση</x-pill>
@@ -102,42 +128,22 @@
                 @if ($canComplete && ! $protocol->diekp_date)
                     <x-pill variant="success" wire:click="markDone">Διεκπεραιώθηκε</x-pill>
                 @endif
-                @if ($protocol->exists)
-                    <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/b')" title="Προηγούμενο">◀ Προηγούμενο</x-pill>
-                    <x-pill :href="url('/goto/'.$protocol->etos.'/'.$protocol->protocolnum.'/f')" title="Επόμενο">Επόμενο ▶</x-pill>
-                @endif
-                @if ($access->canDelete)
-                    <x-pill variant="danger" wire:click="deleteProtocol"
-                            data-confirm="Να μεταφερθεί στον κάδο το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} με τα συνημμένα του; Ο αριθμός του γίνεται πάλι ελεύθερος.">Διαγραφή</x-pill>
-                @endif
-                @if ($protocol->exists)
-                    {{-- a copy is a new protocol: not for readers, who only view --}}
-                    @if ($mayCreate)
-                    <x-pill :href="url('/home/'.$protocol->id.'/1')" class="pill-far-right" data-action="copy" title="Νέο πρωτόκολλο με το περιεχόμενο αυτού">
-                        <i class="bi bi-copy me-1" aria-hidden="true"></i>Αντιγραφή ως νέο</x-pill>
-                    @endif
-                    {{-- R3h: copies the direct link /protocol/N/YYYY (resources/modern/copy-link.js) --}}
-                    <x-pill data-action="link" data-copy-link="{{ url('/protocol/'.$protocol->protocolnum.'/'.$protocol->etos) }}" :class="$mayCreate ? '' : 'pill-far-right'"
-                            title="Αντιγραφή του συνδέσμου {{ url('/protocol/'.$protocol->protocolnum.'/'.$protocol->etos) }}">
-                        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i><span data-copy-label>Σύνδεσμος</span></x-pill>
-                    <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
-                        <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
-                @endif
             </x-pill-actions>
         </div>
     </div>
 
     {{-- R1i (owner, 2026-11-18): each user arranges the sections: drag one by ⠿ to another place (two columns and a row
-         below them), ▴/▾ collapses it, one or two columns, back to the default. Saved with the account (UserPreferences). --}}
+         below them), ▴/▾ collapses it, one or two columns, back to the default. Saved with the account (UserPreferences).
+         R1q (owner, 2026-11-27): these buttons are not in the TAB order (TAB goes from the date to the first section's field) --}}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small layout-tools" id="layout-tools">
         <span class="text-body-secondary me-auto"><i class="bi bi-grip-vertical" aria-hidden="true"></i> Σύρετε μια ενότητα από τη λαβή της για να την μετακινήσετε.</span>
         <div class="btn-group btn-group-sm" role="group" aria-label="Στήλες">
-            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 1) active @endif" wire:click="setColumns(1)" id="layout-one"
+            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 1) active @endif" wire:click="setColumns(1)" id="layout-one" tabindex="-1"
                     aria-pressed="{{ $layout['columns'] === 1 ? 'true' : 'false' }}" title="Μία στήλη"><i class="bi bi-view-stacked" aria-hidden="true"></i> Μία στήλη</button>
-            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 2) active @endif" wire:click="setColumns(2)" id="layout-two"
+            <button type="button" class="btn btn-outline-secondary @if ($layout['columns'] === 2) active @endif" wire:click="setColumns(2)" id="layout-two" tabindex="-1"
                     aria-pressed="{{ $layout['columns'] === 2 ? 'true' : 'false' }}" title="Δύο στήλες"><i class="bi bi-layout-split" aria-hidden="true"></i> Δύο στήλες</button>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetLayout" id="layout-reset" title="Η αρχική διάταξη των ενοτήτων">
+        <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="resetLayout" id="layout-reset" tabindex="-1" title="Η αρχική διάταξη των ενοτήτων">
             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Επαναφορά διάταξης</button>
     </div>
 
@@ -152,7 +158,8 @@
             <fieldset class="card shadow-sm mb-3" @disabled(! $access->head)>
                 <legend class="card-header h6 mb-0 w-100 section-head"><x-form.section-head id="general" :open="$open('general')">Γενικά</x-form.section-head></legend>
                 <div class="card-body" @unless ($open('general')) hidden @endunless>
-                    {{-- R1f: folder picker — typing filters by code and description (no case/accents); ↑ ↓ Enter/Tab or a click --}}
+                    {{-- R1f: folder picker — typing filters by code and description (no case/accents); ↑ ↓ Enter/Tab or a click.
+                         R1q: its list is not in the TAB order (a list that scrolls is, by default: TAB went into it and was lost) --}}
                     <div class="mb-2 position-relative" x-data="folderPicker" x-on:click.outside="close()">
                         <label for="f-fakelos" class="form-label small fw-semibold mb-1">Φάκελος</label>
                         <input id="f-fakelos" class="form-control folder-input @if ($e('fakelos')) is-invalid @endif" autocomplete="off" data-combobox
@@ -160,7 +167,7 @@
                                :value="open ? query : label()" :placeholder="open ? (label() || 'Γράψτε κωδικό ή λέξη της περιγραφής') : '—'"
                                x-on:focus="show()" x-on:click="show()" x-on:input="input($event)" x-on:keydown="key($event)"
                                x-on:blur="setTimeout(() => { if (! $root.contains(document.activeElement)) close() }, 150)">
-                        <ul class="list-group shadow folder-list" id="folder-list" role="listbox" x-show="open" x-cloak>
+                        <ul class="list-group shadow folder-list" id="folder-list" role="listbox" tabindex="-1" x-show="open" x-cloak>
                             <template x-for="(f, n) in items" :key="f[0]">
                                 <li class="list-group-item list-group-item-action py-1" role="option" :aria-selected="n === active"
                                     :class="{ active: n === active }" :data-folder-active="n === active ? '' : null" :title="f[1]"
@@ -252,7 +259,7 @@
                                            placeholder="{{ $keywords ? '' : 'π.χ. εκδρομή' }}" aria-describedby="keywords-help"
                                            x-on:keydown="key($event)" x-on:input="typed($event)" x-on:blur="left($event)">
                                 </div>
-                                <ul class="list-group shadow tag-suggest" id="keywords-suggest" role="listbox" x-show="items.length" x-cloak>
+                                <ul class="list-group shadow tag-suggest" id="keywords-suggest" role="listbox" tabindex="-1" x-show="items.length" x-cloak>
                                     <template x-for="(it, n) in items" :key="it[0]">
                                         <li class="list-group-item list-group-item-action py-1 d-flex justify-content-between gap-2" role="option"
                                             :class="{ active: n === active }" :aria-selected="n === active"
@@ -447,10 +454,13 @@
 
                     @if ($access->canSave)
                         @foreach ((array) $uploads as $i => $file)
-                            <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 upload-row" wire:key="upload-{{ $i }}-{{ $file->getFilename() }}">
+                            {{-- R1q (owner, 2026-11-27): a file not saved yet: a coloured «ΝΕΟ» and the whole line tinted --}}
+                            <div class="d-flex flex-wrap align-items-center gap-2 border-bottom py-1 px-2 upload-row" wire:key="upload-{{ $i }}-{{ $file->getFilename() }}"
+                                 title="Νέο αρχείο: αποθηκεύεται με το πρωτόκολλο">
+                                <span class="badge text-bg-warning upload-new">ΝΕΟ</span>
                                 <x-file-badge :name="$file->getClientOriginalName()" :size="$file->getSize()" />
                                 <span class="me-auto text-break">{{ $file->getClientOriginalName() }}
-                                    <small class="text-body-secondary">(θα αποθηκευτεί με το πρωτόκολλο)</small></span>
+                                    <span class="visually-hidden">(νέο: αποθηκεύεται με το πρωτόκολλο)</span></span>
                                 <input class="form-control form-control-sm w-auto" placeholder="ΑΔΑ" aria-label="ΑΔΑ του {{ $file->getClientOriginalName() }}"
                                        wire:model="uploadAdas.{{ $i }}" autocomplete="off">
                                 <button type="button" class="btn btn-sm btn-link" wire:click="removeUpload({{ $i }})">αφαίρεση</button>

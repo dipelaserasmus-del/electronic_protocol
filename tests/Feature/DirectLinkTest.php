@@ -6,7 +6,7 @@ use App\Livewire\ProtocolForm;
 use App\Models\Protocol;
 use Livewire\Livewire;
 
-/** R3h: direct links /protocol/{num} (this year) and /protocol/{num}/{year}; the form's «Σύνδεσμος» pill. */
+/** R3h: direct links /protocol/{num} (this year) and /protocol/{num}/{year}; the form's «Σύνδεσμος» pill (removed in R1q). */
 class DirectLinkTest extends FeatureTestCase
 {
     public function test_a_link_opens_the_protocols_form(): void
@@ -70,19 +70,14 @@ class DirectLinkTest extends FeatureTestCase
         $this->actingAs($writer)->get('/protocol/22')->assertRedirect('/home/' . $assigned->id);
     }
 
-    public function test_the_form_offers_the_link_to_copy(): void
+    /** R1q (owner, 2026-11-27): the form's «Σύνδεσμος» is gone (not needed); the direct links themselves still work */
+    public function test_the_form_has_no_link_to_copy(): void
     {
         $year = (int) now()->format('Y');
         $p = Protocol::factory()->number(31, $year)->create();
         Livewire::actingAs($this->admin())->test(ProtocolForm::class, ['protocol' => $p])
-            ->assertSeeHtml('data-copy-link="' . url("/protocol/31/$year") . '"')->assertSee('Σύνδεσμος');
-
-        // a reader (no «Αντιγραφή ως νέο») gets it too, pushed to the right
-        $html = Livewire::actingAs($this->reader())->test(ProtocolForm::class, ['protocol' => $p])->html();
-        $this->assertMatchesRegularExpression('/data-action="link"[^>]*pill-far-right|pill-far-right[^>]*data-action="link"/', $html);
-
-        // not on a new protocol
-        Livewire::actingAs($this->admin())->test(ProtocolForm::class)->assertDontSeeHtml('data-copy-link');
+            ->assertDontSeeHtml('data-copy-link')->assertDontSee('Σύνδεσμος');
+        $this->actingAs($this->admin())->get("/protocol/31/$year")->assertRedirect('/home/' . $p->id);
     }
 
     /** the page's own content (the layout around it is the same for every page) with the number made generic */

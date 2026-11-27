@@ -388,7 +388,7 @@ test('sections: drag to the other column, collapse, one column, kept for the use
   await expect(page.locator('#f-in_num')).toBeVisible();
 });
 
-test('one Αποθήκευση always at the bottom right; copy and receipt at the far right; Λίστα of the top bar is a link (R1j)', async ({ page }) => {
+test('one Αποθήκευση always at the bottom right; copy and receipt at the right; Λίστα of the top bar is a link (R1j, R1q)', async ({ page }) => {
   const subject = `R1j ενέργειες ${Date.now()}`;
   await login(page, 'writer');
   await page.goto('/home');
@@ -408,20 +408,18 @@ test('one Αποθήκευση always at the bottom right; copy and receipt at t
   }
   await page.evaluate(() => window.scrollTo(0, 0));
 
-  // no Νέο / Λίστα in the form; copy and receipt last, at the right end of the row, with icons
-  const row = page.locator('#protocol-form [data-pill-actions]').first();
-  await expect(row.getByRole('link', { name: /^(Νέο|Λίστα)$/ })).toHaveCount(0);
-  const copy = row.locator('[data-action=copy]');
-  const receipt = row.locator('[data-action=receipt]');
+  // no Νέο / Λίστα in the form; R1q: copy and receipt stacked at the right of the number, with icons
+  await expect(page.locator('#protocol-form').getByRole('link', { name: /^(Νέο|Λίστα)$/ })).toHaveCount(0);
+  const stack = page.locator('[data-form-actions]');
+  const copy = stack.locator('[data-action=copy]');
+  const receipt = stack.locator('[data-action=receipt]');
   await expect(copy.locator('i.bi-copy')).toBeVisible();
   await expect(receipt.locator('i.bi-receipt')).toBeVisible();
-  const next = await row.getByRole('link', { name: 'Επόμενο ▶' }).boundingBox();
   const c = await copy.boundingBox();
   const r = await receipt.boundingBox();
-  const rowBox = await row.boundingBox();
-  expect(c.x).toBeGreaterThan(next.x + next.width + 40);      // set apart from the others
-  expect(r.x).toBeGreaterThan(c.x);
-  expect(rowBox.x + rowBox.width - (r.x + r.width)).toBeLessThan(20);   // at the far right
+  const card = await page.locator('#protocol-form > .card').first().boundingBox();
+  expect(r.y).toBeGreaterThan(c.y);                                    // one under the other
+  expect(card.x + card.width - (c.x + c.width)).toBeLessThan(40);      // at the right
   await evidence(page, 'r1j-form-actions', { clip: { x: 0, y: 0, width: view.width, height: 420 } });
 
   // saving by the floating button stays on the protocol
@@ -718,4 +716,84 @@ test('keywords are offered from the subject and the files (R1p)', async ({ page 
   await offered.locator('[data-suggest="επιμορφωτική"]').click();
   await expect(page.locator('#keywords-box .keyword-pill[data-tag="επιμορφωτική"]')).toHaveCount(1);
   await expect(offered.locator('[data-suggest="επιμορφωτική"]')).toHaveCount(0);
+});
+
+// R1q (owner, 2026-11-27): ◀ ▶ in the title line; Αντιγραφή ως νέο / Απόδειξη / Διαγραφή stacked at the right; no
+// «Σύνδεσμος»; TAB goes Έτος → number → date → Φάκελος → Θέμα … (nothing in between); a new file is marked «ΝΕΟ»
+test('the form\'s buttons, its TAB order and new files marked «ΝΕΟ» (R1q)', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'protocolValidate', 0);   // the administrator chooses the number (and may delete)
+  const focused = () => page.evaluate(() => document.activeElement?.id || document.activeElement?.tagName);
+  try {
+    // a new protocol: the cursor in the number; TAB from field to field
+    await page.goto('/home');
+    await expect.poll(focused).toBe('f-protocolnum');
+    await page.keyboard.press('Shift+Tab');
+    expect(await focused()).toBe('f-etos');
+    const order = [];
+    for (let i = 0; i < 5; i++) { await page.keyboard.press('Tab'); order.push(await focused()); }
+    expect(order).toEqual(['f-protocolnum', 'f-protocoldate', 'f-fakelos', 'f-thema', 'f-sxetiko']);
+    // the folder's list open (it opens on focus): TAB still goes on to Θέμα, the focus is never lost
+    await page.locator('#f-fakelos').focus();
+    await expect(page.locator('#folder-list')).toBeVisible();
+    await page.keyboard.press('Tab');
+    expect(await focused()).toBe('f-thema');
+
+    // a new file: «ΝΕΟ» and its line tinted
+    await fillProtocol(page, { thema: `R1q κουμπιά ${Date.now()}`, fakelos: 'first' });
+    await page.setInputFiles('#f-uploads', { name: 'Πρόσκληση.txt', mimeType: 'text/plain', buffer: Buffer.from('Καλημέρα') });
+    const row = page.locator('.upload-row');
+    await expect(row.locator('.upload-new')).toHaveText('ΝΕΟ');
+    await expect(row).toHaveCSS('background-color', 'rgb(255, 243, 205)');   // --bs-warning-bg-subtle
+    await expect(row).not.toContainText('θα αποθηκευτεί με το πρωτόκολλο');
+    await evidence(page, 'r1q-new-file', { clip: await page.locator('#attachments-title').evaluate((el) => {
+      const r = el.closest('.card').getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: Math.min(r.height, 260) };
+    }) });
+    await saveProtocol(page);
+
+    // a saved protocol: ◀ ▶ in the middle of the title line; the three actions stacked at the right; no «Σύνδεσμος»
+    const head = await page.locator('.form-head').boundingBox();
+    const nav = await page.locator('.form-head-nav').boundingBox();
+    expect(Math.abs((nav.x + nav.width / 2) - (head.x + head.width / 2))).toBeLessThan(4);
+    expect(nav.y).toBeGreaterThanOrEqual(head.y);
+    expect(nav.y + nav.height).toBeLessThanOrEqual(head.y + head.height);
+    const boxes = [];
+    for (const a of ['copy', 'receipt', 'delete']) boxes.push(await page.locator(`[data-form-actions] [data-action=${a}]`).boundingBox());
+    expect(boxes[0].y).toBeLessThan(boxes[1].y);
+    expect(boxes[1].y).toBeLessThan(boxes[2].y);
+    expect(Math.abs(boxes[0].x - boxes[2].x)).toBeLessThan(2);   // one column
+    const date = await page.locator('#f-protocoldate').boundingBox();
+    const number = await page.locator('#f-protocolnum').boundingBox();
+    expect(boxes[0].x).toBeGreaterThan(date.x + date.width);       // at the right of the date
+    expect(date.y).toBeLessThan(number.y + number.height);         // the date still beside the number (one line)
+    expect(date.x).toBeGreaterThan(number.x + number.width);
+    await expect(page.locator('[data-action=link]')).toHaveCount(0);
+    await expect(page.locator('#protocol-form')).not.toContainText('Σύνδεσμος');
+    // TAB from the date goes to Φάκελος, not to the buttons
+    await page.locator('#f-protocoldate').focus();
+    await page.keyboard.press('Tab');
+    expect(await focused()).toBe('f-fakelos');
+    await evidence(page, 'r1q-form-head', { clip: { x: 0, y: 0, width: 1440, height: 440 } });
+    // review of R1q: a narrower form (window or narrow page): the actions go under the date, which keeps its width
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await page.reload();
+    const group = await page.locator('#f-protocoldate').locator('xpath=ancestor::div[contains(@class,"input-group")][1]').boundingBox();
+    const narrowDate = await page.locator('#f-protocoldate').boundingBox();
+    expect(group.width).toBeGreaterThan(330);
+    expect(narrowDate.width).toBeGreaterThan(90);                    // the date itself readable, not squeezed
+    const copyNarrow = await page.locator('[data-form-actions] [data-action=copy]').boundingBox();
+    expect(copyNarrow.y).toBeGreaterThan(group.y + group.height);   // under the date
+    await evidence(page, 'r1q-form-head-1100', { clip: { x: 0, y: 0, width: 1100, height: 480 } });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload();
+
+    // the buttons still work: the previous protocol
+    const url = page.url();
+    await page.locator('[data-action=previous]').click();
+    await expect(page).not.toHaveURL(url);
+  } finally {
+    await setSetting(page, 'protocolValidate', previous);
+  }
 });

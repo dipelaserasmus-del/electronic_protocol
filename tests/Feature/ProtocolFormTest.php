@@ -325,9 +325,13 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertSame('Για ανάγνωση', $p->fresh()->thema);
     }
 
-    /** R1j (owner, 2026-11-20): one floating Αποθήκευση; no Νέο / Λίστα (the top bar has them); copy and receipt last, with icons. */
+    /**
+     * R1j (owner, 2026-11-20): one floating Αποθήκευση; no Νέο / Λίστα (the top bar has them). R1q (owner, 2026-11-27): ◀ ▶
+     * in the title line; copy, receipt and delete stacked at the right, with icons; no «Σύνδεσμος».
+     */
     public function test_the_actions_one_floating_save_and_copy_receipt_at_the_end(): void
     {
+        $this->setting('protocolValidate', 0);   // administrators choose the number, so they may delete (Διαγραφή shown)
         $p = Protocol::factory()->number(7)->create();
         $html = $this->actingAs($this->admin())->get('/home/'.$p->id)->assertOk()->getContent();
         $form = substr($html, (int) strpos($html, 'id="protocol-form"'));
@@ -338,25 +342,36 @@ class ProtocolFormTest extends FeatureTestCase
         $this->assertStringNotContainsString('href="'.url('/home/list').'"', $form, 'no Λίστα in the form');
         $this->assertStringNotContainsString('href="'.url('/home').'"', $form, 'no Νέο in the form');
 
-        $actions = substr($form, strpos($form, 'data-pill-actions'));
-        $actions = substr($actions, 0, strpos($actions, 'pill-more'));
-        $order = array_map(fn ($needle) => strpos($actions, $needle), ['Προηγούμενο', 'Επόμενο', 'data-action="copy"', 'data-action="link"', 'data-action="receipt"']);
+        // R1q (owner, 2026-11-27): ◀ ▶ in the title line; Αντιγραφή ως νέο, Απόδειξη, Διαγραφή stacked at the right of the
+        // number, in that order and first in the page's order (TAB goes Έτος → number → date → fields); no «Σύνδεσμος»
+        $head = substr($form, strpos($form, 'form-head'), strpos($form, 'card-body') - strpos($form, 'form-head'));
+        $this->assertMatchesRegularExpression('~form-head-title.*form-head-nav.*data-action="previous".*Προηγούμενο.*data-action="next".*Επόμενο~s', $head);
+        $stack = substr($form, strpos($form, 'data-form-actions'), strpos($form, 'number-head-year') - strpos($form, 'data-form-actions'));
+        $order = array_map(fn ($needle) => strpos($stack, $needle), ['data-action="copy"', 'data-action="receipt"', 'data-action="delete"']);
         $this->assertNotContains(false, $order);
         $sorted = $order;
         sort($sorted);
-        $this->assertSame($sorted, $order, 'copy, link (R3h) and receipt come last');
-        $this->assertMatchesRegularExpression('~pill-far-right[^>]*data-action="copy"[^>]*>\s*<i class="bi bi-copy~', $actions);
-        $this->assertMatchesRegularExpression('~data-action="receipt"[^>]*>\s*<i class="bi bi-receipt~', $actions);
+        $this->assertSame($sorted, $order, 'copy, receipt, delete, top to bottom');
+        $this->assertMatchesRegularExpression('~data-action="copy"[^>]*>\s*<i class="bi bi-copy~', $stack);
+        $this->assertMatchesRegularExpression('~data-action="receipt"[^>]*>\s*<i class="bi bi-receipt~', $stack);
+        $this->assertLessThan(strpos($form, 'id="f-etos"'), strpos($form, 'data-form-actions'), 'before the year in the page');
+        $this->assertStringNotContainsString('data-copy-link', $form);
+        $this->assertStringNotContainsString('Σύνδεσμος', $form);
+        $this->assertDoesNotMatchRegularExpression('~id="f-etos"[^>]*tabindex="-1"~', $form, 'the year is in the TAB order');
+        $this->assertGreaterThan(3, substr_count($form, 'p-0 section-toggle"'));
+        $this->assertSame(substr_count($form, 'p-0 section-toggle"'), substr_count($form, 'p-0 section-toggle" tabindex="-1"'), 'the sections\' ▴ are not');
 
         $new = $this->actingAs($this->writer())->get('/home')->assertOk()->getContent();
         $this->assertStringContainsString('id="form-save"', $new, 'a new protocol is saved by the same button');
         $this->assertStringNotContainsString('data-action="copy"', $new);
+        $this->assertStringNotContainsString('data-form-actions', $new);
+        $this->assertStringNotContainsString('data-action="previous"', $new);
 
-        // readers only view: no copy as new; the link (R3h) takes the far right, the receipt follows it
+        // readers only view: no copy as new, no delete; the receipt stays
         $read = $this->actingAs($this->reader())->get('/home/'.$p->id)->assertOk()->getContent();
         $this->assertStringNotContainsString('data-action="copy"', $read);
-        $this->assertMatchesRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="link"~', $read);
-        $this->assertDoesNotMatchRegularExpression('~class="[^"]*pill-far-right[^"]*"[^>]*data-action="receipt"~', $read);
+        $this->assertStringNotContainsString('data-action="delete"', $read);
+        $this->assertStringContainsString('data-action="receipt"', $read);
         $this->assertStringNotContainsString('id="form-save"', $read);
         $this->assertFalse($this->reader()->can('create', Protocol::class));
         $this->assertTrue($this->writer()->can('create', Protocol::class));
