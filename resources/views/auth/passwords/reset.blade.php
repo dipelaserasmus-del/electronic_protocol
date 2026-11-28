@@ -1,76 +1,31 @@
-@extends('layouts.app',  ['allowregister' => $allowregister ?? false])
+{{-- Z01b: a new password, from the link of the e-mail (token, and the user name it was sent for) --}}
+@extends('layouts.modern')
+
+@section('title', 'Νέος κωδικός')
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h1 class='text-center' >Ανάκτηση Password</h1></div>
-
-                <div class="panel-body">
-                    @if (session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
-                        {{ csrf_field() }}
-
-                        <input type="hidden" name="token" value="{{ $token }}">
-
-                        <div class="form-group{{ $errors->has('username') ? ' has-error' : '' }}">
-                            <label for="username" class="col-md-4 control-label">Username</label>
-
-                            <div class="col-md-6">
-                                <input id="username" type="text" class="form-control" name="username" value="" required autofocus>
-
-                                @if ($errors->has('username'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('username') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
-                            <label for="password" class="col-md-4 control-label">Password</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control" name="password" required>
-
-                                @if ($errors->has('password'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('password') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group{{ $errors->has('password_confirmation') ? ' has-error' : '' }}">
-                            <label for="password-confirm" class="col-md-4 control-label">Password</label>
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required>
-
-                                @if ($errors->has('password_confirmation'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('password_confirmation') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-md-6 col-md-offset-4">
-                                <button type="submit" class="btn btn-primary">
-                                    Ανάκτηση Password
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <x-auth-card title="Νέος κωδικός" id="reset-card">
+        <form method="POST" action="{{ url('/password/reset') }}" id="reset-form" novalidate>
+            @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">Όνομα χρήστη</label>
+                <input id="username" type="text" name="username" value="{{ old('username', $username ?? '') }}" autocomplete="username" required autofocus
+                       class="form-control @error('username') is-invalid @enderror">
+                @error('username')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-        </div>
-    </div>
-</div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Νέος κωδικός</label>
+                <input id="password" type="password" name="password" autocomplete="new-password" required class="form-control @error('password') is-invalid @enderror">
+                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-3">
+                <label for="password-confirm" class="form-label">Ο κωδικός ξανά</label>
+                <input id="password-confirm" type="password" name="password_confirmation" autocomplete="new-password" required
+                       class="form-control @error('password_confirmation') is-invalid @enderror">
+                @error('password_confirmation')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Αλλαγή κωδικού</button>
+        </form>
+    </x-auth-card>
 @endsection

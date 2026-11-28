@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\User;
 use App\Models\Config;
 use App\Models\Protocol;
 use App\Policies\ProtocolPolicy;
@@ -41,18 +40,9 @@ class AppServiceProvider extends ServiceProvider
 
         error_reporting(E_ALL ^ E_NOTICE);
         try {
-            View::share('myActiveUsers', User::my_active_users());
-
-            $ipiresiasName = Config::getConfigValueOf('ipiresiasName');
-            View::share('ipiresiasName', $ipiresiasName);
-            $defaultImapEmail = Config::getConfigValueOf('defaultImapEmail');
-            View::share('defaultImapEmail', $defaultImapEmail);
-
-            $allowedEmailUsers =  Config::getConfigValueOf('allowedEmailUsers');
-            View::share('allowedEmailUsers', $allowedEmailUsers);
-
-            $wideListProtocol = Config::getConfigValueOf('wideListProtocol');
-            View::share('wideListProtocol', $wideListProtocol);
+            // the e-mail templates (receipts, assignments) write the institution's name; Z01b: the old layout's other
+            // shared values (users, inbox settings, wideListProtocol) went with it
+            View::share('ipiresiasName', Config::getConfigValueOf('ipiresiasName'));
 
         } catch (\Throwable $e) {
             report($e);

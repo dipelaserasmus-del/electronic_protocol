@@ -31,7 +31,7 @@ Laravel 13 upgrade of 2026-11-10; that upgrade never reached the production serv
 | PHP | 🔴 8.1 (end of life since 2025-12-31) | 🟡 8.5 in the image, 8.4 + 8.5 in CI (image rebuild needed for the PHP fixes of 2026-11-19) |
 | Framework | 🔴 Laravel 8 (security fixes ended 2023-01-24) | 🟡 Laravel 13.42 (supported until 2028-03-17; 13.44.1 out) |
 | Database | 🔴 MariaDB 10.4 (end of life 2024-06-18) / MySQL 8.0 in Docker (end of life 2026-04) | 🟢 MySQL 8.4 LTS |
-| Old browser code still served | 🔴 jQuery 1.9 / 3.1, Bootstrap 3.3.7, Vue 2 on every page | 🔴 only on the login, registration and password-reset pages (removed by Z01) |
+| Old browser code still served | 🔴 jQuery 1.9 / 3.1, Bootstrap 3.3.7, Vue 2 on every page | 🟢 removed (Z01b, 2026-11-28): the login, registration and password-reset pages use the new layout |
 
 ## 1. Servers and runtime
 
@@ -93,8 +93,8 @@ Only the **login, registration and password-reset pages** still use the old layo
 
 | Library | Original | Current | Newest available | Status | Notes |
 |---|---|---|---|---|---|
-| [jQuery (inside public/js/app.js)](#c-jquery-inside-public-js-app-js "An older JavaScript library for changing the page and sending requests; the original app's scripts were built on it. Today it only runs on the old log-in screens.") | 3.1.0 | 3.1.0 | 4.1.0 | 🔴 | CVE-2019-11358, CVE-2020-11022, CVE-2020-11023 (XSS). `public/js/jquery.min.js` 1.9.1, which no page loaded, was removed (Z01a, 2026-11-28). |
-| [Bootstrap 3 JS + CSS (app.js, bootstrap.min.css)](#c-bootstrap-3-js-css "The original app's look and its menus, dialogs and tooltips. Bootstrap 3 has had no updates since 2019.") | 3.3.7 | 3.3.7 | 5.3.9 | 🔴 | End of life; CVE-2018-14040, -14041, -14042, CVE-2019-8331 (XSS). |
+| [jQuery (inside public/js/app.js)](#c-jquery-inside-public-js-app-js "An older JavaScript library for changing the page and sending requests; the original app's scripts were built on it. Today it only runs on the old log-in screens.") | 3.1.0 | removed | 4.1.0 | 🟢 | Removed with `public/js/app.js` (Z01b, 2026-11-28); it had CVE-2019-11358, CVE-2020-11022, CVE-2020-11023 (XSS). `public/js/jquery.min.js` 1.9.1, which no page loaded, was removed in Z01a. |
+| [Bootstrap 3 JS + CSS (app.js, bootstrap.min.css)](#c-bootstrap-3-js-css "The original app's look and its menus, dialogs and tooltips. Bootstrap 3 has had no updates since 2019.") | 3.3.7 | removed | 5.3.9 | 🟢 | Removed (Z01b, 2026-11-28), with Vue **1**.0.26 (not 2, as listed before) and lodash 4.14 that the same `app.js` bundled; it was end of life (CVE-2018-14040, -14041, -14042, CVE-2019-8331, XSS). |
 | [Vue (inside app.js)](#c-vue-inside-app-js "A JavaScript framework bundled into the original app's script file. The rebuilt pages do not use it.") | 2.x | 2.x | 3.x | 🔴 | Vue 2 end of life 2023-12-31. |
 | [bootstrap-select](#c-bootstrap-select "The original app's searchable drop-down lists (for example choosing a folder or a user).") | 1.12.2 | 1.12.2 | 1.13.18 | 🔴 | CVE-2019-20921 (XSS, fixed in 1.13.6). |
 | [bootstrap-datepicker](#c-bootstrap-datepicker "The original app's calendar pop-up for choosing dates.") | 1.7.0-dev | 1.7.0-dev | 1.10.1 | 🟠 | |

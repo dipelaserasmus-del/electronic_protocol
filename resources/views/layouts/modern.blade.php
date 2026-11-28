@@ -1,6 +1,6 @@
 {{--
-    N03: layout of the rebuilt pages. Bootstrap 5 + Livewire 4 (Alpine included), built by Vite.
-    Legacy pages keep layouts/app until their module is rebuilt.
+    N03: layout of the pages. Bootstrap 5 + Livewire 4 (Alpine included), built by Vite. Z01b: also the sign-in pages
+    (auth/*: the top bar then shows only the name); the old layouts/app (Bootstrap 3, jQuery, Vue 1) is gone.
     Sections: title, content. The top bar has the search box (R3c, search/box.blade.php).
 --}}
 @php
