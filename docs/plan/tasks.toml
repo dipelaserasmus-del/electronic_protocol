@@ -20,7 +20,8 @@ tasks = [
   { id = "A02", title = "Missing-number reminder", phase = "U", batch = 1, size = "M", deps = ["B08"], status = "done", pr = 9 },
 
   # Pinned: owner could not reproduce yet (prod: protocolValidate = NO). Re-open when steps are known.
-  { id = "B03d", title = "Date reset on save (pinned, awaiting steps)", phase = "U", batch = 0, size = "S", deps = [], status = "on-hold" },
+  # Closed 2026-11-28: the owner has not met it again since it was pinned; taken as solved by the later form work (owner)
+  { id = "B03d", title = "Date reset on save (closed: not seen again)", phase = "U", batch = 0, size = "S", deps = [], status = "done", pr = 169 },
 
   # ---------------- Batch 2 ----------------
   { id = "B09", title = "Fix all outgoing email (500s)", phase = "U", batch = 2, size = "S", deps = ["F02"], status = "done", pr = 14 },

@@ -7,13 +7,13 @@
 
 | | |
 |---|---|
-| Tasks done | **149 / 160** `████████████████████████████░░` 93% |
-| Effort done (PERT) | **61.1 / 66.0 h** `████████████████████████████░░` 93% |
+| Tasks done | **150 / 161** `████████████████████████████░░` 93% |
+| Effort done (PERT) | **61.4 / 66.3 h** `████████████████████████████░░` 93% |
 | Remaining effort, one agent in sequence | **4.9 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 2.0 h ± 0.2 |
 | In progress | — |
 | Next task | **A03** — Rule: dates going backwards |
-| On hold | B03d (Date reset on save (pinned, awaiting steps)) |
+| On hold | — |
 
 **Critical path (remaining):** Z01 → Z02 → Z03 → Z04
 
@@ -21,6 +21,7 @@
 
 | Batch | Tasks | Done | Progress |
 |---|---|---|---|
+| 0 | ✅B03d | 1/1 | `██████████` |
 | 1 | ✅F01 ✅F03 ✅F02 ✅S00 ✅B03 ✅B08 ✅S02 ✅A02 | 8/8 | `██████████` |
 | 2 | ✅B09 ✅F04 ✅L01 ✅L02 ✅F05 ✅F06 ✅F07 ✅S04 ✅B04 ✅B07 | 10/10 | `██████████` |
 | 3 | ✅B10 ✅N01 ✅N02 ✅N03 ✅N04 | 5/5 | `██████████` |
@@ -65,7 +66,7 @@ flowchart LR
     B08["B08<br/>Atomic numbering (concurrency)"]
     S02["S02<br/>Central access-control policy"]
     A02["A02<br/>Missing-number reminder"]
-    B03d["B03d<br/>Date reset on save (pinned, awaiting steps)"]
+    B03d["B03d<br/>Date reset on save (closed: not seen again)"]
     B09["B09<br/>Fix all outgoing email (500s)"]
     S04["S04<br/>Remove committed .env / APP_KEY"]
     B04["B04<br/>Descriptive error pages"]
@@ -426,9 +427,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01 done
+  class F01,F03,F02,S00,B03,B08,S02,A02,B03d,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01 done
   class A03,A04,A05,A06,X01,X02,Z01,Z02,Z03,Z04,V02 todo
-  class B03d onhold
   class Z01,Z02,Z03,Z04 critical
 ```
 
@@ -441,182 +441,184 @@ gantt
   dateFormat YYYY-MM-DD HH:mm
   axisFormat %d/%m %H:%M
   todayMarker off
+  section Batch 0
+  B03d Date reset on save (closed  not seen again) :done, b03d, 2026-11-12 09:00, 19m
   section Batch 1
-  F01 CI on GitHub Actions :done, f01, 2026-11-12 09:00, 19m
-  F03 Docker dev stack + mock mail :done, f03, 2026-11-12 09:19, 33m
-  F02 Test foundation, characterization tests :done, f02, 2026-11-12 09:52, 66m
-  S00 Close open admin registration :done, s00, 2026-11-12 10:58, 19m
-  B03 Keep manually typed number :done, b03, 2026-11-12 11:17, 33m
-  B08 Atomic numbering (concurrency) :done, b08, 2026-11-12 11:50, 33m
-  S02 Central access-control policy :done, s02, 2026-11-12 12:23, 33m
-  A02 Missing-number reminder :done, a02, 2026-11-12 12:56, 33m
+  F01 CI on GitHub Actions :done, f01, 2026-11-12 09:19, 19m
+  F03 Docker dev stack + mock mail :done, f03, 2026-11-12 09:38, 33m
+  F02 Test foundation, characterization tests :done, f02, 2026-11-12 10:11, 66m
+  S00 Close open admin registration :done, s00, 2026-11-12 11:17, 19m
+  B03 Keep manually typed number :done, b03, 2026-11-12 11:36, 33m
+  B08 Atomic numbering (concurrency) :done, b08, 2026-11-12 12:09, 33m
+  S02 Central access-control policy :done, s02, 2026-11-12 12:42, 33m
+  A02 Missing-number reminder :done, a02, 2026-11-12 13:15, 33m
   section Batch 2
-  B09 Fix all outgoing email (500s) :done, b09, 2026-11-12 13:29, 19m
-  F04 Real-data loader (owner runs it) :done, f04, 2026-11-12 13:48, 19m
-  L01 Owner's VS Code + local stack with real data :done, l01, 2026-11-12 14:07, 19m
-  L02 Two computers  macOS guide, RPM VS Code, switching :done, l02, 2026-11-12 14:26, 19m
-  F05 Playwright evidence tooling :done, f05, 2026-11-12 14:45, 33m
-  F06 nginx finds a recreated app container (no 502) :done, f06, 2026-11-12 15:18, 19m
-  F07 real load  adopt a backup without migrations table :done, f07, 2026-11-12 15:37, 19m
-  S04 Remove committed .env / APP_KEY :done, s04, 2026-11-12 15:56, 19m
-  B04 Descriptive error pages :done, b04, 2026-11-12 16:15, 19m
-  B07 Diagnose timeouts / 500s :done, b07, 2026-11-12 16:34, 33m
+  B09 Fix all outgoing email (500s) :done, b09, 2026-11-12 13:48, 19m
+  F04 Real-data loader (owner runs it) :done, f04, 2026-11-12 14:07, 19m
+  L01 Owner's VS Code + local stack with real data :done, l01, 2026-11-12 14:26, 19m
+  L02 Two computers  macOS guide, RPM VS Code, switching :done, l02, 2026-11-12 14:45, 19m
+  F05 Playwright evidence tooling :done, f05, 2026-11-12 15:04, 33m
+  F06 nginx finds a recreated app container (no 502) :done, f06, 2026-11-12 15:37, 19m
+  F07 real load  adopt a backup without migrations table :done, f07, 2026-11-12 15:56, 19m
+  S04 Remove committed .env / APP_KEY :done, s04, 2026-11-12 16:15, 19m
+  B04 Descriptive error pages :done, b04, 2026-11-12 16:34, 19m
+  B07 Diagnose timeouts / 500s :done, b07, 2026-11-12 16:53, 33m
   section Batch 3
-  B10 Backup creates complete dumps (mysqldump errors shown) :done, b10, 2026-11-12 17:07, 19m
-  N01 PHP + Composer upgrade, drop ext-imap :done, n01, 2026-11-12 17:26, 33m
-  N02 Laravel structure modernization :done, n02, 2026-11-12 17:59, 33m
-  N03 Vite + Bootstrap 5 + Livewire, top nav layout :done, n03, 2026-11-12 18:32, 33m
-  N04 Shared UI components (pills, date input…) :done, n04, 2026-11-12 19:05, 33m
+  B10 Backup creates complete dumps (mysqldump errors shown) :done, b10, 2026-11-12 17:26, 19m
+  N01 PHP + Composer upgrade, drop ext-imap :done, n01, 2026-11-12 17:45, 33m
+  N02 Laravel structure modernization :done, n02, 2026-11-12 18:18, 33m
+  N03 Vite + Bootstrap 5 + Livewire, top nav layout :done, n03, 2026-11-12 18:51, 33m
+  N04 Shared UI components (pills, date input…) :done, n04, 2026-11-12 19:24, 33m
   section Batch 4
-  D05 Tables → utf8mb4 :done, d05, 2026-11-12 19:38, 19m
-  D01 Subject/summary → TEXT :done, d01, 2026-11-12 19:57, 19m
-  R5a Email service, EML cache, charsets :done, r5a, 2026-11-12 20:16, 66m
-  F08 Attachment names fit 255 bytes (Linux/Docker) :done, f08, 2026-11-12 21:22, 19m
+  D05 Tables → utf8mb4 :done, d05, 2026-11-12 19:57, 19m
+  D01 Subject/summary → TEXT :done, d01, 2026-11-12 20:16, 19m
+  R5a Email service, EML cache, charsets :done, r5a, 2026-11-12 20:35, 66m
+  F08 Attachment names fit 255 bytes (Linux/Docker) :done, f08, 2026-11-12 21:41, 19m
   section Batch 5
-  D02 Assignments table (replace d14,e10 text) :done, d02, 2026-11-12 21:41, 33m
-  D03 Attachment size/hash/deleted_by :done, d03, 2026-11-12 22:14, 19m
-  D04 Integer dates → DATE columns :done, d04, 2026-11-12 22:33, 33m
+  D02 Assignments table (replace d14,e10 text) :done, d02, 2026-11-12 22:00, 33m
+  D03 Attachment size/hash/deleted_by :done, d03, 2026-11-12 22:33, 19m
+  D04 Integer dates → DATE columns :done, d04, 2026-11-12 22:52, 33m
   section Batch 6
-  R1a Protocol service (sanitation, copy date…) :done, r1a, 2026-11-12 23:06, 33m
-  R1b Protocol form screen :done, r1b, 2026-11-12 23:39, 33m
-  R1c Attachments panel, drag & drop :done, r1c, 2026-11-13 00:12, 33m
-  R2 Protocol list rebuild :done, r2, 2026-11-13 00:45, 33m
-  R4a Secure file handling :done, r4a, 2026-11-13 01:18, 19m
-  R4b Attachment trash with retention :done, r4b, 2026-11-13 01:37, 33m
+  R1a Protocol service (sanitation, copy date…) :done, r1a, 2026-11-12 23:25, 33m
+  R1b Protocol form screen :done, r1b, 2026-11-12 23:58, 33m
+  R1c Attachments panel, drag & drop :done, r1c, 2026-11-13 00:31, 33m
+  R2 Protocol list rebuild :done, r2, 2026-11-13 01:04, 33m
+  R4a Secure file handling :done, r4a, 2026-11-13 01:37, 19m
+  R4b Attachment trash with retention :done, r4b, 2026-11-13 01:56, 33m
   section Batch 6.5
-  R1e Form feedback  drop (Firefox), related tags, notices :done, r1e, 2026-11-13 02:10, 19m
-  R2b List feedback  user filter, detailed view, file names :done, r2b, 2026-11-13 02:29, 33m
-  R2c Missing numbers as rows in the list :done, r2c, 2026-11-13 03:02, 33m
+  R1e Form feedback  drop (Firefox), related tags, notices :done, r1e, 2026-11-13 02:29, 19m
+  R2b List feedback  user filter, detailed view, file names :done, r2b, 2026-11-13 02:48, 33m
+  R2c Missing numbers as rows in the list :done, r2c, 2026-11-13 03:21, 33m
   section Batch 6.6
-  D06 Folder description → TEXT :done, d06, 2026-11-13 03:35, 19m
-  R1f Form  checked tags (related, keywords), folder filter :done, r1f, 2026-11-13 03:54, 33m
-  R1g Form layout  number in the centre, rarely used sections lower :done, r1g, 2026-11-13 04:27, 19m
-  R2d Missing-number rows  new look :done, r2d, 2026-11-13 04:46, 19m
+  D06 Folder description → TEXT :done, d06, 2026-11-13 03:54, 19m
+  R1f Form  checked tags (related, keywords), folder filter :done, r1f, 2026-11-13 04:13, 33m
+  R1g Form layout  number in the centre, rarely used sections lower :done, r1g, 2026-11-13 04:46, 19m
+  R2d Missing-number rows  new look :done, r2d, 2026-11-13 05:05, 19m
   section Batch 7
-  R3a Advanced search screen :done, r3a, 2026-11-13 05:05, 33m
-  R3b Gmail-style query parser :done, r3b, 2026-11-13 05:38, 33m
-  R3c Global search box + results page :done, r3c, 2026-11-13 06:11, 33m
+  R3a Advanced search screen :done, r3a, 2026-11-13 05:24, 33m
+  R3b Gmail-style query parser :done, r3b, 2026-11-13 05:57, 33m
+  R3c Global search box + results page :done, r3c, 2026-11-13 06:30, 33m
   section Batch 7.5
-  R1h Folder codes  φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match :done, r1h, 2026-11-13 06:44, 19m
-  R3d Top bar  fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user :done, r3d, 2026-11-13 07:03, 19m
-  R1i Protocol page sections  collapsible, movable, one/two columns, saved per user :done, r1i, 2026-11-13 07:22, 33m
+  R1h Folder codes  φ11 = Φ.11 only, 12 → Φ12 first, list scrolled to the match :done, r1h, 2026-11-13 07:03, 19m
+  R3d Top bar  fewer items (Εκτύπωση, Διατήρηση under Διαχείριση), search in the box, icons, institution under the name; page width per user :done, r3d, 2026-11-13 07:22, 19m
+  R1i Protocol page sections  collapsible, movable, one/two columns, saved per user :done, r1i, 2026-11-13 07:41, 33m
   section Batch 8
-  R5c Inbox screen (sidebar, collapsible) :done, r5c, 2026-11-13 07:55, 33m
-  R5d Register-from-email flow, keywords :done, r5d, 2026-11-13 08:28, 33m
-  R5b winmail.dat (TNEF) :done, r5b, 2026-11-13 09:01, 66m
+  R5c Inbox screen (sidebar, collapsible) :done, r5c, 2026-11-13 08:14, 33m
+  R5d Register-from-email flow, keywords :done, r5d, 2026-11-13 08:47, 33m
+  R5b winmail.dat (TNEF) :done, r5b, 2026-11-13 09:20, 66m
   section Batch 9
-  R6a Users & roles screens :done, r6a, 2026-11-13 10:07, 33m
-  R6b Folders + auto-assignment rules :done, r6b, 2026-11-13 10:40, 33m
-  R1d Apply auto-assignment on save :done, r1d, 2026-11-13 11:13, 19m
-  R6c Settings, backups, archive screens :done, r6c, 2026-11-13 11:32, 33m
-  R7 Printing & exports :done, r7, 2026-11-13 12:05, 33m
+  R6a Users & roles screens :done, r6a, 2026-11-13 10:26, 33m
+  R6b Folders + auto-assignment rules :done, r6b, 2026-11-13 10:59, 33m
+  R1d Apply auto-assignment on save :done, r1d, 2026-11-13 11:32, 19m
+  R6c Settings, backups, archive screens :done, r6c, 2026-11-13 11:51, 33m
+  R7 Printing & exports :done, r7, 2026-11-13 12:24, 33m
   section Batch 9.5
-  F09 Docker build  apt retries + 30 s time-outs; CI jobs with time limits :done, f09, 2026-11-13 12:38, 19m
-  R2e List pager above the list too; previous / next; any page from a list :done, r2e, 2026-11-13 12:57, 19m
-  R6d Settings  every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save :done, r6d, 2026-11-13 13:16, 33m
-  R2f Dates out of order with the numbers, or in the future  flagged in the list (⚠ + explanation) and warned in the form :done, r2f, 2026-11-13 13:49, 33m
-  R2g List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page :done, r2g, 2026-11-13 14:22, 19m
-  R2h List  the row actions (copy, receipt) under a ⋮ menu :done, r2h, 2026-11-13 14:41, 19m
-  R5e Inbox  the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects :done, r5e, 2026-11-13 15:00, 19m
-  D07 Folder glossary  the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) :done, d07, 2026-11-13 15:19, 19m
-  D08 Folder codes without the dot (Φ12 = Φ.12)  search and merge find every spelling the protocols use :done, d08, 2026-11-13 15:38, 19m
-  R1j Protocol form  one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link :done, r1j, 2026-11-13 15:57, 19m
-  R3e Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px :done, r3e, 2026-11-13 16:16, 19m
-  R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :done, r2i, 2026-11-13 16:35, 19m
-  R3f Search  whole words or numbers («=» before a value, εισ =120, «Ολόκληρες λέξεις» switch), in the help too :done, r3f, 2026-11-13 16:54, 19m
-  R1k Protocol page  a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed :done, r1k, 2026-11-13 17:13, 19m
-  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :done, r2j, 2026-11-13 17:32, 19m
-  R5f Top bar  a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute :done, r5f, 2026-11-13 17:51, 19m
-  R5g Inbox  the list pager above and below the e-mails, and the page in the list on the left :done, r5g, 2026-11-13 18:10, 19m
-  R3g Top bar  Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις) :done, r3g, 2026-11-13 18:29, 19m
-  R2k List  every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) :done, r2k, 2026-11-13 18:48, 19m
-  R5h Inbox  going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) :done, r5h, 2026-11-13 19:07, 19m
-  R5i Inbox  a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails :done, r5i, 2026-11-13 19:26, 19m
-  R5j Inbox  files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart :done, r5j, 2026-11-13 19:45, 19m
-  R5k Inbox  registering says so until done (notice, spinners, the yellow button too); one registration at a time :done, r5k, 2026-11-13 20:04, 19m
-  L03 Real copy  optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) :done, l03, 2026-11-13 20:23, 19m
-  R5m Inbox  page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users :done, r5m, 2026-11-13 20:42, 33m
-  R5n Inbox  while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) :done, r5n, 2026-11-13 21:15, 33m
-  R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers :done, r5o, 2026-11-13 21:48, 33m
-  R2l List  remove the «Αναζήτηση» button (the search field has its own) :done, r2l, 2026-11-13 22:21, 19m
-  D09 Folder glossary  aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) :done, d09, 2026-11-13 22:40, 19m
-  D10 Real data  load copies the server's files by the database (local-data/server-files → storage/app, attachments import) and applies the folder glossary :done, d10, 2026-11-13 22:59, 33m
-  D11 attachments import  server files that are not attachments counted apart; --list says why each other file has no row :done, d11, 2026-11-13 23:32, 19m
-  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-13 23:51, 19m
+  F09 Docker build  apt retries + 30 s time-outs; CI jobs with time limits :done, f09, 2026-11-13 12:57, 19m
+  R2e List pager above the list too; previous / next; any page from a list :done, r2e, 2026-11-13 13:16, 19m
+  R6d Settings  every setting explained (ⓘ), numbering settings framed together, settings without effect hidden; retention per setting in the form too; number always given on save :done, r6d, 2026-11-13 13:35, 33m
+  R2f Dates out of order with the numbers, or in the future  flagged in the list (⚠ + explanation) and warned in the form :done, r2f, 2026-11-13 14:08, 33m
+  R2g List pager on every paged screen (search, trash, users, clean-up); past the last page → the last page :done, r2g, 2026-11-13 14:41, 19m
+  R2h List  the row actions (copy, receipt) under a ⋮ menu :done, r2h, 2026-11-13 15:00, 19m
+  R5e Inbox  the app's date field for the incoming date; keyword suggestions from the file names too, accents from earlier subjects :done, r5e, 2026-11-13 15:19, 19m
+  D07 Folder glossary  the owner's list (full descriptions) applied by command; merge Φ.43 → Φ.46 (protocols, files, rules) :done, d07, 2026-11-13 15:38, 19m
+  D08 Folder codes without the dot (Φ12 = Φ.12)  search and merge find every spelling the protocols use :done, d08, 2026-11-13 15:57, 19m
+  R1j Protocol form  one Αποθήκευση floating at the bottom right; no Νέο / Λίστα in the form; copy and receipt at the far right with icons; Λίστα in the top bar is a link :done, r1j, 2026-11-13 16:16, 19m
+  R3e Each user chooses their home page (all / προς Διεκπεραίωση / προς Ενημέρωση); the top bar's menu stays open from 768px :done, r3e, 2026-11-13 16:35, 19m
+  R2i List  rows in alternating colours, fixed column widths, each row short (two lines, two files) with ▾ to show all :done, r2i, 2026-11-13 16:54, 19m
+  R3f Search  whole words or numbers («=» before a value, εισ =120, «Ολόκληρες λέξεις» switch), in the help too :done, r3f, 2026-11-13 17:13, 19m
+  R1k Protocol page  a red dot on Αποθήκευση while changes are unsaved; leaving asks to save, listing what changed :done, r1k, 2026-11-13 17:32, 19m
+  R2j List  assignments as pills, ✎ Διεκπεραίωση / 👁 Ενημέρωση (also the Λίστα menu and the search results) :done, r2j, 2026-11-13 17:51, 19m
+  R5f Top bar  a red badge next to Εισερχόμενα with the number of e-mails waiting; one count for all users, checked every minute :done, r5f, 2026-11-13 18:10, 19m
+  R5g Inbox  the list pager above and below the e-mails, and the page in the list on the left :done, r5g, 2026-11-13 18:29, 19m
+  R3g Top bar  Διαχείριση moved into the user menu, grouped (Εκτύπωση, Φάκελοι, Διαχειριστής | Προτιμήσεις) :done, r3g, 2026-11-13 18:48, 19m
+  R2k List  every row two lines (sender only, number and dates in a tooltip; one pill and one file with +N) :done, r2k, 2026-11-13 19:07, 19m
+  R5h Inbox  going to an e-mail from the list stays on it (folder list scrolled the page; late HTML frames moved it) :done, r5h, 2026-11-13 19:26, 19m
+  R5i Inbox  a long Προς / Κοιν. list folded (three + «και άλλοι N»); browser tests load only invented / approved e-mails :done, r5i, 2026-11-13 19:45, 19m
+  R5j Inbox  files above the buttons; the e-mail (Από, Προς, Θέμα, text, HTML) tinted apart :done, r5j, 2026-11-13 20:04, 19m
+  R5k Inbox  registering says so until done (notice, spinners, the yellow button too); one registration at a time :done, r5k, 2026-11-13 20:23, 19m
+  L03 Real copy  optional test mailbox (local-data/test-mailbox.env → «Δοκιμαστικός λογαριασμός» in Ρυθμίσεις; optional SMTP, mail only to TEST_MAIL_ONLY_TO) :done, l03, 2026-11-13 20:42, 19m
+  R5m Inbox  page at once + «Σύνδεση με τον διακομιστή…» with seconds; failure says slow / login / other + retry; one registration per e-mail across users :done, r5m, 2026-11-13 21:01, 33m
+  R5n Inbox  while the mail server is slow, show the e-mails of the last check from the cache (registering still needs the server) :done, r5n, 2026-11-13 21:34, 33m
+  R5o Inbox  no jump when Κείμενο / HTML opens; Εξερχόμενο fields (collapsed); section colours as in the protocol form; HTML tab icon; list positions + ✓ number; lavender headers :done, r5o, 2026-11-13 22:07, 33m
+  R2l List  remove the «Αναζήτηση» button (the search field has its own) :done, r2l, 2026-11-13 22:40, 19m
+  D09 Folder glossary  aliases — the same folder under another code on the copy is updated and keeps its code (Φ32.β, Φ29Α, Φ33.β) :done, d09, 2026-11-13 22:59, 19m
+  D10 Real data  load copies the server's files by the database (local-data/server-files → storage/app, attachments import) and applies the folder glossary :done, d10, 2026-11-13 23:18, 33m
+  D11 attachments import  server files that are not attachments counted apart; --list says why each other file has no row :done, d11, 2026-11-13 23:51, 19m
+  R5l Inbox  a registered / read e-mail folds; «Εμφάνιση email» opens it, «Επόμενο email» goes on :done, r5l, 2026-11-14 00:10, 19m
   section Batch 9.6
-  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :done, r3h, 2026-11-14 00:10, 19m
-  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :done, r3i, 2026-11-14 00:29, 33m
-  R4d Rename an attachment (shown name only; extension fixed) :done, r4d, 2026-11-14 01:02, 19m
-  R4c Preview in the app  PDF, images, text; docx / xlsx converted in the browser :done, r4c, 2026-11-14 01:21, 33m
-  R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :done, r4e, 2026-11-14 01:54, 33m
-  R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :done, r4f, 2026-11-14 02:27, 33m
-  R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :done, r4g, 2026-11-14 03:00, 19m
-  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :done, r4h, 2026-11-14 03:19, 33m
-  R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :done, r5p, 2026-11-14 03:52, 19m
-  N05 Notepad per user on every page  sections, to-dos, markdown, autosave :done, n05, 2026-11-14 04:11, 33m
-  R6e Log viewer for administrators (Console-like  levels, search, pages by day) :done, r6e, 2026-11-14 04:44, 33m
+  R3h Direct links /protocol/N and /protocol/N/YYYY; one «Δεν υπάρχει» page; «Σύνδεσμος» pill :done, r3h, 2026-11-14 00:29, 19m
+  R3i Search  πότε  σήμερα / χθες / εβδομάδα / N μέρες / μήνας; χρήστης  (who registered); quick buttons :done, r3i, 2026-11-14 00:48, 33m
+  R4d Rename an attachment (shown name only; extension fixed) :done, r4d, 2026-11-14 01:21, 19m
+  R4c Preview in the app  PDF, images, text; docx / xlsx converted in the browser :done, r4c, 2026-11-14 01:40, 33m
+  R4e Stamp designer  editable template (emblem, lines, fields), live preview; owner's official stamp loaded locally :done, r4e, 2026-11-14 02:13, 33m
+  R4f Stamp when viewing / printing (originals kept); «Με σφραγίδα» toggle; old stamped files never stamped twice :done, r4f, 2026-11-14 02:46, 33m
+  R4g Old stamped PDFs  can the stamp be removed? (investigation, owner-run command only if safe) :done, r4g, 2026-11-14 03:19, 19m
+  R4h Deleted protocols to the trash; restore with the original number if free, else a new one (original number in the notes); admins restore all, writers their own :done, r4h, 2026-11-14 03:38, 33m
+  R5p Inbox  each e-mail in an envelope (2–3 versions, owner chooses) :done, r5p, 2026-11-14 04:11, 19m
+  N05 Notepad per user on every page  sections, to-dos, markdown, autosave :done, n05, 2026-11-14 04:30, 33m
+  R6e Log viewer for administrators (Console-like  levels, search, pages by day) :done, r6e, 2026-11-14 05:03, 33m
   section Batch 9.7
-  F10 Docker image  security updates from the main archive when security.ubuntu.com fails :done, f10, 2026-11-14 05:17, 19m
-  N06 Symfony security updates (advisories of 2026-11-25  mailer, routing, http-kernel) :done, n06, 2026-11-14 05:36, 19m
-  R3j Narrow page  − / + / ↺ for its width, saved per user :done, r3j, 2026-11-14 05:55, 19m
-  R4i Stamp  designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) :done, r4i, 2026-11-14 06:14, 19m
-  R5q Inbox look per user (user menu), with «Καμία» (the thin line); the setting only the default :done, r5q, 2026-11-14 06:33, 19m
-  R2m List  «Λίστα Πρωτοκόλλων», no Νέο / Ανανέωση on the page (↻ next to Λίστα), ↑ back to the top; top bar always in view (test) :done, r2m, 2026-11-14 06:52, 19m
-  R4j A type without preview  grey 👁, not clickable, left out of ‹ › :done, r4j, 2026-11-14 07:11, 19m
-  R5r Inbox  a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal :done, r5r, 2026-11-14 07:30, 19m
-  R5s Inbox  a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed :done, r5s, 2026-11-14 07:49, 19m
-  R4k Stamp  the number and date lines on opaque white (nothing under the stamp hides them) :done, r4k, 2026-11-14 08:08, 19m
-  R5t Inbox  no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch :done, r5t, 2026-11-14 08:27, 19m
-  R2n List  a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date :done, r2n, 2026-11-14 08:46, 19m
-  R5u User menu  «Εμφάνιση των e-mail» only on the inbox page :done, r5u, 2026-11-14 09:05, 19m
-  R6f Ρυθμίσεις as GitHub's settings  a menu of sections under headings, one section at a time, saved on its own :done, r6f, 2026-11-14 09:24, 33m
-  R6g Φάκελοι και διατήρηση  sort by Κωδικός / Πρωτ.; a folder's code shows its protocols :done, r6g, 2026-11-14 09:57, 19m
-  R6h Fix  a folder stored without the dot (Φ12) and in use could not be saved («the code does not change») :done, r6h, 2026-11-14 10:16, 19m
-  R6i A folder's automatic assignment applied to its existing protocols (chosen each time  open / all / this year; no e-mails) :done, r6i, 2026-11-14 10:35, 19m
-  R1l Protocol form  a refused Αποθήκευση brings the field with the error into view (focused) :done, r1l, 2026-11-14 10:54, 19m
-  R1m Form  an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ») :done, r1m, 2026-11-14 11:13, 19m
-  R1n Fix  saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save) :done, r1n, 2026-11-14 11:32, 19m
-  R4l Deleted protocol  the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash :done, r4l, 2026-11-14 11:51, 19m
-  R2o List  the no-folder flag says «Χωρίς φάκελο» in full :done, r2o, 2026-11-14 12:10, 19m
-  R2p List  an attachment that is only an ΑΔΑ shows a pill «ΑΔΑ» and its code as the link :done, r2p, 2026-11-14 12:29, 19m
-  R6j Log viewer  a «Σήμερα» button next to the day :done, r6j, 2026-11-14 12:48, 19m
-  R6k Log viewer  «Εξαγωγή» of the day's entries as shown; personal data masked by default :done, r6k, 2026-11-14 13:07, 19m
-  R2q List  the Από / Προς tooltip one line per part (sender, number, date) :done, r2q, 2026-11-14 13:26, 19m
-  R2r List  the e-mail's own file after the attachments, shown by its date and time (setting to put it first) :done, r2r, 2026-11-14 13:45, 19m
-  R6l «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md :done, r6l, 2026-11-14 14:04, 19m
-  R3k No «Νέο» for readers (top bar, search page, old menu) :done, r3k, 2026-11-14 14:23, 19m
-  R1o Protocol form  the time left to change it in days, hours and minutes :done, r1o, 2026-11-14 14:42, 19m
-  R5v Inbox  the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user :done, r5v, 2026-11-14 15:01, 19m
-  R2s Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table) :done, r2s, 2026-11-14 15:20, 19m
-  R4m Old server never stamped  the migration marks no file when putStamp is off; stamp old --none-stamped :done, r4m, 2026-11-14 15:39, 19m
-  R5w Inbox  the round ↑ «back to the top» of the list :done, r5w, 2026-11-14 15:58, 19m
-  V01 Versions report  original / current / newest, flagged (docs/reports/VERSIONS.md) :done, v01, 2026-11-14 16:17, 19m
-  V01b Versions report  a description of each component (tooltips + list) and the forecast for after Batch 10 :done, v01b, 2026-11-14 16:36, 19m
-  R4n Stamp place per file  top left / centre / right from the preview, for every user :done, r4n, 2026-11-14 16:55, 19m
-  R4o The stamp on JPG and PNG pictures (as an A4 page; EXIF orientation; per-file place) :done, r4o, 2026-11-14 17:14, 19m
-  R4p The stamp see-through or opaque per file (chosen in the preview, for every user) :done, r4p, 2026-11-14 17:33, 19m
-  R5y Inbox  one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it :done, r5y, 2026-11-14 17:52, 19m
-  R4q Preview of e-mail files (.eml); 👁 next to each file in the protocol list :done, r4q, 2026-11-14 18:11, 19m
-  R2t The list's head (title, gaps notice, filters, pager) stays under the top bar :done, r2t, 2026-11-14 18:30, 19m
-  R2u List  a file's 👁 before its name, its size after it (dimmed); filter tooltips; the fixed head blends with the page :done, r2u, 2026-11-14 18:49, 19m
-  R1q Protocol form  ◀ ▶ in the title line; copy / receipt / delete stacked at the right; no «Σύνδεσμος»; TAB from field to field; new files marked «ΝΕΟ» :done, r1q, 2026-11-14 19:08, 19m
-  R2v The receipt restyled for paper, as the protocol book :done, r2v, 2026-11-14 19:27, 19m
-  R1p Protocol form  keywords offered from the subject (on leaving Θέμα) and the files' names :done, r1p, 2026-11-14 19:46, 19m
-  R5x Inbox  a registered e-mail's envelope gets a green stripe on the left :done, r5x, 2026-11-14 20:05, 19m
-  R6m Ρυθμίσεις as the owner planned them (settings planner)  new grouping and texts; mysqldump path and print limit to .env :done, r6m, 2026-11-14 20:24, 19m
+  F10 Docker image  security updates from the main archive when security.ubuntu.com fails :done, f10, 2026-11-14 05:36, 19m
+  N06 Symfony security updates (advisories of 2026-11-25  mailer, routing, http-kernel) :done, n06, 2026-11-14 05:55, 19m
+  R3j Narrow page  − / + / ↺ for its width, saved per user :done, r3j, 2026-11-14 06:14, 19m
+  R4i Stamp  designer for administrators only; «Με σφραγίδα» for every user (the setting is only the default) :done, r4i, 2026-11-14 06:33, 19m
+  R5q Inbox look per user (user menu), with «Καμία» (the thin line); the setting only the default :done, r5q, 2026-11-14 06:52, 19m
+  R2m List  «Λίστα Πρωτοκόλλων», no Νέο / Ανανέωση on the page (↻ next to Λίστα), ↑ back to the top; top bar always in view (test) :done, r2m, 2026-11-14 07:11, 19m
+  R4j A type without preview  grey 👁, not clickable, left out of ‹ › :done, r4j, 2026-11-14 07:30, 19m
+  R5r Inbox  a refused Καταχώριση is brought into view (field focused, reason above the buttons); no «Καταχωρίζεται…» for a quick refusal :done, r5r, 2026-11-14 07:49, 19m
+  R5s Inbox  a folder for every e-mail (with or without attachments); setting «Ο Φάκελος χρειάζεται για κάθε e-mail» removed :done, r5s, 2026-11-14 08:08, 19m
+  R4k Stamp  the number and date lines on opaque white (nothing under the stamp hides them) :done, r4k, 2026-11-14 08:27, 19m
+  R5t Inbox  no «Με σφραγίδα» before registering; the registered protocol's files listed with 👁 and the stamp switch :done, r5t, 2026-11-14 08:46, 19m
+  R2n List  a protocol without a folder flagged (⚠ Χωρίς, tinted row), as a wrong date :done, r2n, 2026-11-14 09:05, 19m
+  R5u User menu  «Εμφάνιση των e-mail» only on the inbox page :done, r5u, 2026-11-14 09:24, 19m
+  R6f Ρυθμίσεις as GitHub's settings  a menu of sections under headings, one section at a time, saved on its own :done, r6f, 2026-11-14 09:43, 33m
+  R6g Φάκελοι και διατήρηση  sort by Κωδικός / Πρωτ.; a folder's code shows its protocols :done, r6g, 2026-11-14 10:16, 19m
+  R6h Fix  a folder stored without the dot (Φ12) and in use could not be saved («the code does not change») :done, r6h, 2026-11-14 10:35, 19m
+  R6i A folder's automatic assignment applied to its existing protocols (chosen each time  open / all / this year; no e-mails) :done, r6i, 2026-11-14 10:54, 19m
+  R1l Protocol form  a refused Αποθήκευση brings the field with the error into view (focused) :done, r1l, 2026-11-14 11:13, 19m
+  R1m Form  an attachment that is only an ΑΔΑ shows an ΑΔΑ pill and its code on the left (no «Μόνο ΑΔΑ») :done, r1m, 2026-11-14 11:32, 19m
+  R1n Fix  saving a new protocol asked «leave page?» (the unsaved-changes guard woke during the save) :done, r1n, 2026-11-14 11:51, 19m
+  R4l Deleted protocol  the notice only says «… μεταφέρθηκε στον κάδο.», «κάδο» a link to the trash :done, r4l, 2026-11-14 12:10, 19m
+  R2o List  the no-folder flag says «Χωρίς φάκελο» in full :done, r2o, 2026-11-14 12:29, 19m
+  R2p List  an attachment that is only an ΑΔΑ shows a pill «ΑΔΑ» and its code as the link :done, r2p, 2026-11-14 12:48, 19m
+  R6j Log viewer  a «Σήμερα» button next to the day :done, r6j, 2026-11-14 13:07, 19m
+  R6k Log viewer  «Εξαγωγή» of the day's entries as shown; personal data masked by default :done, r6k, 2026-11-14 13:26, 19m
+  R2q List  the Από / Προς tooltip one line per part (sender, number, date) :done, r2q, 2026-11-14 13:45, 19m
+  R2r List  the e-mail's own file after the attachments, shown by its date and time (setting to put it first) :done, r2r, 2026-11-14 14:04, 19m
+  R6l «Σχετικοί αριθμοί και στα δύο πρωτόκολλα» applied to existing protocols; docs/RELATED-NUMBERS.md :done, r6l, 2026-11-14 14:23, 19m
+  R3k No «Νέο» for readers (top bar, search page, old menu) :done, r3k, 2026-11-14 14:42, 19m
+  R1o Protocol form  the time left to change it in days, hours and minutes :done, r1o, 2026-11-14 15:01, 19m
+  R5v Inbox  the range only at the pager; «παλαιότερα πρώτα ↑ / νεότερα πρώτα ↓» swapped by each user :done, r5v, 2026-11-14 15:20, 19m
+  R2s Printed protocol book laid out for paper (sheet on screen, page numbers, cleaner table) :done, r2s, 2026-11-14 15:39, 19m
+  R4m Old server never stamped  the migration marks no file when putStamp is off; stamp old --none-stamped :done, r4m, 2026-11-14 15:58, 19m
+  R5w Inbox  the round ↑ «back to the top» of the list :done, r5w, 2026-11-14 16:17, 19m
+  V01 Versions report  original / current / newest, flagged (docs/reports/VERSIONS.md) :done, v01, 2026-11-14 16:36, 19m
+  V01b Versions report  a description of each component (tooltips + list) and the forecast for after Batch 10 :done, v01b, 2026-11-14 16:55, 19m
+  R4n Stamp place per file  top left / centre / right from the preview, for every user :done, r4n, 2026-11-14 17:14, 19m
+  R4o The stamp on JPG and PNG pictures (as an A4 page; EXIF orientation; per-file place) :done, r4o, 2026-11-14 17:33, 19m
+  R4p The stamp see-through or opaque per file (chosen in the preview, for every user) :done, r4p, 2026-11-14 17:52, 19m
+  R5y Inbox  one spinner while registering; a registered e-mail tinted and bordered green, a read one grey; the page follows it :done, r5y, 2026-11-14 18:11, 19m
+  R4q Preview of e-mail files (.eml); 👁 next to each file in the protocol list :done, r4q, 2026-11-14 18:30, 19m
+  R2t The list's head (title, gaps notice, filters, pager) stays under the top bar :done, r2t, 2026-11-14 18:49, 19m
+  R2u List  a file's 👁 before its name, its size after it (dimmed); filter tooltips; the fixed head blends with the page :done, r2u, 2026-11-14 19:08, 19m
+  R1q Protocol form  ◀ ▶ in the title line; copy / receipt / delete stacked at the right; no «Σύνδεσμος»; TAB from field to field; new files marked «ΝΕΟ» :done, r1q, 2026-11-14 19:27, 19m
+  R2v The receipt restyled for paper, as the protocol book :done, r2v, 2026-11-14 19:46, 19m
+  R1p Protocol form  keywords offered from the subject (on leaving Θέμα) and the files' names :done, r1p, 2026-11-14 20:05, 19m
+  R5x Inbox  a registered e-mail's envelope gets a green stripe on the left :done, r5x, 2026-11-14 20:24, 19m
+  R6m Ρυθμίσεις as the owner planned them (settings planner)  new grouping and texts; mysqldump path and print limit to .env :done, r6m, 2026-11-14 20:43, 19m
   section Batch 10
-  A01 Integrity-check engine + page :done, a01, 2026-11-14 20:43, 33m
-  A03 Rule  dates going backwards :a03, 2026-11-14 21:16, 19m
-  A04 Rule  εκκρεμότητα :a04, 2026-11-14 21:35, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 21:54, 33m
-  A06 Rule  missing attachment :a06, 2026-11-14 22:27, 19m
-  X01 Audit log — recording :x01, 2026-11-14 22:46, 33m
-  X02 Audit log — viewing :x02, 2026-11-14 23:19, 33m
-  Z01 Remove legacy code :crit, z01, 2026-11-14 23:52, 33m
-  Z02 Auth hardening, security headers :crit, z02, 2026-11-15 00:25, 19m
-  Z03 Final security review :crit, z03, 2026-11-15 00:44, 33m
-  Z04 End-user manual (details from the owner later) :crit, z04, 2026-11-15 01:17, 33m
-  V02 Versions report updated with the release versions :v02, 2026-11-15 01:50, 19m
+  A01 Integrity-check engine + page :done, a01, 2026-11-14 21:02, 33m
+  A03 Rule  dates going backwards :a03, 2026-11-14 21:35, 19m
+  A04 Rule  εκκρεμότητα :a04, 2026-11-14 21:54, 19m
+  A05 Rule  (partial) duplicates :a05, 2026-11-14 22:13, 33m
+  A06 Rule  missing attachment :a06, 2026-11-14 22:46, 19m
+  X01 Audit log — recording :x01, 2026-11-14 23:05, 33m
+  X02 Audit log — viewing :x02, 2026-11-14 23:38, 33m
+  Z01 Remove legacy code :crit, z01, 2026-11-15 00:11, 33m
+  Z02 Auth hardening, security headers :crit, z02, 2026-11-15 00:44, 19m
+  Z03 Final security review :crit, z03, 2026-11-15 01:03, 33m
+  Z04 End-user manual (details from the owner later) :crit, z04, 2026-11-15 01:36, 33m
+  V02 Versions report updated with the release versions :v02, 2026-11-15 02:09, 19m
 ```
 
 ## CPM table (all tasks, unlimited parallelism)
@@ -785,6 +787,6 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ⬜ | **Z03** | Final security review | Z02 | 0.5 | 0.1 | 6.1 | 6.7 | 10.4 | 10.9 | 4.2 |  |
 | ⬜ | **Z04** | End-user manual (details from the owner later) | Z03 | 0.5 | 0.1 | 6.7 | 7.2 | 10.9 | 11.5 | 4.2 |  |
 | ⬜ | **V02** | Versions report updated with the release versions | Z03, V01 | 0.3 | 0.1 | 6.7 | 7.0 | 11.1 | 11.5 | 4.5 |  |
-| ⏸️ | **B03d** | Date reset on save (pinned, awaiting steps) | — | 0.3 | 0.1 | 0.0 | 0.3 | 11.1 | 11.5 | 11.1 |  |
+| ✅ | **B03d** | Date reset on save (closed: not seen again) | — | 0.3 | 0.1 | 0.0 | 0.3 | 11.1 | 11.5 | 11.1 | #169 |
 
 Whole-project critical path 🔴: F01 → F02 → N01 → N02 → N03 → N04 → R3a → R3b → R3c → R3d → R1j → R3e → R5f → R5g → R5h → R5i → R5j → R5k → R5l → R5m → R5n → R5o → R5p → R5q → R5x → R5y = 11.5 h ± 0.5
