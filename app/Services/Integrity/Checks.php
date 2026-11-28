@@ -28,6 +28,7 @@ final class Checks
     public const RULES = [
         Rules\NumberGapRule::class,
         Rules\DateOrderRule::class,
+        Rules\DuplicateRule::class,
         Rules\PendingRule::class,
     ];
 

@@ -7,12 +7,12 @@
 
 | | |
 |---|---|
-| Tasks done | **152 / 161** `████████████████████████████░░` 94% |
-| Effort done (PERT) | **62.1 / 66.3 h** `████████████████████████████░░` 94% |
-| Remaining effort, one agent in sequence | **4.3 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Tasks done | **153 / 161** `█████████████████████████████░` 95% |
+| Effort done (PERT) | **62.6 / 66.3 h** `████████████████████████████░░` 94% |
+| Remaining effort, one agent in sequence | **3.7 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
 | Remaining critical path (if work could run in parallel) | 2.0 h ± 0.2 |
 | In progress | — |
-| Next task | **A05** — Rule: (partial) duplicates |
+| Next task | **A06** — Rule: missing attachment |
 | On hold | — |
 
 **Critical path (remaining):** Z01 → Z02 → Z03 → Z04
@@ -37,7 +37,7 @@
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
 | 9.7 | ✅F10 ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o ✅R5v ✅R2s ✅R4m ✅R5w ✅V01 ✅V01b ✅R4n ✅R4o ✅R4p ✅R5y ✅R4q ✅R2t ✅R2u ✅R1q ✅R2v ✅R1p ✅R5x ✅R6m | 48/48 | `██████████` |
-| 10 | ✅A01 ✅A03 ✅A04 ⬜A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 ⬜Z04 ⬜V02 | 3/12 | `██░░░░░░░░` |
+| 10 | ✅A01 ✅A03 ✅A04 ✅A05 ⬜A06 ⬜X01 ⬜X02 ⬜Z01 ⬜Z02 ⬜Z03 ⬜Z04 ⬜V02 | 4/12 | `███░░░░░░░` |
 
 ## Dependency network
 
@@ -427,8 +427,8 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B03d,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01,A03,A04 done
-  class A05,A06,X01,X02,Z01,Z02,Z03,Z04,V02 todo
+  class F01,F03,F02,S00,B03,B08,S02,A02,B03d,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01,A03,A04,A05 done
+  class A06,X01,X02,Z01,Z02,Z03,Z04,V02 todo
   class Z01,Z02,Z03,Z04 critical
 ```
 
@@ -610,7 +610,7 @@ gantt
   A01 Integrity-check engine + page :done, a01, 2026-11-14 21:02, 33m
   A03 Rule  dates going backwards :done, a03, 2026-11-14 21:35, 19m
   A04 Rule  εκκρεμότητα :done, a04, 2026-11-14 21:54, 19m
-  A05 Rule  (partial) duplicates :a05, 2026-11-14 22:13, 33m
+  A05 Rule  (partial) duplicates :done, a05, 2026-11-14 22:13, 33m
   A06 Rule  missing attachment :a06, 2026-11-14 22:46, 19m
   X01 Audit log — recording :x01, 2026-11-14 23:05, 33m
   X02 Audit log — viewing :x02, 2026-11-14 23:38, 33m
@@ -778,7 +778,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **A01** | Integrity-check engine + page | R2 | 0.5 | 0.1 | 4.2 | 4.7 | 10.4 | 10.9 | 6.2 | #168 |
 | ✅ | **A03** | Rule: dates going backwards | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 | #170 |
 | ✅ | **A04** | Rule: εκκρεμότητα | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 | #171 |
-| ⬜ | **A05** | Rule: (partial) duplicates | A01, D03 | 0.5 | 0.1 | 4.7 | 5.3 | 10.9 | 11.5 | 6.2 |  |
+| ✅ | **A05** | Rule: (partial) duplicates | A01, D03 | 0.5 | 0.1 | 4.7 | 5.3 | 10.9 | 11.5 | 6.2 | #172 |
 | ⬜ | **A06** | Rule: missing attachment | A01 | 0.3 | 0.1 | 4.7 | 5.0 | 11.1 | 11.5 | 6.4 |  |
 | ⬜ | **X01** | Audit log — recording | N02 | 0.5 | 0.1 | 2.5 | 3.1 | 10.4 | 10.9 | 7.8 |  |
 | ⬜ | **X02** | Audit log — viewing | X01 | 0.5 | 0.1 | 3.1 | 3.6 | 10.9 | 11.5 | 7.8 |  |

@@ -83,6 +83,31 @@ test('a date out of order on the checks page and in the list\'s line (A03)', asy
   }
 });
 
+test('the same incoming document registered twice (A05)', async ({ page }) => {
+  await login(page, 'writer');
+  const inNum = `Φ.5/${Date.now()}/Δ2`;
+  const ids = [];
+  for (const thema of ['A05 Πρόσκληση σε ενημέρωση', 'A05 Πρόσκληση σε ενημέρωση (ξανά)']) {
+    await page.goto('/home');
+    await fillProtocol(page, {
+      thema, fakelos: 'first', in_num: inNum, in_date: '02/01/2025',
+      in_topos_ekdosis: 'Δοκιμή', in_arxi_ekdosis: 'Διεύθυνση Δοκιμής', in_paraliptis: 'Διευθυντής',
+    });
+    await saveProtocol(page);
+    ids.push(page.url().match(/\/home\/(\d+)$/)[1]);
+  }
+
+  await page.goto('/checks');
+  const duplicates = page.locator('#check-duplicates');
+  await expect(duplicates.locator('h2')).toHaveText('Πιθανές διπλές καταχωρίσεις');
+  const finding = duplicates.locator('.checks-finding').filter({ has: page.locator(`a[href$="/home/${ids[1]}"]`) });
+  await expect(finding.locator('.checks-message')).toContainText(/^Μοιάζει με το \d+\/\d{4} \(\d\d\/\d\d\/\d{4}\): ίδιος αριθμός εισερχομένου\.$/);
+  await evidence(page, 'a05-duplicates-card', { fullPage: true, clip: await duplicates.evaluate((el) => {
+    const r = el.getBoundingClientRect();   // page coordinates (the card may be below the fold)
+    return { x: r.x, y: Math.max(0, r.y + window.scrollY - 10), width: r.width, height: Math.min(r.height + 20, 400) };
+  }) });
+});
+
 test('a pending protocol on the checks page (A04)', async ({ page }) => {
   await login(page, 'writer');
   await page.goto('/home');
