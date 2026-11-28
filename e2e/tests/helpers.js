@@ -20,11 +20,6 @@ async function evidence(page, name, options = {}) {
   await page.screenshot({ path: path.join(dir, `${name}.png`), ...options });
 }
 
-/** Text of the toastr notifications currently shown. */
-async function toasts(page) {
-  return (await page.locator('.toast-message').allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
-}
-
 /**
  * Change one setting through Ρυθμίσεις (logged in as admin) and return its previous value, so the test can put it
  * back. R6c: the settings page (Livewire) saves every setting, as a user would; switches take 0/1.
@@ -121,4 +116,4 @@ async function openInbox(page, url = '/inbox') {
 }
 
 module.exports = {
-  search, login, evidence, toasts, setSetting, fillProtocol, saveProtocol, notice, openInbox, inboxReady };
+  search, login, evidence, setSetting, fillProtocol, saveProtocol, notice, openInbox, inboxReady };

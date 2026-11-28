@@ -7,7 +7,6 @@ use App\Models\Config;
 use App\Models\Protocol;
 use App\Policies\ProtocolPolicy;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Collection;
@@ -40,21 +39,12 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Logout::class, [\App\Listeners\AuditAuthEvents::class, 'logout']);
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Failed::class, [\App\Listeners\AuditAuthEvents::class, 'failed']);
 
-        Paginator::useBootstrap();
-
         error_reporting(E_ALL ^ E_NOTICE);
         try {
             View::share('myActiveUsers', User::my_active_users());
-            View::share('myUsers', User::my_users());
 
             $ipiresiasName = Config::getConfigValueOf('ipiresiasName');
             View::share('ipiresiasName', $ipiresiasName);
-            $titleColor = Config::getConfigValueOf('titleColor');
-            $titleColorStyle = '';
-            if ($titleColor) {
-                $titleColorStyle = "style='background:" . $titleColor . "'";
-            }
-            View::share('titleColorStyle', $titleColorStyle);
             $defaultImapEmail = Config::getConfigValueOf('defaultImapEmail');
             View::share('defaultImapEmail', $defaultImapEmail);
 

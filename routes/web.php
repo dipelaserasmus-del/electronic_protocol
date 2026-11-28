@@ -52,7 +52,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/home/list/{filter?}/{userId?}', [ProtocolFormController::class, 'list']);
     Route::get('/home/{protocol}/{copyAsNew?}', [ProtocolFormController::class, 'show']);   // R1b
     Route::get('/protocol/{num}/{year?}', [ProtocolFormController::class, 'link']);   // R3h: direct link
-    Route::get('getKeep4Fakelos/{fakelos}', [ProtocolController::class, 'getKeep4Fakelos']);
 
     Route::post('/home', [ProtocolController::class, 'store']);
     Route::post('/home/{protocol}', [ProtocolController::class, 'update']);
@@ -85,7 +84,6 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/printedAttachments', [PrintController::class, 'attachments']);
     Route::get('/receipt/{protocol}', [PrintController::class, 'receipt']);
     Route::get('/about', [ProtocolController::class, 'about']);
-    Route::get('/updated', [ProtocolController::class, 'updated']);
 
     // R5c: the inbox (App\Livewire\EmailInbox); registering and "read" are actions of the page
     Route::get('/inbox', [InboxController::class, 'show']);

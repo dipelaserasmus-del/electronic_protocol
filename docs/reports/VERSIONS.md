@@ -93,7 +93,7 @@ Only the **login, registration and password-reset pages** still use the old layo
 
 | Library | Original | Current | Newest available | Status | Notes |
 |---|---|---|---|---|---|
-| [jQuery (inside public/js/app.js)](#c-jquery-inside-public-js-app-js "An older JavaScript library for changing the page and sending requests; the original app's scripts were built on it. Today it only runs on the old log-in screens.") | 3.1.0 | 3.1.0 | 4.1.0 | 🔴 | CVE-2019-11358, CVE-2020-11022, CVE-2020-11023 (XSS). `public/js/jquery.min.js` 1.9.1 is still in the folder but no page loads it. |
+| [jQuery (inside public/js/app.js)](#c-jquery-inside-public-js-app-js "An older JavaScript library for changing the page and sending requests; the original app's scripts were built on it. Today it only runs on the old log-in screens.") | 3.1.0 | 3.1.0 | 4.1.0 | 🔴 | CVE-2019-11358, CVE-2020-11022, CVE-2020-11023 (XSS). `public/js/jquery.min.js` 1.9.1, which no page loaded, was removed (Z01a, 2026-11-28). |
 | [Bootstrap 3 JS + CSS (app.js, bootstrap.min.css)](#c-bootstrap-3-js-css "The original app's look and its menus, dialogs and tooltips. Bootstrap 3 has had no updates since 2019.") | 3.3.7 | 3.3.7 | 5.3.9 | 🔴 | End of life; CVE-2018-14040, -14041, -14042, CVE-2019-8331 (XSS). |
 | [Vue (inside app.js)](#c-vue-inside-app-js "A JavaScript framework bundled into the original app's script file. The rebuilt pages do not use it.") | 2.x | 2.x | 3.x | 🔴 | Vue 2 end of life 2023-12-31. |
 | [bootstrap-select](#c-bootstrap-select "The original app's searchable drop-down lists (for example choosing a folder or a user).") | 1.12.2 | 1.12.2 | 1.13.18 | 🔴 | CVE-2019-20921 (XSS, fixed in 1.13.6). |

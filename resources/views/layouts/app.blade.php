@@ -11,7 +11,6 @@
         <title>{{ config('app.name', 'Ηλ. Πρωτόκολλο') }}</title>
 
         <!-- Styles -->
-    <!--    <link href="{{ asset('css/app.css') }}" rel="stylesheet"> -->
         <link href="{{ asset('css/jasny-bootstrap.min.css') }}" rel="stylesheet">
         <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
         <link href="{{ asset('css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
@@ -211,10 +210,6 @@
                                             <li><a  tabindex="-1" href="{{ url('/backups') }}">Backup</a></li>
                                             <li><a  tabindex="-1" href="{{ url('/arxeio') }}">Εκκαθάριση</a></li>
                                             <li><a  tabindex="-1" href="{{ url('/settings') }}">Ρυθμίσεις</a></li>
-                                            @if(isset($needsUpdate) and $needsUpdate)
-                                            <li class="divider"></li>
-                                            <li><a  tabindex="-1" href="{{ url('/updated') }}" title="Να μην εμφανίζεται το μήνυμα για ενημέρωση του Ηλ.Πρωτοκόλλου.">Ενημερώθηκε</a></li>
-                                            @endif
                                         </ul>
                                     </li>
                                     @endif
@@ -251,15 +246,6 @@
         </div>
 
         <!-- Scripts -->
-        <!-- 
-        <script src="{{ asset('js/app.js') }}"></script>
-        <script src="{{ asset('js/npm.js') }}"></script>
-        <script src="{{ asset('js/fileinput.js') }}"></script>
-        <script src="{{ asset('js/jquery.min.js') }}"></script>
-        <script src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
-        <script src="{{ asset('js/toastr.min.js') }}"></script>
-        <script src="{{ asset('js/bootstrap-select.min.js') }}"></script>
-        -->
 
         <script src="{{ asset('js/app.js') }}"></script>
         <script src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
