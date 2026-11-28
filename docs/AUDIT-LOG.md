@@ -1,6 +1,6 @@
 # Ιστορικό ενεργειών (audit log)
 
-Last update: 2026-11-28 12:15 (X01: recording; X02 adds the page)
+Last update: 2026-11-28 12:53 (X02: the page; X01: recording)
 
 The application writes down **who did what and when**: every protocol, attachment, assignment, folder, user and
 setting created, changed or deleted, every sign-in, download and e-mail registration. Nothing in the log can be changed
@@ -12,8 +12,17 @@ or deleted from the application; old entries leave only by the retention you cho
 
 ## For administrators
 
-**Where to see it:** *Διαχείριση → Ιστορικό* and the *Ιστορικό* of each protocol come with X02. Until then the log is
-written but not shown.
+**Where to see it** (administrators only: it shows every user's actions and computers):
+
+- *Διαχείριση → Ιστορικό ενεργειών* (`/history`): newest first, 50 a page. Filters: *Χρήστης* (or «κανένας»: the
+  automatic clean-ups and failed sign-ins), *Ενέργεια*, *Ημ/νία από / έως*, *Πρωτόκολλο* (`125/2026`); *Αναζήτηση*
+  applies them, *Καθαρισμός* clears them. The filters are in the address, so a search can be bookmarked.
+- A protocol's **Ιστορικό** (in its column of actions on the right, next to *Απόδειξη*) opens the page for that protocol:
+  its own changes and those of its attachments and assignments, and what was written when it had that number (moved to
+  the trash and deleted for good, or brought back with a new number).
+- Each line: when, who and from which computer, the action, what it is about (a link to the protocol), and each change
+  as *field: ~~old~~ → new* (a user as their user name, a date as 28/11/2026, yes / no). Long values are cut on the page.
+- **Εξαγωγή CSV**: everything the filters show (all pages), whole, for Excel (Greek letters kept, «;» between columns).
 
 ### What is recorded
 
@@ -55,7 +64,9 @@ does on its own, like the trash's daily clean-up, is recorded **without a user**
 | Sign-ins | `app/Listeners/AuditAuthEvents.php`, registered in `AppServiceProvider` |
 | Written by hand | `Attachments\Trash::trash()` (saved quietly), `Protocols\ProtocolTrash` (trash, restore, purge: queries), `ProtocolController::download()`, `Mail\EmailRegistration::register()`, `Folders\FolderMerge::apply()` (a query for all protocols), `StampPlaceController::update()` (a file's stamp place, saved quietly: no re-hashing) |
 | Retention | `config('app.audit_keep_days')` ← `AUDIT_KEEP_DAYS`; daily in `PurgeTrashDaily` (with the trash) and `php artisan audit:purge` (scheduled in `routes/console.php`) |
-| Tests | `tests/Feature/AuditLogTest.php`; also `EmailRegistrationTest` (e-mail), `FolderGlossaryTest` (merge) |
+| Page (X02): filters, pages, CSV; administrators (`AuditHistory::allowed`) | `app/Livewire/AuditHistory.php`, `resources/views/livewire/audit-history.blade.php`, route `/history`, menu in `Navigation::manage()`, the form's `data-action="history"` pill |
+| An entry in Greek (actions, what it is about, field labels per kind, names for ids, dates) | `app/Services/Audit/AuditPresenter.php` |
+| Tests | `tests/Feature/AuditLogTest.php`, `AuditHistoryTest.php`, `e2e/tests/history.spec.js`; also `EmailRegistrationTest` (e-mail), `FolderGlossaryTest` (merge) |
 
 ### An entry
 
@@ -84,5 +95,7 @@ field; a deleted one: `[value, null]`), `context` (what helps to read it: `ref` 
   removal and a «created» for every unchanged row.
 - A new model whose changes matter: `use Audited;` and, if it belongs to a protocol, `auditProtocolId()`.
 - A setting the application writes for itself goes in `Config::NOT_AUDITED`.
-- The log grows with every save and download: X02 reads it by `created_at`, `user_id`, `action`, `protocol_id`
-  (indexed).
+- The log grows with every save and download: the page filters by `created_at`, `user_id`, `action`, `protocol_id`
+  (indexed) and pages it; the protocol filter also reads `context->ref` for the protocol's own entries.
+- A new action or kind: its Greek label in `AuditPresenter::ACTIONS` / `TYPES` (and a colour in `COLOURS`); a field
+  whose label differs by kind in `TYPE_FIELDS`.

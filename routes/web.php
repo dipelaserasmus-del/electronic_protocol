@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/trash/{attachment}/download', [ProtocolFormController::class, 'trashDownload'])->whereNumber('attachment');
 
     Route::view('/checks', 'checks');   // A01: App\Livewire\IntegrityChecks (its mount checks the role)
+    Route::view('/history', 'history');   // X02: App\Livewire\AuditHistory (administrators: its boot checks the role)
     Route::get('/find', [ProtocolFormController::class, 'search']);   // R3a (old /getFindData removed)
     Route::get('/search', [SearchController::class, 'results']);   // R3c: results of the top-bar box
     Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1');
