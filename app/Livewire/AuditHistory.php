@@ -127,11 +127,14 @@ class AuditHistory extends Component
             }
         }
         if (($number = self::number($this->protocol)) !== null) {
-            // the protocol's entries (its attachments and assignments too), and those written when it had this number
-            // and is gone now (purged) or numbered again (restored with a new number)
-            $ids = Protocol::where('protocolnum', $number[0])->where('etos', $number[1])->pluck('id');
+            // every entry of the protocols that have or had this number (their attachments and assignments too): the one
+            // with it now, and (review of X02) one that had it and is in the trash, purged, or back with a new number,
+            // whose id only the log's own entries under that number still know
             $ref = $number[0].'/'.$number[1];
-            $q->where(fn ($w) => $w->whereIn('protocol_id', $ids)->orWhere(fn ($r) => $r->where('entity_type', 'protocol')->where('context->ref', $ref)));
+            $ids = Protocol::where('protocolnum', $number[0])->where('etos', $number[1])->pluck('id')
+                ->merge(AuditEntry::where('entity_type', 'protocol')->where('context->ref', $ref)->whereNotNull('protocol_id')->distinct()->pluck('protocol_id'))
+                ->unique()->values();
+            $q->whereIn('protocol_id', $ids);
         }
 
         return $q;

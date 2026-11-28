@@ -87,10 +87,16 @@ class AuditHistoryTest extends FeatureTestCase
         $this->assertSame(AuditEntry::where('protocol_id', $p2->id)->count(), $count(['protocol' => '2/2026']), 'the protocol and its attachment');
         $this->assertSame(2, $count(['protocol' => '2/2026']));
 
-        // a purged protocol keeps its history by number
+        // a protocol in the trash, then purged, keeps its whole history by number: its attachment's too (review of X02)
         $this->actingAs($admin);
-        app(\App\Services\Protocols\ProtocolTrash::class)->purge(app(\App\Services\Protocols\ProtocolTrash::class)->trash($admin, Protocol::where('protocolnum', 1)->first()));
-        $this->assertSame(['purged', 'trashed', 'created'], $this->found($admin, ['protocol' => '1/2026'])->pluck('action')->all());
+        $one = Protocol::where('protocolnum', 1)->first();
+        \App\Models\Attachment::factory()->create(['protocol_id' => $one->id, 'name' => 'πρώτο.pdf']);
+        $trash = app(\App\Services\Protocols\ProtocolTrash::class);
+        $t = $trash->trash($admin, $one);
+        $history = fn () => $this->found($admin, ['protocol' => '1/2026'])->map(fn ($e) => $e->action.' '.$e->entity_type)->all();
+        $this->assertSame(['trashed protocol', 'trashed attachment', 'created attachment', 'created protocol'], $history());
+        $trash->purge($t);
+        $this->assertSame(['purged protocol', 'purged attachment', 'trashed protocol', 'trashed attachment', 'created attachment', 'created protocol'], $history());
     }
 
     public function test_wrong_filters_are_refused(): void
