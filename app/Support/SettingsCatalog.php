@@ -10,8 +10,8 @@ use App\Models\Config;
  *
  * Kinds: text, int, bool (stored "1" / "0"), select (options value => label), color, url.
  * Settings the rebuilt pages no longer read are not shown (searchField1–3, showUserInfo,
- * allowListValuesMatchingInput: see the migration 2026_11_19_000002; wideListProtocol is still read by the old
- * layout). R6d (owner, 2026-11-19) also hides updatesAutoCheck (nothing checks for updates since B07),
+ * allowListValuesMatchingInput: see the migration 2026_11_19_000002; wideListProtocol was read only by the old
+ * layout, removed in Z01b). R6d (owner, 2026-11-19) also hides updatesAutoCheck (nothing checks for updates since B07),
  * protocolArrowStep (no screen moves by more than 1) and safeNewProtocolNum (the number is always given on
  * save: ProtocolWriter); their stored values stay untouched.
  *

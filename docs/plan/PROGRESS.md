@@ -7,15 +7,15 @@
 
 | | |
 |---|---|
-| Tasks done | **157 / 165** `█████████████████████████████░` 95% |
-| Effort done (PERT) | **64.4 / 68.1 h** `████████████████████████████░░` 95% |
-| Remaining effort, one agent in sequence | **3.7 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
-| Remaining critical path (if work could run in parallel) | 3.4 h ± 0.3 |
+| Tasks done | **158 / 165** `█████████████████████████████░` 96% |
+| Effort done (PERT) | **64.9 / 68.1 h** `█████████████████████████████░` 95% |
+| Remaining effort, one agent in sequence | **3.2 h ± 0.3** of agent working time (calendar time depends on plan usage limits and your reviews) |
+| Remaining critical path (if work could run in parallel) | 2.8 h ± 0.3 |
 | In progress | — |
-| Next task | **Z01b** — Legacy: sign-in pages rebuilt, old layout and libraries removed |
+| Next task | **Z01c** — Legacy: tests off the old form post, its routes removed |
 | On hold | — |
 
-**Critical path (remaining):** Z01b → Z01c → Z01d → Z01 → Z02 → Z03 → Z04
+**Critical path (remaining):** Z01c → Z01d → Z01 → Z02 → Z03 → Z04
 
 ## Batches
 
@@ -37,7 +37,7 @@
 | 9.5 | ✅F09 ✅R2e ✅R6d ✅R2f ✅R2g ✅R2h ✅R5e ✅D07 ✅D08 ✅R1j ✅R3e ✅R2i ✅R3f ✅R1k ✅R2j ✅R5f ✅R5g ✅R3g ✅R2k ✅R5h ✅R5i ✅R5j ✅R5k ✅L03 ✅R5m ✅R5n ✅R5o ✅R2l ✅D09 ✅D10 ✅D11 ✅R5l | 32/32 | `██████████` |
 | 9.6 | ✅R3h ✅R3i ✅R4d ✅R4c ✅R4e ✅R4f ✅R4g ✅R4h ✅R5p ✅N05 ✅R6e | 11/11 | `██████████` |
 | 9.7 | ✅F10 ✅N06 ✅R3j ✅R4i ✅R5q ✅R2m ✅R4j ✅R5r ✅R5s ✅R4k ✅R5t ✅R2n ✅R5u ✅R6f ✅R6g ✅R6h ✅R6i ✅R1l ✅R1m ✅R1n ✅R4l ✅R2o ✅R2p ✅R6j ✅R6k ✅R2q ✅R2r ✅R6l ✅R3k ✅R1o ✅R5v ✅R2s ✅R4m ✅R5w ✅V01 ✅V01b ✅R4n ✅R4o ✅R4p ✅R5y ✅R4q ✅R2t ✅R2u ✅R1q ✅R2v ✅R1p ✅R5x ✅R6m | 48/48 | `██████████` |
-| 10 | ✅A01 ✅A03 ✅A04 ✅A05 ✅A06 ✅X01 ✅X02 ✅Z01a ⬜Z01b ⬜Z01c ⬜Z01d ⬜Z01 ⬜Z02 ⬜Z03 ⬜Z04 ⬜V02 | 8/16 | `█████░░░░░` |
+| 10 | ✅A01 ✅A03 ✅A04 ✅A05 ✅A06 ✅X01 ✅X02 ✅Z01a ✅Z01b ⬜Z01c ⬜Z01d ⬜Z01 ⬜Z02 ⬜Z03 ⬜Z04 ⬜V02 | 9/16 | `██████░░░░` |
 
 ## Dependency network
 
@@ -435,9 +435,9 @@ flowchart LR
   classDef todo fill:#ffffff,stroke:#6c757d,color:#212529
   classDef onhold fill:#e2e3e5,stroke:#6c757d,color:#6c757d,stroke-dasharray: 4 3
   classDef critical stroke:#dc3545,stroke-width:3px
-  class F01,F03,F02,S00,B03,B08,S02,A02,B03d,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01,A03,A04,A05,A06,X01,X02,Z01a done
-  class Z01b,Z01c,Z01d,Z01,Z02,Z03,Z04,V02 todo
-  class Z01b,Z01c,Z01d,Z01,Z02,Z03,Z04 critical
+  class F01,F03,F02,S00,B03,B08,S02,A02,B03d,B09,F04,L01,L02,F05,F06,F07,S04,B04,B07,B10,N01,N02,N03,N04,D05,D01,R5a,F08,F09,F10,D02,D03,D04,R1a,R1b,R1c,R2,R4a,R4b,R1e,R2b,R2c,D06,R1f,R1g,R2d,R3a,R3b,R3c,R1h,R3d,R1i,R5c,R5d,R5b,R6a,R6b,R1d,R6c,R7,R2e,R6d,R2f,R2g,R2h,R5e,D07,D08,R1j,R3e,R2i,R3f,R1k,R2j,R5f,R5g,R3g,R2k,R5h,R5i,R5j,R5k,L03,R5m,R5n,R5o,R2l,D09,D10,D11,R5l,R3h,R3i,R4d,R4c,R4e,R4f,R4g,R4h,R5p,N05,N06,R6e,R3j,R4i,R5q,R2m,R4j,R5r,R5s,R4k,R5t,R2n,R5u,R6f,R6g,R6h,R6i,R1l,R1m,R1n,R4l,R2o,R2p,R6j,R6k,R2q,R2r,R6l,R3k,R1o,R5v,R2s,R4m,R5w,V01,V01b,R4n,R4o,R4p,R5y,R4q,R2t,R2u,R1q,R2v,R1p,R5x,R6m,A01,A03,A04,A05,A06,X01,X02,Z01a,Z01b done
+  class Z01c,Z01d,Z01,Z02,Z03,Z04,V02 todo
+  class Z01c,Z01d,Z01,Z02,Z03,Z04 critical
 ```
 
 ## Timeline (one agent, execution order)
@@ -623,7 +623,7 @@ gantt
   X01 Audit log — recording :done, x01, 2026-11-14 23:05, 33m
   X02 Audit log — viewing :done, x02, 2026-11-14 23:38, 33m
   Z01a Legacy  remove what nothing uses (files, routes, methods) :done, z01a, 2026-11-15 00:11, 19m
-  Z01b Legacy  sign-in pages rebuilt, old layout and libraries removed :crit, z01b, 2026-11-15 00:30, 33m
+  Z01b Legacy  sign-in pages rebuilt, old layout and libraries removed :done, z01b, 2026-11-15 00:30, 33m
   Z01c Legacy  tests off the old form post, its routes removed :crit, z01c, 2026-11-15 01:03, 33m
   Z01d Legacy  real dates (LegacyYmdDate cast removed) :crit, z01d, 2026-11-15 01:36, 33m
   Z01 Remove legacy code (Z01a–Z01d) :crit, z01, 2026-11-15 02:09, 19m
@@ -795,7 +795,7 @@ te = expected hours; ES/EF = earliest start/finish; LS/LF = latest start/finish;
 | ✅ | **X01** | Audit log — recording | N02 | 0.5 | 0.1 | 2.5 | 3.1 | 10.4 | 10.9 | 7.8 | #174 |
 | ✅ | **X02** | Audit log — viewing | X01 | 0.5 | 0.1 | 3.1 | 3.6 | 10.9 | 11.5 | 7.8 | #175 |
 | ✅ | **Z01a** | Legacy: remove what nothing uses (files, routes, methods) | R1c, R1d, R2, R3c, R4b, R5b, R5d, R6a, R6c, R7 | 0.3 | 0.1 | 5.3 | 5.6 | 7.7 | 8.1 | 2.5 | #176 |
-| ⬜ | **Z01b** | Legacy: sign-in pages rebuilt, old layout and libraries removed | Z01a | 0.5 | 0.1 | 5.6 | 6.1 | 8.1 | 8.6 | 2.5 |  |
+| ✅ | **Z01b** | Legacy: sign-in pages rebuilt, old layout and libraries removed | Z01a | 0.5 | 0.1 | 5.6 | 6.1 | 8.1 | 8.6 | 2.5 | #177 |
 | ⬜ | **Z01c** | Legacy: tests off the old form post, its routes removed | Z01b | 0.5 | 0.1 | 6.1 | 6.7 | 8.6 | 9.2 | 2.5 |  |
 | ⬜ | **Z01d** | Legacy: real dates (LegacyYmdDate cast removed) | Z01c | 0.5 | 0.1 | 6.7 | 7.2 | 9.2 | 9.7 | 2.5 |  |
 | ⬜ | **Z01** | Remove legacy code (Z01a–Z01d) | Z01d | 0.3 | 0.1 | 7.2 | 7.6 | 9.7 | 10.0 | 2.5 |  |

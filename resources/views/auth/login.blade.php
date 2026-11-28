@@ -1,68 +1,35 @@
-@extends('layouts.app',  ['allowregister' => $allowregister ] )
+{{-- Z01b: sign-in on the new look (was layouts.app, Bootstrap 3). Fields and their names as before: the login keeps working. --}}
+@extends('layouts.modern')
+
+@section('title', 'Είσοδος')
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h1 class='text-center' >Είσοδος</h2></div>
-                <div class="panel-body">
-                    <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
-                        {{ csrf_field() }}
-
-                        <div class="form-group{{ $errors->has('username') ? ' has-error' : '' }}">
-                            <label for="username" class="col-md-4 control-label">Username</label>
-
-                            <div class="col-md-6">
-                                <input id="username" type="text" class="form-control" name="username" value="{{ old('username') }}" required autofocus>
-
-                                @if ($errors->has('username'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('username') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
-                            <label for="password" class="col-md-4 control-label">Password</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control" name="password" required>
-
-                                @if ($errors->has('password'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('password') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-md-6 col-md-offset-4">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="remember"> Να με θυμάσαι
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="col-md-8 col-md-offset-4">
-                                <button type="submit" class="btn btn-primary">
-                                    Είσοδος
-                                </button>
-
-                                <a class="btn btn-link" href="{{ url('/password/resetForm') }}">
-                                    Ξεχάσατε το Password?
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <x-auth-card title="Είσοδος" id="login-card">
+        <form method="POST" action="{{ url('/login') }}" id="login-form" novalidate>
+            @csrf
+            <div class="mb-3">
+                <label for="username" class="form-label">Όνομα χρήστη</label>
+                <input id="username" type="text" name="username" value="{{ old('username') }}" autocomplete="username" required autofocus
+                       class="form-control @error('username') is-invalid @enderror">
+                @error('username')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-        </div>
-    </div>
-</div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Κωδικός</label>
+                <input id="password" type="password" name="password" autocomplete="current-password" required
+                       class="form-control @error('password') is-invalid @enderror">
+                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember" @checked(old('remember'))>
+                <label class="form-check-label" for="remember">Να με θυμάσαι</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Είσοδος</button>
+        </form>
+        <x-slot:footer>
+            <a href="{{ url('/password/resetForm') }}" id="login-forgot">Ξεχάσατε τον κωδικό;</a>
+            @if ($allowregister ?? false)
+                <span class="text-body-secondary mx-1">·</span><a href="{{ url('/register') }}" id="login-register">Εγγραφή</a>
+            @endif
+        </x-slot:footer>
+    </x-auth-card>
 @endsection
