@@ -83,6 +83,30 @@ test('a date out of order on the checks page and in the list\'s line (A03)', asy
   }
 });
 
+test('a pending protocol on the checks page (A04)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  const thema = `A04 Εκκρεμότητα: αναμένεται το έγγραφο ${Date.now()}`;
+  await fillProtocol(page, { thema, fakelos: 'first' });
+  await saveProtocol(page);
+  const id = page.url().match(/\/home\/(\d+)$/)[1];
+
+  await page.goto('/checks');
+  const pending = page.locator('#check-pending');
+  await expect(pending.locator('h2')).toHaveText('Εκκρεμότητες');
+  const finding = pending.locator('.checks-finding').filter({ has: page.locator(`a[href$="/home/${id}"]`) });
+  await expect(finding.locator('.checks-message')).toHaveText('Εκκρεμότητα στο θέμα.');
+  await expect(finding.locator('.checks-subject')).toHaveText(thema);
+  await evidence(page, 'a04-pending-card', { fullPage: true, clip: await pending.evaluate((el) => {
+    const r = el.getBoundingClientRect();   // page coordinates (the card may be below the fold)
+    return { x: r.x, y: Math.max(0, r.y + window.scrollY - 10), width: r.width, height: 160 };
+  }) });
+  await evidence(page, 'a04-pending-finding', { fullPage: true, clip: await finding.evaluate((el) => {
+    const r = el.getBoundingClientRect();   // the dev data has many protocols without a folder: the new one's line
+    return { x: r.x, y: r.y + window.scrollY - 6, width: r.width, height: r.height + 12 };
+  }) });
+});
+
 test('the list\'s gaps notice links to the checks; readers have no checks (A01)', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('/home/list');

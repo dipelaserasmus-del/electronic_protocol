@@ -11,6 +11,7 @@ use App\Services\Integrity\Finding;
 use App\Services\Integrity\Rule;
 use App\Services\Integrity\Rules\DateOrderRule;
 use App\Services\Integrity\Rules\NumberGapRule;
+use App\Services\Integrity\Rules\PendingRule;
 use App\Services\NumberGaps;
 use App\Support\Navigation;
 use Carbon\Carbon;
@@ -23,7 +24,7 @@ class IntegrityChecksTest extends FeatureTestCase
     private function book(int $year, array $numbers, string $mmdd): void
     {
         foreach ($numbers as $n) {
-            Protocol::factory()->number($n, $year)->onDate($year.$mmdd)->create();
+            Protocol::factory()->number($n, $year)->onDate($year.$mmdd)->create(['fakelos' => 'Φ.1']);   // with a folder: not pending (A04)
         }
     }
 
@@ -182,11 +183,55 @@ class IntegrityChecksTest extends FeatureTestCase
             ->assertSeeHtml('id="checks-notice"')->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
     }
 
+    /** A04: the pending rule's findings from $from to $to, as [ref => message] */
+    private function pending(string $from, string $to): array
+    {
+        $found = app(PendingRule::class)->findings(CarbonImmutable::parse($from), CarbonImmutable::parse($to));
+
+        return array_combine(array_map(fn (Finding $f) => $f->ref, $found), array_map(fn (Finding $f) => $f->message, $found));
+    }
+
+    public function test_pending_protocols_of_the_range_are_listed(): void
+    {
+        $at = fn (int $n, array $attrs) => Protocol::factory()->number($n, 2026)->onDate('20261105')->create($attrs + ['fakelos' => 'Φ.1']);
+        $at(1, ['thema' => 'Αίτηση γονέα']);
+        $at(2, ['thema' => 'Εκκρεμότητα: αναμένεται το έγγραφο']);
+        $at(3, ['thema' => 'ΕΚΚΡΕΜΟΤΗΤΕΣ ΣΧΟΛΙΚΟΥ ΕΤΟΥΣ']);
+        $at(4, ['thema' => 'εκκρεμοτητα χωρίς τόνο']);
+        $at(5, ['thema' => 'Υπηρεσιακή βεβαίωση', 'fakelos' => null]);
+        $at(6, ['thema' => 'ΕΚΚΡΕΜΌΤΗΤΑ', 'fakelos' => '']);
+        $at(7, ['thema' => 'ΕΛΕΥΘΕΡΟ', 'fakelos' => null]);   // a placeholder waiting for its content (owner, 2026-11-18)
+        Protocol::factory()->number(8, 2026)->onDate('20261020')->create(['thema' => 'Εκκρεμότητα', 'fakelos' => 'Φ.1']);
+
+        $found = $this->pending('2026-11-01', '2026-11-30');
+        $this->assertSame(['2/2026', '3/2026', '4/2026', '5/2026', '6/2026', '7/2026'], array_keys($found));
+        $this->assertSame('Εκκρεμότητα στο θέμα.', $found['2/2026']);
+        $this->assertSame('Χωρίς φάκελο.', $found['5/2026']);
+        $this->assertSame('Χωρίς φάκελο. Εκκρεμότητα στο θέμα.', $found['6/2026']);
+        $this->assertSame(['8/2026'], array_keys($this->pending('2026-10-01', '2026-10-31')), 'only the protocols dated in the range');
+    }
+
+    public function test_pending_protocols_are_on_the_page_not_in_the_list_s_line(): void
+    {
+        $today = CarbonImmutable::today();
+        $writer = $this->writer();
+        $own = Protocol::factory()->number(1, $today->year)->onDate($today->format('Ymd'))->create(['thema' => 'Εκκρεμότητα', 'fakelos' => 'Φ.1', 'user_id' => $writer->id]);
+        Protocol::factory()->number(2, $today->year)->onDate($today->format('Ymd'))->create(['thema' => 'Εκκρεμότητα', 'fakelos' => 'Φ.1', 'user_id' => $this->writer()->id]);
+
+        Livewire::actingAs($this->admin())->test(IntegrityChecks::class)
+            ->assertSeeHtml('id="check-pending" data-check="pending" data-count="2"')->assertSee('Εκκρεμότητες');
+        Livewire::actingAs($this->admin())->test(ProtocolList::class)->assertDontSeeHtml('id="checks-notice"');
+
+        $this->setting('limitProtocolAccessList', 1);
+        [$from, $to] = Checks::defaultRange();
+        $seen = app(Checks::class)->run($writer, $from, $to)['pending']['findings'];
+        $this->assertSame([$own->id], array_map(fn (Finding $f) => $f->protocolId, $seen));
+    }
+
     public function test_the_page_lists_the_findings_of_the_last_30_days(): void
     {
         $today = CarbonImmutable::today();
-        Protocol::factory()->number(1, $today->year)->onDate($today->format('Ymd'))->create();
-        Protocol::factory()->number(3, $today->year)->onDate($today->format('Ymd'))->create();
+        $this->book($today->year, [1, 3], $today->format('md'));
         $this->setting('yearInUse', $today->year);
         $this->setting('protocolValidate', 0);   // the administrator may type a number (A02)
 
