@@ -27,6 +27,6 @@ Where the project stands:
 - **Feature guides:** `docs/SETTINGS.md`, `docs/RELATED-NUMBERS.md`, `docs/FOLDERS.md`.
 - **Still to do (Batch 10):** A01, A03–A06 (integrity checks), X01–X02 (audit log), Z01 (remove the old code),
   Z02 (auth hardening), Z03 (final security review), V02 (versions report), then the deployment guide and Z04
-  (end-user manual, details from the owner). B03d stays pinned until the owner can reproduce it.
+  (end-user manual, details from the owner). B03d stayed pinned until the owner could reproduce it (closed after M1, 2026-11-28: not seen again).
 - The old code (jQuery / Bootstrap 3 / Vue 2 pages) is still in the tree until Z01; production still runs the old
   version and is untouched until the migration.

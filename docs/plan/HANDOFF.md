@@ -2,7 +2,8 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-28 01:08 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01 done, next A03; times are Greek time)
+## Current state — 2026-11-28 10:19 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01 done, next A03; B03d closed; times are Greek time)
+- **B03d closed (2026-11-28):** the owner has not met the date reset again; taken as solved (owner). No task is on hold now.
 - **A01 (Batch 10, 2026-11-28):** `App\Services\Integrity\{Rule, Finding, Checks}` + `Rules\NumberGapRule`; `NumberGaps::between()` (gaps around the protocols of a date range, edges included); page `/checks` (`App\Livewire\IntegrityChecks`, admin / assigner / writer, default last 30 days, ≤ 3 years, `#check-<key>` cards); user menu *Φάκελοι → Έλεγχοι πρωτοκόλλου*; list: link in `#numberGaps`, `#checks-notice` for `inList()` rules. A03–A06 add a Rule class + a line in `Checks::RULES`. **Feature guide: docs/CHECKS.md.**
 - **e2e time zone (2026-11-28):** `playwright.config.js` sets `timezoneId` and `process.env.TZ` to Europe/Athens (CI after 00:00 Greek time failed on «today»).
 - **Milestone M1 (2026-11-28):** tag `milestone-M1-batch-9.7`, summary in [`MILESTONES.md`](MILESTONES.md) (M0's tag pushed with it). Batch 10 runs A01 → A03 → A04 → A05 → A06 → X01 → X02 → Z01 → Z02 → Z03 → V02; then the deployment guide; Z04 last (ask the owner first).
@@ -368,7 +369,7 @@ Read this first when (re)starting work. Update it at the end of every task.
 ## Open items / waiting on the owner
 | Item | Status |
 |---|---|
-| `B03d` date reset on save | **Pinned (on hold).** Not reproducible by Claude or the owner. Production has *Έλεγχοι καταχώρισης* (`protocolValidate`) = **NO**. Owner will report steps when it happens again. |
+| `B03d` date reset on save | **Closed 2026-11-28 (owner):** never reproduced, and the owner has not met it again since it was pinned; taken as solved. If it comes back, a new task with the owner's steps. |
 | Real emails for tests | **Received 2026-11-16: 6 private e-mails in `local-data/emails/`** (owner: Claude may read them locally, never publish; see CLAUDE.md). Structural notes in `local-data/emails/NOTES-claude.md` (git-ignored). Covers: ISO-8859-7 Outlook mail with a 255-char subject, emoji (fails today, D05), winmail.dat-only read receipt (R5b), 21 MB mail with 4 attachments, long RFC 2231 file names. Long subject answered (2026-11-16): subject > 255 chars (posted by the inbox form) → MySQL 1406 on `thema`, inbox just reloads; reproduced by `test_known_bug_*subject_over_255*`; **D01 moved into Batch 4**. Owner's .eml #1 is cut at 255 by Outlook, so it doesn't reproduce it. **Also 2026-11-16:** new private e-mail shows `??` in the sender: name split inside a Greek letter across encoded words (R5a); attachment names probed: long/illegal/`../` handled, but emoji → protocol without attachment + e-mail left in inbox (D05/R5a), long Greek name without spaces → recorded but not written on Linux (F08), empty/extension-less names (F08). All pinned as `known_bug_` tests in `StoreFromEmailTest`. |
 | `L01` + `L02` owner's computers | **L01 done (2026-11-16):** Fedora real copy loads after F07 (owner confirmed). Some attachment rows have no file locally: the owner's DB backup and file copy were taken on different days (attachments open fine). Expected; the next real-data set will be in sync, so a gap then is a real problem. **L02 done (2026-11-16 19:47):** Mac real copy loads (owner confirmed); its file copy is only a small part, so most attachment rows have no file there (expected). The first try failed only because the Mac checkout was 16 PRs behind (before F07). |
 | `S04` production `.env` | Owner (2026-11-14): the production key is randomly generated and can be recreated; Claude may handle `.env` as needed. Back up `.env` before the next `git pull` on the server. |
@@ -406,6 +407,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-28 10:19 | B03d | #169 | closed: the owner has not met the date reset again, taken as solved; removed from OWNER-TODO |
 | 2026-11-28 01:08 | A01 | #168 | Έλεγχοι πρωτοκόλλου: engine, page, gaps rule, list line; docs/CHECKS.md |
 | 2026-11-28 00:34 | M1 | #167 | milestone M1 (tags M0, M1); docs checked: DEVELOPMENT.md commands, Batch 10 order with V02 / Z04; e2e: browser and test dates in Greek time (CI failed after 00:00 Greek time: UTC still the day before) |
 | 2026-11-27 19:41 | Batch 9.7 | — | summary BATCH-9.7.md; settings spreadsheet deleted (the planner replaces it) |

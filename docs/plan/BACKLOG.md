@@ -330,4 +330,4 @@ X01 can be moved earlier at any time (it is generic and doesn't depend on module
 - Owner can supply some real-world, public-safe emails; the rest synthetic.
 
 ## Open questions
-- **B03d (pinned):** date reset on save — not reproducible yet (production: *Έλεγχοι καταχώρισης* = NO). Owner will report the steps when it happens again.
+- ~~**B03d (pinned):** date reset on save~~ — **closed 2026-11-28:** the owner has not met it again; taken as solved. If it comes back, it is a new task.
