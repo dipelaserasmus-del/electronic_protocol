@@ -2,7 +2,8 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-28 10:38 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01, A03 done, next A04; B03d closed; times are Greek time)
+## Current state — 2026-11-28 10:56 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01, A03, A04 done, next A05; B03d closed; times are Greek time)
+- **A04 (Batch 10, 2026-11-28):** `Rules\PendingRule` (key `pending`, `inList()` false): the search's pending condition (no folder or `εκκρεμοτητ` in the subject) over the protocols dated in the range; message from `ProtocolSearch::pendingReasons()`. Test protocols of `IntegrityChecksTest::book()` get a folder (the factory leaves it empty).
 - **A03 (Batch 10, 2026-11-28):** `Rules\DateOrderRule` (key `dates`, `inList()` true): R2f's `DateOrder::flags()` over the `etos` of the protocols dated in the range; a flagged protocol counts if it or a neighbour by number is dated in the range; message `DateOrder::message($flag, $viewer)`. `Rule::findings()` now takes `?User $viewer` (the engine passes the reader).
 - **B03d closed (2026-11-28):** the owner has not met the date reset again; taken as solved (owner). No task is on hold now.
 - **A01 (Batch 10, 2026-11-28):** `App\Services\Integrity\{Rule, Finding, Checks}` + `Rules\NumberGapRule`; `NumberGaps::between()` (gaps around the protocols of a date range, edges included); page `/checks` (`App\Livewire\IntegrityChecks`, admin / assigner / writer, default last 30 days, ≤ 3 years, `#check-<key>` cards); user menu *Φάκελοι → Έλεγχοι πρωτοκόλλου*; list: link in `#numberGaps`, `#checks-notice` for `inList()` rules. A03–A06 add a Rule class + a line in `Checks::RULES`. **Feature guide: docs/CHECKS.md.**
@@ -408,6 +409,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-28 10:56 | A04 | #171 | Έλεγχοι: εκκρεμότητες (search's pending condition for a range; not in the list line) |
 | 2026-11-28 10:38 | A03 | #170 | Έλεγχοι: ημερομηνίες εκτός σειράς (R2f's DateOrder for a range, neighbours count, list line); rules get the viewer |
 | 2026-11-28 10:19 | B03d | #169 | closed: the owner has not met the date reset again, taken as solved; removed from OWNER-TODO |
 | 2026-11-28 01:08 | A01 | #168 | Έλεγχοι πρωτοκόλλου: engine, page, gaps rule, list line; docs/CHECKS.md |

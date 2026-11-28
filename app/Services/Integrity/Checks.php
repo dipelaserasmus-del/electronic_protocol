@@ -28,6 +28,7 @@ final class Checks
     public const RULES = [
         Rules\NumberGapRule::class,
         Rules\DateOrderRule::class,
+        Rules\PendingRule::class,
     ];
 
     /** @param  list<class-string<Rule>>  $classes  the rules to run (tests give their own) */
