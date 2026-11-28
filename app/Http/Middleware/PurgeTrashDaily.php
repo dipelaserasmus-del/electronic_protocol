@@ -33,6 +33,7 @@ class PurgeTrashDaily
             if ($claimed) {
                 app(\App\Services\Protocols\ProtocolTrash::class)->purgeExpired();   // R4h: protocols first, with their files
                 app(Trash::class)->purgeExpired();
+                \App\Services\Audit\AuditLog::purgeExpired();   // X01: the audit log's retention (AUDIT_KEEP_DAYS)
             }
         } catch (\Throwable $e) {
             report($e);

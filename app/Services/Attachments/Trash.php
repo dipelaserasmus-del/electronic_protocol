@@ -46,6 +46,7 @@ final class Trash
         $a->deleted_by = $by?->id ?? auth()->id();
         $a->deleted_at = $a->freshTimestamp();
         $a->saveQuietly();   // the model's soft-delete event would set deleted_by from the session
+        \App\Services\Audit\AuditLog::record('trashed', 'attachment', (int) $a->id, $a->auditProtocolId(), null, $a->auditContext(), $by);   // X01: saved quietly
     }
 
     /** Back to its protocol (which must still exist), at its old path or next to it if that name is taken now. */
@@ -107,11 +108,14 @@ final class Trash
             return 0;   // everything in the trash counts from the start day, which is not $days ago yet
         }
         $count = 0;
-        Attachment::onlyTrashed()->where('deleted_at', '<', $limit)->orderBy('id')->chunkById(200, function ($rows) use (&$count) {
-            foreach ($rows as $a) {
-                $this->purge($a);
-                $count++;
-            }
+        // X01: the application's own clean-up, not the user whose request runs it (a closure, not fn: $count by reference)
+        \App\Services\Audit\AuditLog::asSystem(function () use ($limit, &$count) {
+            Attachment::onlyTrashed()->where('deleted_at', '<', $limit)->orderBy('id')->chunkById(200, function ($rows) use (&$count) {
+                foreach ($rows as $a) {
+                    $this->purge($a);
+                    $count++;
+                }
+            });
         });
         return $count;
     }

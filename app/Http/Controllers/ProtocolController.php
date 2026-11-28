@@ -257,6 +257,8 @@ class ProtocolController extends Controller implements HasMiddleware
         // R4f: with the stamp (made now, kept) unless the user chose the originals or asks for one (?original=1)
         $path = app(\App\Services\Stamp\StampedCopy::class)->pathFor($attachment, Auth::user(), request()->boolean('original'));
         if ($path !== null) {
+            \App\Services\Audit\AuditLog::record('downloaded', 'attachment', (int) $attachment->id, $attachment->auditProtocolId(), null,
+                $attachment->auditContext() + array_filter(['stamped' => $path !== $attachment->storedFilePath()]));   // X01
             return \App\Support\SafeFile::download(Storage::path($path), $attachment->name ?: basename($path), $attachment->mimeType);
         }
         session()->flash('notification', [

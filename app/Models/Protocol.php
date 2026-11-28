@@ -61,6 +61,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Protocol extends Model
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditProtocolId(): ?int
+    {
+        return (int) $this->getKey();
+    }
+
+    public function auditContext(): array
+    {
+        return ['ref' => $this->protocolnum.'/'.$this->etos];
+    }
+
     use HasFactory;
 
     /**

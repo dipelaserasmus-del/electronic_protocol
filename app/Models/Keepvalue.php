@@ -34,6 +34,18 @@ use App\Models\Keepvalue;
 
 class Keepvalue extends Model
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditType(): string
+    {
+        return 'folder';
+    }
+
+    public function auditContext(): array
+    {
+        return ['folder' => $this->fakelos];
+    }
+
     use HasFactory;
 
 

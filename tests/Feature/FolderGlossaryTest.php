@@ -186,6 +186,9 @@ class FolderGlossaryTest extends FeatureTestCase
         $r = $merge->apply('Φ.43', 'Φ.46');
 
         $this->assertSame(['protocols' => 2, 'moved' => 4, 'renamed' => 1, 'missing' => 1, 'failed' => 0, 'rules' => 2], $r);
+        // X01: one entry for the whole merge (the protocols change with a query)
+        $this->assertSame(['from' => 'Φ.43', 'into' => 'Φ.46', 'protocols' => 2], array_intersect_key(
+            \App\Models\AuditEntry::where('action', 'folders_merged')->sole()->context, array_flip(['from', 'into', 'protocols'])));
         $this->assertSame(['Φ.46', 'Φ.46', 'Φ.43.1'], [$p1->fresh()->fakelos, $p2->fresh()->fakelos, $other->fresh()->fakelos]);
         $this->assertEquals($stamp, $p1->fresh()->updated_at, 'not a change by a user');
         $this->assertSame('arxeio/Φ.46/α.pdf', $a->fresh()->savedPath);

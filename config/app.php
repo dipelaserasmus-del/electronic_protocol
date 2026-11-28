@@ -73,6 +73,9 @@ return [
     // R6m (owner, 2026-11-27): most protocols in one printout or Excel file (was the setting «Μέγιστες γραμμές εκτύπωσης και Excel»)
     'print_max_rows' => (int) env('PRINT_MAX_ROWS', 5000),
 
+    // X01: days the audit log keeps its entries (removed once a day); empty or 0 keeps them all
+    'audit_keep_days' => (int) env('AUDIT_KEEP_DAYS', 0),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

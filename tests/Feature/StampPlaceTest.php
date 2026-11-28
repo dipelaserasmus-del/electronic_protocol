@@ -62,6 +62,9 @@ class StampPlaceTest extends FeatureTestCase
         $this->actingAs($reader)->postJson('/attachments/' . $a->id . '/stamp-place', ['place' => 'top-left'])
             ->assertOk()->assertJson(['place' => 'top-left', 'label' => 'πάνω αριστερά']);
         $this->assertSame('top-left', $a->fresh()->stamp_place);
+        // X01 review: saved quietly, still in the audit log, by the reader who moved it
+        $e = \App\Models\AuditEntry::where('action', 'updated')->where('entity_type', 'attachment')->where('entity_id', $a->id)->sole();
+        $this->assertSame([$reader->id, ['stamp_place' => [null, 'top-left']]], [$e->user_id, $e->changes]);
         $this->assertEqualsWithDelta(10 * $mm, $this->stampX($a->fresh(), $this->writer()), 0.01, 'for every user');
         $this->assertSame($original, Storage::get($a->savedPath), 'the stored file is not changed');
         $this->assertEqualsWithDelta($right, $this->stampX($other, $reader), 0.01, 'the other file keeps the usual place');
