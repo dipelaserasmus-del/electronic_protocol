@@ -35,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Protocol::class, ProtocolPolicy::class);
         // L03: the test mailbox's SMTP (local real-data copy) delivers only to TEST_MAIL_ONLY_TO
         \Illuminate\Support\Facades\Event::listen(\Illuminate\Mail\Events\MessageSending::class, [\App\Support\Mail\TestMailRedirect::class, 'handle']);
+        // X01: sign-ins in the audit log
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, [\App\Listeners\AuditAuthEvents::class, 'login']);
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Logout::class, [\App\Listeners\AuditAuthEvents::class, 'logout']);
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Failed::class, [\App\Listeners\AuditAuthEvents::class, 'failed']);
 
         Paginator::useBootstrap();
 

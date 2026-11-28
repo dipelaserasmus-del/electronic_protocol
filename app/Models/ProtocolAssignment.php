@@ -15,6 +15,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProtocolAssignment extends Model
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditType(): string
+    {
+        return 'assignment';
+    }
+
+    public function auditProtocolId(): ?int
+    {
+        return (int) $this->protocol_id;
+    }
+
     protected $fillable = ['protocol_id', 'user_id', 'type'];
 
     protected $casts = ['protocol_id' => 'integer', 'user_id' => 'integer'];

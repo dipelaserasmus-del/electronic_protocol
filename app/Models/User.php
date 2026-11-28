@@ -13,6 +13,24 @@ use Illuminate\Support\Facades\DB;
     
 class User extends Authenticatable
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditContext(): array
+    {
+        return ['username' => $this->username];
+    }
+
+    /** remember_token changes on every login / logout; preferences are the user's own view (list order, inbox look) */
+    protected function auditIgnored(): array
+    {
+        return ['remember_token', 'preferences'];
+    }
+
+    protected function auditMasked(): array
+    {
+        return ['password'];
+    }
+
     use HasFactory;
 
     use Notifiable;

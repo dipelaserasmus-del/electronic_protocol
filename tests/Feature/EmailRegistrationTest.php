@@ -38,6 +38,9 @@ class EmailRegistrationTest extends FeatureTestCase
         $this->putEml($user->id, $this->sampleEml());
 
         $this->register($user, ['fakelos' => 'Φ.1'], ['0'])->assertHasNoErrors();
+        // X01: the audit log says it came from the inbox, by whom
+        $this->assertSame([$user->id, 2], \App\Models\AuditEntry::where('action', 'email_registered')->get(['user_id', 'context'])
+            ->map(fn ($e) => [$e->user_id, $e->context['attachments']])->first());
 
         $p = Protocol::firstOrFail();
         $this->assertSame('Πρόσκληση σε σύσκεψη', $p->thema, 'RFC 2047 subject (ISO-8859-7) decoded');

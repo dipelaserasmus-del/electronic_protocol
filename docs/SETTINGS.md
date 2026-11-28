@@ -1,6 +1,6 @@
 # Ρυθμίσεις: what every setting does
 
-Last update: 2026-11-27 14:10 (R6m). Feature guide for `/settings`, and the source for the future administrator and end-user
+Last update: 2026-11-28 12:15 (X01: `AUDIT_KEEP_DAYS`; R6m). Feature guide for `/settings`, and the source for the future administrator and end-user
 manual (Z04). Each entry says what the setting really does in the code, its allowed values, what an empty value means,
 who it affects, its limits and the settings it works with. **Keep it true:** whoever changes a setting's behaviour or
 text updates this file in the same PR (CLAUDE.md).
@@ -286,6 +286,7 @@ While typing in *Τόπος έκδοσης*, *Αρχή έκδοσης*, *Παρ�
 |---|---|---|---|
 | `MYSQLDUMP_PATH` | «Διαδρομή του mysqldump» (`mysqldumpPath`) | empty = `mysqldump` / `mariadb-dump` found on the PATH (the Docker image has it) | the program *Διαχείριση → Backup* runs; only those two programs are ever run |
 | `PRINT_MAX_ROWS` | «Μέγιστες γραμμές εκτύπωσης και Excel» (`maxRowsInXlsExport`) | 5000 | most protocols in one printout or Excel file; the printout says when more were left out |
+| `AUDIT_KEEP_DAYS` | — (new, X01) | empty = keep everything | days the audit log keeps who-did-what; older entries removed once a day ([AUDIT-LOG.md](AUDIT-LOG.md)) |
 | `APP_TIMEZONE` | the hidden key `timeZone` (never on the new page) | Europe/Athens | the application's time zone: every date it shows and fills in, also the Inbox's and the e-mail's HTML copy |
 
 Their `configs` rows (and `timeZone`'s) now read «Δεν χρησιμοποιείται πια: ορίζεται στο .env ως … (δείτε το

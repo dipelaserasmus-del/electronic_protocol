@@ -209,7 +209,7 @@ tasks = [
   { id = "A04", title = "Rule: εκκρεμότητα", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "done", pr = 171 },
   { id = "A05", title = "Rule: (partial) duplicates", phase = "Z", batch = 10, size = "M", deps = ["A01", "D03"], status = "done", pr = 172 },
   { id = "A06", title = "Rule: missing attachment", phase = "Z", batch = 10, size = "S", deps = ["A01"], status = "done", pr = 173 },
-  { id = "X01", title = "Audit log — recording", phase = "Z", batch = 10, size = "M", deps = ["N02"], status = "todo" },
+  { id = "X01", title = "Audit log — recording", phase = "Z", batch = 10, size = "M", deps = ["N02"], status = "done", pr = 174 },
   { id = "X02", title = "Audit log — viewing", phase = "Z", batch = 10, size = "M", deps = ["X01"], status = "todo" },
   { id = "Z01", title = "Remove legacy code", phase = "Z", batch = 10, size = "M", deps = ["R1c", "R1d", "R2", "R3c", "R4b", "R5b", "R5d", "R6a", "R6c", "R7"], status = "todo" },
   { id = "Z02", title = "Auth hardening, security headers", phase = "Z", batch = 10, size = "S", deps = ["Z01"], status = "todo" },

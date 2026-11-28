@@ -74,6 +74,7 @@ final class FolderMerge
             return $result;
         }
 
+        $merged = $from;   // X01's entry (the files' loop below reuses $from)
         $into = $this->intoCode($into);   // as the list writes it ("Φ46" or "Φ.46")
         $codes = $this->codes($from);   // read before the update: each protocol's code as written (case, dot may differ)
         $files = $this->attachments($codes, $into);
@@ -119,6 +120,8 @@ final class FolderMerge
             }
             DB::table('attachments')->where('id', $attachment->id)->update($values);
         }
+        // X01: the protocols changed with a query, one entry for all of them
+        \App\Services\Audit\AuditLog::record('folders_merged', 'folder', null, null, null, ['from' => $merged, 'into' => $into] + $result);
         // the old folder's directories, if nothing is left in them
         foreach (array_unique(array_values($codes)) as $code) {
             foreach (['arxeio', 'trash'] as $root) {

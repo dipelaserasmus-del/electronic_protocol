@@ -15,6 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class FolderAssignment extends Model
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditContext(): array
+    {
+        return ['folder' => Keepvalue::whereKey($this->keepvalue_id)->value('fakelos')];
+    }
+
     protected $fillable = ['keepvalue_id', 'user_id', 'type'];
 
     protected $casts = ['keepvalue_id' => 'integer', 'user_id' => 'integer'];

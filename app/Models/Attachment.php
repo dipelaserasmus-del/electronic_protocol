@@ -32,6 +32,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Attachment extends Model
 {
+    use \App\Models\Concerns\Audited;   // X01: changes go to the audit log
+
+    public function auditProtocolId(): ?int
+    {
+        return $this->protocol_id ? (int) $this->protocol_id : null;
+    }
+
+    public function auditContext(): array
+    {
+        return array_filter(['name' => $this->name, 'ada' => $this->ada]);
+    }
+
     use HasFactory;
 
     use SoftDeletes;

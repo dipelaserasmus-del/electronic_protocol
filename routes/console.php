@@ -21,3 +21,9 @@ Artisan::command('inspire', function () {
 
 // R4b: the trash's clean-up. The Docker stack has no scheduler; App\Http\Middleware\PurgeTrashDaily runs it once a day.
 Schedule::command('attachments:purge-trash')->daily();
+
+// X01: the audit log's retention (AUDIT_KEEP_DAYS); also run by PurgeTrashDaily with the trash's clean-up
+Artisan::command('audit:purge', function () {
+    $this->info('Εγγραφές ιστορικού που αφαιρέθηκαν: '.\App\Services\Audit\AuditLog::purgeExpired());
+})->describe('Remove audit log entries older than AUDIT_KEEP_DAYS');
+Schedule::command('audit:purge')->daily();

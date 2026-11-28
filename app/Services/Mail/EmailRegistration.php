@@ -63,6 +63,8 @@ final class EmailRegistration
         $input['email_date'] = ($date ?? new \DateTimeImmutable())->setTimezone(self::zone())->format('d/m/Y H:i:s');
 
         $result = $this->writer->create($user, $input, $files, allOrNothing: true);
+        // X01: the protocol's own «created» entry says what was saved; this one says it came from the inbox
+        \App\Services\Audit\AuditLog::protocol('email_registered', $result->protocol, ['attachments' => $result->attachmentsAdded], $user);
 
         if ($missing) {
             $result->warnings[] = "Δεν βρέθηκαν $missing από τα συνημμένα του email: επισυνάψτε τα στο πρωτόκολλο από τον δίσκο σας.";

@@ -2,6 +2,8 @@
 
 namespace App\Services\Protocols;
 
+use App\Services\Audit\AuditLog;
+
 use App\Models\Attachment;
 use App\Models\Config;
 use App\Models\Protocol;
@@ -63,7 +65,7 @@ final class ProtocolTrash
     public function trash(User $by, Protocol $protocol): TrashedProtocol
     {
         $label = $this->files->label($protocol);
-        return DB::transaction(function () use ($by, $protocol, $label) {
+        $t = DB::transaction(function () use ($by, $protocol, $label) {
             $attachments = [];
             foreach (Attachment::withTrashed()->where('protocol_id', $protocol->id)->get() as $a) {
                 if ($a->trashed()) {
@@ -95,6 +97,10 @@ final class ProtocolTrash
             DB::table('protocols')->where('id', $protocol->id)->delete();
             return $t;
         });
+        // X01: the row leaves with a query (its snapshot is the trash's)
+        AuditLog::protocol('trashed', $protocol, ['attachments' => count($t->data['attachments'] ?? [])], $by);
+
+        return $t;
     }
 
     /**
@@ -150,6 +156,8 @@ final class ProtocolTrash
                 \Illuminate\Support\Facades\DB::table('attachments')->where('id', $a->id)->update(['deleted_at' => Carbon::now()]);
             }
         }
+        AuditLog::protocol('restored', $protocol, array_filter(['was' => $newNumber ? $original : null, 'files_not_back' => $failed]), $by);
+
         return ['protocol' => $protocol, 'newNumber' => $newNumber, 'original' => $original, 'failed' => $failed];
     }
 
@@ -160,6 +168,7 @@ final class ProtocolTrash
             $this->files->purge($a);
         }
         $t->delete();
+        AuditLog::record('purged', 'protocol', (int) $t->protocol_id, (int) $t->protocol_id, null, ['ref' => $t->label()]);
     }
 
     /** The daily clean-up: protocols in the trash for longer than the retention days (as attachments). */
@@ -170,13 +179,16 @@ final class ProtocolTrash
             return 0;
         }
         $count = 0;
-        TrashedProtocol::where('deleted_at', '<', ($now ?? Carbon::now())->copy()->subDays($days))->orderBy('id')
-            ->chunkById(100, function ($rows) use (&$count) {
-                foreach ($rows as $t) {
-                    $this->purge($t);
-                    $count++;
-                }
-            });
+        // X01: the application's own clean-up, not the user whose request runs it (a closure, not fn: $count by reference)
+        AuditLog::asSystem(function () use ($now, $days, &$count) {
+            TrashedProtocol::where('deleted_at', '<', ($now ?? Carbon::now())->copy()->subDays($days))->orderBy('id')
+                ->chunkById(100, function ($rows) use (&$count) {
+                    foreach ($rows as $t) {
+                        $this->purge($t);
+                        $count++;
+                    }
+                });
+        });
         return $count;
     }
 
