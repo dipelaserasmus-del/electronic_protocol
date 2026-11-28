@@ -10,6 +10,7 @@ use App\Services\Integrity\Checks;
 use App\Services\Integrity\Finding;
 use App\Services\Integrity\Rule;
 use App\Services\Integrity\Rules\DateOrderRule;
+use App\Services\Integrity\Rules\DuplicateRule;
 use App\Services\Integrity\Rules\NumberGapRule;
 use App\Services\Integrity\Rules\PendingRule;
 use App\Services\NumberGaps;
@@ -181,6 +182,132 @@ class IntegrityChecksTest extends FeatureTestCase
             ->assertSee('2/'.$year);
         Livewire::actingAs($this->admin())->test(ProtocolList::class)
             ->assertSeeHtml('id="checks-notice"')->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
+    }
+
+    /** A05: the duplicates rule's findings from $from to $to, as [ref => message] */
+    private function duplicates(string $from, string $to, ?\App\Models\User $viewer = null): array
+    {
+        $found = app(DuplicateRule::class)->findings(CarbonImmutable::parse($from), CarbonImmutable::parse($to), $viewer);
+
+        return array_combine(array_map(fn (Finding $f) => $f->ref, $found), array_map(fn (Finding $f) => $f->message, $found));
+    }
+
+    private function registered(int $num, string $ymd, array $attrs = []): Protocol
+    {
+        return Protocol::factory()->number($num, (int) substr($ymd, 0, 4))->onDate($ymd)
+            ->create($attrs + ['fakelos' => 'Φ.1', 'in_num' => null, 'in_date' => null, 'in_arxi_ekdosis' => null, 'sxetiko' => null]);
+    }
+
+    private function file(Protocol $p, string $hash): void
+    {
+        \App\Models\Attachment::factory()->create(['protocol_id' => $p->id])->forceFill(['sha256' => str_repeat($hash, 64)])->save();
+    }
+
+    public function test_the_same_file_twice_is_a_possible_duplicate(): void
+    {
+        $first = $this->registered(10, '20261020');
+        $this->file($first, 'a');
+        $this->file($this->registered(11, '20261103'), 'a');
+        $logo = array_map(fn ($n) => $this->registered($n, '20261104'), [12, 13, 14, 15]);
+        foreach ($logo as $p) {
+            $this->file($p, 'b');   // in 4 protocols: a logo or a signature, not a duplicate
+        }
+
+        $found = $this->duplicates('2026-11-01', '2026-11-30');
+        $this->assertSame(['11/2026' => 'Μοιάζει με το 10/2026 (20/10/2026): ίδιο συνημμένο αρχείο.'], $found);
+        $this->assertSame(['11/2026'], array_keys($this->duplicates('2026-10-01', '2026-10-31')), 'the other one dated in the range: about the later');
+        \App\Models\Attachment::where('protocol_id', $logo[0]->id)->delete();
+        \App\Models\Attachment::where('protocol_id', $logo[1]->id)->delete();
+        $this->assertSame(['11/2026', '15/2026'], array_keys($this->duplicates('2026-11-01', '2026-11-30')), 'a deleted attachment does not count');
+    }
+
+    public function test_the_same_incoming_number_is_a_possible_duplicate_unless_the_senders_differ(): void
+    {
+        $this->registered(20, '20261102', ['in_num' => 'Φ.12/345/Δ1', 'in_arxi_ekdosis' => 'Διεύθυνση Α']);
+        $this->registered(21, '20261103', ['in_num' => ' φ.12/345/δ1 ', 'in_arxi_ekdosis' => 'ΔΙΕΥΘΥΝΣΗ Α']);
+        $this->registered(22, '20261104', ['in_num' => '100', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->registered(23, '20261105', ['in_num' => '100', 'in_arxi_ekdosis' => 'Σχολείο']);   // another sender's 100
+        $this->registered(24, '20261106', ['in_num' => '200', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->registered(25, '20261107', ['in_num' => '200']);   // sender not written: alike
+        foreach ([26, 27, 28, 29] as $n) {
+            $this->registered($n, '20261108', ['in_num' => '1', 'in_arxi_ekdosis' => 'Δήμος']);   // shared by 4: routine
+        }
+
+        $this->assertSame([
+            '21/2026' => 'Μοιάζει με το 20/2026 (02/11/2026): ίδιος αριθμός εισερχομένου.',
+            '25/2026' => 'Μοιάζει με το 24/2026 (06/11/2026): ίδιος αριθμός εισερχομένου.',
+        ], $this->duplicates('2026-11-01', '2026-11-30'));
+    }
+
+    public function test_the_same_subject_sender_and_incoming_date_is_a_possible_duplicate(): void
+    {
+        $same = ['thema' => 'Πρόσκληση σε σύσκεψη', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101];
+        $this->registered(30, '20261102', $same);
+        $this->registered(31, '20261103', ['thema' => 'ΠΡΟΣΚΛΗΣΗ ΣΕ ΣΥΣΚΕΨΗ'] + $same);
+        $this->registered(36, '20261003', ['thema' => ' Πρόσκληση  σε   σύσκεψη '] + $same);   // spaces (review of A05)
+        $this->registered(37, '20261004', ['in_num' => 'Φ.9/12', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->registered(38, '20261105', ['in_num' => ' Φ.9/12', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->registered(32, '20261104', ['in_date' => 20261102] + $same);   // another day's invitation
+        $this->registered(33, '20261105', ['in_arxi_ekdosis' => null] + $same);   // sender not written: not enough
+        $this->registered(34, '20261106', ['thema' => 'ΕΛΕΥΘΕΡΟ', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101]);
+        $this->registered(35, '20261107', ['thema' => 'ΕΛΕΥΘΕΡΟ', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101]);
+
+        // 36 is dated before the range, its subject has other spaces: still alike, also as a candidate picked by SQL
+        $lines = fn (string $from, string $to) => array_map(fn (Finding $f) => $f->ref.' '.$f->message,
+            app(DuplicateRule::class)->findings(CarbonImmutable::parse($from), CarbonImmutable::parse($to)));
+        $same = 'ίδιο θέμα, αποστολέας και ημερομηνία εισερχομένου.';
+        $this->assertSame([
+            "31/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 31/2026 (03/11/2026): {$same}",
+            '38/2026 Μοιάζει με το 37/2026 (04/10/2026): ίδιος αριθμός εισερχομένου.',
+        ], $lines('2026-11-01', '2026-11-30'));
+        $this->assertSame([
+            "36/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 31/2026 (03/11/2026): {$same}",
+            '38/2026 Μοιάζει με το 37/2026 (04/10/2026): ίδιος αριθμός εισερχομένου.',
+        ], $lines('2026-10-01', '2026-10-31'), 'only 36 and 37 in the range: the others are found through them');
+    }
+
+    public function test_protocols_that_name_each_other_are_not_duplicates(): void
+    {
+        $a = $this->registered(40, '20261102', ['in_num' => '500', 'in_arxi_ekdosis' => 'Δήμος']);
+        $b = $this->registered(41, '20261103', ['in_num' => '500', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->file($a, 'c');
+        $this->file($b, 'c');
+        $this->assertSame(['41/2026' => 'Μοιάζει με το 40/2026 (02/11/2026): ίδιο συνημμένο αρχείο, ίδιος αριθμός εισερχομένου.'],
+            $this->duplicates('2026-11-01', '2026-11-30'), 'one line per pair, all the reasons');
+
+        $b->update(['sxetiko' => 'Φ.3, 40/2026']);
+        $this->assertSame([], $this->duplicates('2026-11-01', '2026-11-30'));
+        $b->update(['sxetiko' => null]);
+        $a->update(['sxetiko' => '041/2026']);
+        $this->assertSame([], $this->duplicates('2026-11-01', '2026-11-30'), 'either one naming the other');
+    }
+
+    public function test_a_limited_writer_sees_their_own_duplicate_without_the_other_s_number(): void
+    {
+        $writer = $this->writer();
+        $this->registered(50, '20261102', ['in_num' => '700', 'user_id' => $this->writer()->id]);
+        $this->registered(51, '20261103', ['in_num' => '700', 'user_id' => $writer->id]);
+        $this->setting('limitProtocolAccessList', 1);
+        [$from, $to] = [CarbonImmutable::parse('2026-11-01'), CarbonImmutable::parse('2026-11-30')];
+
+        $this->assertSame(['Μοιάζει με το 50/2026 (02/11/2026): ίδιος αριθμός εισερχομένου.'],
+            array_map(fn (Finding $f) => $f->message, app(Checks::class)->run($this->admin(), $from, $to)['duplicates']['findings']));
+        $this->assertSame(['Μοιάζει με άλλο πρωτόκολλο: ίδιος αριθμός εισερχομένου.'],
+            array_map(fn (Finding $f) => $f->message, app(Checks::class)->run($writer, $from, $to)['duplicates']['findings']));
+    }
+
+    public function test_duplicates_are_on_the_page_and_counted_in_the_list(): void
+    {
+        $today = CarbonImmutable::today();
+        $this->registered(1, $today->format('Ymd'), ['in_num' => '900']);
+        $this->registered(2, $today->format('Ymd'), ['in_num' => '900']);
+
+        Livewire::actingAs($this->admin())->test(IntegrityChecks::class)
+            ->assertSeeHtml('id="check-duplicates" data-check="duplicates" data-count="1"')->assertSee('Πιθανές διπλές καταχωρίσεις');
+        Livewire::actingAs($this->admin())->test(ProtocolList::class)->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
     }
 
     /** A04: the pending rule's findings from $from to $to, as [ref => message] */
