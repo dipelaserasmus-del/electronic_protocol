@@ -303,11 +303,25 @@ final class FolderCatalog
      */
     public function setAssignments(Keepvalue $folder, array $d, array $e): void
     {
-        FolderAssignment::where('keepvalue_id', $folder->id)->delete();
-        foreach (['d' => $d, 'e' => array_diff($e, $d)] as $type => $ids) {   // διεκπεραίωση includes ενημέρωση
-            foreach (array_unique(array_map('intval', $ids)) as $id) {
-                FolderAssignment::create(['keepvalue_id' => $folder->id, 'user_id' => $id, 'type' => $type]);
+        $wanted = [];   // user id => type; διεκπεραίωση includes ενημέρωση
+        foreach (['e' => $e, 'd' => $d] as $type => $ids) {
+            foreach (array_map('intval', $ids) as $id) {
+                $wanted[$id] = $type;
             }
+        }
+        // review of X01: row by row, so the audit log sees each rule removed, changed or added (and nothing when the
+        // rules are saved unchanged), not every rule deleted and made again
+        foreach (FolderAssignment::where('keepvalue_id', $folder->id)->get() as $rule) {
+            $type = $wanted[$rule->user_id] ?? null;
+            unset($wanted[$rule->user_id]);
+            if ($type === null) {
+                $rule->delete();
+            } elseif ($rule->type !== $type) {
+                $rule->update(['type' => $type]);
+            }
+        }
+        foreach ($wanted as $id => $type) {
+            FolderAssignment::create(['keepvalue_id' => $folder->id, 'user_id' => $id, 'type' => $type]);
         }
     }
 

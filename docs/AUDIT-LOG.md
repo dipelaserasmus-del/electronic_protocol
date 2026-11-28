@@ -24,7 +24,7 @@ and new value**.
 | What | Actions |
 |---|---|
 | Protocols | created (with every field written), changed (only the fields that changed, old → new), to the trash, back from the trash (with the old number if it got a new one), deleted for good |
-| Attachments | added, changed (e.g. renamed), to the trash, back, deleted for good, **downloaded** (and whether with the stamp) |
+| Attachments | added, changed (e.g. renamed, the stamp's place on the file), to the trash, back, deleted for good, **downloaded** (and whether with the stamp) |
 | Assignments of a protocol (Διεκπεραίωση / Ενημέρωση) | added, changed, removed |
 | Folders and their automatic assignments | created, changed, deleted; a **merge** of two folders as one entry (how many protocols and files moved) |
 | Users | created, changed, deleted. The **password is never written**: only that it changed (`***`) |
@@ -53,7 +53,7 @@ does on its own, like the trash's daily clean-up, is recorded **without a user**
 | Writing entries, the system mode, the retention | `app/Services/Audit/AuditLog.php` (`record()`, `protocol()`, `asSystem()`, `purgeExpired()`) |
 | Changes of a model, by themselves | `app/Models/Concerns/Audited.php`, used by `Protocol`, `Attachment`, `ProtocolAssignment`, `FolderAssignment`, `Keepvalue`, `User`, `Config` |
 | Sign-ins | `app/Listeners/AuditAuthEvents.php`, registered in `AppServiceProvider` |
-| Written by hand | `Attachments\Trash::trash()` (saved quietly), `Protocols\ProtocolTrash` (trash, restore, purge: queries), `ProtocolController::download()`, `Mail\EmailRegistration::register()`, `Folders\FolderMerge::apply()` (a query for all protocols) |
+| Written by hand | `Attachments\Trash::trash()` (saved quietly), `Protocols\ProtocolTrash` (trash, restore, purge: queries), `ProtocolController::download()`, `Mail\EmailRegistration::register()`, `Folders\FolderMerge::apply()` (a query for all protocols), `StampPlaceController::update()` (a file's stamp place, saved quietly: no re-hashing) |
 | Retention | `config('app.audit_keep_days')` ← `AUDIT_KEEP_DAYS`; daily in `PurgeTrashDaily` (with the trash) and `php artisan audit:purge` (scheduled in `routes/console.php`) |
 | Tests | `tests/Feature/AuditLogTest.php`; also `EmailRegistrationTest` (e-mail), `FolderGlossaryTest` (merge) |
 
@@ -78,7 +78,10 @@ field; a deleted one: `[value, null]`), `context` (what helps to read it: `ref` 
 - **Model events only.** `DB::table(...)`, `Model::where(...)->update()/delete()` and `saveQuietly()` write nothing by
   themselves. A new place that changes what a user did that way must call `AuditLog::record()` (as `ProtocolTrash`
   and `FolderMerge` do). Data fixes run by the administrator from the command line (`attachments:fill-metadata`,
-  `folders:glossary`, migrations) are recorded only where they go through the models.
+  `stamp:old`, `folders:glossary`, migrations) are recorded only where they go through the models.
+- Replace related rows **row by row** (delete what was removed, update what changed, create what is new), as
+  `FolderCatalog::setAssignments()` does (review of X01): deleting all and creating them again records nothing for a
+  removal and a «created» for every unchanged row.
 - A new model whose changes matter: `use Audited;` and, if it belongs to a protocol, `auditProtocolId()`.
 - A setting the application writes for itself goes in `Config::NOT_AUDITED`.
 - The log grows with every save and download: X02 reads it by `created_at`, `user_id`, `action`, `protocol_id`

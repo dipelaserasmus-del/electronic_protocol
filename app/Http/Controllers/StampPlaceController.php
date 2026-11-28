@@ -35,10 +35,15 @@ class StampPlaceController extends Controller
             // right now is not deleted half-way; busy for too long: try again
             try {
                 Cache::lock('stamped-copy-' . $a->id, 30)->block(self::$wait, function () use ($a, $place, $opaque) {
+                    $before = ['stamp_place' => $a->stamp_place, 'stamp_opaque' => (bool) $a->stamp_opaque];
                     $a->stamp_place = $place;
                     $a->stamp_opaque = $opaque;
                     $a->saveQuietly();   // the file's own data only: not an edit of the protocol
                     StampedCopy::forget($a);
+                    // review of X01: saved quietly, so recorded here
+                    $changes = array_filter(['stamp_place' => [$before['stamp_place'], $place], 'stamp_opaque' => [$before['stamp_opaque'], $opaque]],
+                        fn ($c) => $c[0] !== $c[1]);
+                    \App\Services\Audit\AuditLog::record('updated', 'attachment', (int) $a->id, $a->auditProtocolId(), $changes, $a->auditContext());
                 });
             } catch (LockTimeoutException) {
                 abort(423, 'Το αρχείο ετοιμάζεται αυτή τη στιγμή· δοκιμάστε ξανά.');

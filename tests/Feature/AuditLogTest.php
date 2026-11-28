@@ -142,6 +142,30 @@ class AuditLogTest extends FeatureTestCase
         $this->assertSame($f->id, $this->last('deleted')->entity_id);
     }
 
+    public function test_a_folder_s_rules_are_recorded_one_by_one(): void
+    {
+        $this->actingAs($this->admin());
+        $f = Keepvalue::create(['fakelos' => 'Φ.98', 'describe' => 'Δοκιμή']);
+        [$a, $b, $c] = [$this->writer(), $this->writer(), $this->writer()];
+        $catalog = app(\App\Services\Folders\FolderCatalog::class);
+        $catalog->setAssignments($f, [$a->id], [$b->id, $a->id]);   // a: διεκπεραίωση (includes ενημέρωση), b: ενημέρωση
+        $rules = fn () => \App\Models\FolderAssignment::where('keepvalue_id', $f->id)->orderBy('user_id')->pluck('type', 'user_id')->all();
+        $this->assertSame([$a->id => 'd', $b->id => 'e'], $rules());
+        $this->assertSame(2, AuditEntry::where('entity_type', 'folder_assignment')->where('action', 'created')->count());
+
+        $count = AuditEntry::max('id');
+        $catalog->setAssignments($f, [$a->id], [$b->id]);
+        $this->assertSame($count, AuditEntry::max('id'), 'saved unchanged: nothing recorded');
+
+        $catalog->setAssignments($f, [$b->id], [$c->id]);   // a removed, b now διεκπεραίωση, c added
+        $this->assertSame([$b->id => 'd', $c->id => 'e'], $rules());
+        $after = AuditEntry::where('entity_type', 'folder_assignment')->where('id', '>', $count)->orderBy('id')->get();
+        $this->assertSame(['deleted', 'updated', 'created'], $after->pluck('action')->all());
+        $this->assertSame([$a->id, null], $after[0]->changes['user_id']);
+        $this->assertSame(['type' => ['e', 'd']], $after[1]->changes);
+        $this->assertSame([null, $c->id], $after[2]->changes['user_id']);
+    }
+
     public function test_sign_ins_are_recorded_without_the_password(): void
     {
         $user = User::factory()->writer()->create(['password' => bcrypt('password')]);
