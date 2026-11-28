@@ -29,6 +29,7 @@ final class Checks
         Rules\NumberGapRule::class,
         Rules\DateOrderRule::class,
         Rules\DuplicateRule::class,
+        Rules\MissingAttachmentRule::class,
         Rules\PendingRule::class,
     ];
 

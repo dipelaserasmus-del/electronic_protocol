@@ -1,6 +1,6 @@
 # Έλεγχοι πρωτοκόλλου (integrity checks)
 
-Last update: 2026-11-28 11:18 (A05: possible duplicates; A04: pending protocols; A03: dates out of order; A01: the engine, the page, the gaps rule)
+Last update: 2026-11-28 11:50 (A06: without an attachment, the last of the five checks; A05: possible duplicates; A04: pending protocols; A03: dates out of order; A01: the engine, the page, the gaps rule)
 
 **Έλεγχοι πρωτοκόλλου** (user menu → *Έλεγχοι πρωτοκόλλου*, address `/checks`) shows what looks wrong in the protocol
 book for a range of protocol dates, by default the **last 30 days**. It only reads: nothing is changed on its own. Each
@@ -30,6 +30,7 @@ which have that notice) find something in the last 30 days, a second line *Έλ�
 | **Κενά στην αρίθμηση** | Numbers missing between the protocols of the range, one line per run of missing numbers, with the protocols on either side (number and date). A run counts when one of the two protocols around it is dated in the range (so a gap right at the edge of the range is found, and one between two protocols dated elsewhere is not); a protocol's numbering year may differ from its date's year. In the current year, numbers below *Αρ.Πρωτοκόλλου για ξεκίνημα* are not checked. If you may choose the number (administrator, *Έλεγχοι καταχώρισης* off), *Καταχώριση με το N* opens a new protocol with that number. | A01 |
 | **Ημερομηνίες εκτός σειράς** | Protocols whose date breaks the order of the numbers (a date going backwards as the numbers go up) or is after today: the ⚠ of the list, for the whole range. The message names the protocols before and after it (number and date). Which protocols are out of order is decided as in the list: the fewest whose removal leaves the dates in order, in each numbering year. A protocol counts when it, or the one before or after it, is dated in the range, so a date typed far off (even a year wrong) is found among its neighbours. Counted in the list's *Έλεγχοι* line. | A03 |
 | **Πιθανές διπλές καταχωρίσεις** | Two protocols that look like the same document registered twice: the **same attached file** (identical content), the **same incoming number** (unless both senders are written and differ), or the **same subject, sender and incoming date**. Case, accents and spaces around do not matter. A file, number or subject that more than 3 protocols share is routine (a logo, an e-mail signature, a circular) and is not compared. Two protocols that name each other in *Σχετικοί αριθμοί* are not reported: if they are not duplicates, write one's number in the other's *Σχετικοί*. One line per pair, about the later one, naming the earlier (number and date) and every reason. The other one is looked for in the same numbering year and the one before. Counted in the list's *Έλεγχοι* line. | A05 |
+| **Χωρίς συνημμένο** | Protocols with no attachment: no file and no *ΑΔΑ* row (a deleted attachment does not count). Left out when the protocol says why: it has *Σχετικοί αριθμοί* (the document is in the related protocol), *εκκρεμότητα* in the subject (it is coming, see *Εκκρεμότητες*), the «ΕΛΕΥΘΕΡΟ» placeholder, or no folder (on hold until its content arrives, your decision of 2026-11-18). Upload the document, or write in *Σχετικοί* where it is. Counted in the list's *Έλεγχοι* line. | A06 |
 | **Εκκρεμότητες** | The pending protocols of the range, as the search's *Έλεγχος εκκρεμοτήτων* finds them: the word *εκκρεμότητα* in the subject (any case or accents, also *ΕΚΚΡΕΜΟΤΗΤΕΣ*) or no folder; the line says which. A protocol without a folder is waiting for its content (your decision, 2026-11-18), not a mistake, so this is a reminder and the list's *Έλεγχοι* line does not count it (the list marks a missing folder itself). | A04 |
 
 The list's own gap notice (A02) looks at the last *N months* of the setting *Έλεγχος κενών: τελευταίοι μήνες*; the page
@@ -44,7 +45,7 @@ looks at the range you choose.
 | Engine: the rule list, who may see what, the default range | `app/Services/Integrity/Checks.php` |
 | A rule's contract | `app/Services/Integrity/Rule.php` |
 | A finding (message, reference, protocol id, date, subject, meta) | `app/Services/Integrity/Finding.php` |
-| Rules | `app/Services/Integrity/Rules/*.php` (`NumberGapRule`, `DateOrderRule`, `DuplicateRule`, `PendingRule`) |
+| Rules | `app/Services/Integrity/Rules/*.php` (`NumberGapRule`, `DateOrderRule`, `DuplicateRule`, `MissingAttachmentRule`, `PendingRule`) |
 | Dates out of order (shared with the list's ⚠ and the form's warning, R2f) | `App\Services\DateOrder` (`flags()`, `message()`) |
 | What «pending» means (shared with the search's pending check, R3a) | `ProtocolSearch::PENDING_WORD`, `pendingReasons()` |
 | Files' SHA-256 (D03: `attachments.sha256`, indexed; `attachments:fill-metadata` for old files) and related numbers (`RelatedNumbers::numbers()`) | `App\Models\Attachment`, `App\Services\Protocols\RelatedNumbers` |
@@ -54,7 +55,7 @@ looks at the range you choose.
 | List line | `ProtocolList::render()` (`checksCount`), `#checks-notice` in `protocol-list.blade.php` |
 | Tests | `tests/Feature/IntegrityChecksTest.php`, `e2e/tests/checks.spec.js` |
 
-### Adding a check (A06)
+### Adding a check
 
 1. A class in `app/Services/Integrity/Rules/` implementing `Rule`: `key()` (stable, used in `#check-<key>` and tests),
    `title()`, `explanation()` (Greek, for users), `inList()` (counted in the list's line?), `findings($from, $to, $viewer)` (`$viewer`: who reads it, so a message
@@ -78,6 +79,9 @@ looks at the range you choose.
   `DateOrder::message($flag, $viewer)`, which hides a neighbour the viewer may not see.
 - `PendingRule`: the same condition as the search's pending check (`fakelos` null or empty, or `thema` LIKE
   `%εκκρεμοτητ%`, matched by MySQL's `utf8mb4_general_ci`), protocols dated in the range; `inList()` false.
+- `MissingAttachmentRule`: `whereDoesntHave('attachments')` (soft-deleted ones excluded by the relation; an ΑΔΑ-only
+  row counts as an attachment); left out: non-blank `sxetiko`, blank `fakelos`, `thema` LIKE `%εκκρεμοτητ%`,
+  `ProtocolWriter::isPlaceholder()`.
 - `DuplicateRule`: a pair is reported once, about the later protocol (year, number); never when either names the
   other in `sxetiko` (`N/YYYY`, leading zeros ignored); a group of more than `MAX_SHARED` (3) protocols sharing a
   value is skipped; a deleted attachment does not count (soft deletes); the other protocol is named only if the
@@ -92,6 +96,9 @@ looks at the range you choose.
   to the whole book makes every list load read it.
 - Old files have no hash until `php artisan attachments:fill-metadata` runs (deployment guide): without it, the
   «same file» reason finds only files saved by the new version.
+- Tests: the protocols of `IntegrityChecksTest::book()` / `registered()` are complete (a folder and an ΑΔΑ row) so
+  one check's test is not counted by another; e2e protocols get unique subjects (a rerun must not find an earlier
+  run's protocols alike).
 - Changing `DateOrder` changes the list's ⚠, the form's warning and this check together (on purpose: one judgement).
 - `NumberGaps::find()` (the list's notice, R2c's «ΚΕΝΟ» rows) and `between()` (the page) look at different windows on
   purpose; keep `find()` as it is unless the list's notice should change too.

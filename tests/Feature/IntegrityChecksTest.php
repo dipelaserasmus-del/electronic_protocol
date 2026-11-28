@@ -11,6 +11,7 @@ use App\Services\Integrity\Finding;
 use App\Services\Integrity\Rule;
 use App\Services\Integrity\Rules\DateOrderRule;
 use App\Services\Integrity\Rules\DuplicateRule;
+use App\Services\Integrity\Rules\MissingAttachmentRule;
 use App\Services\Integrity\Rules\NumberGapRule;
 use App\Services\Integrity\Rules\PendingRule;
 use App\Services\NumberGaps;
@@ -25,8 +26,16 @@ class IntegrityChecksTest extends FeatureTestCase
     private function book(int $year, array $numbers, string $mmdd): void
     {
         foreach ($numbers as $n) {
-            Protocol::factory()->number($n, $year)->onDate($year.$mmdd)->create(['fakelos' => 'Φ.1']);   // with a folder: not pending (A04)
+            $this->complete(Protocol::factory()->number($n, $year)->onDate($year.$mmdd)->create(['fakelos' => 'Φ.1']));
         }
+    }
+
+    /** A complete protocol for the other checks: a folder (not pending, A04) and an attachment (an ΑΔΑ row, A06) */
+    private function complete(Protocol $p): Protocol
+    {
+        \App\Models\Attachment::factory()->create(['protocol_id' => $p->id, 'ada' => 'ΨΔ'.$p->id, 'name' => null, 'mimeType' => null]);
+
+        return $p;
     }
 
     private function between(string $from, string $to, string $today = '2026-11-12'): array
@@ -194,8 +203,8 @@ class IntegrityChecksTest extends FeatureTestCase
 
     private function registered(int $num, string $ymd, array $attrs = []): Protocol
     {
-        return Protocol::factory()->number($num, (int) substr($ymd, 0, 4))->onDate($ymd)
-            ->create($attrs + ['fakelos' => 'Φ.1', 'in_num' => null, 'in_date' => null, 'in_arxi_ekdosis' => null, 'sxetiko' => null]);
+        return $this->complete(Protocol::factory()->number($num, (int) substr($ymd, 0, 4))->onDate($ymd)
+            ->create($attrs + ['fakelos' => 'Φ.1', 'in_num' => null, 'in_date' => null, 'in_arxi_ekdosis' => null, 'sxetiko' => null]));
     }
 
     private function file(Protocol $p, string $hash): void
@@ -307,6 +316,37 @@ class IntegrityChecksTest extends FeatureTestCase
 
         Livewire::actingAs($this->admin())->test(IntegrityChecks::class)
             ->assertSeeHtml('id="check-duplicates" data-check="duplicates" data-count="1"')->assertSee('Πιθανές διπλές καταχωρίσεις');
+        Livewire::actingAs($this->admin())->test(ProtocolList::class)->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
+    }
+
+    public function test_a_protocol_without_an_attachment_and_no_reason_is_found(): void
+    {
+        $at = fn (int $n, array $attrs = []) => Protocol::factory()->number($n, 2026)->onDate('20261105')
+            ->create($attrs + ['fakelos' => 'Φ.1', 'sxetiko' => null, 'thema' => 'Βεβαίωση']);
+        $at(1);                                              // nothing: found
+        $this->complete($at(2));                             // an ΑΔΑ row
+        \App\Models\Attachment::factory()->create(['protocol_id' => $at(3)->id]);   // a file
+        \App\Models\Attachment::factory()->create(['protocol_id' => $at(4)->id])->delete();   // deleted: found
+        $at(5, ['sxetiko' => '12/2026']);                    // the document is in the related protocol
+        $at(6, ['thema' => 'Εκκρεμότητα: αναμένεται']);      // waiting for it (A04)
+        $at(7, ['thema' => 'ΕΛΕΥΘΕΡΟ']);                     // a number kept free
+        $at(8, ['fakelos' => null]);                         // no folder: on hold (owner, 2026-11-18)
+        $at(9, ['fakelos' => ' ']);
+        $at(10, ['sxetiko' => ' ']);                         // blank: found
+        Protocol::factory()->number(11, 2026)->onDate('20261020')->create(['fakelos' => 'Φ.1', 'sxetiko' => null]);
+
+        $found = app(MissingAttachmentRule::class)->findings(CarbonImmutable::parse('2026-11-01'), CarbonImmutable::parse('2026-11-30'));
+        $this->assertSame(['1/2026', '4/2026', '10/2026'], array_map(fn (Finding $f) => $f->ref, $found));
+        $this->assertSame('Δεν έχει συνημμένο αρχείο ούτε ΑΔΑ.', $found[0]->message);
+    }
+
+    public function test_missing_attachments_are_on_the_page_and_counted_in_the_list(): void
+    {
+        $today = CarbonImmutable::today();
+        Protocol::factory()->number(1, $today->year)->onDate($today->format('Ymd'))->create(['fakelos' => 'Φ.1', 'sxetiko' => null]);
+
+        Livewire::actingAs($this->admin())->test(IntegrityChecks::class)
+            ->assertSeeHtml('id="check-attachments" data-check="attachments" data-count="1"')->assertSee('Χωρίς συνημμένο');
         Livewire::actingAs($this->admin())->test(ProtocolList::class)->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
     }
 
