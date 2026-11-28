@@ -85,9 +85,10 @@ test('a date out of order on the checks page and in the list\'s line (A03)', asy
 
 test('the same incoming document registered twice (A05)', async ({ page }) => {
   await login(page, 'writer');
-  const inNum = `Φ.5/${Date.now()}/Δ2`;
+  const stamp = Date.now();   // unique per run: an earlier run's protocols must not be alike by subject (A06)
+  const inNum = `Φ.5/${stamp}/Δ2`;
   const ids = [];
-  for (const thema of ['A05 Πρόσκληση σε ενημέρωση', 'A05 Πρόσκληση σε ενημέρωση (ξανά)']) {
+  for (const thema of [`A05 Πρόσκληση σε ενημέρωση ${stamp}`, `A05 Πρόσκληση σε ενημέρωση ${stamp} (ξανά)`]) {
     await page.goto('/home');
     await fillProtocol(page, {
       thema, fakelos: 'first', in_num: inNum, in_date: '02/01/2025',
@@ -106,6 +107,38 @@ test('the same incoming document registered twice (A05)', async ({ page }) => {
     const r = el.getBoundingClientRect();   // page coordinates (the card may be below the fold)
     return { x: r.x, y: Math.max(0, r.y + window.scrollY - 10), width: r.width, height: Math.min(r.height + 20, 400) };
   }) });
+});
+
+test('a protocol without an attachment, then with one (A06)', async ({ page }) => {
+  await login(page, 'writer');
+  await page.goto('/home');
+  await fillProtocol(page, { thema: `A06 χωρίς συνημμένο ${Date.now()}`, fakelos: 'first' });
+  await saveProtocol(page);
+  const id = page.url().match(/\/home\/(\d+)$/)[1];
+
+  await page.goto('/checks');
+  const missing = page.locator('#check-attachments');
+  await expect(missing.locator('h2')).toHaveText('Χωρίς συνημμένο');
+  const finding = missing.locator('.checks-finding').filter({ has: page.locator(`a[href$="/home/${id}"]`) });
+  await expect(finding.locator('.checks-message')).toHaveText('Δεν έχει συνημμένο αρχείο ούτε ΑΔΑ.');
+  await evidence(page, 'a06-missing-card', { fullPage: true, clip: await missing.evaluate((el) => {
+    const r = el.getBoundingClientRect();   // page coordinates (the card may be below the fold)
+    return { x: r.x, y: Math.max(0, r.y + window.scrollY - 10), width: r.width, height: 160 };
+  }) });
+  await evidence(page, 'a06-missing-finding', { fullPage: true, clip: await finding.evaluate((el) => {
+    const r = el.getBoundingClientRect();   // the dev data has many: the new one's line
+    return { x: r.x, y: r.y + window.scrollY - 6, width: r.width, height: r.height + 12 };
+  }) });
+
+  // a file added: it leaves the check
+  await finding.locator(`a[href$="/home/${id}"]`).click();
+  await expect(page).toHaveURL(new RegExp(`/home/${id}$`));
+  await page.setInputFiles('#f-uploads', { name: 'a06.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 A06\n') });
+  await page.locator('#protocol-form button[type=submit]').first().click();   // same address: wait for the message
+  await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+  await page.goto('/checks');
+  await expect(page.locator('#check-attachments')).toBeVisible();
+  await expect(page.locator(`#check-attachments a[href$="/home/${id}"]`)).toHaveCount(0);
 });
 
 test('a pending protocol on the checks page (A04)', async ({ page }) => {
