@@ -1,6 +1,6 @@
 // @smoke: the main screens work for every role, and the core actions succeed in a real browser.
 const { test, expect } = require('@playwright/test');
-const { login, evidence, toasts, openInbox } = require('./helpers');
+const { login, evidence, openInbox } = require('./helpers');
 const { fillProtocol, saveProtocol, notice } = require('./helpers');
 
 test.describe('@smoke', () => {

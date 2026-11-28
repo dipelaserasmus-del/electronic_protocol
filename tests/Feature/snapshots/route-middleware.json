@@ -39,11 +39,6 @@
         "auth",
         "web"
     ],
-    "GET getKeep4Fakelos/{fakelos}": [
-        "auth",
-        "web",
-        "writer:home/list"
-    ],
     "GET getValues/{field}/{id}/{divId}/{multi}": [
         "auth",
         "web",
@@ -187,11 +182,6 @@
     "GET trash/{attachment}/download": [
         "auth",
         "web"
-    ],
-    "GET updated": [
-        "auth",
-        "web",
-        "writer:home/list"
     ],
     "GET users": [
         "admin:home",

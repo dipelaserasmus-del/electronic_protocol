@@ -5,31 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
-use DB;
 use Illuminate\Support\Facades\Gate;
-use URL;
 use Auth;
-use Active;
 use Storage;
-use App\Models\Role;
-use App\Models\User;
-use Validator;
 use App\Models\Config;
 use App\Models\Protocol;
-use App\Models\Keepvalue;
-use Carbon\Carbon;
 use App\Models\Attachment;
-use Illuminate\Http\Request;
-use Webklex\IMAP\Facades\Client;
-use Illuminate\Support\Facades\Mail;
-use Maatwebsite\Excel\Facades\Excel;
-use ZBateson\MailMimeParser\Message;
-use ZBateson\MailMimeParser\MailMimeParser;
-use ZBateson\MailMimeParser\Header\HeaderConsts;
-use Yasapurnama\DocumentWatermark\WatermarkFactory;
 
-//use Illuminate\Support\Facades\Log;
-//Log::info('test');
 
 /*
 
@@ -80,18 +62,6 @@ class ProtocolController extends Controller implements HasMiddleware
     public function chkForUpdates()
     {
         return redirect(\App\Support\Navigation::landing(auth()->user()));   // R3e: the user's home page
-    }
-
-    public function getKeep4Fakelos($fakelos)
-    {
-        $keepval = null;
-        if ($fakelos) {
-            $keepval = Keepvalue::whereFakelos($fakelos)->first()->keep;
-            if (!$keepval) {
-                $keepval = Keepvalue::whereFakelos($fakelos)->first()->keep_alt;
-            }
-        }
-        return $keepval;
     }
 
     /** R1a: saving goes through ProtocolWriter (rules, numbering, files, e-mails); this only adapts the legacy form. */
@@ -284,15 +254,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return view('about');
     }
 
-    public function updated()
-    {
-        $file = storage_path('conf/.updateCheck');
-        unlink($file);
-
-        Config::setConfigValueOf('needsUpdate', 0);
-        return redirect("home/list");
-    }
-
     // βρίσκει τις καταχωρίσεις που ταιριάζουν με αυτά που πληκτρολογεί ο χρήστης και επιστρέφει λίστα
     /** Fields that the protocol / email forms autocomplete from previous entries */
     private const AUTOCOMPLETE_FIELDS = ['thema', 'in_topos_ekdosis', 'in_arxi_ekdosis', 'in_paraliptis', 'sxetiko', 'out_to', 'keywords', 'fakelos', 'in_num', 'out_perilipsi', 'in_perilipsi'];
@@ -365,40 +326,6 @@ class ProtocolController extends Controller implements HasMiddleware
         return str_replace($a, $b, $str);
     }
 
-    public function filter_filename($filename, $beautify = true)
-    {
-        // F08: κανόνες ονομάτων σε ένα σημείο (App\Support\FileNames)· το μήκος του αποθηκευμένου ονόματος το ορίζει FileNames::fit
-        $filename = \App\Support\FileNames::clean($filename);
-        // optional beautification
-        if ($beautify) {
-            $filename = $this->beautify_filename($filename);
-        }
-        return $filename;
-    }
-
-    public function beautify_filename($filename)
-    {
-        // reduce consecutive characters
-        $filename = preg_replace(array(
-            // "file   name.zip" becomes "file-name.zip"
-            '/ +/',
-            // "file___name.zip" becomes "file-name.zip"
-            '/_+/',
-            // "file---name.zip" becomes "file-name.zip"
-            '/-+/'
-        ), '-', $filename);
-        $filename = preg_replace(array(
-            // "file--.--.-.--name.zip" becomes "file.name.zip"
-            '/-*\.-*/',
-            // "file...name..zip" becomes "file.name.zip"
-            '/\.{2,}/'
-        ), '.', $filename);
-        // lowercase for windows/unix interoperability http://support.microsoft.com/kb/100625
-        $filename = mb_strtolower($filename, mb_detect_encoding($filename));
-        // ".file-name.-" becomes "file-name"
-        $filename = trim($filename, '.-');
-        return $filename;
-    }
 
     public static function limitProtocolAccessList()
     {

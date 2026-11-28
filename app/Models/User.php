@@ -82,11 +82,6 @@ class User extends Authenticatable
         return User::wherenotNull('active')->orderby('name')->get();
     }
 
-    public static function my_users(){
-        // return User::where('role_id', '!=',   Role::whereRole('Αναγνώστης')->first()->id)->orderby('name')->get();
-        return User::orderby('name')->get();
-    }
-
     public static function diekperaiosi_name($diekperaiosi){
         $str = 'd';
         foreach(explode(',',$diekperaiosi) as $d){
