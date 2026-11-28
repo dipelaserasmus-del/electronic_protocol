@@ -34,7 +34,7 @@
             {{-- number, year, date: TAB from the number goes straight to the date (owner). R1g (owner, 2026-11-18): the number is
                  the most important piece of information, so it is large, in the middle; the year small next to it. --}}
             <div class="number-head">
-                {{-- R1q (owner, 2026-11-27): the rarely used actions stacked at the right: Αντιγραφή ως νέο, Απόδειξη, Διαγραφή
+                {{-- R1q (owner, 2026-11-27): the rarely used actions stacked at the right: Αντιγραφή ως νέο, Απόδειξη, (X02: Ιστορικό, administrators) Διαγραφή
                      (no «Σύνδεσμος»: the owner does not need it; /protocol/N/YYYY still opens a protocol). First in the page's
                      order, so that TAB goes Έτος → number → date → the first section's fields without passing them. --}}
                 @if ($protocol->exists)
@@ -45,6 +45,11 @@
                         @endif
                         <x-pill :href="url('/receipt/'.$protocol->id)" target="_blank" data-action="receipt" title="Απόδειξη παραλαβής, σε νέα καρτέλα">
                             <i class="bi bi-receipt me-1" aria-hidden="true"></i>Απόδειξη</x-pill>
+                        @if (\App\Livewire\AuditHistory::allowed(auth()->user()))   {{-- X02: administrators --}}
+                            <x-pill :href="url('/history').'?protocol='.urlencode($protocol->protocolnum.'/'.$protocol->etos)" data-action="history"
+                                    title="Ποιος άλλαξε τι σε αυτό το πρωτόκολλο και πότε">
+                                <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Ιστορικό</x-pill>
+                        @endif
                         @if ($access->canDelete)
                             <x-pill variant="danger" wire:click="deleteProtocol" data-action="delete"
                                     data-confirm="Να μεταφερθεί στον κάδο το πρωτόκολλο {{ $protocol->protocolnum }}/{{ $protocol->etos }} με τα συνημμένα του; Ο αριθμός του γίνεται πάλι ελεύθερος.">

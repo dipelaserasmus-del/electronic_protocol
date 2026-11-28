@@ -105,6 +105,7 @@ final class Navigation
                 ['label' => 'Εκκαθάριση', 'icon' => 'eraser', 'url' => url('/arxeio')],
                 ['label' => 'Κάδος', 'icon' => 'trash3', 'url' => url('/trash')],
                 ['label' => 'Αρχεία καταγραφής', 'icon' => 'terminal', 'url' => url('/logs')],   // R6e
+                ['label' => 'Ιστορικό ενεργειών', 'icon' => 'clock-history', 'url' => url('/history')],   // X02
             ];
         }
 

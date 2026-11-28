@@ -38,7 +38,7 @@ class ModernLayoutTest extends FeatureTestCase
         $this->assertSame([
             'Εκτύπωση' => ['Εκτύπωση πρωτοκόλλου', 'Εκτύπωση συνημμένων'],
             'Φάκελοι' => ['Φάκελοι και διατήρηση', 'Έλεγχοι πρωτοκόλλου', 'Σφραγίδα αρχείων'],   // R4e; A01
-            'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Αρχεία καταγραφής'],
+            'Διαχείριση' => ['Χρήστες', 'Ρυθμίσεις', 'Backup', 'Εκκαθάριση', 'Κάδος', 'Αρχεία καταγραφής', 'Ιστορικό ενεργειών'],
         ], $groups($admin));
         $this->assertSame(['Εκτύπωση', 'Φάκελοι'], array_keys($groups($this->writer())), 'only administrators manage the rest');
         // R4i (owner, 2026-11-25): the stamp for administrators only

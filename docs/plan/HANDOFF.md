@@ -2,7 +2,8 @@
 
 Read this first when (re)starting work. Update it at the end of every task.
 
-## Current state — 2026-11-28 12:15 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01, A03–A06, X01 done, next X02; B03d closed; times are Greek time)
+## Current state — 2026-11-28 12:53 (after Batches 1–9, 9.5, 9.6 and 9.7; milestone M1; Batch 10: A01, A03–A06, X01, X02 done, next Z01; B03d closed; times are Greek time)
+- **X02 (Batch 10, 2026-11-28):** `/history` (`App\Livewire\AuditHistory`, administrators): filters user / action / dates / protocol (`N/YYYY`: its `protocol_id` entries + `context->ref` of its protocol entries), 50 a page, CSV (BOM, «;»); the protocol form's «Ιστορικό» pill (admins); menu Διαχείριση → Ιστορικό ενεργειών. `App\Services\Audit\AuditPresenter`: Greek labels, field labels per kind, ids as names, dates d/m/Y.
 - **X01 (Batch 10, 2026-11-28):** audit log recording: table `audit_log` (append-only `AuditEntry`), `App\Services\Audit\AuditLog` (`record`, `protocol`, `asSystem` for the daily clean-ups, `purgeExpired` by `AUDIT_KEEP_DAYS`, empty = keep all), trait `Models\Concerns\Audited` on Protocol, Attachment, ProtocolAssignment, FolderAssignment, Keepvalue, User (password `***`), Config (`NOT_AUDITED`); sign-ins by `Listeners\AuditAuthEvents`; by hand: attachment trash, protocol trash/restore/purge, download, e-mail registration, folder merge. Query-builder writes are not recorded unless written by hand. **Feature guide: docs/AUDIT-LOG.md.** Nothing shown until X02.
 - **A06 (Batch 10, 2026-11-28):** `Rules\MissingAttachmentRule` (key `attachments`, `inList()` true): no attachment (ΑΔΑ row counts, deleted ones do not) and no reason: non-blank `sxetiko`, `εκκρεμοτητ` in the subject, placeholder, or no folder leave it out. The five checks are done; `docs/CHECKS.md` is their guide. A05's e2e test made rerunnable (unique subjects).
 - **A05 (Batch 10, 2026-11-28):** `Rules\DuplicateRule` (key `duplicates`, `inList()` true): pairs with the same attachment SHA-256, the same incoming number (senders not different) or the same subject + sender + incoming date; not when either names the other in `sxetiko`; a value shared by > 3 protocols skipped (`MAX_SHARED`); partners only in the range's `etos` and the year before. Finding about the later protocol.
@@ -412,6 +413,7 @@ Without that environment: `bash docker/dev/cloud-setup.sh` first (~7 min on a co
 ## Task log
 | Date | Task | PR | Notes |
 |---|---|---|---|
+| 2026-11-28 12:53 | X02 | #175 | Ιστορικό ενεργειών: page, filters, protocol history from the form, CSV |
 | 2026-11-28 12:15 | X01 | #174 | audit log recording (models, sign-ins, trash, downloads, e-mail, merges; AUDIT_KEEP_DAYS); docs/AUDIT-LOG.md |
 | 2026-11-28 11:50 | A06 | #173 | Έλεγχοι: χωρίς συνημμένο (no file/ΑΔΑ and no reason); A05 e2e rerunnable; checks A01–A06 complete |
 | 2026-11-28 11:18 | A05 | #172 | Έλεγχοι: πιθανές διπλές καταχωρίσεις (file hash, incoming number, subject+sender+date; not related; routine values skipped) |
