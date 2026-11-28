@@ -1,7 +1,7 @@
 // A01: «Έλεγχοι» (/checks): the integrity checks over a date range, opened from the user menu and from the list's
 // gaps notice. The demo data has deliberate gaps (A02), so this year has at least one missing number.
 const { test, expect } = require('@playwright/test');
-const { login, evidence } = require('./helpers');
+const { login, evidence, fillProtocol, saveProtocol, setSetting } = require('./helpers');
 
 test('the checks page: a date range, the gaps with their neighbours (A01)', async ({ page }) => {
   await login(page, 'admin');
@@ -36,6 +36,51 @@ test('the checks page: a date range, the gaps with their neighbours (A01)', asyn
   await page.locator('#checks-to').fill(`1/1/${year}`);
   await page.locator('#checks-run').click();
   await expect(page.locator('#checks-range .invalid-feedback').filter({ hasText: 'πριν από την αρχική' })).toBeVisible();
+});
+
+test('a date out of order on the checks page and in the list\'s line (A03)', async ({ page }) => {
+  await login(page, 'admin');
+  const previous = await setSetting(page, 'allowWriterChangeDate', 1);
+  const pad = (n) => String(n).padStart(2, '0');
+  const ddmmyyyy = (d) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const early = new Date();
+  early.setDate(early.getDate() - 20);   // earlier than the last protocol of the demo
+  try {
+    await page.goto('/home');
+    await fillProtocol(page, { thema: `A03 λάθος ημερομηνία ${Date.now()}`, fakelos: 'first', protocoldate: ddmmyyyy(early) });
+    await saveProtocol(page);
+    const id = page.url().match(/\/home\/(\d+)$/)[1];
+
+    // the list's line counts it and links to the page
+    await page.goto('/home/list');
+    const notice = page.locator('#checks-notice');
+    await expect(notice).toContainText(/Έλεγχοι:\s+\d+ ευρήμα/);
+    await notice.getByRole('link', { name: 'Προβολή' }).click();
+    await expect(page).toHaveURL(/\/checks/);
+
+    const dates = page.locator('#check-dates');
+    await expect(dates.locator('h2, .card-header').first()).toContainText('Ημερομηνίες εκτός σειράς');
+    const finding = dates.locator('.checks-finding').filter({ has: page.locator(`a[href$="/home/${id}"]`) });
+    await expect(finding.locator('.checks-message')).toContainText('δεν ταιριάζει με τη σειρά των αριθμών');
+    await expect(finding.locator('.checks-message')).toContainText('ο προηγούμενος');
+    await evidence(page, 'a03-dates', { fullPage: true, clip: await dates.evaluate((el) => {
+      const r = el.getBoundingClientRect();   // page coordinates (the card may be below the fold)
+      return { x: r.x, y: Math.max(0, r.y + window.scrollY - 10), width: r.width, height: Math.min(r.height + 20, 600) };
+    }) });
+
+    // the finding opens the protocol, where the date is corrected; then the check has it no more
+    await finding.locator(`a[href$="/home/${id}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/home/${id}$`));
+    await page.locator('#f-protocoldate').fill(ddmmyyyy(new Date()));
+    await page.locator('#f-protocoldate').press('Tab');
+    await page.locator('#protocol-form button[type=submit]').first().click();
+    await expect(page.locator('main > .alert', { hasText: 'Οι αλλαγές αποθηκεύτηκαν' })).toBeVisible();
+    await page.goto('/checks');
+    await expect(page.locator('#check-dates')).toBeVisible();
+    await expect(page.locator(`#check-dates a[href$="/home/${id}"]`)).toHaveCount(0);
+  } finally {
+    await setSetting(page, 'allowWriterChangeDate', previous);
+  }
 });
 
 test('the list\'s gaps notice links to the checks; readers have no checks (A01)', async ({ page }) => {

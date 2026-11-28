@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrity;
 
+use App\Models\User;
 use Carbon\CarbonImmutable;
 
 /**
@@ -27,6 +28,11 @@ interface Rule
      */
     public function inList(): bool;
 
-    /** @return list<Finding> */
-    public function findings(CarbonImmutable $from, CarbonImmutable $to): array;
+    /**
+     * $viewer: who will read the findings (A03): a message names another protocol only if they may see it. The engine
+     * itself leaves out findings about a protocol they may not see.
+     *
+     * @return list<Finding>
+     */
+    public function findings(CarbonImmutable $from, CarbonImmutable $to, ?User $viewer = null): array;
 }

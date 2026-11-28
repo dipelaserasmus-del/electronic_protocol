@@ -1,6 +1,6 @@
 # Έλεγχοι πρωτοκόλλου (integrity checks)
 
-Last update: 2026-11-28 01:08 (A01: the engine, the page, the gaps rule)
+Last update: 2026-11-28 10:38 (A03: dates out of order; A01: the engine, the page, the gaps rule)
 
 **Έλεγχοι πρωτοκόλλου** (user menu → *Έλεγχοι πρωτοκόλλου*, address `/checks`) shows what looks wrong in the protocol
 book for a range of protocol dates, by default the **last 30 days**. It only reads: nothing is changed on its own. Each
@@ -28,6 +28,7 @@ which have that notice) find something in the last 30 days, a second line *Έλ�
 | Check | What it reports | Task |
 |---|---|---|
 | **Κενά στην αρίθμηση** | Numbers missing between the protocols of the range, one line per run of missing numbers, with the protocols on either side (number and date). A run counts when one of the two protocols around it is dated in the range (so a gap right at the edge of the range is found, and one between two protocols dated elsewhere is not); a protocol's numbering year may differ from its date's year. In the current year, numbers below *Αρ.Πρωτοκόλλου για ξεκίνημα* are not checked. If you may choose the number (administrator, *Έλεγχοι καταχώρισης* off), *Καταχώριση με το N* opens a new protocol with that number. | A01 |
+| **Ημερομηνίες εκτός σειράς** | Protocols whose date breaks the order of the numbers (a date going backwards as the numbers go up) or is after today: the ⚠ of the list, for the whole range. The message names the protocols before and after it (number and date). Which protocols are out of order is decided as in the list: the fewest whose removal leaves the dates in order, in each numbering year. A protocol counts when it, or the one before or after it, is dated in the range, so a date typed far off (even a year wrong) is found among its neighbours. Counted in the list's *Έλεγχοι* line. | A03 |
 
 The list's own gap notice (A02) looks at the last *N months* of the setting *Έλεγχος κενών: τελευταίοι μήνες*; the page
 looks at the range you choose.
@@ -41,17 +42,19 @@ looks at the range you choose.
 | Engine: the rule list, who may see what, the default range | `app/Services/Integrity/Checks.php` |
 | A rule's contract | `app/Services/Integrity/Rule.php` |
 | A finding (message, reference, protocol id, date, subject, meta) | `app/Services/Integrity/Finding.php` |
-| Rules | `app/Services/Integrity/Rules/*.php` (`NumberGapRule`) |
+| Rules | `app/Services/Integrity/Rules/*.php` (`NumberGapRule`, `DateOrderRule`) |
+| Dates out of order (shared with the list's ⚠ and the form's warning, R2f) | `App\Services\DateOrder` (`flags()`, `message()`) |
 | Gaps in a date range | `App\Services\NumberGaps::between()` (A02's `find()` stays for the list) |
 | Page | `app/Livewire/IntegrityChecks.php`, `resources/views/livewire/integrity-checks.blade.php`, route `/checks` |
 | Menu entry | `App\Support\Navigation::manage()` (group *Φάκελοι*) |
 | List line | `ProtocolList::render()` (`checksCount`), `#checks-notice` in `protocol-list.blade.php` |
 | Tests | `tests/Feature/IntegrityChecksTest.php`, `e2e/tests/checks.spec.js` |
 
-### Adding a check (A03–A06)
+### Adding a check (A04–A06)
 
 1. A class in `app/Services/Integrity/Rules/` implementing `Rule`: `key()` (stable, used in `#check-<key>` and tests),
-   `title()`, `explanation()` (Greek, for users), `inList()` (counted in the list's line?), `findings($from, $to)`.
+   `title()`, `explanation()` (Greek, for users), `inList()` (counted in the list's line?), `findings($from, $to, $viewer)` (`$viewer`: who reads it, so a message
+   names another protocol only if they may see it).
 2. Add it to `Checks::RULES` in the page's order.
 3. Return `Finding::about($protocol, $message)` for a finding about one protocol, so the engine can hide it from users
    who may not see that protocol.
@@ -66,8 +69,14 @@ looks at the range you choose.
 - The range: both dates valid, from ≤ to, at most `Checks::MAX_DAYS`.
 - `NumberGaps::between()`: a missing run is reported only if its previous or next existing number is dated in the
   range; the years checked are the `etos` of the protocols dated in the range (review of A01).
+- `DateOrderRule`: the same `DateOrder::flags()` as the list's ⚠, over the `etos` of the protocols dated in the range;
+  a flagged protocol counts if it or its neighbour by number is dated in the range; the message is
+  `DateOrder::message($flag, $viewer)`, which hides a neighbour the viewer may not see.
 
 ### Before changing it
 - The list runs `Checks::listCount()` on every load and auto-refresh: an `inList()` rule must be cheap for 30 days.
+  `DateOrderRule` reads the dates of the whole numbering year (one query of three columns per year), as the list's ⚠
+  does.
+- Changing `DateOrder` changes the list's ⚠, the form's warning and this check together (on purpose: one judgement).
 - `NumberGaps::find()` (the list's notice, R2c's «ΚΕΝΟ» rows) and `between()` (the page) look at different windows on
   purpose; keep `find()` as it is unless the list's notice should change too.
