@@ -118,10 +118,10 @@ final class DuplicateRule implements Rule
         }
 
         // the same incoming number (senders not different)
-        $numbers = $base->pluck('in_num')->map(fn ($n) => trim((string) $n))->filter()->unique()->values();
+        $numbers = $base->pluck('in_num')->map(self::spaces(...))->filter()->unique()->values();
         if ($numbers->isNotEmpty()) {
             $eachPair(
-                $near()->whereIn(DB::raw('TRIM(in_num)'), $numbers)->get(self::COLUMNS)->groupBy(fn ($p) => self::fold($p->in_num)),
+                $near()->whereIn(DB::raw(self::spacesSql('in_num')), $numbers)->get(self::COLUMNS)->groupBy(fn ($p) => self::fold($p->in_num)),
                 'in_num',
                 fn ($a, $b) => self::fold($a->in_arxi_ekdosis) === '' || self::fold($b->in_arxi_ekdosis) === ''
                     || self::fold($a->in_arxi_ekdosis) === self::fold($b->in_arxi_ekdosis),
@@ -131,10 +131,10 @@ final class DuplicateRule implements Rule
         // the same subject, sender and incoming date
         $full = fn (Protocol $p) => self::fold($p->thema) !== '' && self::fold($p->in_arxi_ekdosis) !== '' && $p->in_date
             && ! ProtocolWriter::isPlaceholder($p);
-        $subjects = $base->filter($full)->pluck('thema')->unique()->values();
+        $subjects = $base->filter($full)->pluck('thema')->map(self::spaces(...))->unique()->values();
         if ($subjects->isNotEmpty()) {
             $eachPair(
-                $near()->whereIn('thema', $subjects)->whereNotNull('in_date')->get(self::COLUMNS)->filter($full)
+                $near()->whereIn(DB::raw(self::spacesSql('thema')), $subjects)->whereNotNull('in_date')->get(self::COLUMNS)->filter($full)
                     ->groupBy(fn ($p) => self::fold($p->thema)."\n".self::fold($p->in_arxi_ekdosis)."\n".$p->dateOf('in_date')?->toDateString()),
                 'subject',
             );
@@ -160,6 +160,21 @@ final class DuplicateRule implements Rule
     {
         return in_array($b->protocolnum.'/'.$b->etos, RelatedNumbers::numbers($a->sxetiko), true)
             || in_array($a->protocolnum.'/'.$a->etos, RelatedNumbers::numbers($b->sxetiko), true);
+    }
+
+    /**
+     * Spaces as fold() treats them (review of A05): trimmed, a run of spaces as one, so the SQL that picks the
+     * candidates does not leave out one that fold() would find equal («Πρόσκληση  σε», « Πρόσκληση»)
+     */
+    private static function spaces(?string $text): string
+    {
+        return trim(preg_replace('~\s+~u', ' ', (string) $text));
+    }
+
+    /** spaces() in MySQL; the column's collation still ignores case and accents */
+    private static function spacesSql(string $column): string
+    {
+        return "TRIM(REGEXP_REPLACE({$column}, '[[:space:]]+', ' '))";
     }
 
     private static function fold(?string $text): string

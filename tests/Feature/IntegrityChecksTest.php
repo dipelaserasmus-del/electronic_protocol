@@ -244,13 +244,29 @@ class IntegrityChecksTest extends FeatureTestCase
         $same = ['thema' => 'Πρόσκληση σε σύσκεψη', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101];
         $this->registered(30, '20261102', $same);
         $this->registered(31, '20261103', ['thema' => 'ΠΡΟΣΚΛΗΣΗ ΣΕ ΣΥΣΚΕΨΗ'] + $same);
+        $this->registered(36, '20261003', ['thema' => ' Πρόσκληση  σε   σύσκεψη '] + $same);   // spaces (review of A05)
+        $this->registered(37, '20261004', ['in_num' => 'Φ.9/12', 'in_arxi_ekdosis' => 'Δήμος']);
+        $this->registered(38, '20261105', ['in_num' => ' Φ.9/12', 'in_arxi_ekdosis' => 'Δήμος']);
         $this->registered(32, '20261104', ['in_date' => 20261102] + $same);   // another day's invitation
         $this->registered(33, '20261105', ['in_arxi_ekdosis' => null] + $same);   // sender not written: not enough
         $this->registered(34, '20261106', ['thema' => 'ΕΛΕΥΘΕΡΟ', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101]);
         $this->registered(35, '20261107', ['thema' => 'ΕΛΕΥΘΕΡΟ', 'in_arxi_ekdosis' => 'Περιφέρεια', 'in_date' => 20261101]);
 
-        $this->assertSame(['31/2026' => 'Μοιάζει με το 30/2026 (02/11/2026): ίδιο θέμα, αποστολέας και ημερομηνία εισερχομένου.'],
-            $this->duplicates('2026-11-01', '2026-11-30'));
+        // 36 is dated before the range, its subject has other spaces: still alike, also as a candidate picked by SQL
+        $lines = fn (string $from, string $to) => array_map(fn (Finding $f) => $f->ref.' '.$f->message,
+            app(DuplicateRule::class)->findings(CarbonImmutable::parse($from), CarbonImmutable::parse($to)));
+        $same = 'ίδιο θέμα, αποστολέας και ημερομηνία εισερχομένου.';
+        $this->assertSame([
+            "31/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 31/2026 (03/11/2026): {$same}",
+            '38/2026 Μοιάζει με το 37/2026 (04/10/2026): ίδιος αριθμός εισερχομένου.',
+        ], $lines('2026-11-01', '2026-11-30'));
+        $this->assertSame([
+            "36/2026 Μοιάζει με το 30/2026 (02/11/2026): {$same}",
+            "36/2026 Μοιάζει με το 31/2026 (03/11/2026): {$same}",
+            '38/2026 Μοιάζει με το 37/2026 (04/10/2026): ίδιος αριθμός εισερχομένου.',
+        ], $lines('2026-10-01', '2026-10-31'), 'only 36 and 37 in the range: the others are found through them');
     }
 
     public function test_protocols_that_name_each_other_are_not_duplicates(): void
