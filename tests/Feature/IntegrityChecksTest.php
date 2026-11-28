@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Livewire\IntegrityChecks;
 use App\Livewire\ProtocolList;
 use App\Models\Protocol;
+use App\Models\User;
 use App\Services\Integrity\Checks;
 use App\Services\Integrity\Finding;
 use App\Services\Integrity\Rule;
+use App\Services\Integrity\Rules\DateOrderRule;
 use App\Services\Integrity\Rules\NumberGapRule;
 use App\Services\NumberGaps;
 use App\Support\Navigation;
@@ -93,6 +95,91 @@ class IntegrityChecksTest extends FeatureTestCase
         $this->assertSame('Λείπουν 5 αριθμοί, ανάμεσα στο 89 (05/11/2026) και στο 95 (06/11/2026).', $findings[1]->message);
         $this->assertNull($findings[0]->protocolId);
         $this->assertSame(['year' => 2026, 'from' => 90, 'to' => 94], $findings[1]->meta);
+    }
+
+    /** A03: the dates rule's findings from $from to $to, as [ref => message] */
+    private function dates(string $from, string $to, ?\App\Models\User $viewer = null): array
+    {
+        $found = app(DateOrderRule::class)->findings(CarbonImmutable::parse($from), CarbonImmutable::parse($to), $viewer);
+
+        return array_combine(array_map(fn (Finding $f) => $f->ref, $found), array_map(fn (Finding $f) => $f->message, $found));
+    }
+
+    public function test_a_date_going_backwards_is_found(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-28 10:00'));
+        $this->book(2026, [10], '1103');
+        $this->book(2026, [11], '1120');   // typed wrong: between 03/11 and 04/11
+        $this->book(2026, [12], '1104');
+        $this->book(2026, [13], '1105');
+
+        $found = $this->dates('2026-11-01', '2026-11-10');
+        $this->assertSame(['11/2026'], array_keys($found), 'dated outside the range, but its neighbours are in it');
+        $this->assertStringContainsString('ο προηγούμενος (10) έχει 03/11/2026 και ο επόμενος (12) 04/11/2026', $found['11/2026']);
+        $this->assertSame(['11/2026'], array_keys($this->dates('2026-11-20', '2026-11-20')));
+        $this->assertSame([], $this->dates('2026-11-21', '2026-11-27'), 'no protocol of the range or next to it');
+        $this->assertSame([], $this->dates('2026-10-01', '2026-10-31'), 'no protocols in the range');
+    }
+
+    public function test_a_date_after_today_is_found(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-12 10:00'));
+        $this->book(2026, [20, 21], '1110');
+        $this->book(2026, [22], '1201');   // in order, but after today
+
+        $found = $this->dates('2026-10-14', '2026-11-12');
+        $this->assertSame(['22/2026'], array_keys($found));
+        $this->assertStringContainsString('μετά τη σημερινή', $found['22/2026']);
+        $this->assertStringNotContainsString('σειρά', $found['22/2026']);
+    }
+
+    public function test_a_date_typed_a_year_wrong_is_found_in_its_book_year(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-28 10:00'));
+        $this->book(2026, [29, 30], '1103');
+        Protocol::factory()->create(['protocolnum' => 31, 'etos' => 2026, 'protocoldate' => 20251104]);
+        $this->book(2026, [32, 33], '1105');
+
+        $this->assertSame(['31/2026'], array_keys($this->dates('2026-11-01', '2026-11-30')));
+    }
+
+    public function test_a_limited_writer_sees_only_their_own_and_no_other_s_numbers(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-28 10:00'));
+        $writer = $this->writer();
+        $other = $this->writer();
+        Protocol::factory()->number(40, 2026)->onDate('20261103')->create(['user_id' => $other->id]);
+        Protocol::factory()->number(41, 2026)->onDate('20261120')->create(['user_id' => $writer->id]);   // wrong, own
+        Protocol::factory()->number(42, 2026)->onDate('20261104')->create(['user_id' => $other->id]);
+        Protocol::factory()->number(43, 2026)->onDate('20261125')->create(['user_id' => $other->id]);   // wrong, other's
+        Protocol::factory()->number(44, 2026)->onDate('20261105')->create(['user_id' => $other->id]);
+        $this->setting('limitProtocolAccessList', 1);
+        [$from, $to] = [CarbonImmutable::parse('2026-11-01'), CarbonImmutable::parse('2026-11-28')];
+
+        $all = app(Checks::class)->run($this->admin(), $from, $to)['dates']['findings'];
+        $this->assertSame(['41/2026', '43/2026'], array_map(fn (Finding $f) => $f->ref, $all));
+        $this->assertStringContainsString('(40)', $all[0]->message);
+
+        $seen = app(Checks::class)->run($writer, $from, $to)['dates']['findings'];
+        $this->assertSame(['41/2026'], array_map(fn (Finding $f) => $f->ref, $seen));
+        $this->assertStringNotContainsString('(40)', $seen[0]->message, 'another user\'s protocol is not named');
+        $this->assertStringContainsString('Μήπως γράφτηκε λάθος', $seen[0]->message);
+    }
+
+    public function test_the_dates_rule_is_on_the_page_and_counted_in_the_list(): void
+    {
+        $today = CarbonImmutable::today();
+        $year = $today->year;
+        Protocol::factory()->number(1, $year)->onDate($today->subDays(2)->format('Ymd'))->create();
+        Protocol::factory()->number(2, $year)->onDate($today->format('Ymd'))->create();   // wrong: after 3
+        Protocol::factory()->number(3, $year)->onDate($today->subDay()->format('Ymd'))->create();
+        Protocol::factory()->number(4, $year)->onDate($today->format('Ymd'))->create();
+
+        Livewire::actingAs($this->admin())->test(IntegrityChecks::class)
+            ->assertSeeHtml('id="check-dates" data-check="dates" data-count="1"')->assertSee('Ημερομηνίες εκτός σειράς')
+            ->assertSee('2/'.$year);
+        Livewire::actingAs($this->admin())->test(ProtocolList::class)
+            ->assertSeeHtml('id="checks-notice"')->assertSee('1 εύρημα τις τελευταίες 30 ημέρες');
     }
 
     public function test_the_page_lists_the_findings_of_the_last_30_days(): void
@@ -206,5 +293,5 @@ class FakeRule implements Rule
 
     public function inList(): bool { return true; }
 
-    public function findings(CarbonImmutable $from, CarbonImmutable $to): array { return self::$found; }
+    public function findings(CarbonImmutable $from, CarbonImmutable $to, ?User $viewer = null): array { return self::$found; }
 }

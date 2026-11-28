@@ -3,6 +3,7 @@
 namespace App\Services\Integrity\Rules;
 
 use App\Models\Protocol;
+use App\Models\User;
 use App\Services\Integrity\Finding;
 use App\Services\Integrity\Rule;
 use App\Services\NumberGaps;
@@ -37,7 +38,7 @@ final class NumberGapRule implements Rule
         return false;
     }
 
-    public function findings(CarbonImmutable $from, CarbonImmutable $to): array
+    public function findings(CarbonImmutable $from, CarbonImmutable $to, ?User $viewer = null): array
     {
         $findings = [];
         foreach (NumberGaps::runs($this->gaps->between($from, $to)) as $run) {

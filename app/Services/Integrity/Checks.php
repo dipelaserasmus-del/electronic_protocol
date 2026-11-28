@@ -27,6 +27,7 @@ final class Checks
     /** @var list<class-string<Rule>> in the page's order */
     public const RULES = [
         Rules\NumberGapRule::class,
+        Rules\DateOrderRule::class,
     ];
 
     /** @param  list<class-string<Rule>>  $classes  the rules to run (tests give their own) */
@@ -60,7 +61,7 @@ final class Checks
     {
         $out = [];
         foreach ($this->rules() as $rule) {
-            $out[$rule->key()] = ['rule' => $rule, 'findings' => $this->visible($user, $rule->findings($from, $to))];
+            $out[$rule->key()] = ['rule' => $rule, 'findings' => $this->visible($user, $rule->findings($from, $to, $user))];
         }
 
         return $out;
@@ -73,7 +74,7 @@ final class Checks
         $n = 0;
         foreach ($this->rules() as $rule) {
             if ($rule->inList()) {
-                $n += count($this->visible($user, $rule->findings($from, $to)));
+                $n += count($this->visible($user, $rule->findings($from, $to, $user)));
             }
         }
 
